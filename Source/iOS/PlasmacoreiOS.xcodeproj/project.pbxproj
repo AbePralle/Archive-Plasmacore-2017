@@ -1,0 +1,437 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3822A1891ADCD7B100D59689 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3822A1881ADCD7B100D59689 /* main.m */; };
+		3822A18C1ADCD7B100D59689 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3822A18B1ADCD7B100D59689 /* AppDelegate.m */; };
+		3822A18E1ADCD7B100D59689 /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 3822A18D1ADCD7B100D59689 /* Shader.fsh */; };
+		3822A1901ADCD7B100D59689 /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 3822A18F1ADCD7B100D59689 /* Shader.vsh */; };
+		3822A1931ADCD7B100D59689 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3822A1921ADCD7B100D59689 /* GameViewController.m */; };
+		3822A1961ADCD7B100D59689 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3822A1941ADCD7B100D59689 /* Main.storyboard */; };
+		3822A1981ADCD7B100D59689 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3822A1971ADCD7B100D59689 /* Images.xcassets */; };
+		3822A19B1ADCD7B100D59689 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3822A1991ADCD7B100D59689 /* LaunchScreen.xib */; };
+		3822A1A71ADCD7B100D59689 /* PlasmacoreiOSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3822A1A61ADCD7B100D59689 /* PlasmacoreiOSTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3822A1A11ADCD7B100D59689 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3822A17B1ADCD7B100D59689 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3822A1821ADCD7B100D59689;
+			remoteInfo = PlasmacoreiOS;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3822A1831ADCD7B100D59689 /* PlasmacoreiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlasmacoreiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3822A1871ADCD7B100D59689 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3822A1881ADCD7B100D59689 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		3822A18A1ADCD7B100D59689 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		3822A18B1ADCD7B100D59689 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		3822A18D1ADCD7B100D59689 /* Shader.fsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.fsh; path = Shaders/Shader.fsh; sourceTree = "<group>"; };
+		3822A18F1ADCD7B100D59689 /* Shader.vsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.vsh; path = Shaders/Shader.vsh; sourceTree = "<group>"; };
+		3822A1911ADCD7B100D59689 /* GameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
+		3822A1921ADCD7B100D59689 /* GameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
+		3822A1951ADCD7B100D59689 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3822A1971ADCD7B100D59689 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		3822A19A1ADCD7B100D59689 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		3822A1A01ADCD7B100D59689 /* PlasmacoreiOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlasmacoreiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3822A1A51ADCD7B100D59689 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3822A1A61ADCD7B100D59689 /* PlasmacoreiOSTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlasmacoreiOSTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3822A1801ADCD7B100D59689 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822A19D1ADCD7B100D59689 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3822A17A1ADCD7B100D59689 = {
+			isa = PBXGroup;
+			children = (
+				3822A1851ADCD7B100D59689 /* PlasmacoreiOS */,
+				3822A1A31ADCD7B100D59689 /* PlasmacoreiOSTests */,
+				3822A1841ADCD7B100D59689 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3822A1841ADCD7B100D59689 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3822A1831ADCD7B100D59689 /* PlasmacoreiOS.app */,
+				3822A1A01ADCD7B100D59689 /* PlasmacoreiOSTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3822A1851ADCD7B100D59689 /* PlasmacoreiOS */ = {
+			isa = PBXGroup;
+			children = (
+				3822A18A1ADCD7B100D59689 /* AppDelegate.h */,
+				3822A18B1ADCD7B100D59689 /* AppDelegate.m */,
+				3822A18D1ADCD7B100D59689 /* Shader.fsh */,
+				3822A18F1ADCD7B100D59689 /* Shader.vsh */,
+				3822A1911ADCD7B100D59689 /* GameViewController.h */,
+				3822A1921ADCD7B100D59689 /* GameViewController.m */,
+				3822A1941ADCD7B100D59689 /* Main.storyboard */,
+				3822A1971ADCD7B100D59689 /* Images.xcassets */,
+				3822A1991ADCD7B100D59689 /* LaunchScreen.xib */,
+				3822A1861ADCD7B100D59689 /* Supporting Files */,
+			);
+			path = PlasmacoreiOS;
+			sourceTree = "<group>";
+		};
+		3822A1861ADCD7B100D59689 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				3822A1871ADCD7B100D59689 /* Info.plist */,
+				3822A1881ADCD7B100D59689 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		3822A1A31ADCD7B100D59689 /* PlasmacoreiOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				3822A1A61ADCD7B100D59689 /* PlasmacoreiOSTests.m */,
+				3822A1A41ADCD7B100D59689 /* Supporting Files */,
+			);
+			path = PlasmacoreiOSTests;
+			sourceTree = "<group>";
+		};
+		3822A1A41ADCD7B100D59689 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				3822A1A51ADCD7B100D59689 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3822A1821ADCD7B100D59689 /* PlasmacoreiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3822A1AA1ADCD7B100D59689 /* Build configuration list for PBXNativeTarget "PlasmacoreiOS" */;
+			buildPhases = (
+				3822A17F1ADCD7B100D59689 /* Sources */,
+				3822A1801ADCD7B100D59689 /* Frameworks */,
+				3822A1811ADCD7B100D59689 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PlasmacoreiOS;
+			productName = PlasmacoreiOS;
+			productReference = 3822A1831ADCD7B100D59689 /* PlasmacoreiOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3822A19F1ADCD7B100D59689 /* PlasmacoreiOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3822A1AD1ADCD7B100D59689 /* Build configuration list for PBXNativeTarget "PlasmacoreiOSTests" */;
+			buildPhases = (
+				3822A19C1ADCD7B100D59689 /* Sources */,
+				3822A19D1ADCD7B100D59689 /* Frameworks */,
+				3822A19E1ADCD7B100D59689 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3822A1A21ADCD7B100D59689 /* PBXTargetDependency */,
+			);
+			name = PlasmacoreiOSTests;
+			productName = PlasmacoreiOSTests;
+			productReference = 3822A1A01ADCD7B100D59689 /* PlasmacoreiOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3822A17B1ADCD7B100D59689 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = "Abe Pralle";
+				TargetAttributes = {
+					3822A1821ADCD7B100D59689 = {
+						CreatedOnToolsVersion = 6.2;
+					};
+					3822A19F1ADCD7B100D59689 = {
+						CreatedOnToolsVersion = 6.2;
+						TestTargetID = 3822A1821ADCD7B100D59689;
+					};
+				};
+			};
+			buildConfigurationList = 3822A17E1ADCD7B100D59689 /* Build configuration list for PBXProject "PlasmacoreiOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3822A17A1ADCD7B100D59689;
+			productRefGroup = 3822A1841ADCD7B100D59689 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3822A1821ADCD7B100D59689 /* PlasmacoreiOS */,
+				3822A19F1ADCD7B100D59689 /* PlasmacoreiOSTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3822A1811ADCD7B100D59689 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3822A19B1ADCD7B100D59689 /* LaunchScreen.xib in Resources */,
+				3822A1961ADCD7B100D59689 /* Main.storyboard in Resources */,
+				3822A1981ADCD7B100D59689 /* Images.xcassets in Resources */,
+				3822A1901ADCD7B100D59689 /* Shader.vsh in Resources */,
+				3822A18E1ADCD7B100D59689 /* Shader.fsh in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822A19E1ADCD7B100D59689 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3822A17F1ADCD7B100D59689 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3822A18C1ADCD7B100D59689 /* AppDelegate.m in Sources */,
+				3822A1931ADCD7B100D59689 /* GameViewController.m in Sources */,
+				3822A1891ADCD7B100D59689 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3822A19C1ADCD7B100D59689 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3822A1A71ADCD7B100D59689 /* PlasmacoreiOSTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3822A1A21ADCD7B100D59689 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3822A1821ADCD7B100D59689 /* PlasmacoreiOS */;
+			targetProxy = 3822A1A11ADCD7B100D59689 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		3822A1941ADCD7B100D59689 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3822A1951ADCD7B100D59689 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		3822A1991ADCD7B100D59689 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3822A19A1ADCD7B100D59689 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3822A1A81ADCD7B100D59689 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3822A1A91ADCD7B100D59689 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3822A1AB1ADCD7B100D59689 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = PlasmacoreiOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3822A1AC1ADCD7B100D59689 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = PlasmacoreiOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		3822A1AE1ADCD7B100D59689 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = PlasmacoreiOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PlasmacoreiOS.app/PlasmacoreiOS";
+			};
+			name = Debug;
+		};
+		3822A1AF1ADCD7B100D59689 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = PlasmacoreiOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PlasmacoreiOS.app/PlasmacoreiOS";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3822A17E1ADCD7B100D59689 /* Build configuration list for PBXProject "PlasmacoreiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3822A1A81ADCD7B100D59689 /* Debug */,
+				3822A1A91ADCD7B100D59689 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3822A1AA1ADCD7B100D59689 /* Build configuration list for PBXNativeTarget "PlasmacoreiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3822A1AB1ADCD7B100D59689 /* Debug */,
+				3822A1AC1ADCD7B100D59689 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		3822A1AD1ADCD7B100D59689 /* Build configuration list for PBXNativeTarget "PlasmacoreiOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3822A1AE1ADCD7B100D59689 /* Debug */,
+				3822A1AF1ADCD7B100D59689 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3822A17B1ADCD7B100D59689 /* Project object */;
+}
