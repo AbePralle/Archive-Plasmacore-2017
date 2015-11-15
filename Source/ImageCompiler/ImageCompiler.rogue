@@ -1,0 +1,7 @@
+ImageCompiler()
+
+class ImageCompiler
+  METHODS
+    method init
+      println "Hello World"
+endClass
