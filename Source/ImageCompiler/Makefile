@@ -1,14 +1,16 @@
 .PHONY = build
 
+CPP_FLAGS := -I../../lpng1619
+
 all: build run
 
 build: Build/imagecompiler
 
 Build/imagecompiler: Main.cpp Build/ImageCompiler.o
-	cd Build && g++ ../Main.cpp ImageCompiler.o -o imagecompiler
+	cd Build && g++ $(CPP_FLAGS) ../Main.cpp ImageCompiler.o -o imagecompiler
 
 Build/ImageCompiler.o: Build/ImageCompiler.cpp Build/ImageCompiler.h
-	cd Build && g++ -c ImageCompiler.cpp
+	cd Build && g++ $(CPP_FLAGS) -c ImageCompiler.cpp
 
 Build/ImageCompiler.cpp: ImageCompiler.rogue
 	mkdir -p Build
