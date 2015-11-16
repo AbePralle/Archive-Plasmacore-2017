@@ -166,7 +166,8 @@ int main( int argc, const char* argv[] )
   Rogue_launch( argc, argv );
 
   RoguePNGDecoder decoder;
-  Plasmacore_decode_png( &decoder, png_data, sizeof(png_data) );
+  printf( "%s\n", Plasmacore_decode_png( &decoder, png_data, sizeof(png_data) ) ? "success" : "failure" );
+  printf( "%dx%d\n", decoder.width, decoder.height );
 
   Rogue_quit();
   return 0;
