@@ -23,7 +23,10 @@ LIB_PNG_SOURCE := \
 
 LIB_PNG_O_FILES := $(LIB_PNG_SOURCE:%.c=Build/%.o)
 
-all: build run
+all: prepare build run
+
+prepare:
+	make -C ~/Projects/Rogue
 
 build: Build/imagecompiler
 
