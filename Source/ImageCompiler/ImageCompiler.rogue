@@ -6,12 +6,7 @@ class ImageCompiler
   METHODS
     method init
       local bitmap = Bitmap( File("a.png") )
-      println bitmap.size
-      forEach (j in 0..(bitmap.height-1))
-        forEach (i in 0..(bitmap.width-1))
-          if (bitmap.get(i,j) & 0xff000000) print '#'
-          else                              print ' '
-        endForEach
-        println
-      endForEach
+      local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
+      bm2.save_as_png( File("a2.png") )
 endClass
+
