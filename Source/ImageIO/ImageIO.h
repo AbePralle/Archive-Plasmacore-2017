@@ -3,7 +3,7 @@
 //=============================================================================
 //  ImageIO.h
 //
-//  v1.0.0 - 2015.11.21 by Abe Pralle
+//  v1.0.2 - 2015.12.29 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
@@ -66,9 +66,9 @@ typedef struct ImageIODecoder
 
 ImageIODecoder* ImageIODecoder_init( ImageIODecoder* decoder );
 ImageIODecoder* ImageIODecoder_retire( ImageIODecoder* decoder );
-ImageIOLogical  ImageIODecoder_set_input( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
-ImageIOLogical  ImageIODecoder_set_input_jpeg( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
-ImageIOLogical  ImageIODecoder_set_input_png( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
+ImageIOLogical  ImageIODecoder_open( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
+ImageIOLogical  ImageIODecoder_open_jpeg( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
+ImageIOLogical  ImageIODecoder_open_png( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
 ImageIOLogical  ImageIODecoder_decode_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );
 ImageIOLogical  ImageIODecoder_decode_jpeg_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );
 ImageIOLogical  ImageIODecoder_decode_png_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );

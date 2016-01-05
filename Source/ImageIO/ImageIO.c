@@ -1,7 +1,7 @@
 //=============================================================================
 //  ImageIO.c
 //
-//  v1.0.0 - 2015.11.21 by Abe Pralle
+//  v1.0.2 - 2015.12.29 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
@@ -30,18 +30,18 @@ ImageIODecoder* ImageIODecoder_retire( ImageIODecoder* decoder )
   return decoder;
 }
 
-ImageIOLogical ImageIODecoder_set_input( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
+ImageIOLogical ImageIODecoder_open( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
 {
   decoder->format = IMAGE_IO_INVALID;
   if (encoded_byte_count < 4) return 0;  // definitely not an image
 
-  if (encoded_bytes[0] == 0xff)      return ImageIODecoder_set_input_jpeg( decoder, encoded_bytes, encoded_byte_count );
-  else if (encoded_bytes[0] == 0x89) return ImageIODecoder_set_input_png( decoder, encoded_bytes, encoded_byte_count );
+  if (encoded_bytes[0] == 0xff)      return ImageIODecoder_open_jpeg( decoder, encoded_bytes, encoded_byte_count );
+  else if (encoded_bytes[0] == 0x89) return ImageIODecoder_open_png( decoder, encoded_bytes, encoded_byte_count );
   else                              return 0;
 }
 
 
-ImageIOLogical ImageIODecoder_set_input_jpeg( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
+ImageIOLogical ImageIODecoder_open_jpeg( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
 {
   decoder->format = IMAGE_IO_JPEG;
   decoder->data = encoded_bytes;
@@ -75,7 +75,7 @@ ImageIOLogical ImageIODecoder_set_input_jpeg( ImageIODecoder* decoder, ImageIOBy
 }
 
 
-ImageIOLogical ImageIODecoder_set_input_png( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
+ImageIOLogical ImageIODecoder_open_png( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count )
 {
   decoder->format = IMAGE_IO_PNG;
 
@@ -302,7 +302,7 @@ ImageIOLogical ImageIOEncoder_encode_argb32_jpeg( ImageIOEncoder* encoder, Image
 
   jpeg_finish_compress( &encoder->jpeg_info );
 
-  encoder->encoded_byte_count = encoded_size;
+  encoder->encoded_byte_count = (int) encoded_size;
   return 1;
 }
 

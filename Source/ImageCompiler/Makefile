@@ -104,7 +104,7 @@ Build/%.o: ../%.c
 	gcc $(CCFLAGS) -c $< -o $@
 
 run:
-	Build/imagecompiler
+	Build/imagecompiler /Users/abe/Projects/Games/FishHunter/images
 
 clean:
 	rm -rf Build/*

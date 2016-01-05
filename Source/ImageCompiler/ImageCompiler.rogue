@@ -3,10 +3,51 @@ $include "Graphics"
 ImageCompiler()
 
 class ImageCompiler
+  PROPERTIES
+    images      = String[]
+    info_path   = "ImageInfo.json"
+    output_path = "CompiledImages"
+    show_usage  : Logical
+
   METHODS
     method init
-      local bitmap = Bitmap( File("a.png") )
-      local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
-      bm2.save_as_png( File("a2.png") )
+      process_command_line_arguments
+
+      if (show_usage)
+        println @|Plasmacore Image Compiler
+                 |
+                 |USAGE
+                 |  imagecompiler [--info=filepath] [--output=filepath] image-files-or-folders
+        System.exit 1
+      endIf
+
+      println "# image".pluralize(images.count)
+      forEach (img in images) println "  " + img
+
+      #local bitmap = Bitmap( File("a.png") )
+      #local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
+      #bm2.save_as_png( File("a2.png") )
+
+    method process_command_line_arguments
+      forEach (i of System.command_line_arguments)
+        local arg = System.command_line_arguments[i]
+        local value : String
+        if (arg.contains('='))
+          value = arg.after_first( '=' )
+          arg = arg.before_first( '=' )
+        endIf
+        which (arg)
+          case "--info":   info_path = value
+          case "--output": output_path = value
+          others
+            if (arg.begins_with("--"))
+              println "Unrecognized argument '$'." (arg)
+              show_usage = true
+            else
+              images.add( arg )
+            endIf
+        endWhich
+      endForEach
+
 endClass
 
