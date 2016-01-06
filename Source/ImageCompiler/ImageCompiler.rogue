@@ -21,10 +21,13 @@ class ImageCompiler
         System.exit 1
       endIf
 
-      println "# image".pluralize(images.count)
-      forEach (img in images) println "  " + img
+      local filepaths = String[]
+      forEach (filepath in images)
+        collect_images( filepath, filepaths )
+      endForEach
 
-      println File.create_folder( "test/a/b/c/d" )
+      println "# image".pluralize(filepaths.count)
+      forEach (filepath in filepaths) println "  " + filepath
 
       #local bitmap = Bitmap( File("a.png") )
       #local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
@@ -50,6 +53,20 @@ class ImageCompiler
             endIf
         endWhich
       endForEach
+
+    method collect_images( filepath:String, validated_filepaths:String[] )
+      if (not File.exists(filepath))
+        println ''No such image "$".'' (filepath)
+      endIf
+
+      if (File.is_folder(filepath))
+        forEach (contained_filepath in File.listing(filepath))
+          collect_images( "$/$" (filepath,contained_filepath), validated_filepaths )
+        endForEach
+      else
+        validated_filepaths.add( filepath )
+      endIf
+
 
 endClass
 
