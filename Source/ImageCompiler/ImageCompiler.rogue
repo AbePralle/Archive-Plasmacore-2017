@@ -24,6 +24,8 @@ class ImageCompiler
       println "# image".pluralize(images.count)
       forEach (img in images) println "  " + img
 
+      println File.create_folder( "test/a/b/c/d" )
+
       #local bitmap = Bitmap( File("a.png") )
       #local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
       #bm2.save_as_png( File("a2.png") )
