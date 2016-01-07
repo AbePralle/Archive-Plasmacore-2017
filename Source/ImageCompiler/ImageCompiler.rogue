@@ -4,10 +4,12 @@ ImageCompiler()
 
 class ImageCompiler
   PROPERTIES
-    images      = String[]
-    info_path   = "ImageInfo.json"
-    output_path = "CompiledImages"
-    show_usage  : Logical
+    image_filepaths = String[]
+    info_filepath   = "ImageInfo.json"
+    output_path     = "CompiledImages"
+    show_usage      : Logical
+    info            = PropertyTable()
+    images          = Bitmap[]
 
   METHODS
     method init
@@ -17,17 +19,29 @@ class ImageCompiler
         println @|Plasmacore Image Compiler
                  |
                  |USAGE
-                 |  imagecompiler [--info=filepath] [--output=filepath] image-files-or-folders
+                 |  imagecompiler [--info=filepath] [--output=filepath] [--images=base-image-path] image-files-or-folders
         System.exit 1
       endIf
 
       local filepaths = String[]
-      forEach (filepath in images)
+      forEach (filepath in image_filepaths)
         collect_images( filepath, filepaths )
       endForEach
 
-      println "# image".pluralize(filepaths.count)
-      forEach (filepath in filepaths) println "  " + filepath
+      forEach (filepath in filepaths)
+        println "Loading " + filepath
+        local bitmap = Bitmap( File(filepath) )
+        if (bitmap.error)
+          println "$ [SKIPPED]" (filepath)
+        else
+          println "$ [$x$]" (filepath,bitmap.width,bitmap.height)
+        endIf
+      endForEach
+
+      info = PropertyTable.load( File(info_filepath) )
+      if (not info.save(File(info_filepath)))
+        println ''Error saving "$".'' (info_filepath)
+      endIf
 
       #local bitmap = Bitmap( File("a.png") )
       #local bm2 = Bitmap( bitmap, Box(bitmap.size).cropped(1) )
@@ -42,14 +56,14 @@ class ImageCompiler
           arg = arg.before_first( '=' )
         endIf
         which (arg)
-          case "--info":   info_path = value
+          case "--info":   info_filepath = value
           case "--output": output_path = value
           others
             if (arg.begins_with("--"))
               println "Unrecognized argument '$'." (arg)
               show_usage = true
             else
-              images.add( arg )
+              image_filepaths.add( arg )
             endIf
         endWhich
       endForEach
