@@ -4,12 +4,13 @@ ImageCompiler()
 
 class ImageCompiler
   PROPERTIES
-    image_filepaths = String[]
-    info_filepath   = "ImageInfo.json"
-    output_path     = "CompiledImages"
-    show_usage      : Logical
-    info            = PropertyTable()
-    images          = Bitmap[]
+    filters       = String[]
+    info_filepath = "ImageInfo.json"
+    output_path   = "CompiledImages"
+    image_folder   = ""
+    show_usage    : Logical
+    info          = PropertyTable()
+    images        = Bitmap[]
 
   METHODS
     method init
@@ -19,12 +20,43 @@ class ImageCompiler
         println @|Plasmacore Image Compiler
                  |
                  |USAGE
-                 |  imagecompiler [--info=filepath] [--output=filepath] [--images=base-image-path] image-files-or-folders
+                 |  imagecompiler [--info=filepath] [--output=filepath] [--images=base-image-folder-path] [wildcard-filter]*
         System.exit 1
       endIf
 
+      info = PropertyTable.load( File(info_filepath) )
+      if (image_folder.count == 0)
+        if (info["image_folder"])
+          image_folder = info.get_string( "image_folder" )
+        endIf
+        if (image_folder.count == 0)
+          println "ERROR: Missing required '--images=image-folder-path' argument."
+        endIf
+      endIf
+
+
+      if (not File.exists(image_folder))
+        println "ERROR: Specified '--images' folder path does not exist:"
+        println image_folder
+        System.exit 1
+      endIf
+
+      if (not File.is_folder(image_folder))
+        println "ERROR: Specified '--images' folder path is a file rather than a folder:"
+        println image_folder
+        System.exit 1
+      endIf
+
+      if (not image_folder.ends_with('/')) image_folder += '/'
+
+      local all_images = File.listing( image_folder, FileOptions().recursive )
+      forEach (img_filepath in all_images)
+        println img_filepath
+      endForEach
+
+      #{
       local filepaths = String[]
-      forEach (filepath in image_filepaths)
+      forEach (filepath in filters)
         collect_images( filepath, filepaths )
       endForEach
 
@@ -37,8 +69,8 @@ class ImageCompiler
           println "$ [$x$]" (filepath,bitmap.width,bitmap.height)
         endIf
       endForEach
+      }#
 
-      info = PropertyTable.load( File(info_filepath) )
       if (not info.save(File(info_filepath)))
         println ''Error saving "$".'' (info_filepath)
       endIf
@@ -50,6 +82,7 @@ class ImageCompiler
     method process_command_line_arguments
       forEach (i of System.command_line_arguments)
         local arg = System.command_line_arguments[i]
+        local original_arg = arg
         local value : String
         if (arg.contains('='))
           value = arg.after_first( '=' )
@@ -58,17 +91,25 @@ class ImageCompiler
         which (arg)
           case "--info":   info_filepath = value
           case "--output": output_path = value
+          case "--images"
+            image_folder = value
           others
-            if (arg.begins_with("--"))
-              println "Unrecognized argument '$'." (arg)
+            if (arg.begins_with("--") or value?)
+              println "Unrecognized argument '$'." (original_arg)
               show_usage = true
             else
-              image_filepaths.add( arg )
+              filters.add( arg )
             endIf
         endWhich
       endForEach
 
     method collect_images( filepath:String, validated_filepaths:String[] )
+      if (not File.exists(filepath))
+        if (File.exists(image_folder+filepath))
+          filepath = image_folder + filepath
+        endIf
+      endIf
+
       if (not File.exists(filepath))
         println ''No such image "$".'' (filepath)
       endIf
