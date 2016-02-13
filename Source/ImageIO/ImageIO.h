@@ -1,43 +1,46 @@
-#ifndef IMAGE_IO
-#define IMAGE_IO
 //=============================================================================
 //  ImageIO.h
 //
-//  v1.0.2 - 2015.12.29 by Abe Pralle
+//  v1.0.8 - February 12, 2016 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
+#ifndef IMAGE_IO_H
+#define IMAGE_IO_H
 
-#if defined(_WIN32)
-  #include <windows.h>
-  typedef __uint32         ImageIOARGB32;
-  typedef unsigned char    ImageIOByte;
-  typedef int              ImageIOLogical;
-#else
-  #include <stdint.h>
-  typedef uint32_t         ImageIOARGB32;
-  typedef uint8_t          ImageIOByte;
-  typedef int              ImageIOLogical;
+#ifndef PROJECT_NAMESPACE
+  #define PROJECT_NAMESPACE Project
 #endif
-
-#define IMAGE_IO_INVALID 0
-#define IMAGE_IO_PNG     1
-#define IMAGE_IO_JPEG    2
 
 #include <stdio.h>
 #include <setjmp.h>
 #include "jpeglib.h"
 #include "png.h"
 
-#ifdef __cplusplus
-extern "C"
+#if defined(_WIN32)
+  #include <windows.h>
+#else
+  #include <stdint.h>
+#endif
+
+namespace PROJECT_NAMESPACE
 {
+
+namespace ImageIO
+{
+
+#if defined(_WIN32)
+  typedef __uint32         ARGB32;
+  typedef unsigned char    Byte;
+#else
+  typedef uint32_t         ARGB32;
+  typedef uint8_t          Byte;
 #endif
 
 //-----------------------------------------------------------------------------
-//  ImageIODecoder
+//  Decoder
 //-----------------------------------------------------------------------------
-typedef struct ImageIODecoder
+struct Decoder
 {
   // These two lines MUST come first (implicit in JPEG callbacks)
   struct jpeg_error_mgr jpeg_error_manager;
@@ -50,34 +53,39 @@ typedef struct ImageIODecoder
 
   int          format;
 
-  ImageIOByte* data;
+  Byte* data;
   int          count;
 
-  ImageIOByte* reader;
+  Byte* reader;
   int          remaining;
 
-  ImageIOByte* buffer;
+  Byte* buffer;
 
   struct jpeg_decompress_struct jpeg_info;
 
   png_structp  png_ptr;
   png_infop    png_info_ptr;
-} ImageIODecoder;
 
-ImageIODecoder* ImageIODecoder_init( ImageIODecoder* decoder );
-ImageIODecoder* ImageIODecoder_retire( ImageIODecoder* decoder );
-ImageIOLogical  ImageIODecoder_open( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
-ImageIOLogical  ImageIODecoder_open_jpeg( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
-ImageIOLogical  ImageIODecoder_open_png( ImageIODecoder* decoder, ImageIOByte* encoded_bytes, int encoded_byte_count );
-ImageIOLogical  ImageIODecoder_decode_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );
-ImageIOLogical  ImageIODecoder_decode_jpeg_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );
-ImageIOLogical  ImageIODecoder_decode_png_argb32( ImageIODecoder* decoder, ImageIOARGB32* bitmap );
+  static const int INVALID = 0;
+  static const int PNG     = 1;
+  static const int JPEG    = 2;
+
+  // METHODS
+  Decoder();
+  ~Decoder();
+  bool open( Byte* encoded_bytes, int encoded_byte_count );
+  bool open_jpeg( Byte* encoded_bytes, int encoded_byte_count );
+  bool open_png( Byte* encoded_bytes, int encoded_byte_count );
+  bool decode_argb32( ARGB32* bitmap );
+  bool decode_jpeg_argb32( ARGB32* bitmap );
+  bool decode_png_argb32( ARGB32* bitmap );
+};
 
 
 //-----------------------------------------------------------------------------
-//  ImageIOEncoder
+//  Encoder
 //-----------------------------------------------------------------------------
-typedef struct ImageIOEncoder
+struct Encoder
 {
   // These two lines MUST come first (implicit in JPEG callbacks)
   struct jpeg_error_mgr jpeg_error_manager;
@@ -85,36 +93,39 @@ typedef struct ImageIOEncoder
 
   // EXTERNAL
   int          quality;   // JPEG quality 0..100.  Default 75
-  ImageIOByte* encoded_bytes;
+  Byte* encoded_bytes;
   int          encoded_byte_count;
   // END EXTERNAL
 
-  ImageIOByte* writer;
+  Byte* writer;
   int          capacity;
 
   struct jpeg_compress_struct jpeg_info;
 
   png_structp  png_ptr;
   png_infop    png_info_ptr;
-} ImageIOEncoder;
 
-ImageIOEncoder* ImageIOEncoder_init( ImageIOEncoder* encoder );
-ImageIOEncoder* ImageIOEncoder_retire( ImageIOEncoder* encoder );
-ImageIOLogical  ImageIOEncoder_encode_argb32_jpeg( ImageIOEncoder* encoder, ImageIOARGB32* bitmap, int width, int height );
-ImageIOLogical  ImageIOEncoder_encode_argb32_png( ImageIOEncoder* encoder, ImageIOARGB32* bitmap, int width, int height );
 
-// INTERNAL USE
-void            ImageIOEncoder_reserve( ImageIOEncoder* encoder, int additional_count );
-void            ImageIOEncoder_write( ImageIOEncoder* encoder, ImageIOByte* bytes, int count );
+  // METHODS
+  Encoder();
+  ~Encoder();
+  bool encode_argb32_jpeg( ARGB32* bitmap, int width, int height );
+  bool encode_argb32_png( ARGB32* bitmap, int width, int height );
+
+  // INTERNAL USE
+  void reserve( int additional_count );
+  void write( Byte* bytes, int count );
+};
+
 
 //-----------------------------------------------------------------------------
 //  ImageIO Utility
 //-----------------------------------------------------------------------------
-ImageIOLogical ImageIO_bitmap_has_translucent_pixels( ImageIOARGB32* bitmap, int count );
+bool bitmap_has_translucent_pixels( ARGB32* bitmap, int count );
 
-void ImageIO_demultiply_alpha( ImageIOARGB32* bitmap, int count );
-void ImageIO_premultiply_alpha( ImageIOARGB32* bitmap, int count );
-void ImageIO_swap_red_and_blue( ImageIOARGB32* bitmap, int count );
+void demultiply_alpha( ARGB32* bitmap, int count );
+void premultiply_alpha( ARGB32* bitmap, int count );
+void swap_red_and_blue( ARGB32* bitmap, int count );
 
 void ImageIO_jpeg_error_callback( j_common_ptr jpeg_info );
 void ImageIO_png_error_callback( png_structp png_ptr, png_const_charp msg );
@@ -122,8 +133,10 @@ void ImageIO_png_read_callback( png_structp png_ptr, png_bytep data, png_size_t 
 void ImageIO_png_write_callback( png_structp png_ptr, png_bytep data, png_size_t count );
 void ImageIO_png_flush_callback( png_structp png_ptr );
 
-#ifdef __cplusplus
-} // end extern "C"
-#endif
+} // namespace ImageIO
 
-#endif // IMAGE_IO
+} // namespace PROJECT_NAMESPACE;
+
+using namespace PROJECT_NAMESPACE;
+
+#endif // IMAGE_IO_H

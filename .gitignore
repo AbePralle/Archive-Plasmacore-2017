@@ -1,6 +1,8 @@
 # Vim
 *.swp
 
+Local.mk
+
 # Mac
 .DS_Store
 
