@@ -1,7 +1,7 @@
 //=============================================================================
 //  SuperCPP.cpp
 //
-//  v1.1.0 - 2016.02.12 by Abe Pralle
+//  v1.1.1 - 2016.02.13 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
@@ -129,7 +129,7 @@ void decode_utf8( const char* utf8_data, int utf8_count, Character* dest_buffer 
   Byte*      src  = (Byte*)(utf8_data - 1);
   Character* dest = dest_buffer - 1;
 
-  if (utf8_count == -1) utf8_count = strlen( utf8_data );
+  if (utf8_count == -1) utf8_count = (int) strlen( utf8_data );
 
   int remaining_count = utf8_count;
   while (--remaining_count >= 0)
@@ -279,7 +279,7 @@ void double_to_c_string( double value, char* buffer, int size )
     snprintf( buffer, size, "%.16lf", value );
 
     // Round off
-    int len = strlen( buffer );
+    int len = (int) strlen( buffer );
     if (buffer[len-1] < '5')
     {
       buffer[--len] = 0;

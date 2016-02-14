@@ -8,7 +8,7 @@ update:
 #ABES_LIBS = ..
 #
 #all:
-#	@rsync -a --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
-#	@rsync -a --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
-#	@rsync -a --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
 

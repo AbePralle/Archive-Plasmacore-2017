@@ -1,5 +1,5 @@
 #include "SuperCPP.h"
-#include "StarbrightOpenGLRenderer.h"
+#include "StarbrightGLRenderer.h"
 using namespace SuperCPP;
 
 #include <stdio.h>
@@ -11,9 +11,9 @@ namespace Starbright
 {
 
 //-----------------------------------------------------------------------------
-//  OpenGLRenderer
+//  GLRenderer
 //-----------------------------------------------------------------------------
-OpenGLRenderer::OpenGLRenderer()
+GLRenderer::GLRenderer()
   : color_shader(0),
     texture_shader(0),
     texture_shader_with_color_multiply(0),
@@ -154,7 +154,7 @@ OpenGLRenderer::OpenGLRenderer()
   projection_transform.set_identity();
 }
 
-OpenGLRenderer::~OpenGLRenderer()
+GLRenderer::~GLRenderer()
 {
   // Delete shaders
   while (shaders.count())
@@ -168,18 +168,18 @@ OpenGLRenderer::~OpenGLRenderer()
   }
 }
 
-void OpenGLRenderer::begin_draw( int _display_width, int _display_height )
+void GLRenderer::begin_draw( int _display_width, int _display_height )
 {
   display_width  = _display_width;
   display_height = _display_height;
 }
 
-void OpenGLRenderer::end_draw()
+void GLRenderer::end_draw()
 {
   flush();
 }
 
-void OpenGLRenderer::clear( int flags )
+void GLRenderer::clear( int flags )
 {
   int gl_flags = 0;
   if (flags & Renderer::CLEAR_COLOR)
@@ -207,9 +207,9 @@ void OpenGLRenderer::clear( int flags )
 }
 
 // COLOR|DEPTH|STENCIL
-int  OpenGLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
+int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
 {
-  OpenGLShader* shader = new OpenGLShader();
+  GLShader* shader = new GLShader();
 
   shader->vertex_shader = glCreateShader( GL_VERTEX_SHADER );
   shader->pixel_shader = glCreateShader( GL_FRAGMENT_SHADER );
@@ -246,9 +246,9 @@ int  OpenGLRenderer::define_shader( const char* vertex_src, const char* pixel_sr
   return shaders.add( shader );
 }
 
-int  OpenGLRenderer::define_texture( void* pixels, int width, int height, int options )
+int  GLRenderer::define_texture( void* pixels, int width, int height, int options )
 {
-  OpenGLTexture* texture = new OpenGLTexture();
+  GLTexture* texture = new GLTexture();
   int bpp = options & (32|16|8);
 
   texture->width  = width;
@@ -286,9 +286,9 @@ int  OpenGLRenderer::define_texture( void* pixels, int width, int height, int op
   return textures.add( texture );
 }
 
-void OpenGLRenderer::delete_shader( int shader_id )
+void GLRenderer::delete_shader( int shader_id )
 {
-  OpenGLShader* shader = (OpenGLShader*) shaders.remove( shader_id );
+  GLShader* shader = (GLShader*) shaders.remove( shader_id );
   if ( !shader ) return;
 
   glDeleteShader( shader->pixel_shader );
@@ -298,9 +298,9 @@ void OpenGLRenderer::delete_shader( int shader_id )
   delete shader;
 }
 
-void OpenGLRenderer::delete_texture( int texture_id )
+void GLRenderer::delete_texture( int texture_id )
 {
-  OpenGLTexture* texture = (OpenGLTexture*) textures.remove( texture_id );
+  GLTexture* texture = (GLTexture*) textures.remove( texture_id );
   if ( !texture ) return;
 
   glDeleteTextures( 1, &texture->gl_id );
@@ -308,16 +308,16 @@ void OpenGLRenderer::delete_texture( int texture_id )
   delete texture;
 }
 
-void OpenGLRenderer::flush()
+void GLRenderer::flush()
 {
   render();
   glFlush();
 }
 
-void OpenGLRenderer::render()
+void GLRenderer::render()
 {
   GLfloat m[16];
-  OpenGLShader* shader;
+  GLShader* shader;
 
   if ( !vertex_count ) return;
 
@@ -348,7 +348,7 @@ void OpenGLRenderer::render()
     }
   }
 
-  shader = (OpenGLShader*) shaders.get( active_shader_id );
+  shader = (GLShader*) shaders.get( active_shader_id );
   if ( !shader ) return;
 
   glViewport( 0, 0, display_width, display_height );
@@ -395,7 +395,7 @@ void OpenGLRenderer::render()
     for (i=active_texture_count; --i>=0; )
     {
       int texture_id = active_texture_ids[i];
-      OpenGLTexture* texture = (OpenGLTexture*) textures.get( texture_id );
+      GLTexture* texture = (GLTexture*) textures.get( texture_id );
 
       if (texture)
       {
@@ -462,9 +462,9 @@ void OpenGLRenderer::render()
   if (shader->uv_attribute >= 0)
   {
     // Copy position and data at the same time
-    Vertex*         src_vertex = vertices - 1;
-    OpenGLVertexXY* dest_xy   = vertex_buffer_xy - 1;
-    OpenGLVertexUV* dest_uv   = vertex_buffer_uv - 1;
+    Vertex*     src_vertex = vertices - 1;
+    GLVertexXY* dest_xy   = vertex_buffer_xy - 1;
+    GLVertexUV* dest_uv   = vertex_buffer_uv - 1;
     int count = vertex_count;
     while (--count >= 0)
     {
@@ -477,8 +477,8 @@ void OpenGLRenderer::render()
   else
   {
     // Copy position data only
-    Vertex*         src_vertex = vertices - 1;
-    OpenGLVertexXY* dest_xy   = vertex_buffer_xy - 1;
+    Vertex*     src_vertex = vertices - 1;
+    GLVertexXY* dest_xy   = vertex_buffer_xy - 1;
     int count = vertex_count;
     while (--count >= 0)
     {

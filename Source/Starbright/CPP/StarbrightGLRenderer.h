@@ -1,7 +1,7 @@
-#ifndef STARBRIGHT_OPEN_GL_RENDERER_H
-#define STARBRIGHT_OPEN_GL_RENDERER_H
+#ifndef STARBRIGHT_GL_RENDERER_H
+#define STARBRIGHT_GL_RENDERER_H
 //=============================================================================
-//  SBGLRenderer.h
+//  StarbrightGLRenderer.h
 //
 //  HISTORY
 //    2015.12.08 - Created by Abe Pralle.
@@ -27,9 +27,9 @@ namespace Starbright
 {
 
 //-----------------------------------------------------------------------------
-//  OpenGLShader
+//  GLShader
 //-----------------------------------------------------------------------------
-struct OpenGLShader : Shader
+struct GLShader : Shader
 {
   int vertex_shader;
   int pixel_shader;
@@ -43,51 +43,51 @@ struct OpenGLShader : Shader
   int texture_settings[Renderer::MAX_CONCURRENT_TEXTURES];
   int uv_attribute;
 
-  OpenGLShader()
+  GLShader()
   {
-    memset( this, 0, sizeof(OpenGLShader) );
+    memset( this, 0, sizeof(GLShader) );
   }
 };
 
 
 
 //-----------------------------------------------------------------------------
-//  OpenGLVertexXY
+//  GLVertexXY
 //-----------------------------------------------------------------------------
-typedef struct OpenGLVertexXY
+typedef struct GLVertexXY
 {
   GLfloat x, y;
-} OpenGLVertexXY;
+} GLVertexXY;
 
 
 //-----------------------------------------------------------------------------
-//  OpenGLVertexUV
+//  GLVertexUV
 //-----------------------------------------------------------------------------
-typedef struct OpenGLVertexUV
+typedef struct GLVertexUV
 {
   GLfloat u, v;
-} OpenGLVertexUV;
+} GLVertexUV;
 
 
 //-----------------------------------------------------------------------------
-//  OpenGLTexture
+//  GLTexture
 //-----------------------------------------------------------------------------
-struct OpenGLTexture : Texture
+struct GLTexture : Texture
 {
   GLuint gl_id;
   int    width, height;
   int    options;
 
-  OpenGLTexture()
+  GLTexture()
   {
-    memset( this, 0, sizeof(OpenGLTexture) );
+    memset( this, 0, sizeof(GLTexture) );
   }
 };
 
 //-----------------------------------------------------------------------------
-//  OpenGLRenderer
+//  GLRenderer
 //-----------------------------------------------------------------------------
-struct OpenGLRenderer : Renderer
+struct GLRenderer : Renderer
 {
   int color_shader;
   int texture_shader;
@@ -95,12 +95,12 @@ struct OpenGLRenderer : Renderer
   int premultiplied_texture_shader_with_color_add;
   int premultiplied_texture_shader_with_color_fill;
 
-  OpenGLVertexXY vertex_buffer_xy[Renderer::VERTEX_BUFFER_COUNT];
-  OpenGLVertexUV vertex_buffer_uv[Renderer::VERTEX_BUFFER_COUNT];
-  GLint            color_buffer[Renderer::VERTEX_BUFFER_COUNT];
+  GLVertexXY vertex_buffer_xy[Renderer::VERTEX_BUFFER_COUNT];
+  GLVertexUV vertex_buffer_uv[Renderer::VERTEX_BUFFER_COUNT];
+  GLint          color_buffer[Renderer::VERTEX_BUFFER_COUNT];
 
-  OpenGLRenderer();
-  ~OpenGLRenderer();
+  GLRenderer();
+  ~GLRenderer();
 
   void begin_draw( int display_width, int display_height );
   void end_draw();
@@ -117,4 +117,4 @@ struct OpenGLRenderer : Renderer
 }; // namespace PROJECT_WORKSPACE
 using namespace PROJECT_WORKSPACE;
 
-#endif // STARBRIGHT_OPEN_GL_RENDERER_H
+#endif // STARBRIGHT_GL_RENDERER_H
