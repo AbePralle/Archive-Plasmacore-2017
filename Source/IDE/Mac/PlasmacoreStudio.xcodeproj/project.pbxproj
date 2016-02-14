@@ -7,20 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		309EFD871C6FFD1B00FB5651 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD861C6FFD1B00FB5651 /* AppDelegate.m */; };
+		309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */; };
 		309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD891C6FFD1B00FB5651 /* main.m */; };
 		309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */; };
 		309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */; };
+		30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F91A1C70187200F89F60 /* RogueProgram.cpp */; };
+		30E2F91E1C703EDC00F89F60 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E2F91D1C703EDC00F89F60 /* AppKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		309EFD821C6FFD1B00FB5651 /* PlasmacoreStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlasmacoreStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		309EFD851C6FFD1B00FB5651 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		309EFD861C6FFD1B00FB5651 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		309EFD891C6FFD1B00FB5651 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		309EFD8E1C6FFD1B00FB5651 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		309EFD901C6FFD1B00FB5651 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30E2F91A1C70187200F89F60 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
+		30E2F91B1C70187200F89F60 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
+		30E2F91D1C703EDC00F89F60 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30E2F91E1C703EDC00F89F60 /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +43,7 @@
 		309EFD791C6FFD1B00FB5651 = {
 			isa = PBXGroup;
 			children = (
+				30E2F91D1C703EDC00F89F60 /* AppKit.framework */,
 				309EFD841C6FFD1B00FB5651 /* PlasmacoreStudio */,
 				309EFD831C6FFD1B00FB5651 /* Products */,
 			);
@@ -53,8 +60,10 @@
 		309EFD841C6FFD1B00FB5651 /* PlasmacoreStudio */ = {
 			isa = PBXGroup;
 			children = (
+				30E2F91A1C70187200F89F60 /* RogueProgram.cpp */,
+				30E2F91B1C70187200F89F60 /* RogueProgram.h */,
 				309EFD851C6FFD1B00FB5651 /* AppDelegate.h */,
-				309EFD861C6FFD1B00FB5651 /* AppDelegate.m */,
+				309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */,
 				309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */,
 				309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */,
 				309EFD901C6FFD1B00FB5651 /* Info.plist */,
@@ -141,7 +150,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */,
-				309EFD871C6FFD1B00FB5651 /* AppDelegate.m in Sources */,
+				30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */,
+				309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +291,7 @@
 				309EFD951C6FFD1B00FB5651 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

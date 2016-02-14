@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#include "RogueProgram.h"
 
 @interface AppDelegate ()
 
@@ -16,7 +17,19 @@
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-  // Insert code here to initialize your application
+  // Prepare command line arguments to pass in.
+  NSArray *args = [[NSProcessInfo processInfo] arguments];
+  int argc = (int) args.count;
+  const char** argv = new const char*[ argc ];
+  for (int i=0; i<argc; ++i)
+  {
+    argv[i] = [args[i] UTF8String];
+  }
+  
+  Rogue_configure( argc, argv );
+  Rogue_launch();
+  
+  delete argv;
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {

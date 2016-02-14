@@ -1,1 +1,2 @@
 println "Rogue Launched!"
+println System.command_line_arguments
