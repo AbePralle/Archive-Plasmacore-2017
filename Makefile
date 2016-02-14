@@ -4,7 +4,11 @@ compile_rogue: Source/Rogue/Build/RogueProgram.cpp
 
 Source/Rogue/Build/RogueProgram.cpp: Source/Rogue/Main.rogue
 	mkdir -p Source/Rogue/Build
-	cd Source/Rogue/ && roguec Main.rogue --output=Build/RogueProgram
+	cd Source/Rogue/ && roguec Main.rogue Plasmacore --libraries="Libraries" --output=Build/RogueProgram
+
+remake:
+	mkdir -p Source/Rogue/Build
+	cd Source/Rogue/ && roguec Main.rogue Plasmacore --libraries="Libraries" --output=Build/RogueProgram
 
 clean:
 	rm -rf Source/Rogue/Build

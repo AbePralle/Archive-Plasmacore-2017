@@ -1,0 +1,11 @@
+#==============================================================================
+# Messaging.rogue
+#==============================================================================
+
+$module Plasmacore
+
+class MessageManager [requisite singleton]
+  METHODS
+    method init_object
+      println "MessageManager init_object()"
+endClass
