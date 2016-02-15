@@ -9,14 +9,56 @@ $requisite Byte[].reserve(Int32)
 
 class MessageManager [requisite singleton]
   PROPERTIES
-    receive_buffer = Byte[]
+    receive_buffer      = Byte[]
+    reader              = DataReader( receive_buffer )
+
+    received_id_to_name = Table<<Int32,String>>()
+
+    message = Message()
+      # Recycled for all sent and received messages
 
   METHODS
     method init_object
       println "MessageManager init_object()"
 
     method update->Byte[] [requisite]
-      # 'receive_buffer' has already been filled with incoming message bytes
-      println receive_buffer
+      # 'reader' has already been set up to decode 'receive_buffer', which 
+      # in turn has already been filled with incoming message bytes by the
+      # native layer.
+      reader.reset( 0 )
+
+      while (reader.has_another)
+        message.init( reader )
+      endWhile
+
       return null
 endClass
+
+class Message
+  PROPERTIES
+    type   : String
+    reader = BufferedDataReader()
+    offset : Int32
+
+  METHODS
+    method init
+      
+    method init( source:DataReader )
+      local size = source.read_int32
+      source.read( reader.buffer.clear, size )
+      reader.reset( 0 )
+      type = read_id
+      println "Got type " + type
+
+    method read_id->String
+      local id = reader.read_int32x
+      local name = MessageManager.received_id_to_name[ id ]
+      if (not name)
+println "Reading name for id " + id
+        name = reader.read_string
+        MessageManager.received_id_to_name[ id ] = name
+      endIf
+println "name:" + name
+      return name
+endClass
+
