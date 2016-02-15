@@ -9,30 +9,54 @@ $requisite Byte[].reserve(Int32)
 
 class MessageManager [requisite singleton]
   PROPERTIES
-    receive_buffer      = Byte[]
-    reader              = DataReader( receive_buffer )
+    incoming_buffer = Byte[]  # native layer accesses this directly
+    reader          = BufferedDataReader( incoming_buffer )
 
-    received_id_to_name = Table<<Int32,String>>()
+    alpha_writer    = BufferedDataWriter()
+    beta_writer     = BufferedDataWriter()
+    writer          = alpha_writer : BufferedDataWriter
 
-    message = Message()
-      # Recycled for all sent and received messages
+
+    incoming_id_to_name = Table<<Int32,String>>()
+    outgoing_name_to_id = Table<<String,Int32>>()
+
+    incoming_message = IncomingMessage()
+      # Recycled for received messages
+
+    outgoing_message = OutgoingMessage()
+      # Recycled for outgoing messages
 
   METHODS
     method init_object
       println "MessageManager init_object()"
 
+    method message( type:String )->Message
+      outgoing_message.init( type )
+      return outgoing_message
+
     method update->Byte[] [requisite]
-      # 'reader' has already been set up to decode 'receive_buffer', which 
+      # 'reader' has already been set up to decode 'incoming_buffer', which 
       # in turn has already been filled with incoming message bytes by the
       # native layer.
       reader.reset( 0 )
 
       while (reader.has_another)
-        message.init( reader )
-println "$ x:$ y:$" (message.type,message.get_int32("x"),message.get_int32("y"))
+        incoming_message.init( reader )
+        println "$ x:$ y:$" (incoming_message.type,incoming_message.get_int32("x"),incoming_message.get_int32("y"))
+        if (incoming_message.type == "Marco!")
+          message( "Polo!" ).send
+        endIf
       endWhile
 
-      return null
+      # Alternate output writers to allow Rogue code to indirectly generate more output
+      # messages while the native layer is processing our previous messages.
+      if (writer is alpha_writer)
+        writer = beta_writer.clear
+        return alpha_writer.buffer
+      else
+        writer = alpha_writer.clear
+        return beta_writer.buffer
+      endIf
 endClass
 
 class Message
@@ -43,6 +67,17 @@ class Message
 
   PROPERTIES
     type    : String
+
+  METHODS
+    method get_int32( name:String, default=0:Int32 )->Int32
+      return 0
+
+    method send
+      println "ERROR: send() called on a $." (type_name)
+endClass
+
+class IncomingMessage : Message
+  PROPERTIES
     reader  = BufferedDataReader()
     buffer  = StringBuilder()
     keys    = String[]
@@ -58,6 +93,19 @@ class Message
       type = read_id
       while (index_another) noAction
 
+    method get_int32( name:String, default=0:Int32 )->Int32
+      local i = keys.locate( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_INT32
+          return reader.read_int32x
+      endWhich
+
+      return default
+
+    # INTERNAL USE
     method index_another->Logical
       if (not reader.has_another) return false
       local key    = read_id
@@ -75,51 +123,66 @@ class Message
           reader.read_int32x
 
         others
-          print   "Message encoding error: "
-          println "unsupported data type $." (data_type)
+          println "ERROR: unsupported message data type $." (data_type)
       endWhich
       return true
 
-    method get_int32( name:String, default=0:Int32 )->Int32
-      local i = keys.locate( name )
-      if (not i.exists) return default
-
-      reader.reset( offsets[i.value] )
-      which (reader.read_int32x)
-        case DATA_TYPE_INT32
-          return reader.read_int32x
-      endWhich
-
-      return default
-
-    # INTERNAL USE
     method read_id->String
       local id_type = reader.read_int32x
       which (id_type)
         case DATA_TYPE_ID_DEFINITION
           local id = reader.read_int32x
-          local name = MessageManager.received_id_to_name[ id ]
+          local name = MessageManager.incoming_id_to_name[ id ]
           if (name)
             reader.read_string( buffer.clear )  # skip the definition
           else
             name = reader.read_string( buffer.clear )->String
-            MessageManager.received_id_to_name[ id ] = name
+            MessageManager.incoming_id_to_name[ id ] = name
           endIf
           return name
 
         case DATA_TYPE_ID
           local id = reader.read_int32x
-          local name = MessageManager.received_id_to_name[ id ]
+          local name = MessageManager.incoming_id_to_name[ id ]
           if (name) return name
-          print   "Message encoding error: "
-          println "undefined ID."
+          println "ERROR: undefined message ID."
 
         others
-          print   "Message encoding error: "
-          println "ID expected."
+          println "ERROR: message ID expected."
       endWhich
 
       return "Undefined"
 
+endClass
+
+class OutgoingMessage : Message
+  PROPERTIES
+    sent   = true
+    writer = BufferedDataWriter()
+
+  METHODS
+    method init
+
+    method init( type )
+      if (not sent) println "ERROR: unsent outgoing message."
+      sent = false
+      writer.clear
+
+      local entry = MessageManager.outgoing_name_to_id.find( type )
+      if (entry)
+        writer.write_int32x( Message.DATA_TYPE_ID )
+        writer.write_int32x( entry.value )
+      else
+        writer.write_int32x( Message.DATA_TYPE_ID_DEFINITION )
+        local id = MessageManager.outgoing_name_to_id.count
+        MessageManager.outgoing_name_to_id[ type ] = id
+        writer.write_int32x( id )
+        writer.write_string( type )
+      endIf
+
+    method send
+      MessageManager.writer.write_int32( writer.buffer.count )
+      MessageManager.writer.write( writer.buffer )
+      sent = true
 endClass
 

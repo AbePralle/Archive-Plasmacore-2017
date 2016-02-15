@@ -30,7 +30,7 @@
   Rogue_launch();
 
   message_manager.message( "Hello World!" ).send();
-  message_manager.message( "Hello World!" ).write_int32("x",42).write_int32("y",43).send();
+  message_manager.message( "Marco!" ).write_int32("x",42).write_int32("y",43).send();
   message_manager.message( "Hello World!" ).send();
   message_manager.dispach_messages();
 
