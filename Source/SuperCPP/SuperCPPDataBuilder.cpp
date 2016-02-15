@@ -38,8 +38,8 @@ DataBuilder& DataBuilder::write_int64( Int64 value )
 
 DataBuilder& DataBuilder::write_int64x( Int64 value )
 {
-  write_int32x( value >> 32 );
-  return write_int32x( value );
+  write_int32x( (Int32) (value >> 32) );
+  return write_int32x( (Int32) value );
 }
 
 DataBuilder& DataBuilder::write_logical( bool value )
@@ -102,7 +102,7 @@ DataBuilder& DataBuilder::write_int32x( Int32 value )
 
 DataBuilder& DataBuilder::write_string( const char* characters, int character_count )
 {
-  if (character_count == -1) character_count = strlen( characters );
+  if (character_count == -1) character_count = (int) strlen( characters );
 
   write_int32x( character_count );
   for (int i=0; i<character_count; ++i)

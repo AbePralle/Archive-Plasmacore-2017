@@ -4,8 +4,19 @@
 
 $module Plasmacore
 
+$requisite Byte[].clear()
+$requisite Byte[].reserve(Int32)
+
 class MessageManager [requisite singleton]
+  PROPERTIES
+    receive_buffer = Byte[]
+
   METHODS
     method init_object
       println "MessageManager init_object()"
+
+    method update->Byte[] [requisite]
+      # 'receive_buffer' has already been filled with incoming message bytes
+      println receive_buffer
+      return null
 endClass

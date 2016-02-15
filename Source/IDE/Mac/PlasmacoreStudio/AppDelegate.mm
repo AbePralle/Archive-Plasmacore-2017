@@ -28,7 +28,10 @@
   
   Rogue_configure( argc, argv );
   Rogue_launch();
-  
+
+  message_manager.message( "Hello World!" ).send();
+  message_manager.dispach_messages();
+
   delete argv;
 }
 

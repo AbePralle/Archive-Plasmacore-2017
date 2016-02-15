@@ -13,6 +13,15 @@
 		309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */; };
 		30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F91A1C70187200F89F60 /* RogueProgram.cpp */; };
 		30E2F91E1C703EDC00F89F60 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E2F91D1C703EDC00F89F60 /* AppKit.framework */; };
+		30E2F92C1C715A4C00F89F60 /* Messaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9281C715A4C00F89F60 /* Messaging.cpp */; };
+		30E2F92D1C715A4C00F89F60 /* PlasmacoreView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */; };
+		30E2F9311C715B1E00F89F60 /* StarbrightGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9301C715B1E00F89F60 /* StarbrightGLView.mm */; };
+		30E2F9361C715B3200F89F60 /* Starbright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9321C715B3200F89F60 /* Starbright.cpp */; };
+		30E2F9371C715B3200F89F60 /* StarbrightGLRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9341C715B3200F89F60 /* StarbrightGLRenderer.cpp */; };
+		30E2F9461C715B5500F89F60 /* SuperCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9391C715B5500F89F60 /* SuperCPP.cpp */; };
+		30E2F9471C715B5500F89F60 /* SuperCPPDataBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F93C1C715B5500F89F60 /* SuperCPPDataBuilder.cpp */; };
+		30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F93E1C715B5500F89F60 /* SuperCPPDataReader.cpp */; };
+		30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +35,29 @@
 		30E2F91A1C70187200F89F60 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30E2F91B1C70187200F89F60 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30E2F91D1C703EDC00F89F60 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		30E2F9281C715A4C00F89F60 /* Messaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Messaging.cpp; path = ../../../Plasmacore/Mac/Messaging.cpp; sourceTree = "<group>"; };
+		30E2F9291C715A4C00F89F60 /* Messaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Messaging.h; path = ../../../Plasmacore/Mac/Messaging.h; sourceTree = "<group>"; };
+		30E2F92A1C715A4C00F89F60 /* PlasmacoreView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreView.h; path = ../../../Plasmacore/Mac/PlasmacoreView.h; sourceTree = "<group>"; };
+		30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreView.mm; path = ../../../Plasmacore/Mac/PlasmacoreView.mm; sourceTree = "<group>"; };
+		30E2F92F1C715B1E00F89F60 /* StarbrightGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGLView.h; path = ../../../Starbright/Mac/StarbrightGLView.h; sourceTree = "<group>"; };
+		30E2F9301C715B1E00F89F60 /* StarbrightGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = StarbrightGLView.mm; path = ../../../Starbright/Mac/StarbrightGLView.mm; sourceTree = "<group>"; };
+		30E2F9321C715B3200F89F60 /* Starbright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Starbright.cpp; path = ../../../Starbright/CPP/Starbright.cpp; sourceTree = "<group>"; };
+		30E2F9331C715B3200F89F60 /* Starbright.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Starbright.h; path = ../../../Starbright/CPP/Starbright.h; sourceTree = "<group>"; };
+		30E2F9341C715B3200F89F60 /* StarbrightGLRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StarbrightGLRenderer.cpp; path = ../../../Starbright/CPP/StarbrightGLRenderer.cpp; sourceTree = "<group>"; };
+		30E2F9351C715B3200F89F60 /* StarbrightGLRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGLRenderer.h; path = ../../../Starbright/CPP/StarbrightGLRenderer.h; sourceTree = "<group>"; };
+		30E2F9391C715B5500F89F60 /* SuperCPP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPP.cpp; path = ../../../SuperCPP/SuperCPP.cpp; sourceTree = "<group>"; };
+		30E2F93A1C715B5500F89F60 /* SuperCPP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPP.h; path = ../../../SuperCPP/SuperCPP.h; sourceTree = "<group>"; };
+		30E2F93B1C715B5500F89F60 /* SuperCPPBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPBuilder.h; path = ../../../SuperCPP/SuperCPPBuilder.h; sourceTree = "<group>"; };
+		30E2F93C1C715B5500F89F60 /* SuperCPPDataBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPDataBuilder.cpp; path = ../../../SuperCPP/SuperCPPDataBuilder.cpp; sourceTree = "<group>"; };
+		30E2F93D1C715B5500F89F60 /* SuperCPPDataBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPDataBuilder.h; path = ../../../SuperCPP/SuperCPPDataBuilder.h; sourceTree = "<group>"; };
+		30E2F93E1C715B5500F89F60 /* SuperCPPDataReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPDataReader.cpp; path = ../../../SuperCPP/SuperCPPDataReader.cpp; sourceTree = "<group>"; };
+		30E2F93F1C715B5500F89F60 /* SuperCPPDataReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPDataReader.h; path = ../../../SuperCPP/SuperCPPDataReader.h; sourceTree = "<group>"; };
+		30E2F9401C715B5500F89F60 /* SuperCPPIntTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPIntTable.h; path = ../../../SuperCPP/SuperCPPIntTable.h; sourceTree = "<group>"; };
+		30E2F9411C715B5500F89F60 /* SuperCPPList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPList.h; path = ../../../SuperCPP/SuperCPPList.h; sourceTree = "<group>"; };
+		30E2F9421C715B5500F89F60 /* SuperCPPResourceBank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPResourceBank.h; path = ../../../SuperCPP/SuperCPPResourceBank.h; sourceTree = "<group>"; };
+		30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPStringBuilder.cpp; path = ../../../SuperCPP/SuperCPPStringBuilder.cpp; sourceTree = "<group>"; };
+		30E2F9441C715B5500F89F60 /* SuperCPPStringBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringBuilder.h; path = ../../../SuperCPP/SuperCPPStringBuilder.h; sourceTree = "<group>"; };
+		30E2F9451C715B5500F89F60 /* SuperCPPStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringTable.h; path = ../../../SuperCPP/SuperCPPStringTable.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +92,9 @@
 		309EFD841C6FFD1B00FB5651 /* PlasmacoreStudio */ = {
 			isa = PBXGroup;
 			children = (
+				30E2F9381C715B3E00F89F60 /* SuperCPP */,
+				30E2F92E1C715B0D00F89F60 /* Starbright */,
+				30E2F9211C7159C200F89F60 /* Plasmacore */,
 				30E2F91A1C70187200F89F60 /* RogueProgram.cpp */,
 				30E2F91B1C70187200F89F60 /* RogueProgram.h */,
 				309EFD851C6FFD1B00FB5651 /* AppDelegate.h */,
@@ -78,6 +113,50 @@
 				309EFD891C6FFD1B00FB5651 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		30E2F9211C7159C200F89F60 /* Plasmacore */ = {
+			isa = PBXGroup;
+			children = (
+				30E2F9281C715A4C00F89F60 /* Messaging.cpp */,
+				30E2F9291C715A4C00F89F60 /* Messaging.h */,
+				30E2F92A1C715A4C00F89F60 /* PlasmacoreView.h */,
+				30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */,
+			);
+			name = Plasmacore;
+			sourceTree = "<group>";
+		};
+		30E2F92E1C715B0D00F89F60 /* Starbright */ = {
+			isa = PBXGroup;
+			children = (
+				30E2F9321C715B3200F89F60 /* Starbright.cpp */,
+				30E2F9331C715B3200F89F60 /* Starbright.h */,
+				30E2F9341C715B3200F89F60 /* StarbrightGLRenderer.cpp */,
+				30E2F9351C715B3200F89F60 /* StarbrightGLRenderer.h */,
+				30E2F92F1C715B1E00F89F60 /* StarbrightGLView.h */,
+				30E2F9301C715B1E00F89F60 /* StarbrightGLView.mm */,
+			);
+			name = Starbright;
+			sourceTree = "<group>";
+		};
+		30E2F9381C715B3E00F89F60 /* SuperCPP */ = {
+			isa = PBXGroup;
+			children = (
+				30E2F9391C715B5500F89F60 /* SuperCPP.cpp */,
+				30E2F93A1C715B5500F89F60 /* SuperCPP.h */,
+				30E2F93B1C715B5500F89F60 /* SuperCPPBuilder.h */,
+				30E2F93C1C715B5500F89F60 /* SuperCPPDataBuilder.cpp */,
+				30E2F93D1C715B5500F89F60 /* SuperCPPDataBuilder.h */,
+				30E2F93E1C715B5500F89F60 /* SuperCPPDataReader.cpp */,
+				30E2F93F1C715B5500F89F60 /* SuperCPPDataReader.h */,
+				30E2F9401C715B5500F89F60 /* SuperCPPIntTable.h */,
+				30E2F9411C715B5500F89F60 /* SuperCPPList.h */,
+				30E2F9421C715B5500F89F60 /* SuperCPPResourceBank.h */,
+				30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */,
+				30E2F9441C715B5500F89F60 /* SuperCPPStringBuilder.h */,
+				30E2F9451C715B5500F89F60 /* SuperCPPStringTable.h */,
+			);
+			name = SuperCPP;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,8 +228,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */,
+				30E2F92C1C715A4C00F89F60 /* Messaging.cpp in Sources */,
+				30E2F92D1C715A4C00F89F60 /* PlasmacoreView.mm in Sources */,
+				30E2F9461C715B5500F89F60 /* SuperCPP.cpp in Sources */,
 				309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */,
+				30E2F9311C715B1E00F89F60 /* StarbrightGLView.mm in Sources */,
+				30E2F9471C715B5500F89F60 /* SuperCPPDataBuilder.cpp in Sources */,
+				30E2F9361C715B3200F89F60 /* Starbright.cpp in Sources */,
+				30E2F9371C715B3200F89F60 /* StarbrightGLRenderer.cpp in Sources */,
 				30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */,
+				30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */,
 				309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -253,6 +341,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"../../Starbright/**",
+					../../SuperCPP,
+				);
 				INFOPLIST_FILE = PlasmacoreStudio/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.abepralle.PlasmacoreStudio;
@@ -265,6 +357,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"../../Starbright/**",
+					../../SuperCPP,
+				);
 				INFOPLIST_FILE = PlasmacoreStudio/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.abepralle.PlasmacoreStudio;

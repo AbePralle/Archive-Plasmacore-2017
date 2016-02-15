@@ -88,7 +88,7 @@ StringBuilder& StringBuilder::print( char value )
 
 StringBuilder& StringBuilder::print( const char* value )
 {
-  int len = strlen( value );
+  int len = (int) strlen( value );
   reserve( len );
   --value;
   for (char ch=*(++value); ch; ch=*(++value))

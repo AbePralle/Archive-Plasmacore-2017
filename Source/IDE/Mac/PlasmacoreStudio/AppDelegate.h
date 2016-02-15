@@ -7,9 +7,12 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#include "Messaging.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
-
+{
+  MessageManager message_manager;
+}
 
 @end
 
