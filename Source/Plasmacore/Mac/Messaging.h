@@ -15,7 +15,9 @@ struct MessageManager;
 //=============================================================================
 struct Message
 {
-  static const int INT32 = 0;
+  static const int DATA_TYPE_ID_DEFINITION = 0;
+  static const int DATA_TYPE_ID            = 1;
+  static const int DATA_TYPE_INT32         = 5;
 
   MessageManager* manager;
   int             start_position;
@@ -25,8 +27,10 @@ struct Message
 
   void send();
 
-  Message& write_id( const char* name );  // INTERNAL - don't call directly
   Message& write_int32( const char* name, int value );
+
+  // INTERNAL USE ONLY
+  Message& write_id( const char* name );
 };
 
 //=============================================================================

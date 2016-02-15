@@ -41,12 +41,14 @@ Message& Message::write_id( const char* name )
   StringTableEntry<int>* entry = manager->name_to_id.find( name );
   if (entry)
   {
+    manager->data.write_int32x( DATA_TYPE_ID );
     manager->data.write_int32x( entry->value );
   }
   else
   {
     int id = manager->name_to_id.count;
     manager->name_to_id[ name ] = id;
+    manager->data.write_int32x( DATA_TYPE_ID_DEFINITION );
     manager->data.write_int32x( id );
     manager->data.write_string( name );
   }
@@ -58,7 +60,7 @@ Message& Message::write_int32( const char* name, int value )
   if (start_position == -1) return *this;
 
   write_id( name );
-  manager->data.write_int32x( INT32 );
+  manager->data.write_int32x( DATA_TYPE_INT32 );
   manager->data.write_int32x( value );
   return *this;
 }

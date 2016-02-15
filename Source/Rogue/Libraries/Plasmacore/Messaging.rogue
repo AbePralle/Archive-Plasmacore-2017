@@ -29,16 +29,24 @@ class MessageManager [requisite singleton]
 
       while (reader.has_another)
         message.init( reader )
+println "$ x:$ y:$" (message.type,message.get_int32("x"),message.get_int32("y"))
       endWhile
 
       return null
 endClass
 
 class Message
+  ENUMERATE
+    DATA_TYPE_ID_DEFINITION = 0
+    DATA_TYPE_ID            = 1
+    DATA_TYPE_INT32         = 5
+
   PROPERTIES
-    type   : String
-    reader = BufferedDataReader()
-    offset : Int32
+    type    : String
+    reader  = BufferedDataReader()
+    buffer  = StringBuilder()
+    keys    = String[]
+    offsets = Int32[]
 
   METHODS
     method init
@@ -48,17 +56,70 @@ class Message
       source.read( reader.buffer.clear, size )
       reader.reset( 0 )
       type = read_id
-      println "Got type " + type
+      while (index_another) noAction
 
+    method index_another->Logical
+      if (not reader.has_another) return false
+      local key    = read_id
+      local offset = reader.position
+      keys.add( key )
+      offsets.add( offset )
+
+      # Skip value
+      local data_type = reader.read_int32x
+      which (data_type)
+        case DATA_TYPE_ID_DEFINITION, DATA_TYPE_ID
+          read_id
+
+        case DATA_TYPE_INT32
+          reader.read_int32x
+
+        others
+          print   "Message encoding error: "
+          println "unsupported data type $." (data_type)
+      endWhich
+      return true
+
+    method get_int32( name:String, default=0:Int32 )->Int32
+      local i = keys.locate( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_INT32
+          return reader.read_int32x
+      endWhich
+
+      return default
+
+    # INTERNAL USE
     method read_id->String
-      local id = reader.read_int32x
-      local name = MessageManager.received_id_to_name[ id ]
-      if (not name)
-println "Reading name for id " + id
-        name = reader.read_string
-        MessageManager.received_id_to_name[ id ] = name
-      endIf
-println "name:" + name
-      return name
+      local id_type = reader.read_int32x
+      which (id_type)
+        case DATA_TYPE_ID_DEFINITION
+          local id = reader.read_int32x
+          local name = MessageManager.received_id_to_name[ id ]
+          if (name)
+            reader.read_string( buffer.clear )  # skip the definition
+          else
+            name = reader.read_string( buffer.clear )->String
+            MessageManager.received_id_to_name[ id ] = name
+          endIf
+          return name
+
+        case DATA_TYPE_ID
+          local id = reader.read_int32x
+          local name = MessageManager.received_id_to_name[ id ]
+          if (name) return name
+          print   "Message encoding error: "
+          println "undefined ID."
+
+        others
+          print   "Message encoding error: "
+          println "ID expected."
+      endWhich
+
+      return "Undefined"
+
 endClass
 
