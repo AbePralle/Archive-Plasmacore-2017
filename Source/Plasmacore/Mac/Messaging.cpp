@@ -31,7 +31,8 @@ Message::Message( MessageManager* manager, DataReader* main_reader )
   main_reader->position += size;
 
   type = read_id( &reader );
-  printf( "Native layer received message %s\n", type );
+printf( "Native layer received message %s\n", type );
+  while (index_another(&reader)) {}
 }
 
 Message::~Message()
@@ -41,6 +42,12 @@ Message::~Message()
 
 void Message::send()
 {
+  if ( !is_outgoing )
+  {
+    printf( "ERROR: native layer attempting to send() an incoming message.\n" );
+    return;
+  }
+
   if (start_position == -1) return;  // already sent
 
   int cur_pos = manager->data.count;
@@ -54,8 +61,52 @@ void Message::send()
   start_position = -1;
 }
 
+bool Message::require_outgoing( bool flag )
+{
+  if (flag == is_outgoing) return true;
+
+  if (flag)
+  {
+    printf( "ERROR: native layer attempting to read an outgoing message.\n" );
+  }
+  else
+  {
+    printf( "ERROR: native layer attempting to write to an incoming message.\n" );
+  }
+  return false;
+}
+
+bool  Message::index_another( DataReader* reader )
+{
+  if ( !require_outgoing(false) ) return false;
+  if (not reader->has_another())  return false;
+
+  manager->keys.add( read_id(reader) );
+  manager->offsets.add( reader->position );
+printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
+
+  int data_type = reader->read_int32x();
+  switch (data_type)
+  {
+    case DATA_TYPE_ID_DEFINITION:
+    case DATA_TYPE_ID:
+      read_id( reader );
+      return true;
+
+    case DATA_TYPE_INT32:
+      reader->read_int32x();
+      return true;
+
+    default:
+      printf( "ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
+      return false;
+  }
+}
+
 char* Message::read_id( DataReader* reader )
 {
+  if ( !require_outgoing(false) ) return (char*) "Undefined";
+
   switch (reader->read_int32x())
   {
     case DATA_TYPE_ID_DEFINITION:
@@ -101,6 +152,7 @@ char* Message::read_id( DataReader* reader )
 
 Message& Message::write_id( const char* name )
 {
+  if ( !require_outgoing(true) ) return *this;
   if (start_position == -1) return *this;
 
   StringTableEntry<int>* entry = manager->outgoing_name_to_id.find( name );
@@ -163,6 +215,8 @@ void MessageManager::dispach_messages()
     while (reader.has_another())
     {
       this->reader = &reader;
+      keys.clear();
+      offsets.clear();
       Message( this, &reader );
     }
   }

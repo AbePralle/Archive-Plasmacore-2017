@@ -42,6 +42,8 @@ struct Message
   // Incoming Message API
 
   // INTERNAL USE ONLY
+  bool     require_outgoing( bool flag );
+  bool     index_another( DataReader* reader );
   char*    read_id( DataReader* reader );
   Message& write_id( const char* name );
 };
