@@ -61,15 +61,43 @@ void Message::send()
   start_position = -1;
 }
 
-int Message::get_int32( const char* name, int default_value )
+int Message::get_string( const char* name, StringBuilder& buffer )
 {
+  if ( !confirm_incoming() ) return 0;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return 0;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_STRING:
+    case DATA_TYPE_BYTES:
+      return reader.read_string( buffer );
+
+    default:
+      return 0;
+  }
+}
+
+Real64 Message::get_real64( const char* name, Real64 default_value )
+{
+  if ( !confirm_incoming() ) return default_value;
+
   int i = manager->locate_key( name );
   if (i == -1) return default_value;
 
   DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
   switch (reader.read_int32x())
   {
+    case DATA_TYPE_REAL64:
+      return reader.read_real64();
+
+    case DATA_TYPE_INT64:
+      return reader.read_int64x();
+
     case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
       return reader.read_int32x();
 
     default:
@@ -77,9 +105,110 @@ int Message::get_int32( const char* name, int default_value )
   }
 }
 
+Int64 Message::get_int64( const char* name, Int64 default_value )
+{
+  if ( !confirm_incoming() ) return default_value;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return default_value;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_REAL64:
+      return (Int64) reader.read_real64();
+
+    case DATA_TYPE_INT64:
+      return reader.read_int64x();
+
+    case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
+      return reader.read_int32x();
+
+    default:
+      return default_value;
+  }
+}
+
+int Message::get_int32( const char* name, int default_value )
+{
+  if ( !confirm_incoming() ) return default_value;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return default_value;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_REAL64:
+      return (int) reader.read_real64();
+
+    case DATA_TYPE_INT64:
+      return (int) reader.read_int64x();
+
+    case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
+      return reader.read_int32x();
+
+    default:
+      return default_value;
+  }
+}
+
+bool Message::get_logical( const char* name, bool default_value )
+{
+  if ( !confirm_incoming() ) return default_value;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return default_value;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_REAL64:
+      return reader.read_real64() != 0;
+
+    case DATA_TYPE_INT64:
+      return reader.read_int64x() != 0;
+
+    case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
+      return reader.read_int32x() != 0;
+
+    default:
+      return default_value;
+  }
+}
+
+int Message::get_bytes( const char* name, Builder<Byte>& bytes )
+{
+  if ( !confirm_incoming() ) return 0;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return 0;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_STRING:
+    case DATA_TYPE_BYTES:
+    {
+      int count = reader.read_int32x();
+      for (int i=0; i<count; ++i)
+      {
+        bytes.add( reader.read_int32x() );
+      }
+      return count;
+    }
+
+    default:
+      return 0;
+  }
+}
+
 bool  Message::index_another( DataReader* reader )
 {
-  if ( !require_outgoing(false) ) return false;
+  if ( !confirm_incoming() ) return false;
   if (not reader->has_another())  return false;
 
   manager->keys.add( read_id(reader) );
@@ -94,7 +223,24 @@ printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
       read_id( reader );
       return true;
 
+    case DATA_TYPE_STRING:
+    case DATA_TYPE_BYTES:
+    {
+      StringBuilder buffer;
+      reader->read_string( buffer );
+      return true;
+    }
+
+    case DATA_TYPE_REAL64:
+      reader->read_real64();
+      return true;
+
+    case DATA_TYPE_INT64:
+      reader->read_int64x();
+      return true;
+
     case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
       reader->read_int32x();
       return true;
 
@@ -106,7 +252,7 @@ printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
 
 char* Message::read_id( DataReader* reader )
 {
-  if ( !require_outgoing(false) ) return (char*) "Undefined";
+  if ( !confirm_incoming() ) return (char*) "Undefined";
 
   switch (reader->read_int32x())
   {
@@ -151,24 +297,25 @@ char* Message::read_id( DataReader* reader )
   }
 }
 
-bool Message::require_outgoing( bool flag )
+bool Message::confirm_incoming()
 {
-  if (flag == is_outgoing) return true;
+  if ( !is_outgoing ) return true;
 
-  if (flag)
-  {
-    printf( "ERROR: native layer attempting to read an outgoing message.\n" );
-  }
-  else
-  {
-    printf( "ERROR: native layer attempting to write to an incoming message.\n" );
-  }
+  printf( "ERROR: native layer attempting to write to an incoming message.\n" );
+  return false;
+}
+
+bool Message::confirm_outgoing()
+{
+  if (is_outgoing) return true;
+
+  printf( "ERROR: native layer attempting to read an outgoing message.\n" );
   return false;
 }
 
 Message& Message::write_id( const char* name )
 {
-  if ( !require_outgoing(true) ) return *this;
+  if ( !confirm_outgoing() ) return *this;
   if (start_position == -1) return *this;
 
   StringTableEntry<int>* entry = manager->outgoing_name_to_id.find( name );
@@ -188,14 +335,93 @@ Message& Message::write_id( const char* name )
   return *this;
 }
 
+Message& Message::set_string( const char* name, const char* value )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_STRING );
+  manager->data.write_string( value );
+  return *this;
+}
+
+Message& Message::set_string( const char* name, Character* characters, int count )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_STRING );
+  manager->data.write_string( characters, count );
+  return *this;
+}
+
+Message& Message::set_string( const char* name, StringBuilder& value )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_STRING );
+  manager->data.write_string( value.data, value.count );
+  return *this;
+}
+
+Message& Message::set_real64( const char* name, Real64 value )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_REAL64 );
+  manager->data.write_real64( value );
+  return *this;
+}
+
+Message& Message::set_int64( const char* name, Int64 value )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_INT64 );
+  manager->data.write_int64x( value );
+  return *this;
+}
+
 Message& Message::set_int32( const char* name, int value )
 {
-  if (start_position == -1) return *this;
+  if (start_position == -1 || !confirm_outgoing()) return *this;
 
   write_id( name );
   manager->data.write_int32x( DATA_TYPE_INT32 );
   manager->data.write_int32x( value );
   return *this;
+}
+
+Message& Message::set_logical( const char* name, bool value )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_LOGICAL );
+  manager->data.write_int32x( value ? 1 : 0 );
+  return *this;
+}
+
+Message& Message::set_bytes( const char* name, Byte* bytes, int count )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_BYTES );
+  manager->data.write_int32x( count );
+  for (int i=0; i<count; ++i)
+  {
+    manager->data.write_byte( bytes[i] );
+  }
+  return *this;
+}
+
+Message& Message::set_bytes( const char* name, Builder<Byte>& bytes )
+{
+  return set_bytes( name, bytes.data, bytes.count );
 }
 
 //=============================================================================

@@ -64,33 +64,93 @@ class Message
   ENUMERATE
     DATA_TYPE_ID_DEFINITION = 0
     DATA_TYPE_ID            = 1
+    DATA_TYPE_STRING        = 2
+    DATA_TYPE_REAL64        = 3
+    DATA_TYPE_INT64         = 4
     DATA_TYPE_INT32         = 5
+    DATA_TYPE_LOGICAL       = 6
+    DATA_TYPE_REAL64_LIST   = 7
+    DATA_TYPE_INT32_LIST    = 8
+    DATA_TYPE_BYTES         = 9
 
   PROPERTIES
     type    : String
 
   METHODS
+    method get_string( name:String, default="":String )->String
+      println "ERROR: get_string() called on $." (type_name)
+      return default
+
+    method get_string( name:String, buffer:StringBuilder )->StringBuilder
+      println "ERROR: get_string() called on $." (type_name)
+      return buffer
+
+    method get_real64( name:String, default=0:Real64 )->Real64
+      println "ERROR: get_real64() called on $." (type_name)
+      return default
+
+    method get_int64( name:String, default=0:Int64 )->Int64
+      println "ERROR: get_int64() called on $." (type_name)
+      return default
+
     method get_int32( name:String, default=0:Int32 )->Int32
-      return 0
+      println "ERROR: get_int32() called on $." (type_name)
+      return default
+
+    method get_logical( name:String, default=false:Logical )->Logical
+      println "ERROR: get_logical() called on $." (type_name)
+      return default
+
+    method get_real64_list( name:String, list=Real64[]:Real64[] )->Real64[]
+      println "ERROR: get_real64_list() called on $." (type_name)
+      return list
+
+    method get_int32_list( name:String, list=Int32[]:Int32[] )->Int32[]
+      println "ERROR: get_int32_list() called on $." (type_name)
+      return list
+
+    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
+      println "ERROR: get_bytes() called on $." (type_name)
+      return bytes
 
     method set_id( name:String, value:String )->this
-      println "ERROR: set_id() called on a $." (type_name)
+      println "ERROR: set_id() called on $." (type_name)
+      return this
+
+    method set_string( name:String, value:String )->this
+      println "ERROR: set_string() called on $." (type_name)
+      return this
+
+    method set_real64( name:String, value:Real64 )->this
+      println "ERROR: set_real64() called on $." (type_name)
+      return this
+
+    method set_int64( name:String, value:Int64 )->this
+      println "ERROR: set_int64() called on $." (type_name)
       return this
 
     method set_int32( name:String, value:Int32 )->this
-      println "ERROR: set_int32() called on a $." (type_name)
+      println "ERROR: set_int32() called on $." (type_name)
+      return this
+
+    method set_logical( name:String, value:Logical )->this
+      println "ERROR: set_logical() called on $." (type_name)
+      return this
+
+    method set_bytes( name:String, bytes:Byte[] )->this
+      println "ERROR: set_bytes() called on $." (type_name)
       return this
 
     method send
-      println "ERROR: send() called on a $." (type_name)
+      println "ERROR: send() called on $." (type_name)
 endClass
 
 class IncomingMessage : Message
   PROPERTIES
-    reader  = BufferedDataReader()
-    buffer  = StringBuilder()
-    keys    = String[]
-    offsets = Int32[]
+    reader    = BufferedDataReader()
+    id_buffer = StringBuilder()
+    keys      = String[]
+    offsets   = Int32[]
 
   METHODS
     method init
@@ -102,17 +162,134 @@ class IncomingMessage : Message
       type = read_id
       while (index_another) noAction
 
+    method get_string( name:String, default="":String )->String
+      local i = keys.locate_last( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+          return reader.read_string
+      endWhich
+
+      return default
+
+    method get_string( name:String, buffer:StringBuilder )->StringBuilder
+      return buffer
+
+    method get_real64( name:String, default=0:Real64 )->Real64
+      local i = keys.locate_last( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_REAL64
+          return reader.read_real64
+
+        case DATA_TYPE_INT64
+          return reader.read_int64x
+
+        case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
+          return reader.read_int32x
+      endWhich
+
+      return default
+
+    method get_int64( name:String, default=0:Int64 )->Int64
+      local i = keys.locate_last( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_REAL64
+          return reader.read_real64->Int64
+
+        case DATA_TYPE_INT64
+          return reader.read_int64x
+
+        case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
+          return reader.read_int32x
+      endWhich
+
+      return default
+
     method get_int32( name:String, default=0:Int32 )->Int32
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_INT32
+        case DATA_TYPE_REAL64
+          return reader.read_real64->Int32
+
+        case DATA_TYPE_INT64
+          return reader.read_int64x->Int32
+
+        case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
           return reader.read_int32x
       endWhich
 
       return default
+
+    method get_logical( name:String, default=false:Logical )->Logical
+      local i = keys.locate_last( name )
+      if (not i.exists) return default
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_REAL64
+          return reader.read_real64 != 0
+
+        case DATA_TYPE_INT64
+          return reader.read_int64x != 0
+
+        case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
+          return reader.read_int32x != 0
+      endWhich
+
+      return default
+
+    method get_real64_list( name:String, list=Real64[]:Real64[] )->Real64[]
+      local i = keys.locate_last( name )
+      if (not i.exists) return list
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_REAL64_LIST
+          local count = reader.read_int32x
+          list.reserve( count )
+          forEach (1..count) list.add( reader.read_real64 )
+      endWhich
+
+      return list
+
+    method get_int32_list( name:String, list=Int32[]:Int32[] )->Int32[]
+      local i = keys.locate_last( name )
+      if (not i.exists) return list
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_INT32
+          local count = reader.read_int32x
+          list.reserve( count )
+          forEach (1..count) list.add( reader.read_int32x )
+      endWhich
+
+      return list
+
+    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
+      local i = keys.locate_last( name )
+      if (not i.exists) return bytes
+
+      reader.reset( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+          local count = reader.read_int32x
+          bytes.reserve( count )
+          forEach (1..count) bytes.add( reader.read_int32x->Byte )
+      endWhich
+
+      return bytes
 
     # INTERNAL USE
     method index_another->Logical
@@ -128,7 +305,18 @@ class IncomingMessage : Message
         case DATA_TYPE_ID_DEFINITION, DATA_TYPE_ID
           read_id
 
-        case DATA_TYPE_INT32
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+          read_id
+          local count = reader.read_int32x
+          forEach (1..count) reader.read_int32x
+
+        case DATA_TYPE_REAL64
+          reader.read_real64
+
+        case DATA_TYPE_INT64
+          reader.read_int64x
+
+        case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
           reader.read_int32x
 
         others
@@ -143,9 +331,9 @@ class IncomingMessage : Message
           local id = reader.read_int32x
           local name = MessageManager.incoming_id_to_name[ id ]
           if (name)
-            reader.read_string( buffer.clear )  # skip the definition
+            reader.read_string( id_buffer.clear )  # skip the definition
           else
-            name = reader.read_string( buffer.clear )->String
+            name = reader.read_string( id_buffer.clear )->String
             MessageManager.incoming_id_to_name[ id ] = name
           endIf
           return name
@@ -177,9 +365,7 @@ class OutgoingMessage : Message
       sent = false
       writer.clear
 
-println "new message type " + type
       write_id( type )
-println "wrote id, size " + writer.buffer.count
 
     method write_id( value:String )->this
       local entry = MessageManager.outgoing_name_to_id.find( value )
@@ -198,9 +384,35 @@ println "wrote id, size " + writer.buffer.count
     method set_id( name:String, value:String )->this
       return write_id( name ).write_id( value )
 
+    method set_string( name:String, value:String )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
+      return this
+
+    method set_real64( name:String, value:Real64 )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
+      return this
+
+    method set_int64( name:String, value:Int64 )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
+      return this
+
     method set_int32( name:String, value:Int32 )->this
       write_id( name )
       writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
+      return this
+
+    method set_logical( name:String, value:Logical )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
+      return this
+
+    method set_bytes( name:String, bytes:Byte[] )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
+      forEach (b in bytes) writer.write_int32x( b )
       return this
 
     method send
