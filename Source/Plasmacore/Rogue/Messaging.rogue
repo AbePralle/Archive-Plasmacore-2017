@@ -46,6 +46,8 @@ class MessageManager [requisite singleton]
         if (incoming_message.type == "Marco!")
           message( "Polo!" ).set_int32("z",3).send
           message( "Danger Dawg" ).set_int32("x",4).set_int32("x",5).send
+          message( "primitives" ).set_real64("real64",pi).set_int64("int64",2->Int64^60).set_logical("logical",true).send
+          message( "lists" ).set_string("string","hi").set_byte_list("byte_list",Byte[][0,255]).set_real64_list("real64_list",Real64[][pi/2,2*pi]).set_int32_list("int32_list",[-1,10999]).send
         endIf
       endWhile
 
@@ -71,12 +73,15 @@ class Message
     DATA_TYPE_LOGICAL       = 6
     DATA_TYPE_REAL64_LIST   = 7
     DATA_TYPE_INT32_LIST    = 8
-    DATA_TYPE_BYTES         = 9
+    DATA_TYPE_BYTE_LIST     = 9
 
   PROPERTIES
     type    : String
 
   METHODS
+    method contains( name:String )->Logical
+      println "ERROR: contains() called on $." (type_name)
+
     method get_string( name:String, default="":String )->String
       println "ERROR: get_string() called on $." (type_name)
       return default
@@ -109,8 +114,8 @@ class Message
       println "ERROR: get_int32_list() called on $." (type_name)
       return list
 
-    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
-      println "ERROR: get_bytes() called on $." (type_name)
+    method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
+      println "ERROR: get_byte_list() called on $." (type_name)
       return bytes
 
     method set_id( name:String, value:String )->this
@@ -137,8 +142,16 @@ class Message
       println "ERROR: set_logical() called on $." (type_name)
       return this
 
-    method set_bytes( name:String, bytes:Byte[] )->this
-      println "ERROR: set_bytes() called on $." (type_name)
+    method set_real64_list( name:String, list:Real64[] )->this
+      println "ERROR: set_real64_list() called on $." (type_name)
+      return this
+
+    method set_int32_list( name:String, list:Int32[] )->this
+      println "ERROR: set_int32_list() called on $." (type_name)
+      return this
+
+    method set_byte_list( name:String, bytes:Byte[] )->this
+      println "ERROR: set_byte_list() called on $." (type_name)
       return this
 
     method send
@@ -162,13 +175,16 @@ class IncomingMessage : Message
       type = read_id
       while (index_another) noAction
 
+    method contains( name:String )->Logical
+      return keys.locate(name).exists
+
     method get_string( name:String, default="":String )->String
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST
           return reader.read_string
       endWhich
 
@@ -269,7 +285,7 @@ class IncomingMessage : Message
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_INT32
+        case DATA_TYPE_INT32_LIST
           local count = reader.read_int32x
           list.reserve( count )
           forEach (1..count) list.add( reader.read_int32x )
@@ -277,13 +293,13 @@ class IncomingMessage : Message
 
       return list
 
-    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
+    method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
       local i = keys.locate_last( name )
       if (not i.exists) return bytes
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST
           local count = reader.read_int32x
           bytes.reserve( count )
           forEach (1..count) bytes.add( reader.read_int32x->Byte )
@@ -305,7 +321,7 @@ class IncomingMessage : Message
         case DATA_TYPE_ID_DEFINITION, DATA_TYPE_ID
           read_id
 
-        case DATA_TYPE_STRING, DATA_TYPE_BYTES
+        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST, DATA_TYPE_INT32_LIST
           read_id
           local count = reader.read_int32x
           forEach (1..count) reader.read_int32x
@@ -318,6 +334,11 @@ class IncomingMessage : Message
 
         case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
           reader.read_int32x
+
+        case DATA_TYPE_REAL64_LIST
+          read_id
+          local count = reader.read_int32x
+          forEach (1..count) reader.read_real64
 
         others
           println "ERROR: unsupported message data type $." (data_type)
@@ -409,9 +430,21 @@ class OutgoingMessage : Message
       writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
       return this
 
-    method set_bytes( name:String, bytes:Byte[] )->this
+    method set_real64_list( name:String, list:Real64[] )->this
       write_id( name )
-      writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
+      writer.write_int32x( Message.DATA_TYPE_REAL64_LIST ).write_int32x( list.count )
+      forEach (value in list) writer.write_real64( value )
+      return this
+
+    method set_int32_list( name:String, list:Int32[] )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_INT32_LIST ).write_int32x( list.count )
+      forEach (value in list) writer.write_int32x( value )
+      return this
+
+    method set_byte_list( name:String, bytes:Byte[] )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_BYTE_LIST ).write_int32x( bytes.count )
       forEach (b in bytes) writer.write_int32x( b )
       return this
 

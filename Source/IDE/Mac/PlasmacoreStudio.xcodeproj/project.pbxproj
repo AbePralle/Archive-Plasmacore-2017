@@ -11,9 +11,9 @@
 		309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD891C6FFD1B00FB5651 /* main.m */; };
 		309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */; };
 		309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */; };
+		30CB045C1C73B93300A767FC /* Messaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB045A1C73B93300A767FC /* Messaging.cpp */; };
 		30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F91A1C70187200F89F60 /* RogueProgram.cpp */; };
 		30E2F91E1C703EDC00F89F60 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E2F91D1C703EDC00F89F60 /* AppKit.framework */; };
-		30E2F92C1C715A4C00F89F60 /* Messaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9281C715A4C00F89F60 /* Messaging.cpp */; };
 		30E2F92D1C715A4C00F89F60 /* PlasmacoreView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */; };
 		30E2F9311C715B1E00F89F60 /* StarbrightGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9301C715B1E00F89F60 /* StarbrightGLView.mm */; };
 		30E2F9361C715B3200F89F60 /* Starbright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9321C715B3200F89F60 /* Starbright.cpp */; };
@@ -32,11 +32,11 @@
 		309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		309EFD8E1C6FFD1B00FB5651 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		309EFD901C6FFD1B00FB5651 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30CB045A1C73B93300A767FC /* Messaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Messaging.cpp; path = ../../../Plasmacore/CPP/Messaging.cpp; sourceTree = "<group>"; };
+		30CB045B1C73B93300A767FC /* Messaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Messaging.h; path = ../../../Plasmacore/CPP/Messaging.h; sourceTree = "<group>"; };
 		30E2F91A1C70187200F89F60 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30E2F91B1C70187200F89F60 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30E2F91D1C703EDC00F89F60 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		30E2F9281C715A4C00F89F60 /* Messaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Messaging.cpp; path = ../../../Plasmacore/Mac/Messaging.cpp; sourceTree = "<group>"; };
-		30E2F9291C715A4C00F89F60 /* Messaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Messaging.h; path = ../../../Plasmacore/Mac/Messaging.h; sourceTree = "<group>"; };
 		30E2F92A1C715A4C00F89F60 /* PlasmacoreView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreView.h; path = ../../../Plasmacore/Mac/PlasmacoreView.h; sourceTree = "<group>"; };
 		30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreView.mm; path = ../../../Plasmacore/Mac/PlasmacoreView.mm; sourceTree = "<group>"; };
 		30E2F92F1C715B1E00F89F60 /* StarbrightGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGLView.h; path = ../../../Starbright/Mac/StarbrightGLView.h; sourceTree = "<group>"; };
@@ -118,8 +118,8 @@
 		30E2F9211C7159C200F89F60 /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
-				30E2F9281C715A4C00F89F60 /* Messaging.cpp */,
-				30E2F9291C715A4C00F89F60 /* Messaging.h */,
+				30CB045A1C73B93300A767FC /* Messaging.cpp */,
+				30CB045B1C73B93300A767FC /* Messaging.h */,
 				30E2F92A1C715A4C00F89F60 /* PlasmacoreView.h */,
 				30E2F92B1C715A4C00F89F60 /* PlasmacoreView.mm */,
 			);
@@ -228,8 +228,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30CB045C1C73B93300A767FC /* Messaging.cpp in Sources */,
 				30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */,
-				30E2F92C1C715A4C00F89F60 /* Messaging.cpp in Sources */,
 				30E2F92D1C715A4C00F89F60 /* PlasmacoreView.mm in Sources */,
 				30E2F9461C715B5500F89F60 /* SuperCPP.cpp in Sources */,
 				309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */,

@@ -61,6 +61,12 @@ void Message::send()
   start_position = -1;
 }
 
+bool Message::contains( const char* name )
+{
+  if ( !confirm_incoming() ) return 0;
+  return manager->locate_key( name ) != -1;
+}
+
 int Message::get_string( const char* name, StringBuilder& buffer )
 {
   if ( !confirm_incoming() ) return 0;
@@ -72,7 +78,7 @@ int Message::get_string( const char* name, StringBuilder& buffer )
   switch (reader.read_int32x())
   {
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTES:
+    case DATA_TYPE_BYTE_LIST:
       return reader.read_string( buffer );
 
     default:
@@ -119,6 +125,7 @@ Int64 Message::get_int64( const char* name, Int64 default_value )
       return (Int64) reader.read_real64();
 
     case DATA_TYPE_INT64:
+      printf( "READING INT64X\n" );
       return reader.read_int64x();
 
     case DATA_TYPE_INT32:
@@ -180,7 +187,7 @@ bool Message::get_logical( const char* name, bool default_value )
   }
 }
 
-int Message::get_bytes( const char* name, Builder<Byte>& bytes )
+int Message::get_byte_list( const char* name, Builder<Byte>& bytes )
 {
   if ( !confirm_incoming() ) return 0;
 
@@ -191,12 +198,62 @@ int Message::get_bytes( const char* name, Builder<Byte>& bytes )
   switch (reader.read_int32x())
   {
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTES:
+    case DATA_TYPE_BYTE_LIST:
     {
       int count = reader.read_int32x();
       for (int i=0; i<count; ++i)
       {
         bytes.add( reader.read_int32x() );
+      }
+      return count;
+    }
+
+    default:
+      return 0;
+  }
+}
+
+int Message::get_real64_list( const char* name, Builder<Real64>& list )
+{
+  if ( !confirm_incoming() ) return 0;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return 0;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_REAL64_LIST:
+    {
+      int count = reader.read_int32x();
+      for (int i=0; i<count; ++i)
+      {
+        list.add( reader.read_real64() );
+      }
+      return count;
+    }
+
+    default:
+      return 0;
+  }
+}
+
+int Message::get_int32_list( const char* name, Builder<Int32>& list )
+{
+  if ( !confirm_incoming() ) return 0;
+
+  int i = manager->locate_key( name );
+  if (i == -1) return 0;
+
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
+  {
+    case DATA_TYPE_INT32_LIST:
+    {
+      int count = reader.read_int32x();
+      for (int i=0; i<count; ++i)
+      {
+        list.add( reader.read_int32x() );
       }
       return count;
     }
@@ -224,7 +281,7 @@ printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
       return true;
 
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTES:
+    case DATA_TYPE_BYTE_LIST:
     {
       StringBuilder buffer;
       reader->read_string( buffer );
@@ -243,6 +300,20 @@ printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
     case DATA_TYPE_LOGICAL:
       reader->read_int32x();
       return true;
+
+    case DATA_TYPE_REAL64_LIST:
+    {
+      int count = reader->read_int32x();
+      for (int i=0; i<count; ++i) reader->read_real64();
+      return true;
+    }
+
+    case DATA_TYPE_INT32_LIST:
+    {
+      int count = reader->read_int32x();
+      for (int i=0; i<count; ++i) reader->read_int32x();
+      return true;
+    }
 
     default:
       printf( "ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
@@ -405,12 +476,40 @@ Message& Message::set_logical( const char* name, bool value )
   return *this;
 }
 
-Message& Message::set_bytes( const char* name, Byte* bytes, int count )
+Message& Message::set_real64_list( const char* name, Real64* list, int count )
 {
   if (start_position == -1 || !confirm_outgoing()) return *this;
 
   write_id( name );
-  manager->data.write_int32x( DATA_TYPE_BYTES );
+  manager->data.write_int32x( DATA_TYPE_REAL64_LIST );
+  manager->data.write_int32x( count );
+  for (int i=0; i<count; ++i)
+  {
+    manager->data.write_real64( list[i] );
+  }
+  return *this;
+}
+
+Message& Message::set_int32_list( const char* name, Int32* list, int count )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_INT32_LIST );
+  manager->data.write_int32x( count );
+  for (int i=0; i<count; ++i)
+  {
+    manager->data.write_int32x( list[i] );
+  }
+  return *this;
+}
+
+Message& Message::set_byte_list( const char* name, Byte* bytes, int count )
+{
+  if (start_position == -1 || !confirm_outgoing()) return *this;
+
+  write_id( name );
+  manager->data.write_int32x( DATA_TYPE_BYTE_LIST );
   manager->data.write_int32x( count );
   for (int i=0; i<count; ++i)
   {
@@ -419,9 +518,9 @@ Message& Message::set_bytes( const char* name, Byte* bytes, int count )
   return *this;
 }
 
-Message& Message::set_bytes( const char* name, Builder<Byte>& bytes )
+Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 {
-  return set_bytes( name, bytes.data, bytes.count );
+  return set_byte_list( name, bytes.data, bytes.count );
 }
 
 //=============================================================================
@@ -460,8 +559,43 @@ void MessageManager::dispach_messages()
       keys.clear();
       offsets.clear();
       Message m( this, &reader );
-printf( "message x:%d\n", m.get_int32("x") );
-printf( "message z:%d\n", m.get_int32("z") );
+      if (m.contains("x"))
+      {
+        printf( "message x:%d\n", m.get_int32("x") );
+        printf( "message z:%d\n", m.get_int32("z") );
+      }
+      if (m.contains("real64"))
+      {
+        printf( "real64: %lf\n", m.get_real64("real64") );
+        printf( "int64: %lld\n", m.get_int64("int64") );
+        printf( "logical: %d\n", m.get_logical("logical") );
+      }
+      if (m.contains("byte_list"))
+      {
+        Builder<Byte> byte_list;
+        m.get_byte_list( "byte_list", byte_list );
+        printf( "BYTES:\n" );
+        for (int i=0; i<byte_list.count; ++i)
+        {
+          printf( "%d\n", byte_list[i] );
+        }
+
+        Builder<Real64> real64_list;
+        m.get_real64_list( "real64_list", real64_list );
+        printf( "REAL64s:\n" );
+        for (int i=0; i<real64_list.count; ++i)
+        {
+          printf( "%lf\n", real64_list[i] );
+        }
+
+        Builder<Int32> int32_list;
+        m.get_int32_list( "int32_list", int32_list );
+        printf( "INT32s:\n" );
+        for (int i=0; i<int32_list.count; ++i)
+        {
+          printf( "%d\n", int32_list[i] );
+        }
+      }
     }
   }
 }
