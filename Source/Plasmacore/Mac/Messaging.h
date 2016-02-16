@@ -37,14 +37,15 @@ struct Message
 
   // Outgoing Message API
   void     send();
-  Message& write_int32( const char* name, int value );
+  Message& set_int32( const char* name, int value );
 
   // Incoming Message API
+  int      get_int32( const char* name, int default_value=0 );
 
   // INTERNAL USE ONLY
-  bool     require_outgoing( bool flag );
   bool     index_another( DataReader* reader );
   char*    read_id( DataReader* reader );
+  bool     require_outgoing( bool flag );
   Message& write_id( const char* name );
 };
 
@@ -66,6 +67,9 @@ struct MessageManager
 
   void    dispach_messages();
   Message message( const char* name );
+
+  // INTERNAL USE ONLY
+  int      locate_key( const char* name );
 };
 
 #endif // MESSAGING_H

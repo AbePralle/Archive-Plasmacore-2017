@@ -44,7 +44,8 @@ class MessageManager [requisite singleton]
         incoming_message.init( reader )
         println "$ x:$ y:$" (incoming_message.type,incoming_message.get_int32("x"),incoming_message.get_int32("y"))
         if (incoming_message.type == "Marco!")
-          message( "Polo!" ).send
+          message( "Polo!" ).set_int32("z",3).send
+          message( "Danger Dawg" ).set_int32("x",4).set_int32("x",5).send
         endIf
       endWhile
 
@@ -72,6 +73,14 @@ class Message
     method get_int32( name:String, default=0:Int32 )->Int32
       return 0
 
+    method set_id( name:String, value:String )->this
+      println "ERROR: set_id() called on a $." (type_name)
+      return this
+
+    method set_int32( name:String, value:Int32 )->this
+      println "ERROR: set_int32() called on a $." (type_name)
+      return this
+
     method send
       println "ERROR: send() called on a $." (type_name)
 endClass
@@ -94,7 +103,7 @@ class IncomingMessage : Message
       while (index_another) noAction
 
     method get_int32( name:String, default=0:Int32 )->Int32
-      local i = keys.locate( name )
+      local i = keys.locate_last( name )
       if (not i.exists) return default
 
       reader.reset( offsets[i.value] )
@@ -168,19 +177,34 @@ class OutgoingMessage : Message
       sent = false
       writer.clear
 
-      local entry = MessageManager.outgoing_name_to_id.find( type )
+println "new message type " + type
+      write_id( type )
+println "wrote id, size " + writer.buffer.count
+
+    method write_id( value:String )->this
+      local entry = MessageManager.outgoing_name_to_id.find( value )
       if (entry)
         writer.write_int32x( Message.DATA_TYPE_ID )
         writer.write_int32x( entry.value )
       else
         writer.write_int32x( Message.DATA_TYPE_ID_DEFINITION )
         local id = MessageManager.outgoing_name_to_id.count
-        MessageManager.outgoing_name_to_id[ type ] = id
+        MessageManager.outgoing_name_to_id[ value ] = id
         writer.write_int32x( id )
-        writer.write_string( type )
+        writer.write_string( value )
       endIf
+      return this
+
+    method set_id( name:String, value:String )->this
+      return write_id( name ).write_id( value )
+
+    method set_int32( name:String, value:Int32 )->this
+      write_id( name )
+      writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
+      return this
 
     method send
+println "Sending message size " + writer.buffer.count
       MessageManager.writer.write_int32( writer.buffer.count )
       MessageManager.writer.write( writer.buffer )
       sent = true

@@ -61,19 +61,20 @@ void Message::send()
   start_position = -1;
 }
 
-bool Message::require_outgoing( bool flag )
+int Message::get_int32( const char* name, int default_value )
 {
-  if (flag == is_outgoing) return true;
+  int i = manager->locate_key( name );
+  if (i == -1) return default_value;
 
-  if (flag)
+  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
+  switch (reader.read_int32x())
   {
-    printf( "ERROR: native layer attempting to read an outgoing message.\n" );
+    case DATA_TYPE_INT32:
+      return reader.read_int32x();
+
+    default:
+      return default_value;
   }
-  else
-  {
-    printf( "ERROR: native layer attempting to write to an incoming message.\n" );
-  }
-  return false;
 }
 
 bool  Message::index_another( DataReader* reader )
@@ -150,6 +151,21 @@ char* Message::read_id( DataReader* reader )
   }
 }
 
+bool Message::require_outgoing( bool flag )
+{
+  if (flag == is_outgoing) return true;
+
+  if (flag)
+  {
+    printf( "ERROR: native layer attempting to read an outgoing message.\n" );
+  }
+  else
+  {
+    printf( "ERROR: native layer attempting to write to an incoming message.\n" );
+  }
+  return false;
+}
+
 Message& Message::write_id( const char* name )
 {
   if ( !require_outgoing(true) ) return *this;
@@ -172,7 +188,7 @@ Message& Message::write_id( const char* name )
   return *this;
 }
 
-Message& Message::write_int32( const char* name, int value )
+Message& Message::set_int32( const char* name, int value )
 {
   if (start_position == -1) return *this;
 
@@ -217,7 +233,9 @@ void MessageManager::dispach_messages()
       this->reader = &reader;
       keys.clear();
       offsets.clear();
-      Message( this, &reader );
+      Message m( this, &reader );
+printf( "message x:%d\n", m.get_int32("x") );
+printf( "message z:%d\n", m.get_int32("z") );
     }
   }
 }
@@ -225,5 +243,14 @@ void MessageManager::dispach_messages()
 Message MessageManager::message( const char* name )
 {
   return Message( this ).write_id( name );
+}
+
+int MessageManager::locate_key( const char* name )
+{
+  for (int i=keys.count; --i >=0; )
+  {
+    if (0 == strcmp(keys[i],name)) return i;
+  }
+  return -1;
 }
 
