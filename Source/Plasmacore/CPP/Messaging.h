@@ -66,7 +66,7 @@ struct Message
   // Incoming use only
   const char*     type;
 
-  Message( Manager* manager );
+  Message( Manager* manager, int serial_number );
   Message( Manager* manager, DataReader* reader );
   ~Message();
 
@@ -136,7 +136,8 @@ struct Manager
 
 
   // INTERNAL USE ONLY
-  int     locate_key( const char* name );
+  int         locate_key( const char* name );
+  static void reply_handler( Message m, void* context );
 };
 
 } // namespace Messaging

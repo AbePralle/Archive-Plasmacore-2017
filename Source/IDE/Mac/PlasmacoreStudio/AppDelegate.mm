@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 #include "RogueProgram.h"
+#include "SuperCPPStringBuilder.h"
+using namespace SuperCPP;
 
 using namespace Messaging;
 
@@ -16,11 +18,19 @@ using namespace Messaging;
 @property (weak) IBOutlet NSWindow *window;
 @end
 
-void test_callback( Message m, void* context )
+void yin_listener( Message m, void* context )
 {
   printf( "%s (%d)\n", m.type, (int)(intptr_t)context );
 
   m.reply().set_int32( "value", m.get_int32("value") + 1 ).send();
+
+}
+
+void marco_callback( Message m, void* context )
+{
+  StringBuilder buffer;
+  m.get_string( "message", buffer );
+  printf( "%s\n", buffer.as_c_string() );
 
 }
 
@@ -39,7 +49,8 @@ void test_callback( Message m, void* context )
   Rogue_configure( argc, argv );
   Rogue_launch();
 
-  message_manager.add_listener( "Yin", test_callback, (void*) 3 );
+  message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
+  message_manager.message( "Marco" ).send_rsvp( marco_callback );
   message_manager.dispach_messages();
   message_manager.dispach_messages();
 

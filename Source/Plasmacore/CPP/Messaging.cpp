@@ -14,8 +14,8 @@ namespace Messaging
 //=============================================================================
 //  Message
 //=============================================================================
-Message::Message( Manager* manager )
-  : manager(manager)
+Message::Message( Manager* manager, int serial_number )
+  : manager(manager), serial_number(serial_number)
 {
   start_position = manager->data.count;
   manager->data.write_int32( 0 );  // placeholder for message size
@@ -545,6 +545,7 @@ Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 Manager::Manager()
   : next_serial_number(1)
 {
+  add_listener( "<reply>", reply_handler, this );
 }
 
 Manager::~Manager()
@@ -594,6 +595,7 @@ void Manager::dispach_messages()
       offsets.clear();
       Message m( this, &reader );
 
+//printf( "Native received message type %s\n", m.type );
       if (listeners.contains(m.type))
       {
         List<CallbackWithContext>* list = listeners[ m.type ];
@@ -610,7 +612,7 @@ void Manager::dispach_messages()
 Message Manager::message( const char* name, int serial_number )
 {
   if (serial_number == -1) serial_number = next_serial_number++;
-  Message result( this );
+  Message result( this, serial_number );
   result.write_id( name );
   data.write_int32x( serial_number );
   return result;
@@ -644,6 +646,17 @@ int Manager::locate_key( const char* name )
     if (0 == strcmp(keys[i],name)) return i;
   }
   return -1;
+}
+
+void Manager::reply_handler( Message m, void* context )
+{
+  Manager* manager = (Manager*) context;
+  int      n = m.serial_number;
+  if (manager->reply_callbacks_by_serial_number.contains(n))
+  {
+    CallbackWithContext& info = manager->reply_callbacks_by_serial_number[ n ];
+    info.callback( m, info.context );
+  }
 }
 
 } // namespace Messaging
