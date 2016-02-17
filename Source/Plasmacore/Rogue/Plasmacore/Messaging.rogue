@@ -64,8 +64,7 @@ class MessageManager [requisite singleton]
       writer.write( m.writer.buffer )
 
     method send_rsvp( m:OutgoingMessage, callback:Function(Message) )
-      writer.write_int32( m.writer.buffer.count )
-      writer.write( m.writer.buffer )
+      send( m )
       reply_callbacks_by_serial_number[ m.serial_number ] = callback
 
     method update->Byte[] [requisite]
@@ -108,7 +107,7 @@ class Message
 
   PROPERTIES
     type          : String
-    serial_number : String
+    serial_number : Int32
 
   METHODS
     method contains( name:String )->Logical
@@ -140,6 +139,9 @@ class Message
 
     method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
       throw UnsupportedOperationError( "$::get_byte_list()" (type_name) )
+
+    method reply->Message
+      throw UnsupportedOperationError( "$::reply()" (type_name) )
 
     method set_string( name:String, value:String )->this
       throw UnsupportedOperationError( "$::set_string()" (type_name) )
@@ -385,6 +387,9 @@ class IncomingMessage : Message
       endWhich
 
       return "Undefined"
+
+    method reply->Message
+      return MessageManager.message( "<reply>", serial_number )
 
 endClass
 

@@ -8,10 +8,13 @@
 #include <cstring>
 using namespace std;
 
+namespace Messaging
+{
+
 //=============================================================================
 //  Message
 //=============================================================================
-Message::Message( MessageManager* manager )
+Message::Message( Manager* manager )
   : manager(manager)
 {
   start_position = manager->data.count;
@@ -19,7 +22,7 @@ Message::Message( MessageManager* manager )
   is_outgoing = true;
 }
 
-Message::Message( MessageManager* manager, DataReader* main_reader )
+Message::Message( Manager* manager, DataReader* main_reader )
   : manager(manager)
 {
   is_outgoing = false;
@@ -32,7 +35,6 @@ Message::Message( MessageManager* manager, DataReader* main_reader )
 
   type = read_id( &reader );
   serial_number = reader.read_int32x();
-printf( "Native layer received message #%d %s\n", serial_number, type );
   while (index_another(&reader)) {}
 }
 
@@ -41,15 +43,20 @@ Message::~Message()
   if (is_outgoing) send();  // just in case; no effect if message already sent
 }
 
-void Message::send()
+Message Message::reply()
+{
+  return manager->message( "<reply>", serial_number );
+}
+
+bool Message::send()
 {
   if ( !is_outgoing )
   {
     printf( "ERROR: native layer attempting to send() an incoming message.\n" );
-    return;
+    return false;
   }
 
-  if (start_position == -1) return;  // already sent
+  if (start_position == -1) return false;  // already sent
 
   int cur_pos = manager->data.count;
   manager->data.count = start_position;
@@ -60,7 +67,16 @@ void Message::send()
   manager->data.count = cur_pos;
 
   start_position = -1;
+  return true;
 }
+
+bool Message::send_rsvp( Callback callback, void* context )
+{
+  if ( !send() ) return false;
+  manager->reply_callbacks_by_serial_number[ serial_number ] = CallbackWithContext(callback,context);
+  return true;
+}
+
 
 bool Message::contains( const char* name )
 {
@@ -271,7 +287,6 @@ bool  Message::index_another( DataReader* reader )
 
   manager->keys.add( read_id(reader) );
   manager->offsets.add( reader->position );
-printf( "Indexing %s at %d\n", manager->keys.last(), manager->offsets.last() );
 
   int data_type = reader->read_int32x();
   switch (data_type)
@@ -525,25 +540,38 @@ Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 }
 
 //=============================================================================
-//  MessageManager
+//  Manager
 //=============================================================================
-MessageManager::MessageManager()
+Manager::Manager()
   : next_serial_number(1)
 {
 }
 
-MessageManager::~MessageManager()
+Manager::~Manager()
 {
-  // Delete all entries in incoming_id_to_name table
   while (incoming_id_to_name.count)
   {
     delete incoming_id_to_name.remove_another();
   }
+
+  while (listeners.count)
+  {
+    delete listeners.remove_another();
+  }
 }
 
-void MessageManager::dispach_messages()
+void Manager::add_listener( const char* message_name, Callback listener, void* context )
 {
-  // Copy message bytes into Rogue-side MessageManager.incoming_buffer.
+  if ( !listeners.contains(message_name) )
+  {
+    listeners[ message_name ] = new List<CallbackWithContext>();
+  }
+  listeners[ message_name ]->add( CallbackWithContext(listener,context) );
+}
+
+void Manager::dispach_messages()
+{
+  // Copy message bytes into Rogue-side Manager.incoming_buffer.
   RogueClassPlasmacore__MessageManager* mm =
     (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
   RogueByteList* list = mm->incoming_buffer;
@@ -554,7 +582,7 @@ void MessageManager::dispach_messages()
 
   data.clear();
 
-  // Call Rogue MessageManager.update()
+  // Call Rogue Manager.update()
   list = RoguePlasmacore__MessageManager__update( mm );
   if (list)
   {
@@ -565,48 +593,21 @@ void MessageManager::dispach_messages()
       keys.clear();
       offsets.clear();
       Message m( this, &reader );
-      if (m.contains("x"))
-      {
-        printf( "message x:%d\n", m.get_int32("x") );
-        printf( "message z:%d\n", m.get_int32("z") );
-      }
-      if (m.contains("real64"))
-      {
-        printf( "real64: %lf\n", m.get_real64("real64") );
-        printf( "int64: %lld\n", m.get_int64("int64") );
-        printf( "logical: %d\n", m.get_logical("logical") );
-      }
-      if (m.contains("byte_list"))
-      {
-        Builder<Byte> byte_list;
-        m.get_byte_list( "byte_list", byte_list );
-        printf( "BYTES:\n" );
-        for (int i=0; i<byte_list.count; ++i)
-        {
-          printf( "%d\n", byte_list[i] );
-        }
 
-        Builder<Real64> real64_list;
-        m.get_real64_list( "real64_list", real64_list );
-        printf( "REAL64s:\n" );
-        for (int i=0; i<real64_list.count; ++i)
+      if (listeners.contains(m.type))
+      {
+        List<CallbackWithContext>* list = listeners[ m.type ];
+        for (int i=list->count; --i >= 0; )
         {
-          printf( "%lf\n", real64_list[i] );
-        }
-
-        Builder<Int32> int32_list;
-        m.get_int32_list( "int32_list", int32_list );
-        printf( "INT32s:\n" );
-        for (int i=0; i<int32_list.count; ++i)
-        {
-          printf( "%d\n", int32_list[i] );
+          CallbackWithContext& info = list->data[i];
+          info.callback( m, info.context );
         }
       }
     }
   }
 }
 
-Message MessageManager::message( const char* name, int serial_number )
+Message Manager::message( const char* name, int serial_number )
 {
   if (serial_number == -1) serial_number = next_serial_number++;
   Message result( this );
@@ -615,7 +616,28 @@ Message MessageManager::message( const char* name, int serial_number )
   return result;
 }
 
-int MessageManager::locate_key( const char* name )
+void Manager::remove_listener( const char* message_name, Callback listener, void* context )
+{
+  if (listeners.contains(message_name))
+  {
+    List<CallbackWithContext>* list = listeners[ message_name ];
+    for (int i=list->count; --i >= 0; )
+    {
+      CallbackWithContext& info = list->data[i];
+      if (info.callback == listener && info.context == context)
+      {
+        list->remove_at( i );
+        return;
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+// INTERNAL
+//-----------------------------------------------------------------------------
+int Manager::locate_key( const char* name )
 {
   for (int i=keys.count; --i >=0; )
   {
@@ -623,4 +645,6 @@ int MessageManager::locate_key( const char* name )
   }
   return -1;
 }
+
+} // namespace Messaging
 

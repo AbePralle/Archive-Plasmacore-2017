@@ -9,10 +9,20 @@
 #import "AppDelegate.h"
 #include "RogueProgram.h"
 
+using namespace Messaging;
+
 @interface AppDelegate ()
 
 @property (weak) IBOutlet NSWindow *window;
 @end
+
+void test_callback( Message m, void* context )
+{
+  printf( "%s (%d)\n", m.type, (int)(intptr_t)context );
+
+  m.reply().set_int32( "value", m.get_int32("value") + 1 ).send();
+
+}
 
 @implementation AppDelegate
 
@@ -29,9 +39,8 @@
   Rogue_configure( argc, argv );
   Rogue_launch();
 
-  message_manager.message( "Hello World!" ).send();
-  message_manager.message( "Marco!" ).set_int32("x",42).set_int32("y",43).send();
-  message_manager.message( "Hello World!" ).send();
+  message_manager.add_listener( "Yin", test_callback, (void*) 3 );
+  message_manager.dispach_messages();
   message_manager.dispach_messages();
 
   delete argv;

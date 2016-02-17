@@ -15,17 +15,26 @@ remake:
 clean:
 	rm -rf Source/Rogue/Build
 
+pull:
+	@# Run the local makefile if it exists
+	@[ -f Local.mk ] && make -f Local.mk pull || true
+
 update:
 	@# Run the local makefile if it exists
-	@[ -f Local.mk ] && make -f Local.mk || true
+	@[ -f Local.mk ] && make -f Local.mk update || true
 
 #------------------------------------------------------------------------------
 # Sample Local.mk file - do not commit to repo
 
 #ABES_LIBS = ..
 #
-#all:
-#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
-#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
-#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
+#pull:
+# cd $(ABES_LIBS)/SuperCPP && git pull
+# cd $(ABES_LIBS)/ImageIO && git pull
+# cd $(ABES_LIBS)/Starbright && git pull
+#
+#update:
+# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
+# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
+# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
 

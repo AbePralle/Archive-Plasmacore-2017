@@ -123,7 +123,7 @@ struct List
     }
     else
     {
-      int result = data[ index ];
+      DataType result = data[ index ];
       memmove( data + index, data + index + 1, (--count - index) * sizeof(DataType) );
       return result;
     }

@@ -11,7 +11,7 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
-  MessageManager message_manager;
+  Messaging::Manager message_manager;
 }
 
 @end

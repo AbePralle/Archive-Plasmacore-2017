@@ -341,7 +341,7 @@ struct StringTable
       }
     }
 
-    return 0;
+    return DataType();
   }
 };
 

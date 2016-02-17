@@ -308,7 +308,7 @@ struct IntTable
       }
     }
 
-    return 0;
+    return DataType();
   }
 };
 

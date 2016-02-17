@@ -12,7 +12,33 @@
 #include "SuperCPPList.h"
 using namespace SuperCPP;
 
-struct MessageManager;
+namespace Messaging
+{
+
+struct Message;
+struct Manager;
+
+//=============================================================================
+//  Callback
+//=============================================================================
+typedef void (*Callback)( Message m, void* context );
+
+
+//=============================================================================
+//  CallbackWithContext
+//=============================================================================
+struct CallbackWithContext
+{
+  Callback callback;
+  void*           context;
+
+  CallbackWithContext() : callback(0), context(0) {}
+
+  CallbackWithContext( Callback callback, void* context )
+    : callback(callback), context(context)
+  {
+  }
+};
 
 //=============================================================================
 //  Message
@@ -30,7 +56,7 @@ struct Message
   static const int DATA_TYPE_INT32_LIST    = 8;
   static const int DATA_TYPE_BYTE_LIST     = 9;
 
-  MessageManager* manager;
+  Manager* manager;
   bool            is_outgoing;
   int             serial_number;
 
@@ -40,12 +66,14 @@ struct Message
   // Incoming use only
   const char*     type;
 
-  Message( MessageManager* manager );
-  Message( MessageManager* manager, DataReader* reader );
+  Message( Manager* manager );
+  Message( Manager* manager, DataReader* reader );
   ~Message();
 
   // Outgoing Message API
-  void     send();
+  Message  reply();
+  bool     send();
+  bool     send_rsvp( Callback callback, void* context=0 );
   Message& set_string( const char* name, const char* value );
   Message& set_string( const char* name, Character* characters, int count );
   Message& set_string( const char* name, StringBuilder& value );
@@ -78,10 +106,11 @@ struct Message
 };
 
 //=============================================================================
-//  MessageManager
+//  Manager
 //=============================================================================
-struct MessageManager
+struct Manager
 {
+  // PROPERTIES
   int              next_serial_number;
 
   DataBuilder      data;
@@ -93,14 +122,23 @@ struct MessageManager
   List<char*>      keys;
   List<int>        offsets;
 
-  MessageManager();
-  ~MessageManager();
+  StringTable<List<CallbackWithContext>*>  listeners;
+  IntTable<CallbackWithContext>            reply_callbacks_by_serial_number;
 
+  // METHODS
+  Manager();
+  ~Manager();
+
+  void    add_listener( const char* message_name, Callback listener, void* context=0 );
   void    dispach_messages();
   Message message( const char* name, int serial_number=-1 );
+  void    remove_listener( const char* message_name, Callback listener, void* context=0 );
+
 
   // INTERNAL USE ONLY
-  int      locate_key( const char* name );
+  int     locate_key( const char* name );
 };
+
+} // namespace Messaging
 
 #endif // MESSAGING_H
