@@ -43,6 +43,20 @@ Message::~Message()
   if (is_outgoing) send();  // just in case; no effect if message already sent
 }
 
+bool Message::push()
+{
+  if ( !send() ) return false;
+  manager->dispach_messages();
+  return true;
+}
+
+bool Message::push_rsvp( Callback callback, void* context )
+{
+  if ( !send_rsvp(callback,context) ) return false;
+  manager->dispach_messages();
+  return true;
+}
+
 Message Message::reply()
 {
   return manager->message( "<reply>", serial_number );

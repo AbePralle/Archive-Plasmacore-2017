@@ -30,7 +30,7 @@ typedef void (*Callback)( Message m, void* context );
 struct CallbackWithContext
 {
   Callback callback;
-  void*           context;
+  void*    context;
 
   CallbackWithContext() : callback(0), context(0) {}
 
@@ -71,6 +71,8 @@ struct Message
   ~Message();
 
   // Outgoing Message API
+  bool     push();      // sends the message and has the manager dispatch pending messages
+  bool     push_rsvp( Callback callback, void* context=0 );
   Message  reply();
   bool     send();
   bool     send_rsvp( Callback callback, void* context=0 );
@@ -111,7 +113,7 @@ struct Message
 struct Manager
 {
   // PROPERTIES
-  int              next_serial_number;
+  int  next_serial_number;
 
   DataBuilder      data;
   StringTable<int> outgoing_name_to_id;
