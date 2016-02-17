@@ -27,11 +27,17 @@ class MessageManager [requisite singleton]
     outgoing_message = OutgoingMessage()
       # Recycled for outgoing messages
 
-    listeners = Table<<String,Function(Message)[]>>()
+    listeners                        = Table<<String,Function(Message)[]>>()
+    reply_callbacks_by_serial_number = Table<<Int32,Function(Message)>>()
 
   METHODS
     method init_object
-      println "MessageManager init_object()"
+      add_listener( "<reply>",
+        function(m:Message)
+          local callback = MessageManager.reply_callbacks_by_serial_number.remove( m.serial_number )
+          if (callback) callback( m )
+        endFunction
+      )
 
     method add_listener( type:String, listener:Function(Message) )
       local list = listeners[ type ]
@@ -52,6 +58,15 @@ class MessageManager [requisite singleton]
       endIf
       outgoing_message.init( type, serial_number.value )
       return outgoing_message
+
+    method send( m:OutgoingMessage )
+      writer.write_int32( m.writer.buffer.count )
+      writer.write( m.writer.buffer )
+
+    method send_rsvp( m:OutgoingMessage, callback:Function(Message) )
+      writer.write_int32( m.writer.buffer.count )
+      writer.write( m.writer.buffer )
+      reply_callbacks_by_serial_number[ m.serial_number ] = callback
 
     method update->Byte[] [requisite]
       # 'reader' has already been set up to decode 'incoming_buffer', which 
@@ -152,6 +167,9 @@ class Message
 
     method send
       throw UnsupportedOperationError( "$::send()" (type_name) )
+
+    method send_rsvp( callback:Function(Message) )
+      throw UnsupportedOperationError( "$::send_rsvp()" (type_name) )
 endClass
 
 class IncomingMessage : Message
@@ -445,9 +463,11 @@ class OutgoingMessage : Message
       return this
 
     method send
-println "Sending message size " + writer.buffer.count
-      MessageManager.writer.write_int32( writer.buffer.count )
-      MessageManager.writer.write( writer.buffer )
+      MessageManager.send( this )
+      sent = true
+
+    method send_rsvp( callback:Function(Message) )
+      MessageManager.send_rsvp( this, callback )
       sent = true
 endClass
 
