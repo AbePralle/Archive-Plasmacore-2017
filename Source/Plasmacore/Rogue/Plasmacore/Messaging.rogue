@@ -16,6 +16,7 @@ class MessageManager [requisite singleton]
     beta_writer     = BufferedDataWriter()
     writer          = alpha_writer : BufferedDataWriter
 
+    next_serial_number = 1
 
     incoming_id_to_name = Table<<Int32,String>>()
     outgoing_name_to_id = Table<<String,Int32>>()
@@ -26,12 +27,30 @@ class MessageManager [requisite singleton]
     outgoing_message = OutgoingMessage()
       # Recycled for outgoing messages
 
+    listeners = Table<<String,Function(Message)[]>>()
+
   METHODS
     method init_object
       println "MessageManager init_object()"
 
-    method message( type:String )->Message
-      outgoing_message.init( type )
+    method add_listener( type:String, listener:Function(Message) )
+      local list = listeners[ type ]
+      if (not list)
+        list = Function(Message)[]
+        listeners[ type ] = list
+      endIf
+      list.add( listener )
+
+    method remove_listener( type:String, listener:Function(Message) )
+      local list = listeners[ type ]
+      if (list) list.remove( listener )
+
+    method message( type:String, serial_number=null:Int32? )->Message
+      if (not serial_number.exists)
+        serial_number = next_serial_number
+        ++next_serial_number
+      endIf
+      outgoing_message.init( type, serial_number.value )
       return outgoing_message
 
     method update->Byte[] [requisite]
@@ -42,12 +61,9 @@ class MessageManager [requisite singleton]
 
       while (reader.has_another)
         incoming_message.init( reader )
-        println "$ x:$ y:$" (incoming_message.type,incoming_message.get_int32("x"),incoming_message.get_int32("y"))
-        if (incoming_message.type == "Marco!")
-          message( "Polo!" ).set_int32("z",3).send
-          message( "Danger Dawg" ).set_int32("x",4).set_int32("x",5).send
-          message( "primitives" ).set_real64("real64",pi).set_int64("int64",2->Int64^60).set_logical("logical",true).send
-          message( "lists" ).set_string("string","hi").set_byte_list("byte_list",Byte[][0,255]).set_real64_list("real64_list",Real64[][pi/2,2*pi]).set_int32_list("int32_list",[-1,10999]).send
+        local list = listeners[ incoming_message.type ]
+        if (list)
+          forEach (listener in list step -1) listener( incoming_message )
         endIf
       endWhile
 
@@ -76,86 +92,66 @@ class Message
     DATA_TYPE_BYTE_LIST     = 9
 
   PROPERTIES
-    type    : String
+    type          : String
+    serial_number : String
 
   METHODS
     method contains( name:String )->Logical
-      println "ERROR: contains() called on $." (type_name)
+      throw UnsupportedOperationError( "$::contains()" (type_name) )
 
     method get_string( name:String, default="":String )->String
-      println "ERROR: get_string() called on $." (type_name)
-      return default
+      throw UnsupportedOperationError( "$::get_string()" (type_name) )
 
     method get_string( name:String, buffer:StringBuilder )->StringBuilder
-      println "ERROR: get_string() called on $." (type_name)
-      return buffer
+      throw UnsupportedOperationError( "$::get_string()" (type_name) )
 
     method get_real64( name:String, default=0:Real64 )->Real64
-      println "ERROR: get_real64() called on $." (type_name)
-      return default
+      throw UnsupportedOperationError( "$::get_real64()" (type_name) )
 
     method get_int64( name:String, default=0:Int64 )->Int64
-      println "ERROR: get_int64() called on $." (type_name)
-      return default
+      throw UnsupportedOperationError( "$::get_int64()" (type_name) )
 
     method get_int32( name:String, default=0:Int32 )->Int32
-      println "ERROR: get_int32() called on $." (type_name)
-      return default
+      throw UnsupportedOperationError( "$::get_int32()" (type_name) )
 
     method get_logical( name:String, default=false:Logical )->Logical
-      println "ERROR: get_logical() called on $." (type_name)
-      return default
+      throw UnsupportedOperationError( "$::get_logical()" (type_name) )
 
     method get_real64_list( name:String, list=Real64[]:Real64[] )->Real64[]
-      println "ERROR: get_real64_list() called on $." (type_name)
-      return list
+      throw UnsupportedOperationError( "$::get_real64_list()" (type_name) )
 
     method get_int32_list( name:String, list=Int32[]:Int32[] )->Int32[]
-      println "ERROR: get_int32_list() called on $." (type_name)
-      return list
+      throw UnsupportedOperationError( "$::get_int32_list()" (type_name) )
 
     method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
-      println "ERROR: get_byte_list() called on $." (type_name)
-      return bytes
-
-    method set_id( name:String, value:String )->this
-      println "ERROR: set_id() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::get_byte_list()" (type_name) )
 
     method set_string( name:String, value:String )->this
-      println "ERROR: set_string() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_string()" (type_name) )
 
     method set_real64( name:String, value:Real64 )->this
-      println "ERROR: set_real64() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_real64()" (type_name) )
 
     method set_int64( name:String, value:Int64 )->this
-      println "ERROR: set_int64() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_int64()" (type_name) )
 
     method set_int32( name:String, value:Int32 )->this
-      println "ERROR: set_int32() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_int32()" (type_name) )
 
     method set_logical( name:String, value:Logical )->this
-      println "ERROR: set_logical() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_logical()" (type_name) )
 
     method set_real64_list( name:String, list:Real64[] )->this
-      println "ERROR: set_real64_list() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_real64_list()" (type_name) )
 
     method set_int32_list( name:String, list:Int32[] )->this
-      println "ERROR: set_int32_list() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_int32_list()" (type_name) )
 
     method set_byte_list( name:String, bytes:Byte[] )->this
-      println "ERROR: set_byte_list() called on $." (type_name)
-      return this
+      throw UnsupportedOperationError( "$::set_byte_list()" (type_name) )
 
     method send
-      println "ERROR: send() called on $." (type_name)
+      throw UnsupportedOperationError( "$::send()" (type_name) )
 endClass
 
 class IncomingMessage : Message
@@ -173,6 +169,7 @@ class IncomingMessage : Message
       source.read( reader.buffer.clear, size )
       reader.reset( 0 )
       type = read_id
+      serial_number = reader.read_int32x
       while (index_another) noAction
 
     method contains( name:String )->Logical
@@ -381,12 +378,14 @@ class OutgoingMessage : Message
   METHODS
     method init
 
-    method init( type )
-      if (not sent) println "ERROR: unsent outgoing message."
+    method init( new_type:String, serial_number )
+      if (not sent) println "ERROR: unsent outgoing message of type '$'." (type)
+      type = new_type
       sent = false
       writer.clear
 
       write_id( type )
+      writer.write_int32x( serial_number )
 
     method write_id( value:String )->this
       local entry = MessageManager.outgoing_name_to_id.find( value )
@@ -401,9 +400,6 @@ class OutgoingMessage : Message
         writer.write_string( value )
       endIf
       return this
-
-    method set_id( name:String, value:String )->this
-      return write_id( name ).write_id( value )
 
     method set_string( name:String, value:String )->this
       write_id( name )

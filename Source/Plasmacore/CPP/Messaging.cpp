@@ -31,7 +31,8 @@ Message::Message( MessageManager* manager, DataReader* main_reader )
   main_reader->position += size;
 
   type = read_id( &reader );
-printf( "Native layer received message %s\n", type );
+  serial_number = reader.read_int32x();
+printf( "Native layer received message #%d %s\n", serial_number, type );
   while (index_another(&reader)) {}
 }
 
@@ -526,6 +527,11 @@ Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 //=============================================================================
 //  MessageManager
 //=============================================================================
+MessageManager::MessageManager()
+  : next_serial_number(1)
+{
+}
+
 MessageManager::~MessageManager()
 {
   // Delete all entries in incoming_id_to_name table
@@ -600,9 +606,13 @@ void MessageManager::dispach_messages()
   }
 }
 
-Message MessageManager::message( const char* name )
+Message MessageManager::message( const char* name, int serial_number )
 {
-  return Message( this ).write_id( name );
+  if (serial_number == -1) serial_number = next_serial_number++;
+  Message result( this );
+  result.write_id( name );
+  data.write_int32x( serial_number );
+  return result;
 }
 
 int MessageManager::locate_key( const char* name )

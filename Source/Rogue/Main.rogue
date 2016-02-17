@@ -1,2 +1,7 @@
+$using Plasmacore
+
 println "Rogue Launched!"
 println System.command_line_arguments
+
+MessageManager.add_listener( "Marco!", function(m:Message) println("===> Got message $ again" (m.type)) )
+#MessageManager.add_listener( "Marco!", function(m:Message) println("===> Got message $" (m.type)); MessageManager.remove_listener("Marco!",this) )

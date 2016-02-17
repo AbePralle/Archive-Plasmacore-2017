@@ -51,12 +51,8 @@ Int64 DataReader::read_int64()
 
 Int64 DataReader::read_int64x()
 {
-  //Int64 result = read_int32x();
-  //return (result << 32) | (read_int32x() & 0xffffffffLL);
-  Int64 high = read_int32x();
-  Int64 low  = read_int32x();
-  printf( "Int64X Value: %08llx %08llx\n", high, low );
-  return (high << 32) | low;
+  Int64 result = read_int32x();
+  return (result << 32) | (read_int32x() & 0xffffffffLL);
 }
 
 Int32 DataReader::read_int32()

@@ -1,4 +1,4 @@
-PLASMACORE_ROGUE_SOURCE = $(shell find Source/Plasmacore/Rogue | grep "\.rogue$$")
+PLASMACORE_ROGUE_SOURCE = $(shell find Source/Rogue | grep "\.rogue$$") $(shell find Source/Plasmacore/Rogue/Plasmacore | grep "\.rogue$$")
 
 all: compile_rogue
 

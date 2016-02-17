@@ -32,6 +32,7 @@ struct Message
 
   MessageManager* manager;
   bool            is_outgoing;
+  int             serial_number;
 
   // Outgoing use only
   int             start_position;
@@ -81,6 +82,8 @@ struct Message
 //=============================================================================
 struct MessageManager
 {
+  int              next_serial_number;
+
   DataBuilder      data;
   StringTable<int> outgoing_name_to_id;
   IntTable<char*>  incoming_id_to_name;
@@ -90,10 +93,11 @@ struct MessageManager
   List<char*>      keys;
   List<int>        offsets;
 
+  MessageManager();
   ~MessageManager();
 
   void    dispach_messages();
-  Message message( const char* name );
+  Message message( const char* name, int serial_number=-1 );
 
   // INTERNAL USE ONLY
   int      locate_key( const char* name );
