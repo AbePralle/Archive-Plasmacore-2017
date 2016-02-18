@@ -14,8 +14,8 @@ namespace Messaging
 //=============================================================================
 //  Message
 //=============================================================================
-Message::Message( Manager* manager, int serial_number )
-  : manager(manager), serial_number(serial_number)
+Message::Message( Manager* manager, int id )
+  : manager(manager), id(id)
 {
   start_position = manager->data.count;
   manager->data.write_int32( 0 );  // placeholder for message size
@@ -34,7 +34,7 @@ Message::Message( Manager* manager, DataReader* main_reader )
   main_reader->position += size;
 
   type = read_id( &reader );
-  serial_number = reader.read_int32x();
+  id = reader.read_int32x();
   while (index_another(&reader)) {}
 }
 
@@ -59,7 +59,7 @@ bool Message::push_rsvp( Callback callback, void* context )
 
 Message Message::reply()
 {
-  return manager->message( "<reply>", serial_number );
+  return manager->message( "<reply>", id );
 }
 
 bool Message::send()
@@ -87,7 +87,7 @@ bool Message::send()
 bool Message::send_rsvp( Callback callback, void* context )
 {
   if ( !send() ) return false;
-  manager->reply_callbacks_by_serial_number[ serial_number ] = CallbackWithContext(callback,context);
+  manager->reply_callbacks_by_id[ id ] = CallbackWithContext(callback,context);
   return true;
 }
 
@@ -557,7 +557,7 @@ Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 //  Manager
 //=============================================================================
 Manager::Manager()
-  : next_serial_number(1)
+  : next_id(1), dispatching(false), dispatch_requested(false)
 {
   add_listener( "<reply>", reply_handler, this );
 }
@@ -586,6 +586,14 @@ void Manager::add_listener( const char* message_name, Callback listener, void* c
 
 void Manager::dispach_messages()
 {
+  if (dispatching)
+  {
+    dispatch_requested = true;
+    return;
+  }
+  dispatching = true;
+  dispatch_requested = false;
+
   // Copy message bytes into Rogue-side Manager.incoming_buffer.
   RogueClassPlasmacore__MessageManager* mm =
     (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
@@ -621,14 +629,16 @@ void Manager::dispach_messages()
       }
     }
   }
+
+  dispatching = false;
 }
 
-Message Manager::message( const char* name, int serial_number )
+Message Manager::message( const char* name, int id )
 {
-  if (serial_number == -1) serial_number = next_serial_number++;
-  Message result( this, serial_number );
+  if (id == -1) id = next_id++;
+  Message result( this, id );
   result.write_id( name );
-  data.write_int32x( serial_number );
+  data.write_int32x( id );
   return result;
 }
 
@@ -665,10 +675,10 @@ int Manager::locate_key( const char* name )
 void Manager::reply_handler( Message m, void* context )
 {
   Manager* manager = (Manager*) context;
-  int      n = m.serial_number;
-  if (manager->reply_callbacks_by_serial_number.contains(n))
+  int      n = m.id;
+  if (manager->reply_callbacks_by_id.contains(n))
   {
-    CallbackWithContext& info = manager->reply_callbacks_by_serial_number[ n ];
+    CallbackWithContext& info = manager->reply_callbacks_by_id[ n ];
     info.callback( m, info.context );
   }
 }

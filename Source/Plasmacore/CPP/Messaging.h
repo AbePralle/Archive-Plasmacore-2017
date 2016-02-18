@@ -58,7 +58,7 @@ struct Message
 
   Manager* manager;
   bool            is_outgoing;
-  int             serial_number;
+  int             id;
 
   // Outgoing use only
   int             start_position;
@@ -66,7 +66,7 @@ struct Message
   // Incoming use only
   const char*     type;
 
-  Message( Manager* manager, int serial_number );
+  Message( Manager* manager, int id );
   Message( Manager* manager, DataReader* reader );
   ~Message();
 
@@ -113,7 +113,9 @@ struct Message
 struct Manager
 {
   // PROPERTIES
-  int  next_serial_number;
+  int  next_id;
+  bool dispatching;
+  bool dispatch_requested;
 
   DataBuilder      data;
   StringTable<int> outgoing_name_to_id;
@@ -125,7 +127,7 @@ struct Manager
   List<int>        offsets;
 
   StringTable<List<CallbackWithContext>*>  listeners;
-  IntTable<CallbackWithContext>            reply_callbacks_by_serial_number;
+  IntTable<CallbackWithContext>            reply_callbacks_by_id;
 
   // METHODS
   Manager();
@@ -133,7 +135,7 @@ struct Manager
 
   void    add_listener( const char* message_name, Callback listener, void* context=0 );
   void    dispach_messages();
-  Message message( const char* name, int serial_number=-1 );
+  Message message( const char* name, int id=-1 );
   void    remove_listener( const char* message_name, Callback listener, void* context=0 );
 
 

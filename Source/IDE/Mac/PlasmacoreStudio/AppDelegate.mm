@@ -73,13 +73,22 @@ void marco_callback( Message m, void* context )
 
 - (void) stopUpdateTimer
 {
-  if (update_timer) [update_timer invalidate];
+  if (update_timer)
+  {
+    [update_timer invalidate];
+    update_timer = nil;
+  }
 }
 
 - (void) update
 {
-  NSLog( @"On update\n" );
   message_manager.dispach_messages();
+  if (message_manager.dispatch_requested)
+  {
+    // Another message wants to be dispatched already.  Make a one-off short interval
+    // timer to handle that.
+    [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
+  }
 }
 
 @end

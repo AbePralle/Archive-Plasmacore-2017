@@ -16,7 +16,7 @@ class MessageManager [requisite singleton]
     beta_writer     = BufferedDataWriter()
     writer          = alpha_writer : BufferedDataWriter
 
-    next_serial_number = 1
+    next_id = 1
 
     incoming_id_to_name = Table<<Int32,String>>()
     outgoing_name_to_id = Table<<String,Int32>>()
@@ -28,13 +28,13 @@ class MessageManager [requisite singleton]
       # Recycled for outgoing messages
 
     listeners                        = Table<<String,Function(Message)[]>>()
-    reply_callbacks_by_serial_number = Table<<Int32,Function(Message)>>()
+    reply_callbacks_by_id = Table<<Int32,Function(Message)>>()
 
   METHODS
     method init_object
       add_listener( "<reply>",
         function(m:Message)
-          local callback = MessageManager.reply_callbacks_by_serial_number.remove( m.serial_number )
+          local callback = MessageManager.reply_callbacks_by_id.remove( m.id )
           if (callback) callback( m )
         endFunction
       )
@@ -51,12 +51,12 @@ class MessageManager [requisite singleton]
       local list = listeners[ type ]
       if (list) list.remove( listener )
 
-    method message( type:String, serial_number=null:Int32? )->Message
-      if (not serial_number.exists)
-        serial_number = next_serial_number
-        ++next_serial_number
+    method message( type:String, id=null:Int32? )->Message
+      if (not id.exists)
+        id = next_id
+        ++next_id
       endIf
-      outgoing_message.init( type, serial_number.value )
+      outgoing_message.init( type, id.value )
       return outgoing_message
 
     method send( m:OutgoingMessage )
@@ -65,7 +65,7 @@ class MessageManager [requisite singleton]
 
     method send_rsvp( m:OutgoingMessage, callback:Function(Message) )
       send( m )
-      reply_callbacks_by_serial_number[ m.serial_number ] = callback
+      reply_callbacks_by_id[ m.id ] = callback
 
     method update->Byte[] [requisite]
       # 'reader' has already been set up to decode 'incoming_buffer', which 
@@ -107,7 +107,7 @@ class Message
 
   PROPERTIES
     type          : String
-    serial_number : Int32
+    id : Int32
 
   METHODS
     method contains( name:String )->Logical
@@ -189,7 +189,7 @@ class IncomingMessage : Message
       source.read( reader.buffer.clear, size )
       reader.reset( 0 )
       type = read_id
-      serial_number = reader.read_int32x
+      id = reader.read_int32x
       while (index_another) noAction
 
     method contains( name:String )->Logical
@@ -389,7 +389,7 @@ class IncomingMessage : Message
       return "Undefined"
 
     method reply->Message
-      return MessageManager.message( "<reply>", serial_number )
+      return MessageManager.message( "<reply>", id )
 
 endClass
 
@@ -401,14 +401,14 @@ class OutgoingMessage : Message
   METHODS
     method init
 
-    method init( new_type:String, serial_number )
+    method init( new_type:String, id )
       if (not sent) println "ERROR: unsent outgoing message of type '$'." (type)
       type = new_type
       sent = false
       writer.clear
 
       write_id( type )
-      writer.write_int32x( serial_number )
+      writer.write_int32x( id )
 
     method write_id( value:String )->this
       local entry = MessageManager.outgoing_name_to_id.find( value )

@@ -1,5 +1,15 @@
 #==============================================================================
-# Plasmacore.rogue
+# Window.rogue
 #==============================================================================
-$include "Messaging.rogue"
-$include "Window.rogue"
+
+$module Plasmacore
+
+class Window
+  PROPERTIES
+    name : String
+    id   : Int32
+
+  METHODS
+
+endClass
+
