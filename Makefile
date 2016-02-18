@@ -23,6 +23,10 @@ update:
 	@# Run the local makefile if it exists
 	@[ -f Local.mk ] && make -f Local.mk update || true
 
+status:
+	@# Run the local makefile if it exists
+	@[ -f Local.mk ] && make -f Local.mk status || true
+
 #------------------------------------------------------------------------------
 # Sample Local.mk file - do not commit to repo
 
