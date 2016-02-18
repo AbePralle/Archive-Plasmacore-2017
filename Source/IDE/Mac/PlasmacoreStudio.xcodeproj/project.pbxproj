@@ -22,6 +22,7 @@
 		30E2F9471C715B5500F89F60 /* SuperCPPDataBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F93C1C715B5500F89F60 /* SuperCPPDataBuilder.cpp */; };
 		30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F93E1C715B5500F89F60 /* SuperCPPDataReader.cpp */; };
 		30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */; };
+		30E2F94B1C759FBD00F89F60 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30E2F94A1C759FBD00F89F60 /* MainWindow.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +59,7 @@
 		30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPStringBuilder.cpp; path = ../../../SuperCPP/SuperCPPStringBuilder.cpp; sourceTree = "<group>"; };
 		30E2F9441C715B5500F89F60 /* SuperCPPStringBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringBuilder.h; path = ../../../SuperCPP/SuperCPPStringBuilder.h; sourceTree = "<group>"; };
 		30E2F9451C715B5500F89F60 /* SuperCPPStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringTable.h; path = ../../../SuperCPP/SuperCPPStringTable.h; sourceTree = "<group>"; };
+		30E2F94A1C759FBD00F89F60 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 				309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */,
 				309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */,
 				309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */,
+				30E2F94A1C759FBD00F89F60 /* MainWindow.xib */,
 				309EFD901C6FFD1B00FB5651 /* Info.plist */,
 				309EFD881C6FFD1B00FB5651 /* Supporting Files */,
 			);
@@ -218,6 +221,7 @@
 			files = (
 				309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */,
 				309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */,
+				30E2F94B1C759FBD00F89F60 /* MainWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

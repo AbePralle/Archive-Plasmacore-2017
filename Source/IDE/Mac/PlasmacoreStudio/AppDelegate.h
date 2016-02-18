@@ -11,8 +11,9 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
-  NSTimer*           update_timer;
-  Messaging::Manager message_manager;
+  NSTimer*            update_timer;
+  Messaging::Manager  message_manager;
+  NSWindowController* main_window;
 }
 
 - (void) startUpdateTimer;

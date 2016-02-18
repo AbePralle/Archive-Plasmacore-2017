@@ -55,6 +55,9 @@ void marco_callback( Message m, void* context )
   delete argv;
 
   [self startUpdateTimer];
+
+  main_window = [[NSWindowController alloc] initWithWindowNibName:@"MainWindow"];
+  [main_window showWindow:self];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -69,6 +72,9 @@ void marco_callback( Message m, void* context )
                     userInfo:nil repeats:YES];
     [[NSRunLoop mainRunLoop] addTimer:update_timer forMode:NSRunLoopCommonModes];
   }
+
+  
+  [self update];
 }
 
 - (void) stopUpdateTimer
