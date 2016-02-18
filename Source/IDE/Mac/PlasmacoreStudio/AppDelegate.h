@@ -7,18 +7,12 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "CocoaPlasmacore.h"
+#import "CocoaCore.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
-  NSTimer*                update_timer;
-  CocoaPlasmacore*        plasmacore;
-  NSWindowController*     main_window;
+  NSWindowController* main_window;
 }
-
-- (void) startUpdateTimer;
-- (void) stopUpdateTimer;
-- (void) update;
 
 @end
 

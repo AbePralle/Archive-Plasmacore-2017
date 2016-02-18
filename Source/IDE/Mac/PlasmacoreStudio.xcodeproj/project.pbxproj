@@ -21,7 +21,7 @@
 		30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F93E1C715B5500F89F60 /* SuperCPPDataReader.cpp */; };
 		30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */; };
 		30E2F94B1C759FBD00F89F60 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30E2F94A1C759FBD00F89F60 /* MainWindow.xib */; };
-		30E2F9571C76409900F89F60 /* CocoaPlasmacore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9541C76409900F89F60 /* CocoaPlasmacore.mm */; };
+		30E2F9571C76409900F89F60 /* CocoaCore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9541C76409900F89F60 /* CocoaCore.mm */; };
 		30E2F9581C76409900F89F60 /* PlasmacoreView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9561C76409900F89F60 /* PlasmacoreView.mm */; };
 		30E2F95D1C7640A500F89F60 /* Messaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9591C7640A500F89F60 /* Messaging.cpp */; };
 		30E2F95E1C7640A500F89F60 /* Plasmacore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F95B1C7640A500F89F60 /* Plasmacore.cpp */; };
@@ -58,8 +58,8 @@
 		30E2F9441C715B5500F89F60 /* SuperCPPStringBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringBuilder.h; path = ../../../SuperCPP/SuperCPPStringBuilder.h; sourceTree = "<group>"; };
 		30E2F9451C715B5500F89F60 /* SuperCPPStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringTable.h; path = ../../../SuperCPP/SuperCPPStringTable.h; sourceTree = "<group>"; };
 		30E2F94A1C759FBD00F89F60 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
-		30E2F9531C76409900F89F60 /* CocoaPlasmacore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CocoaPlasmacore.h; path = ../../../Plasmacore/Cocoa/CocoaPlasmacore.h; sourceTree = "<group>"; };
-		30E2F9541C76409900F89F60 /* CocoaPlasmacore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CocoaPlasmacore.mm; path = ../../../Plasmacore/Cocoa/CocoaPlasmacore.mm; sourceTree = "<group>"; };
+		30E2F9531C76409900F89F60 /* CocoaCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CocoaCore.h; path = ../../../Plasmacore/Cocoa/CocoaCore.h; sourceTree = "<group>"; };
+		30E2F9541C76409900F89F60 /* CocoaCore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CocoaCore.mm; path = ../../../Plasmacore/Cocoa/CocoaCore.mm; sourceTree = "<group>"; };
 		30E2F9551C76409900F89F60 /* PlasmacoreView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreView.h; path = ../../../Plasmacore/Cocoa/PlasmacoreView.h; sourceTree = "<group>"; };
 		30E2F9561C76409900F89F60 /* PlasmacoreView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreView.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreView.mm; sourceTree = "<group>"; };
 		30E2F9591C7640A500F89F60 /* Messaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Messaging.cpp; path = ../../../Plasmacore/CPP/Messaging.cpp; sourceTree = "<group>"; };
@@ -164,8 +164,8 @@
 				30E2F95A1C7640A500F89F60 /* Messaging.h */,
 				30E2F95B1C7640A500F89F60 /* Plasmacore.cpp */,
 				30E2F95C1C7640A500F89F60 /* Plasmacore.h */,
-				30E2F9531C76409900F89F60 /* CocoaPlasmacore.h */,
-				30E2F9541C76409900F89F60 /* CocoaPlasmacore.mm */,
+				30E2F9531C76409900F89F60 /* CocoaCore.h */,
+				30E2F9541C76409900F89F60 /* CocoaCore.mm */,
 				30E2F9551C76409900F89F60 /* PlasmacoreView.h */,
 				30E2F9561C76409900F89F60 /* PlasmacoreView.mm */,
 			);
@@ -253,7 +253,7 @@
 				30E2F9581C76409900F89F60 /* PlasmacoreView.mm in Sources */,
 				30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */,
 				30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */,
-				30E2F9571C76409900F89F60 /* CocoaPlasmacore.mm in Sources */,
+				30E2F9571C76409900F89F60 /* CocoaCore.mm in Sources */,
 				309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */,
 				30E2F95D1C7640A500F89F60 /* Messaging.cpp in Sources */,
 			);
