@@ -7,13 +7,13 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#include "Messaging.h"
+#import "CocoaPlasmacore.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
-  NSTimer*            update_timer;
-  Messaging::Manager  message_manager;
-  NSWindowController* main_window;
+  NSTimer*                update_timer;
+  CocoaPlasmacore*        plasmacore;
+  NSWindowController*     main_window;
 }
 
 - (void) startUpdateTimer;

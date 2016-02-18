@@ -8,13 +8,13 @@
 #include <cstring>
 using namespace std;
 
-namespace Messaging
+namespace Plasmacore
 {
 
 //=============================================================================
 //  Message
 //=============================================================================
-Message::Message( Manager* manager, int id )
+Message::Message( MessageManager* manager, int id )
   : manager(manager), id(id)
 {
   start_position = manager->data.count;
@@ -22,7 +22,7 @@ Message::Message( Manager* manager, int id )
   is_outgoing = true;
 }
 
-Message::Message( Manager* manager, DataReader* main_reader )
+Message::Message( MessageManager* manager, DataReader* main_reader )
   : manager(manager)
 {
   is_outgoing = false;
@@ -50,9 +50,9 @@ bool Message::push()
   return true;
 }
 
-bool Message::push_rsvp( Callback callback, void* context )
+bool Message::push_rsvp( Callback callback, void* context, void* data )
 {
-  if ( !send_rsvp(callback,context) ) return false;
+  if ( !send_rsvp(callback,context,data) ) return false;
   manager->dispach_messages();
   return true;
 }
@@ -84,10 +84,10 @@ bool Message::send()
   return true;
 }
 
-bool Message::send_rsvp( Callback callback, void* context )
+bool Message::send_rsvp( Callback callback, void* context, void* data )
 {
   if ( !send() ) return false;
-  manager->reply_callbacks_by_id[ id ] = CallbackWithContext(callback,context);
+  manager->reply_callbacks_by_id[ id ] = CallbackWithContext(callback,context,data);
   return true;
 }
 
@@ -554,15 +554,15 @@ Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
 }
 
 //=============================================================================
-//  Manager
+//  MessageManager
 //=============================================================================
-Manager::Manager()
+MessageManager::MessageManager()
   : next_id(1), dispatching(false), dispatch_requested(false)
 {
   add_listener( "<reply>", reply_handler, this );
 }
 
-Manager::~Manager()
+MessageManager::~MessageManager()
 {
   while (incoming_id_to_name.count)
   {
@@ -575,16 +575,16 @@ Manager::~Manager()
   }
 }
 
-void Manager::add_listener( const char* message_name, Callback listener, void* context )
+void MessageManager::add_listener( const char* message_name, Callback listener, void* context, void* data )
 {
   if ( !listeners.contains(message_name) )
   {
     listeners[ message_name ] = new List<CallbackWithContext>();
   }
-  listeners[ message_name ]->add( CallbackWithContext(listener,context) );
+  listeners[ message_name ]->add( CallbackWithContext(listener,context,data) );
 }
 
-void Manager::dispach_messages()
+void MessageManager::dispach_messages()
 {
   if (dispatching)
   {
@@ -594,7 +594,7 @@ void Manager::dispach_messages()
   dispatching = true;
   dispatch_requested = false;
 
-  // Copy message bytes into Rogue-side Manager.incoming_buffer.
+  // Copy message bytes into Rogue-side MessageManager.incoming_buffer.
   RogueClassPlasmacore__MessageManager* mm =
     (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
   RogueByteList* list = mm->incoming_buffer;
@@ -605,7 +605,7 @@ void Manager::dispach_messages()
 
   data.clear();
 
-  // Call Rogue Manager.update()
+  // Call Rogue MessageManager.update()
   list = RoguePlasmacore__MessageManager__update( mm );
   if (list)
   {
@@ -624,7 +624,7 @@ void Manager::dispach_messages()
         for (int i=list->count; --i >= 0; )
         {
           CallbackWithContext& info = list->data[i];
-          info.callback( m, info.context );
+          info.callback( m, info.context, info.data );
         }
       }
     }
@@ -633,7 +633,7 @@ void Manager::dispach_messages()
   dispatching = false;
 }
 
-Message Manager::message( const char* name, int id )
+Message MessageManager::message( const char* name, int id )
 {
   if (id == -1) id = next_id++;
   Message result( this, id );
@@ -642,7 +642,7 @@ Message Manager::message( const char* name, int id )
   return result;
 }
 
-void Manager::remove_listener( const char* message_name, Callback listener, void* context )
+void MessageManager::remove_listener( const char* message_name, Callback listener, void* context )
 {
   if (listeners.contains(message_name))
   {
@@ -663,7 +663,7 @@ void Manager::remove_listener( const char* message_name, Callback listener, void
 //-----------------------------------------------------------------------------
 // INTERNAL
 //-----------------------------------------------------------------------------
-int Manager::locate_key( const char* name )
+int MessageManager::locate_key( const char* name )
 {
   for (int i=keys.count; --i >=0; )
   {
@@ -672,16 +672,16 @@ int Manager::locate_key( const char* name )
   return -1;
 }
 
-void Manager::reply_handler( Message m, void* context )
+void MessageManager::reply_handler( Message m, void* context, void* data )
 {
-  Manager* manager = (Manager*) context;
+  MessageManager* manager = (MessageManager*) context;
   int      n = m.id;
   if (manager->reply_callbacks_by_id.contains(n))
   {
     CallbackWithContext& info = manager->reply_callbacks_by_id[ n ];
-    info.callback( m, info.context );
+    info.callback( m, info.context, info.data );
   }
 }
 
-} // namespace Messaging
+} // namespace Plasmacore
 

@@ -12,16 +12,16 @@
 #include "SuperCPPList.h"
 using namespace SuperCPP;
 
-namespace Messaging
+namespace Plasmacore
 {
 
 struct Message;
-struct Manager;
+struct MessageManager;
 
 //=============================================================================
 //  Callback
 //=============================================================================
-typedef void (*Callback)( Message m, void* context );
+typedef void (*Callback)( Message m, void* context, void* data );
 
 
 //=============================================================================
@@ -31,11 +31,12 @@ struct CallbackWithContext
 {
   Callback callback;
   void*    context;
+  void*    data;
 
-  CallbackWithContext() : callback(0), context(0) {}
+  CallbackWithContext() : callback(0), context(0), data(0) {}
 
-  CallbackWithContext( Callback callback, void* context )
-    : callback(callback), context(context)
+  CallbackWithContext( Callback callback, void* context, void* data )
+    : callback(callback), context(context), data(data)
   {
   }
 };
@@ -56,7 +57,7 @@ struct Message
   static const int DATA_TYPE_INT32_LIST    = 8;
   static const int DATA_TYPE_BYTE_LIST     = 9;
 
-  Manager* manager;
+  MessageManager* manager;
   bool            is_outgoing;
   int             id;
 
@@ -66,16 +67,16 @@ struct Message
   // Incoming use only
   const char*     type;
 
-  Message( Manager* manager, int id );
-  Message( Manager* manager, DataReader* reader );
+  Message( MessageManager* manager, int id );
+  Message( MessageManager* manager, DataReader* reader );
   ~Message();
 
   // Outgoing Message API
   bool     push();      // sends the message and has the manager dispatch pending messages
-  bool     push_rsvp( Callback callback, void* context=0 );
+  bool     push_rsvp( Callback callback, void* context=0, void* data=0 );
   Message  reply();
   bool     send();
-  bool     send_rsvp( Callback callback, void* context=0 );
+  bool     send_rsvp( Callback callback, void* context=0, void* data=0 );
   Message& set_string( const char* name, const char* value );
   Message& set_string( const char* name, Character* characters, int count );
   Message& set_string( const char* name, StringBuilder& value );
@@ -108,9 +109,9 @@ struct Message
 };
 
 //=============================================================================
-//  Manager
+//  MessageManager
 //=============================================================================
-struct Manager
+struct MessageManager
 {
   // PROPERTIES
   int  next_id;
@@ -130,10 +131,10 @@ struct Manager
   IntTable<CallbackWithContext>            reply_callbacks_by_id;
 
   // METHODS
-  Manager();
-  ~Manager();
+  MessageManager();
+  ~MessageManager();
 
-  void    add_listener( const char* message_name, Callback listener, void* context=0 );
+  void    add_listener( const char* message_name, Callback listener, void* context=0, void* data=0 );
   void    dispach_messages();
   Message message( const char* name, int id=-1 );
   void    remove_listener( const char* message_name, Callback listener, void* context=0 );
@@ -141,9 +142,9 @@ struct Manager
 
   // INTERNAL USE ONLY
   int         locate_key( const char* name );
-  static void reply_handler( Message m, void* context );
+  static void reply_handler( Message m, void* context, void* data );
 };
 
-} // namespace Messaging
+} // namespace Plasmacore
 
 #endif // MESSAGING_H

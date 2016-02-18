@@ -6,6 +6,7 @@
 #import <OpenGL/gl.h>
 
 #import "StarbrightGLView.h"
+using namespace Starbright;
 
 @interface PlasmacoreView : StarbrightGLView
 {

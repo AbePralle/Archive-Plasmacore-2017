@@ -11,13 +11,12 @@
 #include "SuperCPPStringBuilder.h"
 using namespace SuperCPP;
 
-using namespace Messaging;
-
 @interface AppDelegate ()
 
 @property (weak) IBOutlet NSWindow *window;
 @end
 
+/*
 void yin_listener( Message m, void* context )
 {
   printf( "%s (%d)\n", m.type, (int)(intptr_t)context );
@@ -33,6 +32,7 @@ void marco_callback( Message m, void* context )
   printf( "%s\n", buffer.as_c_string() );
 
 }
+*/
 
 @implementation AppDelegate
 
@@ -49,8 +49,8 @@ void marco_callback( Message m, void* context )
   Rogue_configure( argc, argv );
   Rogue_launch();
 
-  message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
-  message_manager.message( "Marco" ).send_rsvp( marco_callback );
+  //plasmacore.message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
+  //plasmacore.message_manager.message( "Marco" ).send_rsvp( marco_callback );
 
   delete argv;
 
@@ -88,13 +88,15 @@ void marco_callback( Message m, void* context )
 
 - (void) update
 {
-  message_manager.dispach_messages();
-  if (message_manager.dispatch_requested)
+/*
+  plasmacore.message_manager.dispach_messages();
+  if (plasmacore.message_manager.dispatch_requested)
   {
     // Another message wants to be dispatched already.  Make a one-off short interval
     // timer to handle that.
     [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
   }
+*/
 }
 
 @end
