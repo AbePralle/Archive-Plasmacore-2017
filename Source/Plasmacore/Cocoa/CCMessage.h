@@ -15,12 +15,12 @@ typedef void (^CCListener)( int listener_id, id message );
 - (NSString*)  getType;
 
 // Outgoing Message API
-- (CCMessage*) create_reply;
+- (CCMessage*) createReply;
 - (void)       push;      // sends the message and has the manager dispatch pending messages
-- (void)       push_rsvp:(CCListener)callback;
+- (int)        pushRSVP:(CCListener)callback;
 - (void)       send;
+- (int)        sendRSVP:(CCListener)callback;
 /*
-- (void)       send_rsvp( Callback callback, void* context=0, void* data=0 );
 - (Message*)   set_string( const char* name, const char* value );
 - (Message*)   set_string( const char* name, Character* characters, int count );
 - (Message*)   set_string( const char* name, StringBuilder& value );

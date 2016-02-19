@@ -1,7 +1,12 @@
+#import "CocoaCore.h"
 #import "CCMessage.h"
 
 #include "SuperCPPStringBuilder.h"
 using namespace SuperCPP;
+
+@interface CocoaCore()
+- (int) sendRSVP:(Plasmacore::Message)message withReplyListener:(CCListener)listener;
+@end
 
 @implementation CCMessage
 - (id) initWithPlasmacoreMessage:(Plasmacore::Message)m
@@ -16,7 +21,7 @@ using namespace SuperCPP;
   return [NSString stringWithUTF8String:message.type];
 }
 
-- (CCMessage*) create_reply
+- (CCMessage*) createReply
 {
   return [[CCMessage alloc] initWithPlasmacoreMessage:message.create_reply()];
 }
@@ -26,9 +31,11 @@ using namespace SuperCPP;
   message.push();
 }
 
-- (void) push_rsvp:(CCListener)callback
+- (int) pushRSVP:(CCListener)callback
 {
-  message.push();
+  int listener_id = [[CocoaCore singleton] sendRSVP:message withReplyListener:callback];
+  [[CocoaCore singleton] update];
+  return listener_id;
 }
 
 - (void) send
@@ -36,8 +43,9 @@ using namespace SuperCPP;
   message.send();
 }
 
-- (void) send_rsvp:(CCListener)callback
+- (int) sendRSVP:(CCListener)callback
 {
+  return [[CocoaCore singleton] sendRSVP:message withReplyListener:callback];
 }
 
 - (bool) contains:(NSString*)name

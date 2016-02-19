@@ -21,7 +21,7 @@
 
 + (CocoaCore*) singleton;
 
-- (int)  addListener:(CCListener)listener forMessageType:(NSString*)type;
+- (int)  handleMessageType:(NSString*)type withListener:(CCListener)listener;
 - (void) removeListenerByID:(int)listener_id;
 - (void) start;
 - (void) stop;
