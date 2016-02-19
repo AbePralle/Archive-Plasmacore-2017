@@ -71,7 +71,7 @@ struct Message
   ~Message();
 
   // Outgoing Message API
-  Message  create_reply();
+  Message  reply();
   bool     push();      // sends the message and has the manager dispatch pending messages
   bool     push_rsvp( Callback callback, void* context=0, void* data=0 );
   bool     send();
@@ -132,6 +132,7 @@ struct MessageManager
   void    add_listener( const char* message_name, Callback listener, void* context=0, void* data=0 );
   void    dispach_messages();
   Message create_message( const char* name, int id=-1 );
+  Message create_reply( int id );
   void    remove_listener( const char* message_name, Callback listener, void* context=0 );
 
 

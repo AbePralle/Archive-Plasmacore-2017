@@ -65,6 +65,11 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message(message_type)];
 }
 
+- (CCMessage*) createReply:(int)message_id
+{
+  return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message("<reply>",message_id)];
+}
+
 - (int) handleMessageType:(NSString*)type withListener:(CCListener)listener
 {
   // Associate a unique integer listener_id with each listener that we can use

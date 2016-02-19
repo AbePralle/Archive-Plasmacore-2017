@@ -6,6 +6,7 @@ using namespace SuperCPP;
 
 @interface CocoaCore()
 - (CCMessage*) createMessage:(const char*)message_type;
+- (CCMessage*) createReply:(int)message_id;
 - (int)        sendRSVP:(Plasmacore::Message)message withReplyListener:(CCListener)listener;
 @end
 
@@ -13,6 +14,11 @@ using namespace SuperCPP;
 + (id) create:(const char*)message_type
 {
   return [[CocoaCore singleton] createMessage:message_type];
+}
+
++ (id) createReply:(int)message_id
+{
+  return [[CocoaCore singleton] createReply:message_id];
 }
 
 - (id) initWithPlasmacoreMessage:(Plasmacore::Message)m
@@ -27,9 +33,14 @@ using namespace SuperCPP;
   return [NSString stringWithUTF8String:message.type];
 }
 
-- (CCMessage*) createReply
+- (int) getID
 {
-  return [[CCMessage alloc] initWithPlasmacoreMessage:message.create_reply()];
+  return message.id;
+}
+
+- (CCMessage*) reply
+{
+  return [[CCMessage alloc] initWithPlasmacoreMessage:message.reply()];
 }
 
 - (void) push

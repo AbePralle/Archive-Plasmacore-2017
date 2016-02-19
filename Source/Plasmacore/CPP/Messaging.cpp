@@ -48,9 +48,9 @@ Message::~Message()
   if (is_outgoing) send();  // just in case; no effect if message already sent
 }
 
-Message Message::create_reply()
+Message Message::reply()
 {
-  return manager->create_message( "<reply>", id );
+  return manager->create_reply( id );
 }
 
 bool Message::push()
@@ -553,6 +553,11 @@ Message MessageManager::create_message( const char* name, int id )
   result.write_id( name );
   data.write_int32x( id );
   return result;
+}
+
+Message MessageManager::create_reply( int id )
+{
+  return create_message( "<reply>", id );
 }
 
 void MessageManager::remove_listener( const char* message_name, Callback listener, void* context )

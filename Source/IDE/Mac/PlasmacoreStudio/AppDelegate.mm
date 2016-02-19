@@ -20,8 +20,12 @@
   [[CocoaCore singleton] handleMessageType:@"Yin"
     withListener:^(int this_id, id mesg)
     { 
-      NSLog( @"Got message of type %@ and value:%d\n",[mesg getType],[mesg getInt32:"value"] );
-      [[[mesg createReply] setInt32:"value" value:[mesg getInt32:"value"]+1] push];
+      int value = [mesg getInt32:"value"];
+      int m_id = [mesg getID];
+
+      NSLog( @"Got message of type %@ and value:%d\n",[mesg getType],value );
+
+      [[[CCMessage createReply:m_id] setInt32:"value" value:value+1] push];
     }
   ];
 
