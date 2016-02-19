@@ -64,15 +64,20 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
     withListener:^(int this_id, CCMessage* m)
     {
       NSString* window_name = [m getString:"name"];
-      NSWindowController* window = [[NSWindowController alloc] initWithWindowNibName:window_name];
-      int window_id = [resources addResource:window];
- 
-      CCMessage* reply = [m createReply];
-      [reply setLogical:"success" value:true];
-      [reply setInt32:"id" value:window_id];
-      [reply push];
-    //[main_window showWindow:self];
+      int       window_id   = [m getInt32:"id"];
 
+      NSWindowController* window = [[NSWindowController alloc] initWithWindowNibName:window_name];
+      [resources addResource:window withID:window_id];
+    }
+  ];
+
+  [self handleMessageType:"Window.show"
+    withListener:^(int this_id, CCMessage* m)
+    {
+      int window_id = [m getInt32:"id"];
+
+      NSWindowController* window = [resources getResourceWithID:window_id];
+      if (window) [window showWindow:self];
     }
   ];
 
@@ -93,7 +98,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 {
   // Associate a unique integer listener_id with each listener that we can use
   // to track the listener in C++ code.  Returns the listener_id.
-  int listener_id = next_callback_id;
+  int listener_id = next_callback_id++;
 
   // Map the id to the listener
   [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];

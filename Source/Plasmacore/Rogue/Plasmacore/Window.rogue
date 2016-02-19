@@ -11,15 +11,11 @@ class Window
 
   METHODS
     method init( name )
-      Message( "Window.create" ).set_string("name",name).send_rsvp(
-        function(m:Message) with (window=this)
-          if (m.get_logical("success"))
-            local window_id = m.get_int32("id")
-            println "window created successfully, id:" + window_id
-            window.id = window_id
-          endIf
-        endFunction
-      )
+      id = Plasmacore.create_resource_id
+      Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
+
+    method show
+      Message( "Window.show" ).set_int32("id",id).send
 
 endClass
 

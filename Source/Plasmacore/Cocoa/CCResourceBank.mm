@@ -6,8 +6,7 @@ using namespace SuperCPP;
 
 - (id) init
 {
-  resources = [[NSMutableArray alloc] init];
-  [self clear];
+  resources = [[NSMutableDictionary alloc] init];
   return self;
 }
 
@@ -16,101 +15,55 @@ using namespace SuperCPP;
   resources = nil;
 }
 
-- (int) addResource:(NSObject*)resource
+- (void) addResource:(id)resource withID:(int)resource_id
 {
-  int resource_id = [self createID];
-  [self setResource:resource withID:resource_id];
-  return resource_id;
+  [resources setObject:resource forKey:[NSNumber numberWithInt:resource_id]];
 }
 
 - (void) clear
 {
   [resources removeAllObjects];
-  active_ids.clear();
-  available_ids.clear();
-  [resources addObject:[NSNull null]];  // skip spot 0
-}
-
-- (int) createID
-{
-  int result;
-  if (available_ids.count)
-  {
-    result = available_ids.remove_last();
-  }
-  else
-  {
-    result = (int) resources.count;
-    [resources addObject:[NSNull null]];
-  }
-  active_ids.add( result );
-  return result;
 }
 
 - (int) getCount
 {
-  return active_ids.count;
+  return (int)resources.count;
 }
 
-- (int) locateFirstResource
+- (int) getIDOfResource:(id)resource
 {
-  if (active_ids.count == 0) return 0;
-  return active_ids.data[0];
-}
-
-- (int) locateResource:(id)resource
-{
-  int       i = active_ids.count;
-  while (--i >= 0)
+  NSEnumerator *enumerator = [resources keyEnumerator];
+  NSNumber* key;
+  while ((key = [enumerator nextObject]))
   {
-    if ([resources objectAtIndex:i] == resource) return i;
+    if ([resources objectForKey:key] == resource) return [key intValue];
   }
-
-  return -1;
+  return 0;
 }
 
 - (id) getResourceWithID:(int)resource_id
 {
-  if (resource_id <= 0 || resource_id >= resources.count) return 0;
-  return [resources objectAtIndex:resource_id];
+  return [resources objectForKey:[NSNumber numberWithInt:resource_id]];
 }
 
 - (id) removeResourceWithID:(int)resource_id
 {
-  int index;
-  id  result;
-
-  if (resource_id <= 0 || resource_id >= resources.count) return 0;
-
-  available_ids.add( resource_id );
-
-  result = [resources objectAtIndex:resource_id];
-  [resources replaceObjectAtIndex:resource_id withObject:[NSNull null]];
-
-  index = active_ids.locate( resource_id );
-  if (index >= 0)
-  {
-    active_ids.data[index] = active_ids.data[ --active_ids.count ];
-  }
-
+  id result = [self getResourceWithID:resource_id];
+  [resources removeObjectForKey:[NSNumber numberWithInt:resource_id]];
   return result;
 }
 
 - (id) removeAnotherResource
 {
-  if (active_ids.count == 0) return 0;
+  NSEnumerator *enumerator = [resources keyEnumerator];
+  NSNumber* key;
+  while ((key = [enumerator nextObject]))
+  {
+    return [self removeResourceWithID:[key intValue]];
+  }
 
-  int resource_id = active_ids.data[0];
-  if ( !resource_id ) return 0;
-
-  return [self removeResourceWithID:resource_id];
+  return nil;
 }
 
-- (id) setResource:(id) resource withID:(int)resource_id
-{
-  if (resource_id <= 0 || resource_id >= resources.count) return self;
-  [resources replaceObjectAtIndex:resource_id withObject:resource];
-  return self;
-}
 
 @end

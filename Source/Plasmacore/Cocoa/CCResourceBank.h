@@ -4,24 +4,20 @@
 
 @interface CCResourceBank : NSObject 
 {
-  NSMutableArray*     resources;
-  SuperCPP::List<int> active_ids;
-  SuperCPP::List<int> available_ids;
+  NSMutableDictionary* resources;
 }
 
 @property (nonatomic,readonly,getter=getCount) int count;
 
 - (id)   init;
 - (void) dealloc;
-- (int)  addResource:(NSObject*)resource;
+
+- (void) addResource:(id) resource withID:(int)resource_id;
 - (void) clear;
-- (int)  createID;
 - (int)  getCount;
-- (int)  locateFirstResource;
-- (int)  locateResource:(id)resource;
+- (int)  getIDOfResource:(id)resource;
 - (id)   getResourceWithID:(int)resource_id;
 - (id)   removeResourceWithID:(int)resource_id;
 - (id)   removeAnotherResource;
-- (id)   setResource:(id) resource withID:(int)resource_id;
 
 @end
