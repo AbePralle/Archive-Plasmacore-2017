@@ -17,6 +17,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+  [[CocoaCore singleton] addListener:^(id mesg){ NSLog(@"Got message of type %@ and value:%d\n",[mesg getType],[mesg getInt32:@"value"]); } forMessageType:@"Yin"];
   [[CocoaCore singleton] start];
 }
 

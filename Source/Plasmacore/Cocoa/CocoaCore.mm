@@ -1,8 +1,6 @@
 #import  "CocoaCore.h"
 
 #include "RogueProgram.h"
-#include "SuperCPPStringBuilder.h"
-using namespace SuperCPP;
 
 /*
 void yin_listener( Message m, void* context )
@@ -21,42 +19,65 @@ void marco_callback( Message m, void* context )
 
 }
 */
-
+static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, void* data );
 
 @implementation CocoaCore
 
 + (CocoaCore*) singleton
 {
   static CocoaCore* the_singleton = nil;
-  if ( !the_singleton ) the_singleton = [[CocoaCore alloc] init];
+  if ( !the_singleton )
+  {
+    the_singleton = [[CocoaCore alloc] init];
+  }
   return the_singleton;
+}
+
+- (void) addListener:(CCListener)listener forMessageType:(NSString*)type
+{
+  int listener_id = next_callback_id;
+  [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
+  plasmacore.message_manager.add_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
+}
+
+- (CCListener) getListenerForKey:(int)key
+{
+  return [message_callbacks objectForKey:[NSNumber numberWithInt:key]];
+}
+
+- (id) init
+{
+  self = [super self];
+  if ( !self ) return nil;
+
+  message_callbacks = [[NSMutableDictionary alloc] init];
+  next_callback_id = 1;
+ 
+  // Prepare command line arguments to pass in.
+  NSArray *args = [[NSProcessInfo processInfo] arguments];
+  int argc = (int) args.count;
+  const char** argv = new const char*[ argc ];
+  for (int i=0; i<argc; ++i)
+  {
+    argv[i] = [args[i] UTF8String];
+  }
+  
+  // Configure and launch Rogue-generated C++ source code
+  Rogue_configure( argc, argv );
+  Rogue_launch();
+
+  //plasmacore.message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
+  //plasmacore.message_manager.message( "Marco" ).send_rsvp( marco_callback );
+
+  delete argv;
+
+  return self;
 }
 
 - (void) start
 {
-  if ( !configured )
-  {
-    // Prepare command line arguments to pass in.
-    NSArray *args = [[NSProcessInfo processInfo] arguments];
-    int argc = (int) args.count;
-    const char** argv = new const char*[ argc ];
-    for (int i=0; i<argc; ++i)
-    {
-      argv[i] = [args[i] UTF8String];
-    }
-    
-    // Configure and launch Rogue-generated C++ source code
-    Rogue_configure( argc, argv );
-    Rogue_launch();
-
-    //plasmacore.message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
-    //plasmacore.message_manager.message( "Marco" ).send_rsvp( marco_callback );
-
-    delete argv;
-
-    static NSWindowController* main_window = [[NSWindowController alloc] initWithWindowNibName:@"MainWindow"];
-    [main_window showWindow:self];
-  }
+  static NSWindowController* main_window = [[NSWindowController alloc] initWithWindowNibName:@"MainWindow"];
+  [main_window showWindow:self];
 
   if ( !update_timer )
   {
@@ -89,3 +110,11 @@ void marco_callback( Message m, void* context )
 }
 
 @end
+
+static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, void* data )
+{
+  int key = (int)(intptr_t)context;
+  CCListener listener = [[CocoaCore singleton] getListenerForKey:key];
+  if (listener) listener( [[CCMessage alloc] initWithPlasmacoreMessage:m] );
+}
+

@@ -67,6 +67,7 @@ struct Message
   // Incoming use only
   const char*     type;
 
+  Message();
   Message( MessageManager* manager, int id );
   Message( MessageManager* manager, DataReader* reader );
   ~Message();

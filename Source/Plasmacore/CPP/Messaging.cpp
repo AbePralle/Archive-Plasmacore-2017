@@ -14,6 +14,11 @@ namespace Plasmacore
 //=============================================================================
 //  Message
 //=============================================================================
+Message::Message()
+{
+  memset( this, 0, sizeof(Message) );
+}
+
 Message::Message( MessageManager* manager, int id )
   : manager(manager), id(id)
 {
