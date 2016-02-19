@@ -11,12 +11,12 @@ using namespace SuperCPP;
 @end
 
 @implementation CCMessage
-+ (id) create:(const char*)message_type
++ (id) messageWithType:(const char*)message_type
 {
   return [[CocoaCore singleton] createMessage:message_type];
 }
 
-+ (id) createReply:(int)message_id
++ (id) messageWithReply:(int)message_id
 {
   return [[CocoaCore singleton] createReply:message_id];
 }
@@ -38,9 +38,9 @@ using namespace SuperCPP;
   return message.id;
 }
 
-- (CCMessage*) reply
+- (CCMessage*) createReply
 {
-  return [[CCMessage alloc] initWithPlasmacoreMessage:message.reply()];
+  return [[CCMessage alloc] initWithPlasmacoreMessage:message.create_reply()];
 }
 
 - (void) push

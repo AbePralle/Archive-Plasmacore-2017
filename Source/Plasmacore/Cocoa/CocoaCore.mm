@@ -39,6 +39,8 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   self = [super self];
   if ( !self ) return nil;
 
+  resources = [[CCResourceBank alloc] init];
+
   message_callbacks = [[NSMutableDictionary alloc] init];
   next_callback_id = 1;
  
@@ -57,6 +59,23 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 
   delete argv;
 
+  // Set up standard message handlers
+  [self handleMessageType:"Window.create"
+    withListener:^(int this_id, CCMessage* m)
+    {
+      NSString* window_name = [m getString:"name"];
+      NSWindowController* window = [[NSWindowController alloc] initWithWindowNibName:window_name];
+      int window_id = [resources addResource:window];
+ 
+      CCMessage* reply = [m createReply];
+      [reply setLogical:"success" value:true];
+      [reply setInt32:"id" value:window_id];
+      [reply push];
+    //[main_window showWindow:self];
+
+    }
+  ];
+
   return self;
 }
 
@@ -70,7 +89,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message("<reply>",message_id)];
 }
 
-- (int) handleMessageType:(NSString*)type withListener:(CCListener)listener
+- (int) handleMessageType:(const char*)type withListener:(CCListener)listener
 {
   // Associate a unique integer listener_id with each listener that we can use
   // to track the listener in C++ code.  Returns the listener_id.
@@ -80,10 +99,10 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
 
   // Map the id to the message type
-  [listener_message_types setObject:type forKey:[NSNumber numberWithInt:listener_id]];
+  [listener_message_types setObject:[NSString stringWithUTF8String:type] forKey:[NSNumber numberWithInt:listener_id]];
 
   // Pair the id with a C++ listener in C++ code
-  plasmacore.message_manager.add_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
+  plasmacore.message_manager.add_listener( type, CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
 
   return listener_id;
 }
@@ -130,9 +149,6 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 
 - (void) start
 {
-  static NSWindowController* main_window = [[NSWindowController alloc] initWithWindowNibName:@"MainWindow"];
-  [main_window showWindow:self];
-
   if ( !update_timer )
   {
     update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(update)
@@ -155,10 +171,19 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 - (void) update
 {
   plasmacore.message_manager.dispach_messages();
+
+  // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
+  // communication.
+  for (int i=0; i<10; ++i)
+  {
+    if ( !plasmacore.message_manager.dispatch_requested ) return;
+    plasmacore.message_manager.dispach_messages();
+  }
+
+  // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
+  // there are still waiting messages.
   if (plasmacore.message_manager.dispatch_requested)
   {
-    // Another message wants to be dispatched already.  Make a one-off short interval
-    // timer to handle that.
     [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
   }
 }

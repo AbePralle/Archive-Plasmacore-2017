@@ -11,7 +11,6 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
-  NSWindowController* main_window;
 }
 
 @end

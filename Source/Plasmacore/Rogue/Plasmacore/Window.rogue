@@ -10,6 +10,16 @@ class Window
     id   : Int32
 
   METHODS
+    method init( name )
+      Message( "Window.create" ).set_string("name",name).send_rsvp(
+        function(m:Message) with (window=this)
+          if (m.get_logical("success"))
+            local window_id = m.get_int32("id")
+            println "window created successfully, id:" + window_id
+            window.id = window_id
+          endIf
+        endFunction
+      )
 
 endClass
 

@@ -48,7 +48,7 @@ Message::~Message()
   if (is_outgoing) send();  // just in case; no effect if message already sent
 }
 
-Message Message::reply()
+Message Message::create_reply()
 {
   return manager->create_reply( id );
 }

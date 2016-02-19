@@ -51,7 +51,7 @@ class MessageManager [requisite singleton]
       local list = listeners[ type ]
       if (list) list.remove( listener )
 
-    method message( type:String, id=null:Int32? )->Message
+    method create_message( type:String, id=null:Int32? )->Message
       if (not id.exists)
         id = next_id
         ++next_id
@@ -104,8 +104,12 @@ class Message
     DATA_TYPE_BYTES         = 7
 
   PROPERTIES
-    type          : String
-    id : Int32
+    type  : String
+    id    : Int32
+
+  GLOBAL METHODS
+    method create( name:String )->Message
+      return MessageManager.create_message( name )
 
   METHODS
     method contains( name:String )->Logical
@@ -342,7 +346,7 @@ class IncomingMessage : Message
       return "Undefined"
 
     method create_reply->Message
-      return MessageManager.message( "<reply>", id )
+      return MessageManager.create_message( "<reply>", id )
 
 endClass
 

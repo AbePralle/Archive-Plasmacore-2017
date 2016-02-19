@@ -11,15 +11,15 @@ typedef void (^CCListener)( int listener_id, id message );
   Plasmacore::Message  message;
 }
 
-+ (id)         create:(const char*)message_type;
-+ (id)         createReply:(int)message_id;
++ (id)         messageWithType:(const char*)message_type;
++ (id)         messageWithReply:(int)message_id;
 
 - (id)         initWithPlasmacoreMessage:(Plasmacore::Message)m;
 - (NSString*)  getType;
 - (int)        getID;
 
 // Outgoing Message API
-- (CCMessage*) reply;
+- (CCMessage*) createReply;
 - (void)       push;      // sends the message and has the manager dispatch pending messages
 - (int)        pushRSVP:(CCListener)callback;
 - (void)       send;
