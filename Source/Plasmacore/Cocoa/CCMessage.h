@@ -11,6 +11,7 @@ typedef void (^CCListener)( int listener_id, id message );
   Plasmacore::Message  message;
 }
 
++ (id)         create:(const char*)message_type;
 - (id)         initWithPlasmacoreMessage:(Plasmacore::Message)m;
 - (NSString*)  getType;
 
@@ -20,25 +21,21 @@ typedef void (^CCListener)( int listener_id, id message );
 - (int)        pushRSVP:(CCListener)callback;
 - (void)       send;
 - (int)        sendRSVP:(CCListener)callback;
-/*
-- (Message*)   set_string( const char* name, const char* value );
-- (Message*)   set_string( const char* name, Character* characters, int count );
-- (Message*)   set_string( const char* name, StringBuilder& value );
-- (Message*)   set_real64( const char* name, Real64 value );
-- (Message*)   set_int64( const char* name, Int64 value );
-- (Message*)   set_int32( const char* name, int value );
-- (Message*)   set_logical( const char* name, bool value );
-- (Message*)   set_bytes( const char* name, Byte* bytes, int count );
-- (Message*)   set_bytes( const char* name, Builder<Byte>& bytes );
-*/
+
+- (CCMessage*) setString:  (const char*)name value:(NSString*)value;
+- (CCMessage*) setReal64:  (const char*)name value:(double)value;
+- (CCMessage*) setInt64:   (const char*)name value:(Int64)value;
+- (CCMessage*) setInt32:   (const char*)name value:(int)value;
+- (CCMessage*) setLogical: (const char*)name value:(bool)value;
+- (CCMessage*) setBytes:   (const char*)name value:(NSData*)value;
 
 // Incoming Message API
-- (bool)       contains:   (NSString*)name;
-- (NSString*)  getString:  (NSString*)name;
-- (double)     getReal64:  (NSString*)name;
-- (Int64)      getInt64:   (NSString*)name;
-- (int)        getInt32:   (NSString*)name;
-- (bool)       getLogical: (NSString*)name;
-- (NSData*)    getBytes:   (NSString*)name;
+- (bool)       contains:   (const char*)name;
+- (NSString*)  getString:  (const char*)name;
+- (double)     getReal64:  (const char*)name;
+- (Int64)      getInt64:   (const char*)name;
+- (int)        getInt32:   (const char*)name;
+- (bool)       getLogical: (const char*)name;
+- (NSData*)    getBytes:   (const char*)name;
 
 @end

@@ -55,12 +55,14 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   Rogue_configure( argc, argv );
   Rogue_launch();
 
-  //plasmacore.message_manager.add_listener( "Yin", yin_listener, (void*) 3 );
-  //plasmacore.message_manager.message( "Marco" ).send_rsvp( marco_callback );
-
   delete argv;
 
   return self;
+}
+
+- (CCMessage*) createMessage:(const char*)message_type
+{
+  return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message(message_type)];
 }
 
 - (int) handleMessageType:(NSString*)type withListener:(CCListener)listener

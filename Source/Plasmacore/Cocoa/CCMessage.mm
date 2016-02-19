@@ -5,10 +5,16 @@
 using namespace SuperCPP;
 
 @interface CocoaCore()
-- (int) sendRSVP:(Plasmacore::Message)message withReplyListener:(CCListener)listener;
+- (CCMessage*) createMessage:(const char*)message_type;
+- (int)        sendRSVP:(Plasmacore::Message)message withReplyListener:(CCListener)listener;
 @end
 
 @implementation CCMessage
++ (id) create:(const char*)message_type
+{
+  return [[CocoaCore singleton] createMessage:message_type];
+}
+
 - (id) initWithPlasmacoreMessage:(Plasmacore::Message)m
 {
   self = [super init];
@@ -48,42 +54,82 @@ using namespace SuperCPP;
   return [[CocoaCore singleton] sendRSVP:message withReplyListener:callback];
 }
 
-- (bool) contains:(NSString*)name
-{
-  return message.contains( [name UTF8String] );
-}
-
-- (NSString*) getString:(NSString*)name
+- (CCMessage*) setString:  (const char*)name value:(NSString*)value
 {
   StringBuilder buffer;
-  message.get_string( [name UTF8String], buffer );
-  return [NSString stringWithUTF8String:buffer.as_utf8_string()];
+  buffer.reserve( (int) value.length );
+  [value getCharacters:(unichar*)buffer.data range:NSMakeRange(0,value.length)];
+  message.set_string( name, buffer );
+  return self;
 }
 
-- (double) getReal64:(NSString*)name
+- (CCMessage*) setReal64:  (const char*)name value:(double)value
 {
-  return message.get_real64( [name UTF8String] );
+  message.set_real64( name, value );
+  return self;
 }
 
-- (Int64) getInt64:(NSString*)name
+- (CCMessage*) setInt64:   (const char*)name value:(Int64)value
 {
-  return message.get_int64( [name UTF8String] );
+  message.set_int64( name, value );
+  return self;
 }
 
-- (int) getInt32:(NSString*)name
+- (CCMessage*) setInt32:   (const char*)name value:(int)value
 {
-  return message.get_int32( [name UTF8String] );
+  message.set_int32( name, value );
+  return self;
 }
 
-- (bool) getLogical:(NSString*)name
+- (CCMessage*) setLogical: (const char*)name value:(bool)value
 {
-  return message.get_logical( [name UTF8String] );
+  message.set_logical( name, value );
+  return self;
 }
 
-- (NSData*)   getBytes:   (NSString*)name
+- (CCMessage*) setBytes:   (const char*)name value:(NSData*)value
+{
+  message.set_bytes( name, (Byte*) value.bytes, (int) value.length );
+  return self;
+}
+
+
+- (bool) contains:(const char*)name
+{
+  return message.contains( name );
+}
+
+- (NSString*) getString:(const char*)name
+{
+  StringBuilder buffer;
+  message.get_string( name, buffer );
+  return [NSString stringWithCharacters:(unichar*)buffer.data length:buffer.count];
+}
+
+- (double) getReal64:(const char*)name
+{
+  return message.get_real64( name );
+}
+
+- (Int64) getInt64:(const char*)name
+{
+  return message.get_int64( name );
+}
+
+- (int) getInt32:(const char*)name
+{
+  return message.get_int32( name );
+}
+
+- (bool) getLogical:(const char*)name
+{
+  return message.get_logical( name );
+}
+
+- (NSData*)   getBytes:   (const char*)name
 {
   Builder<Byte> buffer;
-  message.get_bytes( [name UTF8String], buffer );
+  message.get_bytes( name, buffer );
   return [NSData dataWithBytes:buffer.data length:buffer.count];
 }
 

@@ -50,7 +50,7 @@ Message::~Message()
 
 Message Message::create_reply()
 {
-  return manager->message( "<reply>", id );
+  return manager->create_message( "<reply>", id );
 }
 
 bool Message::push()
@@ -546,7 +546,7 @@ void MessageManager::dispach_messages()
   dispatching = false;
 }
 
-Message MessageManager::message( const char* name, int id )
+Message MessageManager::create_message( const char* name, int id )
 {
   if (id == -1) id = next_id++;
   Message result( this, id );

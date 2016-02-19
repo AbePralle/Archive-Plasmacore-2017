@@ -83,7 +83,6 @@ struct Message
   Message& set_int64( const char* name, Int64 value );
   Message& set_int32( const char* name, int value );
   Message& set_logical( const char* name, bool value );
-  Message& set_real64_list( const char* name, Real64* list, int count );
   Message& set_bytes( const char* name, Byte* bytes, int count );
   Message& set_bytes( const char* name, Builder<Byte>& bytes );
 
@@ -132,7 +131,7 @@ struct MessageManager
 
   void    add_listener( const char* message_name, Callback listener, void* context=0, void* data=0 );
   void    dispach_messages();
-  Message message( const char* name, int id=-1 );
+  Message create_message( const char* name, int id=-1 );
   void    remove_listener( const char* message_name, Callback listener, void* context=0 );
 
 
