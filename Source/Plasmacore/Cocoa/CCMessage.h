@@ -30,9 +30,8 @@ typedef void (^CCListener)(id message);
 - (Message*)   set_int32( const char* name, int value );
 - (Message*)   set_logical( const char* name, bool value );
 - (Message*)   set_real64_list( const char* name, Real64* list, int count );
-- (Message*)   set_int32_list( const char* name, Int32* list, int count );
-- (Message*)   set_byte_list( const char* name, Byte* bytes, int count );
-- (Message*)   set_byte_list( const char* name, Builder<Byte>& bytes );
+- (Message*)   set_bytes( const char* name, Byte* bytes, int count );
+- (Message*)   set_bytes( const char* name, Builder<Byte>& bytes );
 */
 
 // Incoming Message API
@@ -42,8 +41,6 @@ typedef void (^CCListener)(id message);
 - (Int64)      getInt64:   (NSString*)name;
 - (int)        getInt32:   (NSString*)name;
 - (bool)       getLogical: (NSString*)name;
-- (NSData*)    getByteList:   (NSString*)name;
-- (NSData*)    getReal64List: (NSString*)name;
-- (NSData*)    getInt32List:  (NSString*)name;
+- (NSData*)    getBytes:   (NSString*)name;
 
 @end

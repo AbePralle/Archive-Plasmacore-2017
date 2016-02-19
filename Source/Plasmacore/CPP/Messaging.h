@@ -53,9 +53,7 @@ struct Message
   static const int DATA_TYPE_INT64         = 4;
   static const int DATA_TYPE_INT32         = 5;
   static const int DATA_TYPE_LOGICAL       = 6;
-  static const int DATA_TYPE_REAL64_LIST   = 7;
-  static const int DATA_TYPE_INT32_LIST    = 8;
-  static const int DATA_TYPE_BYTE_LIST     = 9;
+  static const int DATA_TYPE_BYTES         = 7;
 
   MessageManager* manager;
   bool            is_outgoing;
@@ -86,9 +84,8 @@ struct Message
   Message& set_int32( const char* name, int value );
   Message& set_logical( const char* name, bool value );
   Message& set_real64_list( const char* name, Real64* list, int count );
-  Message& set_int32_list( const char* name, Int32* list, int count );
-  Message& set_byte_list( const char* name, Byte* bytes, int count );
-  Message& set_byte_list( const char* name, Builder<Byte>& bytes );
+  Message& set_bytes( const char* name, Byte* bytes, int count );
+  Message& set_bytes( const char* name, Builder<Byte>& bytes );
 
   // Incoming Message API
   bool     contains( const char* name );
@@ -97,9 +94,7 @@ struct Message
   Int64    get_int64( const char* name, Int64 default_value=0 );
   int      get_int32( const char* name, int default_value=0 );
   bool     get_logical( const char* name, bool default_value=false );
-  int      get_byte_list( const char* name, Builder<Byte>& bytes );
-  int      get_real64_list( const char* name, Builder<Real64>& list );
-  int      get_int32_list( const char* name, Builder<Int32>& list );
+  int      get_bytes( const char* name, Builder<Byte>& bytes );
 
   // INTERNAL USE ONLY
   bool     index_another( DataReader* reader );

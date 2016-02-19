@@ -114,7 +114,7 @@ int Message::get_string( const char* name, StringBuilder& buffer )
   switch (reader.read_int32x())
   {
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTE_LIST:
+    case DATA_TYPE_BYTES:
       return reader.read_string( buffer );
 
     default:
@@ -223,7 +223,7 @@ bool Message::get_logical( const char* name, bool default_value )
   }
 }
 
-int Message::get_byte_list( const char* name, Builder<Byte>& bytes )
+int Message::get_bytes( const char* name, Builder<Byte>& bytes )
 {
   if ( !confirm_incoming() ) return 0;
 
@@ -234,62 +234,12 @@ int Message::get_byte_list( const char* name, Builder<Byte>& bytes )
   switch (reader.read_int32x())
   {
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTE_LIST:
+    case DATA_TYPE_BYTES:
     {
       int count = reader.read_int32x();
       for (int i=0; i<count; ++i)
       {
         bytes.add( reader.read_int32x() );
-      }
-      return count;
-    }
-
-    default:
-      return 0;
-  }
-}
-
-int Message::get_real64_list( const char* name, Builder<Real64>& list )
-{
-  if ( !confirm_incoming() ) return 0;
-
-  int i = manager->locate_key( name );
-  if (i == -1) return 0;
-
-  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
-  switch (reader.read_int32x())
-  {
-    case DATA_TYPE_REAL64_LIST:
-    {
-      int count = reader.read_int32x();
-      for (int i=0; i<count; ++i)
-      {
-        list.add( reader.read_real64() );
-      }
-      return count;
-    }
-
-    default:
-      return 0;
-  }
-}
-
-int Message::get_int32_list( const char* name, Builder<Int32>& list )
-{
-  if ( !confirm_incoming() ) return 0;
-
-  int i = manager->locate_key( name );
-  if (i == -1) return 0;
-
-  DataReader reader( manager->reader->data + manager->offsets[i], manager->reader->count );
-  switch (reader.read_int32x())
-  {
-    case DATA_TYPE_INT32_LIST:
-    {
-      int count = reader.read_int32x();
-      for (int i=0; i<count; ++i)
-      {
-        list.add( reader.read_int32x() );
       }
       return count;
     }
@@ -316,7 +266,7 @@ bool  Message::index_another( DataReader* reader )
       return true;
 
     case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTE_LIST:
+    case DATA_TYPE_BYTES:
     {
       StringBuilder buffer;
       reader->read_string( buffer );
@@ -335,20 +285,6 @@ bool  Message::index_another( DataReader* reader )
     case DATA_TYPE_LOGICAL:
       reader->read_int32x();
       return true;
-
-    case DATA_TYPE_REAL64_LIST:
-    {
-      int count = reader->read_int32x();
-      for (int i=0; i<count; ++i) reader->read_real64();
-      return true;
-    }
-
-    case DATA_TYPE_INT32_LIST:
-    {
-      int count = reader->read_int32x();
-      for (int i=0; i<count; ++i) reader->read_int32x();
-      return true;
-    }
 
     default:
       printf( "ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
@@ -511,40 +447,12 @@ Message& Message::set_logical( const char* name, bool value )
   return *this;
 }
 
-Message& Message::set_real64_list( const char* name, Real64* list, int count )
+Message& Message::set_bytes( const char* name, Byte* bytes, int count )
 {
   if (start_position == -1 || !confirm_outgoing()) return *this;
 
   write_id( name );
-  manager->data.write_int32x( DATA_TYPE_REAL64_LIST );
-  manager->data.write_int32x( count );
-  for (int i=0; i<count; ++i)
-  {
-    manager->data.write_real64( list[i] );
-  }
-  return *this;
-}
-
-Message& Message::set_int32_list( const char* name, Int32* list, int count )
-{
-  if (start_position == -1 || !confirm_outgoing()) return *this;
-
-  write_id( name );
-  manager->data.write_int32x( DATA_TYPE_INT32_LIST );
-  manager->data.write_int32x( count );
-  for (int i=0; i<count; ++i)
-  {
-    manager->data.write_int32x( list[i] );
-  }
-  return *this;
-}
-
-Message& Message::set_byte_list( const char* name, Byte* bytes, int count )
-{
-  if (start_position == -1 || !confirm_outgoing()) return *this;
-
-  write_id( name );
-  manager->data.write_int32x( DATA_TYPE_BYTE_LIST );
+  manager->data.write_int32x( DATA_TYPE_BYTES );
   manager->data.write_int32x( count );
   for (int i=0; i<count; ++i)
   {
@@ -553,9 +461,9 @@ Message& Message::set_byte_list( const char* name, Byte* bytes, int count )
   return *this;
 }
 
-Message& Message::set_byte_list( const char* name, Builder<Byte>& bytes )
+Message& Message::set_bytes( const char* name, Builder<Byte>& bytes )
 {
-  return set_byte_list( name, bytes.data, bytes.count );
+  return set_bytes( name, bytes.data, bytes.count );
 }
 
 //=============================================================================

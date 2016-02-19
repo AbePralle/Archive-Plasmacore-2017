@@ -101,9 +101,7 @@ class Message
     DATA_TYPE_INT64         = 4
     DATA_TYPE_INT32         = 5
     DATA_TYPE_LOGICAL       = 6
-    DATA_TYPE_REAL64_LIST   = 7
-    DATA_TYPE_INT32_LIST    = 8
-    DATA_TYPE_BYTE_LIST     = 9
+    DATA_TYPE_BYTES         = 7
 
   PROPERTIES
     type          : String
@@ -131,14 +129,8 @@ class Message
     method get_logical( name:String, default=false:Logical )->Logical
       throw UnsupportedOperationError( "$::get_logical()" (type_name) )
 
-    method get_real64_list( name:String, list=Real64[]:Real64[] )->Real64[]
-      throw UnsupportedOperationError( "$::get_real64_list()" (type_name) )
-
-    method get_int32_list( name:String, list=Int32[]:Int32[] )->Int32[]
-      throw UnsupportedOperationError( "$::get_int32_list()" (type_name) )
-
-    method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
-      throw UnsupportedOperationError( "$::get_byte_list()" (type_name) )
+    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
+      throw UnsupportedOperationError( "$::get_bytes()" (type_name) )
 
     method reply->Message
       throw UnsupportedOperationError( "$::reply()" (type_name) )
@@ -158,14 +150,8 @@ class Message
     method set_logical( name:String, value:Logical )->this
       throw UnsupportedOperationError( "$::set_logical()" (type_name) )
 
-    method set_real64_list( name:String, list:Real64[] )->this
-      throw UnsupportedOperationError( "$::set_real64_list()" (type_name) )
-
-    method set_int32_list( name:String, list:Int32[] )->this
-      throw UnsupportedOperationError( "$::set_int32_list()" (type_name) )
-
-    method set_byte_list( name:String, bytes:Byte[] )->this
-      throw UnsupportedOperationError( "$::set_byte_list()" (type_name) )
+    method set_bytes( name:String, bytes:Byte[] )->this
+      throw UnsupportedOperationError( "$::set_bytes()" (type_name) )
 
     method send
       throw UnsupportedOperationError( "$::send()" (type_name) )
@@ -201,7 +187,7 @@ class IncomingMessage : Message
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
           return reader.read_string
       endWhich
 
@@ -282,41 +268,13 @@ class IncomingMessage : Message
 
       return default
 
-    method get_real64_list( name:String, list=Real64[]:Real64[] )->Real64[]
-      local i = keys.locate_last( name )
-      if (not i.exists) return list
-
-      reader.reset( offsets[i.value] )
-      which (reader.read_int32x)
-        case DATA_TYPE_REAL64_LIST
-          local count = reader.read_int32x
-          list.reserve( count )
-          forEach (1..count) list.add( reader.read_real64 )
-      endWhich
-
-      return list
-
-    method get_int32_list( name:String, list=Int32[]:Int32[] )->Int32[]
-      local i = keys.locate_last( name )
-      if (not i.exists) return list
-
-      reader.reset( offsets[i.value] )
-      which (reader.read_int32x)
-        case DATA_TYPE_INT32_LIST
-          local count = reader.read_int32x
-          list.reserve( count )
-          forEach (1..count) list.add( reader.read_int32x )
-      endWhich
-
-      return list
-
-    method get_byte_list( name:String, bytes=Byte[]:Byte[] )->Byte[]
+    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
       local i = keys.locate_last( name )
       if (not i.exists) return bytes
 
       reader.reset( offsets[i.value] )
       which (reader.read_int32x)
-        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
           local count = reader.read_int32x
           bytes.reserve( count )
           forEach (1..count) bytes.add( reader.read_int32x->Byte )
@@ -338,7 +296,7 @@ class IncomingMessage : Message
         case DATA_TYPE_ID_DEFINITION, DATA_TYPE_ID
           read_id
 
-        case DATA_TYPE_STRING, DATA_TYPE_BYTE_LIST, DATA_TYPE_INT32_LIST
+        case DATA_TYPE_STRING, DATA_TYPE_BYTES
           read_id
           local count = reader.read_int32x
           forEach (1..count) reader.read_int32x
@@ -351,11 +309,6 @@ class IncomingMessage : Message
 
         case DATA_TYPE_INT32, DATA_TYPE_LOGICAL
           reader.read_int32x
-
-        case DATA_TYPE_REAL64_LIST
-          read_id
-          local count = reader.read_int32x
-          forEach (1..count) reader.read_real64
 
         others
           println "ERROR: unsupported message data type $." (data_type)
@@ -449,21 +402,9 @@ class OutgoingMessage : Message
       writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
       return this
 
-    method set_real64_list( name:String, list:Real64[] )->this
+    method set_bytes( name:String, bytes:Byte[] )->this
       write_id( name )
-      writer.write_int32x( Message.DATA_TYPE_REAL64_LIST ).write_int32x( list.count )
-      forEach (value in list) writer.write_real64( value )
-      return this
-
-    method set_int32_list( name:String, list:Int32[] )->this
-      write_id( name )
-      writer.write_int32x( Message.DATA_TYPE_INT32_LIST ).write_int32x( list.count )
-      forEach (value in list) writer.write_int32x( value )
-      return this
-
-    method set_byte_list( name:String, bytes:Byte[] )->this
-      write_id( name )
-      writer.write_int32x( Message.DATA_TYPE_BYTE_LIST ).write_int32x( bytes.count )
+      writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
       forEach (b in bytes) writer.write_int32x( b )
       return this
 

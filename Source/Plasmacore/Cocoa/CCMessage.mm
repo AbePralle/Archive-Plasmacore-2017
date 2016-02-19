@@ -58,25 +58,11 @@ using namespace SuperCPP;
   return message.get_logical( [name UTF8String] );
 }
 
-- (NSData*)   getByteList:   (NSString*)name
+- (NSData*)   getBytes:   (NSString*)name
 {
   Builder<Byte> buffer;
-  message.get_byte_list( [name UTF8String], buffer );
+  message.get_bytes( [name UTF8String], buffer );
   return [NSData dataWithBytes:buffer.data length:buffer.count];
-}
-
-- (NSData*)   getReal64List: (NSString*)name
-{
-  Builder<Real64> buffer;
-  message.get_real64_list( [name UTF8String], buffer );
-  return [NSData dataWithBytes:(char*)buffer.data length:buffer.count];
-}
-
-- (NSData*)   getInt32List:  (NSString*)name
-{
-  Builder<Int32> buffer;
-  message.get_int32_list( [name UTF8String], buffer );
-  return [NSData dataWithBytes:(char*)buffer.data length:buffer.count];
 }
 
 @end
