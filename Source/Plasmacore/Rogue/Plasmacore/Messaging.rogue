@@ -132,8 +132,8 @@ class Message
     method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
       throw UnsupportedOperationError( "$::get_bytes()" (type_name) )
 
-    method reply->Message
-      throw UnsupportedOperationError( "$::reply()" (type_name) )
+    method create_reply->Message
+      throw UnsupportedOperationError( "$::create_reply()" (type_name) )
 
     method set_string( name:String, value:String )->this
       throw UnsupportedOperationError( "$::set_string()" (type_name) )
@@ -341,7 +341,7 @@ class IncomingMessage : Message
 
       return "Undefined"
 
-    method reply->Message
+    method create_reply->Message
       return MessageManager.message( "<reply>", id )
 
 endClass

@@ -33,18 +33,6 @@ static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, v
   return the_singleton;
 }
 
-- (void) addListener:(CCListener)listener forMessageType:(NSString*)type
-{
-  int listener_id = next_callback_id;
-  [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
-  plasmacore.message_manager.add_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
-}
-
-- (CCListener) getListenerForKey:(int)key
-{
-  return [message_callbacks objectForKey:[NSNumber numberWithInt:key]];
-}
-
 - (id) init
 {
   self = [super self];
@@ -72,6 +60,41 @@ static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, v
   delete argv;
 
   return self;
+}
+
+- (int) addListener:(CCListener)listener forMessageType:(NSString*)type
+{
+  // Associate a unique integer listener_id with each listener that we can use
+  // to track the listener in C++ code.  Returns the listener_id.
+  int listener_id = next_callback_id;
+
+  // Map the id to the listener
+  [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
+
+  // Map the id to the message type
+  [listener_message_types setObject:type forKey:[NSNumber numberWithInt:listener_id]];
+
+  // Pair the id with a C++ listener in C++ code
+  plasmacore.message_manager.add_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
+
+  return listener_id;
+}
+
+- (CCListener) getListenerByID:(int)listener_id
+{
+  return [message_callbacks objectForKey:[NSNumber numberWithInt:listener_id]];
+}
+
+- (void) removeListenerByID:(int)listener_id
+{
+  NSNumber* key = [NSNumber numberWithInt:listener_id];
+
+  [message_callbacks removeObjectForKey:key];
+
+  NSString* type = [listener_message_types objectForKey:key];
+  [listener_message_types removeObjectForKey:key];
+
+  plasmacore.message_manager.remove_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
 }
 
 - (void) start
@@ -113,8 +136,8 @@ static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, v
 
 static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, void* data )
 {
-  int key = (int)(intptr_t)context;
-  CCListener listener = [[CocoaCore singleton] getListenerForKey:key];
-  if (listener) listener( [[CCMessage alloc] initWithPlasmacoreMessage:m] );
+  int listener_id = (int)(intptr_t)context;
+  CCListener listener = [[CocoaCore singleton] getListenerByID:listener_id];
+  if (listener) listener( listener_id, [[CCMessage alloc] initWithPlasmacoreMessage:m] );
 }
 

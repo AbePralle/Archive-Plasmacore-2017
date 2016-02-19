@@ -71,9 +71,9 @@ struct Message
   ~Message();
 
   // Outgoing Message API
+  Message  create_reply();
   bool     push();      // sends the message and has the manager dispatch pending messages
   bool     push_rsvp( Callback callback, void* context=0, void* data=0 );
-  Message  reply();
   bool     send();
   bool     send_rsvp( Callback callback, void* context=0, void* data=0 );
   Message& set_string( const char* name, const char* value );

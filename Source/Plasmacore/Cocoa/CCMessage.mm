@@ -16,6 +16,11 @@ using namespace SuperCPP;
   return [NSString stringWithUTF8String:message.type];
 }
 
+- (CCMessage*) create_reply
+{
+  return [[CCMessage alloc] initWithPlasmacoreMessage:message.create_reply()];
+}
+
 - (void) push
 {
   message.push();
@@ -24,6 +29,15 @@ using namespace SuperCPP;
 - (void) push_rsvp:(CCListener)callback
 {
   message.push();
+}
+
+- (void) send
+{
+  message.send();
+}
+
+- (void) send_rsvp:(CCListener)callback
+{
 }
 
 - (bool) contains:(NSString*)name

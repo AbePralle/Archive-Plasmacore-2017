@@ -48,6 +48,11 @@ Message::~Message()
   if (is_outgoing) send();  // just in case; no effect if message already sent
 }
 
+Message Message::create_reply()
+{
+  return manager->message( "<reply>", id );
+}
+
 bool Message::push()
 {
   if ( !send() ) return false;
@@ -60,11 +65,6 @@ bool Message::push_rsvp( Callback callback, void* context, void* data )
   if ( !send_rsvp(callback,context,data) ) return false;
   manager->dispach_messages();
   return true;
-}
-
-Message Message::reply()
-{
-  return manager->message( "<reply>", id );
 }
 
 bool Message::send()

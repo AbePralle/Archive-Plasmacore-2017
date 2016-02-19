@@ -4,4 +4,4 @@ println "Rogue Launched!"
 println System.command_line_arguments
 
 MessageManager.message( "Yin" ).set_int32("value",1).send_rsvp( function(m:Message) println "Yang:"+m.get_int32("value") )
-MessageManager.add_listener( "Marco", function(m:Message) println m.type; m.reply.set_string("message","Polo").send() );
+MessageManager.add_listener( "Marco", function(m:Message) println m.type; m.create_reply.set_string("message","Polo").send() );

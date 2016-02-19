@@ -15,13 +15,14 @@
   NSTimer*               update_timer;
 
   NSMutableDictionary*   message_callbacks;
+  NSMutableDictionary*   listener_message_types;
   int                    next_callback_id;
 }
 
 + (CocoaCore*) singleton;
 
-//- (void) addListener:(NSString*)message_type 
-- (void) addListener:(CCListener)listener forMessageType:(NSString*)type;
+- (int)  addListener:(CCListener)listener forMessageType:(NSString*)type;
+- (void) removeListenerByID:(int)listener_id;
 - (void) start;
 - (void) stop;
 - (void) update;
