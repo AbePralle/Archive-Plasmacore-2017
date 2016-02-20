@@ -81,6 +81,21 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
     }
   ];
 
+  [self handleMessageType:"Window.call"
+    withListener:^(int this_id, CCMessage* m)
+    {
+      int window_id = [m getInt32:"id"];
+
+      NSWindowController* window = [resources getResourceWithID:window_id];
+      if (window)
+      {
+        SEL selector = NSSelectorFromString( [[m getString:"method_name"] stringByAppendingString:@":"] );
+        if ([window respondsToSelector:selector])
+        ((void (*)(id, SEL, CCMessage*))[window methodForSelector:selector])(window, selector, m);
+      }
+    }
+  ];
+
   [self handleMessageType:"Window.close"
     withListener:^(int this_id, CCMessage* m)
     {

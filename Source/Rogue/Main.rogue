@@ -4,3 +4,5 @@ println "Rogue Launched!"
 
 global window = Window( "MainWindow" )
 window.show
+window( "bam" )
+window( "pow" )

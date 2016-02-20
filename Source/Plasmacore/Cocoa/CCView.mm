@@ -3,7 +3,7 @@
 @implementation CCView
 - (void)onCreate
 {
-  printf( "CCView created\n" );
+  NSLog( @"CCView '%@' created\n", [self valueForKey:@"name"] );
 }
 
 - (void)onDraw
