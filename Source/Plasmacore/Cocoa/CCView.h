@@ -1,5 +1,3 @@
-#pragma once
-
 #import <AppKit/NSOpenGLView.h>
 #import <Cocoa/Cocoa.h>
 #import <CoreVideo/CoreVideo.h>
@@ -8,9 +6,11 @@
 #import "StarbrightGLView.h"
 using namespace Starbright;
 
-@interface PlasmacoreView : StarbrightGLView
+@interface CCView : StarbrightGLView
 {
 }
+
+@property (nonatomic) NSString* name;
 
 - (void)onCreate;
 - (void)onDraw;

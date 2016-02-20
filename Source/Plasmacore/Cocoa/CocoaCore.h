@@ -5,6 +5,7 @@
 
 #import "CCMessage.h"
 #import "CCResourceBank.h"
+#import "CCView.h"
 
 #include "Plasmacore.h"
 

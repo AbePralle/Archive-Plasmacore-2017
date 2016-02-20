@@ -7,10 +7,12 @@
 //
 
 #import "AppDelegate.h"
+#import "CCView.h"
 
 @interface AppDelegate ()
 
 @property (weak) IBOutlet NSWindow *window;
+
 @end
 
 @implementation AppDelegate

@@ -1,0 +1,39 @@
+//
+//  MainWindow.m
+//  PlasmacoreStudio
+//
+//  Created by Abraham Pralle on 2/20/16.
+//  Copyright © 2016 Abe Pralle. All rights reserved.
+//
+
+#import "MainWindow.h"
+
+@interface MainWindow ()
+@property (weak) IBOutlet NSView *view;
+
+@end
+
+@implementation MainWindow
+
+- (void)windowDidLoad {
+    [super windowDidLoad];
+    
+    // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
+  //NSLog( @"testView exists: %d\n", (self.view != nil));
+  //printf( "HERE I AM\n" );
+  
+  
+  //SEL method = NSSelectorFromString(@”name”);
+  //id val = [myObj performSelector:method withObject:@"param"];
+
+  NSLog( @"view has name: %d\n", [self.view respondsToSelector:NSSelectorFromString(@"name")] );
+
+  //IMP method = [self.view methodForSelector:NSSelectorFromString(@"name")];
+  SEL selector = NSSelectorFromString(@"name");
+  NSLog( @"view's name is... %@\n", 
+    ((id (*)(id, SEL))[self.view methodForSelector:selector])(self.view, selector)
+  );
+  NSLog( @"view's name 2 is %@\n", [self.view valueForKey:@"name"] );
+}
+
+@end

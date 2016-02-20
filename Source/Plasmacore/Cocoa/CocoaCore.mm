@@ -66,7 +66,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
       NSString* window_name = [m getString:"name"];
       int       window_id   = [m getInt32:"id"];
 
-      NSWindowController* window = [[NSWindowController alloc] initWithWindowNibName:window_name];
+      NSWindowController* window = [[NSClassFromString(window_name) alloc] initWithWindowNibName:window_name];
       [resources addResource:window withID:window_id];
     }
   ];
