@@ -2,5 +2,5 @@ $using Plasmacore
 
 println "Rogue Launched!"
 
-local window = Window( "MainWindow" )
+global window = Window( "MainWindow" )
 window.show

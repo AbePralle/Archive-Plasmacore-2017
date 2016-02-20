@@ -14,6 +14,12 @@ class Window
       id = Plasmacore.create_resource_id
       Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
 
+    method clean_up
+      close
+
+    method close
+      Message( "Window.close" ).set_int32("id",id).send
+
     method show
       Message( "Window.show" ).set_int32("id",id).send
 

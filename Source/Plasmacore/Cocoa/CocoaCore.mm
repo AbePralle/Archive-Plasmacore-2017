@@ -81,6 +81,16 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
     }
   ];
 
+  [self handleMessageType:"Window.close"
+    withListener:^(int this_id, CCMessage* m)
+    {
+      int window_id = [m getInt32:"id"];
+
+      NSWindowController* window = [resources removeResourceWithID:window_id];
+      if (window) [window close];
+    }
+  ];
+
   return self;
 }
 
