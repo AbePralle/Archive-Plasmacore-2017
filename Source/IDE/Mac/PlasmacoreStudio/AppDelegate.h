@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "CocoaCore.h"
+#import "Plasmacore.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {

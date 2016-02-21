@@ -1,4 +1,4 @@
-#import  "CocoaCore.h"
+#import  "Plasmacore.h"
 
 #include "RogueProgram.h"
 
@@ -19,17 +19,17 @@ void marco_callback( Message m, void* context )
 
 }
 */
-static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, void* data );
-static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void* data );
+static void CocoaCore_listener_callback( PLASMACORE::Message m, void* context, void* data );
+static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void* data );
 
-@implementation CocoaCore
+@implementation Plasmacore
 
-+ (CocoaCore*) singleton
++ (Plasmacore*) singleton
 {
-  static CocoaCore* the_singleton = nil;
+  static Plasmacore* the_singleton = nil;
   if ( !the_singleton )
   {
-    the_singleton = [[CocoaCore alloc] init];
+    the_singleton = [[Plasmacore alloc] init];
   }
   return the_singleton;
 }
@@ -39,7 +39,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   self = [super self];
   if ( !self ) return nil;
 
-  resources = [[CCResourceBank alloc] init];
+  resources = [[PlasmacoreResourceBank alloc] init];
 
   message_callbacks = [[NSMutableDictionary alloc] init];
   next_callback_id = 1;
@@ -61,7 +61,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 
   // Set up standard message handlers
   [self handleMessageType:"Window.create"
-    withListener:^(int this_id, CCMessage* m)
+    withListener:^(int this_id, PlasmacoreMessage* m)
     {
       NSString* window_name = [m getString:"name"];
       int       window_id   = [m getInt32:"id"];
@@ -72,7 +72,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   ];
 
   [self handleMessageType:"Window.show"
-    withListener:^(int this_id, CCMessage* m)
+    withListener:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
@@ -82,7 +82,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   ];
 
   [self handleMessageType:"Window.call"
-    withListener:^(int this_id, CCMessage* m)
+    withListener:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
@@ -91,13 +91,13 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
       {
         SEL selector = NSSelectorFromString( [[m getString:"method_name"] stringByAppendingString:@":"] );
         if ([window respondsToSelector:selector])
-        ((void (*)(id, SEL, CCMessage*))[window methodForSelector:selector])(window, selector, m);
+        ((void (*)(id, SEL, PlasmacoreMessage*))[window methodForSelector:selector])(window, selector, m);
       }
     }
   ];
 
   [self handleMessageType:"Window.close"
-    withListener:^(int this_id, CCMessage* m)
+    withListener:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
@@ -109,14 +109,14 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   return self;
 }
 
-- (CCMessage*) createMessage:(const char*)message_type
+- (PlasmacoreMessage*) createMessage:(const char*)message_type
 {
-  return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message(message_type)];
+  return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message_manager.create_message(message_type)];
 }
 
-- (CCMessage*) createReply:(int)message_id
+- (PlasmacoreMessage*) createReply:(int)message_id
 {
-  return [[CCMessage alloc] initWithPlasmacoreMessage:plasmacore.message_manager.create_message("<reply>",message_id)];
+  return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message_manager.create_message("<reply>",message_id)];
 }
 
 - (int) handleMessageType:(const char*)type withListener:(CCListener)listener
@@ -132,7 +132,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   [listener_message_types setObject:[NSString stringWithUTF8String:type] forKey:[NSNumber numberWithInt:listener_id]];
 
   // Pair the id with a C++ listener in C++ code
-  plasmacore.message_manager.add_listener( type, CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
+  message_manager.add_listener( type, CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
 
   return listener_id;
 }
@@ -151,7 +151,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   NSString* type = [listener_message_types objectForKey:key];
   [listener_message_types removeObjectForKey:key];
 
-  plasmacore.message_manager.remove_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
+  message_manager.remove_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
 }
 
 - (CCListener) removeReplyListenerByID:(int)listener_id
@@ -163,7 +163,7 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
   return listener;
 }
 
-- (int) sendRSVP:(Plasmacore::Message)message withReplyListener:(CCListener)listener
+- (int) sendRSVP:(PLASMACORE::Message)message withReplyListener:(CCListener)listener
 {
   // Associate a unique integer listener_id with each listener that we can use
   // to track the listener in C++ code.  Returns the listener_id.
@@ -200,19 +200,19 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 
 - (void) update
 {
-  plasmacore.message_manager.dispach_messages();
+  message_manager.dispach_messages();
 
   // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
   // communication.
   for (int i=0; i<10; ++i)
   {
-    if ( !plasmacore.message_manager.dispatch_requested ) return;
-    plasmacore.message_manager.dispach_messages();
+    if ( !message_manager.dispatch_requested ) return;
+    message_manager.dispach_messages();
   }
 
   // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
   // there are still waiting messages.
-  if (plasmacore.message_manager.dispatch_requested)
+  if (message_manager.dispatch_requested)
   {
     [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
   }
@@ -220,17 +220,17 @@ static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void
 
 @end
 
-static void CocoaCore_listener_callback( Plasmacore::Message m, void* context, void* data )
+static void CocoaCore_listener_callback( PLASMACORE::Message m, void* context, void* data )
 {
   int listener_id = (int)(intptr_t)context;
-  CCListener listener = [[CocoaCore singleton] getListenerByID:listener_id];
-  if (listener) listener( listener_id, [[CCMessage alloc] initWithPlasmacoreMessage:m] );
+  CCListener listener = [[Plasmacore singleton] getListenerByID:listener_id];
+  if (listener) listener( listener_id, [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:m] );
 }
 
-static void CocoaCore_reply_callback( Plasmacore::Message m, void* context, void* data )
+static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void* data )
 {
   int listener_id = (int)(intptr_t)context;
-  CCListener listener = [[CocoaCore singleton] removeReplyListenerByID:listener_id];
-  if (listener) listener( listener_id, [[CCMessage alloc] initWithPlasmacoreMessage:m] );
+  CCListener listener = [[Plasmacore singleton] removeReplyListenerByID:listener_id];
+  if (listener) listener( listener_id, [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:m] );
 }
 

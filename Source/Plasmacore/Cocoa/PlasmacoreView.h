@@ -6,7 +6,7 @@
 #import "StarbrightGLView.h"
 using namespace Starbright;
 
-@interface CCView : StarbrightGLView
+@interface PlasmacoreView : StarbrightGLView
 {
 }
 

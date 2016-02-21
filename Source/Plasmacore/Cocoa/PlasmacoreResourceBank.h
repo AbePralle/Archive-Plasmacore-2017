@@ -2,7 +2,7 @@
 
 #include "SuperCPPList.h"
 
-@interface CCResourceBank : NSObject 
+@interface PlasmacoreResourceBank : NSObject 
 {
   NSMutableDictionary* resources;
 }

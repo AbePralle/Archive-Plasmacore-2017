@@ -3,25 +3,25 @@
 #import <CoreVideo/CoreVideo.h>
 #import <OpenGL/gl.h>
 
-#import "CCMessage.h"
-#import "CCResourceBank.h"
-#import "CCView.h"
+#import "PlasmacoreMessage.h"
+#import "PlasmacoreResourceBank.h"
+#import "PlasmacoreView.h"
 
-#include "Plasmacore.h"
+#include "PlasmacoreMessaging.h"
 
-@interface CocoaCore : NSObject
+@interface Plasmacore : NSObject
 {
-  Plasmacore::Plasmacore plasmacore; 
+  PLASMACORE::MessageManager message_manager; 
   NSTimer*               update_timer;
 
   NSMutableDictionary*   message_callbacks;
   NSMutableDictionary*   listener_message_types;
   int                    next_callback_id;
 
-  CCResourceBank*        resources;
+  PlasmacoreResourceBank*        resources;
 }
 
-+ (CocoaCore*) singleton;
++ (Plasmacore*) singleton;
 
 - (int)  handleMessageType:(const char*)type withListener:(CCListener)listener;
 - (void) removeListenerByID:(int)listener_id;

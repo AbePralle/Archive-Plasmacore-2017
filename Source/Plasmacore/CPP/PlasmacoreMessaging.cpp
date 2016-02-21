@@ -1,14 +1,14 @@
 //=============================================================================
-//  Messaging.cpp
+//  PlasmacoreMessaging.cpp
 //=============================================================================
-#include "Messaging.h"
+#include "PlasmacoreMessaging.h"
 #include "RogueProgram.h"
 
 #include <cstdio>
 #include <cstring>
 using namespace std;
 
-namespace Plasmacore
+namespace PLASMACORE
 {
 
 //=============================================================================
@@ -601,5 +601,5 @@ void MessageManager::reply_handler( Message m, void* context, void* data )
   }
 }
 
-} // namespace Plasmacore
+} // namespace PLASMACORE
 

@@ -20,12 +20,12 @@
     [super windowDidLoad];
 }
 
-- (void)bam:(CCMessage*)m
+- (void)bam:(PlasmacoreMessage*)m
 {
   NSLog( @"BAM! (method name %@)\n", [m getString:"method_name"] );
 }
 
-- (void)pow:(CCMessage*)m
+- (void)pow:(PlasmacoreMessage*)m
 {
   printf( "POW!\n" );
 }

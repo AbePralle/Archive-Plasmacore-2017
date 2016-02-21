@@ -1,9 +1,9 @@
-#import  "CCView.h"
+#import  "PlasmacoreView.h"
 
-@implementation CCView
+@implementation PlasmacoreView
 - (void)onCreate
 {
-  NSLog( @"CCView '%@' created\n", [self valueForKey:@"name"] );
+  NSLog( @"PlasmacoreView '%@' created\n", [self valueForKey:@"name"] );
 }
 
 - (void)onDraw

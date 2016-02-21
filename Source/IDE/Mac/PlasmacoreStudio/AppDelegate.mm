@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "CCView.h"
+#import "PlasmacoreView.h"
 
 @interface AppDelegate ()
 
@@ -19,12 +19,12 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-  [[CocoaCore singleton] start];
+  [[Plasmacore singleton] start];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification 
 {
-  [[CocoaCore singleton] stop];
+  [[Plasmacore singleton] stop];
 }
 
 

@@ -1,8 +1,8 @@
-#import "CCResourceBank.h"
+#import "PlasmacoreResourceBank.h"
 
 using namespace SuperCPP;
 
-@implementation CCResourceBank
+@implementation PlasmacoreResourceBank
 
 - (id) init
 {

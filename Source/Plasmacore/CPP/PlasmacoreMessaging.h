@@ -1,8 +1,8 @@
 //=============================================================================
-//  Messaging.h
+//  PlasmacoreMessaging.h
 //=============================================================================
-#ifndef MESSAGING_H
-#define MESSAGING_H
+#ifndef PLASMACORE_MESSAGING_H
+#define PLASMACORE_MESSAGING_H
 
 #include "SuperCPPDataBuilder.h"
 #include "SuperCPPDataReader.h"
@@ -12,7 +12,7 @@
 #include "SuperCPPList.h"
 using namespace SuperCPP;
 
-namespace Plasmacore
+namespace PLASMACORE
 {
 
 struct Message;
@@ -141,6 +141,6 @@ struct MessageManager
   static void reply_handler( Message m, void* context, void* data );
 };
 
-} // namespace Plasmacore
+} // namespace PLASMACORE
 
-#endif // MESSAGING_H
+#endif // PLASMACORE_MESSAGING_H
