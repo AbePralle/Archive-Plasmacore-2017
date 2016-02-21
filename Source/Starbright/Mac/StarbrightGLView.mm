@@ -8,30 +8,31 @@ using namespace Starbright;
 static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display_link, const CVTimeStamp* now, const CVTimeStamp* output_time,
     CVOptionFlags input_flags, CVOptionFlags* output_flags, void* view_ptr )
 {
-  //static bool locked = false;
-  //if (locked) return kCVReturnSuccess;
-  //locked = true;
-
   StarbrightGLView* view = SB_BRIDGE_CAST( view_ptr, StarbrightGLView* );
-
-  if (view.window.isVisible)
+  @synchronized (view)
   {
-    //[view drawRect:view.bounds];
-    view.needsDisplay = true;
-  }
-  else
-  {
-    [view stopDisplayLink];
-    [view onStop];
+    [view handleDisplayLinkUpdate];
   }
 
-  //locked = false;
   return kCVReturnSuccess;
 }
 
 
 
 @implementation StarbrightGLView
+- (void)handleDisplayLinkUpdate
+{
+  if (self.window.isVisible)
+  {
+    [self drawRect:self.bounds];
+  }
+  else
+  {
+    [self stopDisplayLink];
+    [self onStop];
+  }
+}
+
 - (void)startDisplayLink
 {
   if (display_link) return;

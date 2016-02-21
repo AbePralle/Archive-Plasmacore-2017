@@ -189,6 +189,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 309EFD931C6FFD1B00FB5651 /* Build configuration list for PBXNativeTarget "PlasmacoreStudio" */;
 			buildPhases = (
+				30C73B161C7A2E450009C7C4 /* ShellScript */,
 				309EFD7E1C6FFD1B00FB5651 /* Sources */,
 				309EFD7F1C6FFD1B00FB5651 /* Frameworks */,
 				309EFD801C6FFD1B00FB5651 /* Resources */,
@@ -246,6 +247,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		30C73B161C7A2E450009C7C4 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make --directory=../../.. update\nmake --directory=../../..\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		309EFD7E1C6FFD1B00FB5651 /* Sources */ = {

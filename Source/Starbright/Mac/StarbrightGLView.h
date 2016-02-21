@@ -18,6 +18,7 @@
   Starbright::Renderer* renderer;
 }
 
+- (void)handleDisplayLinkUpdate;
 - (void)startDisplayLink;
 - (void)stopDisplayLink;
 - (void)onCreate;

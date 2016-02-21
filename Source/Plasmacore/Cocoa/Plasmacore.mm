@@ -182,10 +182,19 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
   return listener_id;
 }
 
+- (void) sendTestMessage
+{
+  [[PlasmacoreMessage messageWithType:"test"] send];
+}
+
 - (void) start
 {
   if ( !update_timer )
   {
+    static NSTimer* test_timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(sendTestMessage)
+                    userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:test_timer forMode:NSRunLoopCommonModes];
+
     update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(update)
                     userInfo:nil repeats:YES];
     [[NSRunLoop mainRunLoop] addTimer:update_timer forMode:NSRunLoopCommonModes];
@@ -205,21 +214,24 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
 
 - (void) update
 {
-  message_manager.dispach_messages();
-
-  // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
-  // communication.
-  for (int i=0; i<10; ++i)
+  @synchronized (self)
   {
-    if ( !message_manager.dispatch_requested ) return;
     message_manager.dispach_messages();
-  }
 
-  // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
-  // there are still waiting messages.
-  if (message_manager.dispatch_requested)
-  {
-    [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
+    // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
+    // communication.
+    for (int i=0; i<10; ++i)
+    {
+      if ( !message_manager.dispatch_requested ) return;
+      message_manager.dispach_messages();
+    }
+
+    // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
+    // there are still waiting messages.
+    if (message_manager.dispatch_requested)
+    {
+      [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
+    }
   }
 }
 

@@ -8,3 +8,4 @@ window( "bam" )
 window( "pow" )
 
 Window( "MainWindow" ).show  # 2
+Window( "MainWindow" ).show  # 3
