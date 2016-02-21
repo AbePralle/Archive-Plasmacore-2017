@@ -70,6 +70,7 @@ using namespace SuperCPP;
   StringBuilder buffer;
   buffer.reserve( (int) value.length );
   [value getCharacters:(unichar*)buffer.data range:NSMakeRange(0,value.length)];
+  buffer.count += (int) value.length;
   message.set_string( name, buffer );
   return self;
 }

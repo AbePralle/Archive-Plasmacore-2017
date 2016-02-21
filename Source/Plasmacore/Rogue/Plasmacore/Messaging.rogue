@@ -175,6 +175,8 @@ class IncomingMessage : Message
     method init
       
     method init( source:DataReader )
+      keys.clear
+      offsets.clear
       local size = source.read_int32
       source.read( reader.buffer.clear, size )
       reader.reset( 0 )
@@ -301,7 +303,6 @@ class IncomingMessage : Message
           read_id
 
         case DATA_TYPE_STRING, DATA_TYPE_BYTES
-          read_id
           local count = reader.read_int32x
           forEach (1..count) reader.read_int32x
 

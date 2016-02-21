@@ -6,3 +6,5 @@ global window = Window( "MainWindow" )
 window.show
 window( "bam" )
 window( "pow" )
+
+Window( "MainWindow" ).show  # 2

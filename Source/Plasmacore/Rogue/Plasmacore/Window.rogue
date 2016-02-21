@@ -12,6 +12,7 @@ class Window
   METHODS
     method init( name )
       id = Plasmacore.create_resource_id
+      WindowManager.windows_by_id[ id ] = this
       Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
 
     method call( method_name:String )
@@ -21,10 +22,29 @@ class Window
       close
 
     method close
+      WindowManager.windows_by_id.remove( id )
       Message( "Window.close" ).set_int32("id",id).send
+
+    method handle_draw( view_name:String )
+      println "$.$.draw" (id,view_name)
 
     method show
       Message( "Window.show" ).set_int32("id",id).send
 
 endClass
 
+class WindowManager [requisite singleton]
+  PROPERTIES
+    windows_by_id = Table<<Int32,Window>>()
+
+  METHODS
+    method init
+      MessageManager.add_listener( "Window.draw",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name" )
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_draw( view_name )
+        endFunction
+      )
+endClass

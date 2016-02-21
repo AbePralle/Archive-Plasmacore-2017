@@ -24,6 +24,7 @@
 + (Plasmacore*) singleton;
 
 - (int)  handleMessageType:(const char*)type withListener:(CCListener)listener;
+- (int)  getWindowID:(id)window;
 - (void) removeListenerByID:(int)listener_id;
 - (void) start;
 - (void) stop;

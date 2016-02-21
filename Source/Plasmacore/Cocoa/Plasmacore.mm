@@ -142,6 +142,11 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
   return [message_callbacks objectForKey:[NSNumber numberWithInt:listener_id]];
 }
 
+- (int) getWindowID:(id)window
+{
+  return [resources getIDOfResource:window];
+}
+
 - (void) removeListenerByID:(int)listener_id
 {
   NSNumber* key = [NSNumber numberWithInt:listener_id];
