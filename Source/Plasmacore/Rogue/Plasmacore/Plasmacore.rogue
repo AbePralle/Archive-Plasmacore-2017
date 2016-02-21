@@ -1,7 +1,9 @@
 #==============================================================================
 # Plasmacore.rogue
 #==============================================================================
+$include "Graphics"
 $include "Messaging.rogue"
+$include "PlasmacoreGraphics.rogue"
 $include "Window.rogue"
 
 class Plasmacore

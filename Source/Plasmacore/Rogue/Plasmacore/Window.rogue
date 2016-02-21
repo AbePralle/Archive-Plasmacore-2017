@@ -6,8 +6,9 @@ $module Plasmacore
 
 class Window
   PROPERTIES
-    name : String
-    id   : Int32
+    name     : String
+    id       : Int32
+    graphics = Table<<String,PlasmacoreGraphics>>()
 
   METHODS
     method init( name )
@@ -25,8 +26,15 @@ class Window
       WindowManager.windows_by_id.remove( id )
       Message( "Window.close" ).set_int32("id",id).send
 
-    method handle_draw( view_name:String )
-      println "$.$.draw" (id,view_name)
+    method handle_draw( view_name:String, w:Int32, h:Int32 )
+      local g = graphics[ view_name ]
+      if (not g)
+        g = PlasmacoreGraphics( this, view_name )
+        graphics[ view_name ] = g
+      endIf
+      Graphics = g
+      Graphics.begin_draw( XY(w,h) )
+      Graphics.end_draw
 
     method show
       Message( "Window.show" ).set_int32("id",id).send
@@ -43,8 +51,10 @@ class WindowManager [requisite singleton]
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name" )
+          local width     = m.get_int32( "width" )
+          local height    = m.get_int32( "height" )
           local window = WindowManager.windows_by_id[ window_id ]
-          if (window) window.handle_draw( view_name )
+          if (window) window.handle_draw( view_name, width, height )
         endFunction
       )
 endClass

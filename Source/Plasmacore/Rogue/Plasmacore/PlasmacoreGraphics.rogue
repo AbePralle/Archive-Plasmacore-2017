@@ -1,0 +1,21 @@
+$module Plasmacore
+
+class PlasmacoreGraphics : Graphics
+  PROPERTIES
+    window    : Window
+    view_name : String
+
+  METHODS
+    method init( window, view_name )
+
+    method begin_draw( size )->this
+      return this
+
+    method clear
+
+    method end_draw->this
+      return this
+
+    method flush
+
+endClass
