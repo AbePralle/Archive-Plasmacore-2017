@@ -28,8 +28,9 @@
 
 - (id)                 init;
 - (int)                addListenerForType:(const char*)type withCallback:(PlasmacoreCallback)callback;
-- (PlasmacoreMessage*) obtainMessage;
 - (void)               dispatchMessages;
+- (const char*)        incomingIDToName:(int)type_id;
+- (PlasmacoreMessage*) obtainMessage;
 - (void)               send:(PlasmacoreMessage*)m;
 - (void)               sendRSVP:(PlasmacoreMessage*)m withCallback:(PlasmacoreCallback)callback;
 - (void)               removeListenerByID:(int)listener_id;

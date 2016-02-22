@@ -28,8 +28,8 @@ typedef void (^PlamacoreCallback)( int this_id, id message );
 - (id)         reset;
 - (void)       decodeIncomingMessageData:(char*)data size:(int)size;
 
-- (NSString*)  getType;
-- (int)        getID;
+- (NSString*)  messageType;
+- (int)        messageID;
 
 // Outgoing Message API
 - (PlasmacoreMessage*)  createReply;

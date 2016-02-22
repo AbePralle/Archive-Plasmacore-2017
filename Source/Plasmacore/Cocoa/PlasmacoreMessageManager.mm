@@ -37,6 +37,10 @@ using namespace SuperCPP;
 //=============================================================================
 //  PlasmacoreMessageManager
 //=============================================================================
+@interface PlasmacoreMessageManager()
+- (void) handleReply:(PlasmacoreMessage*)m;
+@end
+
 @implementation PlasmacoreMessageManager
 
 - (id) init
@@ -49,6 +53,13 @@ using namespace SuperCPP;
   listeners_by_id   = [[NSMutableDictionary alloc] init];
   reply_callbacks_by_message_id = [[NSMutableDictionary alloc] init];
   next_callback_id = 1;
+
+  [self addListenerForType:"<reply>"
+    withCallback:^(int this_id,PlasmacoreMessage* m)
+    {
+      [self handleReply:m];
+    }
+  ];
 }
 
 - (int) addListenerForType:(const char*)type withCallback:(PlasmacoreCallback)callback
@@ -170,7 +181,7 @@ using namespace SuperCPP;
           reader.position += size;
 
           // Dispatch the message to any listeners
-          NSMutableArray* list = [listeners objectForKey:[m getType]];
+          NSMutableArray* list = [listeners objectForKey:[m messageType]];
           if (list)
           {
             for (int i=0; i<list.count; ++i)
@@ -190,6 +201,20 @@ using namespace SuperCPP;
   } // end @synchronized
 }
 
+- (void) handleReply:(PlasmacoreMessage*)m
+{
+  @synchronized (self)
+  {
+    NSNumber* key = [NSNumber numberWithInt:[m messageID]];
+    PlasmacoreCallback callback = [reply_callbacks_by_message_id objectForKey:key];
+    if (callback)
+    {
+      [reply_callbacks_by_message_id removeObjectForKey:key];
+      callback( 0, m );
+    }
+  }
+}
+
 - (void) send:(PlasmacoreMessage*)m
 {
   @synchronized (this)
@@ -205,8 +230,11 @@ using namespace SuperCPP;
 
 - (void) sendRSVP:(PlasmacoreMessage*)m withCallback:(PlasmacoreCallback)callback
 {
-  [reply_callbacks_by_message_id setObject:callback forKey:[m getID]];
-  [self send:m];
+  @synchronized (this)
+  {
+    [reply_callbacks_by_message_id setObject:callback forKey:[m messageID]];
+    [self send:m];
+  }
 }
 
 @end

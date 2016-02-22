@@ -43,15 +43,62 @@ using namespace SuperCPP;
   buffer.add( data, size );
   is_incoming = true;
 
-  // TODO: index
+  DataReader reader( buffer.data, buffer.size );
+  m_type = reader.read_int32x();
+  m_id   = reader.read_int32x();
+  while (reader.has_another())
+  {
+    [self indexAnotherProperty];
+  }
 }
 
-- (NSString*) getType
+- (void) indexAnotherProperty
+{
+  keys.add( read_int32x() );
+  offsets.add( reader.position );
+  manager->offsets.add( reader->position );
+
+  int data_type = reader->read_int32x();
+  switch (data_type)
+  {
+    case DATA_TYPE_ID_DEFINITION:
+    case DATA_TYPE_ID:
+      read_id( reader );
+      return true;
+
+    case DATA_TYPE_STRING:
+    case DATA_TYPE_BYTES:
+    {
+      StringBuilder buffer;
+      reader->read_string( buffer );
+      return true;
+    }
+
+    case DATA_TYPE_REAL64:
+      reader->read_real64();
+      return true;
+
+    case DATA_TYPE_INT64:
+      reader->read_int64x();
+      return true;
+
+    case DATA_TYPE_INT32:
+    case DATA_TYPE_LOGICAL:
+      reader->read_int32x();
+      return true;
+
+    default:
+      printf( "ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
+      return false;
+  }
+}
+
+- (NSString*) messageType
 {
   return [NSString stringWithUTF8String:message.m_type];
 }
 
-- (int) getID
+- (int) messageID
 {
   return message.id;
 }
