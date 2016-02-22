@@ -21,16 +21,34 @@ using namespace SuperCPP;
   return [[Plasmacore singleton] createReply:message_id];
 }
 
-- (id) initWithPlasmacoreMessage:(PLASMACORE::Message)m
+- (id) initWithManager:(PlasmacoreMessageManager*)_manager
 {
-  self = [super init];
-  if (self) message = m;
+  manager = _manager;
+}
+
+- (id) reset
+{
+  m_type = 0;
+  m_id = 0;
+  keys.clear();
+  offsets.clear();
+  buffer.reset();
   return self;
+}
+
+- (void) decodeIncomingMessageData:(char*)data size:(int)size
+{
+  [self reset];
+  buffer.reserve( size );
+  buffer.add( data, size );
+  is_incoming = true;
+
+  // TODO: index
 }
 
 - (NSString*) getType
 {
-  return [NSString stringWithUTF8String:message.type];
+  return [NSString stringWithUTF8String:message.m_type];
 }
 
 - (int) getID
@@ -63,6 +81,16 @@ using namespace SuperCPP;
 - (int) sendRSVP:(CCListener)callback
 {
   return [[Plasmacore singleton] sendRSVP:message withReplyListener:callback];
+}
+
+- (char*) data
+{
+  return (char*) buffer.data;
+}
+
+- (int) size
+{
+  return buffer.count;
 }
 
 - (PlasmacoreMessage*) setString:  (const char*)name value:(NSString*)value

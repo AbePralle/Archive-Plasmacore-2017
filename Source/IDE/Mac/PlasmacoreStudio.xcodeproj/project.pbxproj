@@ -11,6 +11,7 @@
 		309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD891C6FFD1B00FB5651 /* main.m */; };
 		309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */; };
 		309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */; };
+		30C73B191C7AC6040009C7C4 /* PlasmacoreMessageManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */; };
 		30CB045F1C76674000A767FC /* PlasmacoreMessage.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30CB045E1C76674000A767FC /* PlasmacoreMessage.mm */; };
 		30CB04621C77C69300A767FC /* PlasmacoreResourceBank.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30CB04611C77C69300A767FC /* PlasmacoreResourceBank.mm */; };
 		30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F91A1C70187200F89F60 /* RogueProgram.cpp */; };
@@ -37,6 +38,8 @@
 		309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		309EFD8E1C6FFD1B00FB5651 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		309EFD901C6FFD1B00FB5651 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30C73B171C7AC6040009C7C4 /* PlasmacoreMessageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreMessageManager.h; path = ../../../Plasmacore/Cocoa/PlasmacoreMessageManager.h; sourceTree = "<group>"; };
+		30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreMessageManager.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreMessageManager.mm; sourceTree = "<group>"; };
 		30CB045D1C76674000A767FC /* PlasmacoreMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreMessage.h; path = ../../../Plasmacore/Cocoa/PlasmacoreMessage.h; sourceTree = "<group>"; };
 		30CB045E1C76674000A767FC /* PlasmacoreMessage.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreMessage.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreMessage.mm; sourceTree = "<group>"; };
 		30CB04601C77C69300A767FC /* PlasmacoreResourceBank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreResourceBank.h; path = ../../../Plasmacore/Cocoa/PlasmacoreResourceBank.h; sourceTree = "<group>"; };
@@ -168,6 +171,8 @@
 		30E2F9521C76408700F89F60 /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
+				30C73B171C7AC6040009C7C4 /* PlasmacoreMessageManager.h */,
+				30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */,
 				30CB04601C77C69300A767FC /* PlasmacoreResourceBank.h */,
 				30CB04611C77C69300A767FC /* PlasmacoreResourceBank.mm */,
 				30CB045D1C76674000A767FC /* PlasmacoreMessage.h */,
@@ -285,6 +290,7 @@
 				30E2F9571C76409900F89F60 /* Plasmacore.mm in Sources */,
 				309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */,
 				30E2F95D1C7640A500F89F60 /* PlasmacoreMessaging.cpp in Sources */,
+				30C73B191C7AC6040009C7C4 /* PlasmacoreMessageManager.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

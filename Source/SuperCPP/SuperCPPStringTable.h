@@ -244,7 +244,7 @@ struct StringTable
 
     while (cur_entry)
     {
-      if (cur_entry->hash_code == hash_code && 0 == strcmp(cur_entry->key,key))
+      if (cur_entry->hash_code==hash_code && (cur_entry->key==key || 0==strcmp(cur_entry->key,key)))
       {
         return cur_entry;
       }
@@ -264,7 +264,7 @@ struct StringTable
 
     while (cur_entry)
     {
-      if (cur_entry->hash_code == hash_code && 0 == strcmp(cur_entry->key,key))
+      if (cur_entry->hash_code==hash_code && (cur_entry->key==key || 0==strcmp(cur_entry->key,key)))
       {
         return cur_entry->value;
       }
@@ -296,7 +296,7 @@ struct StringTable
 
     if ( !cur_entry ) return false;
 
-    if (cur_entry->hash_code == hash_code && 0 == strcmp(cur_entry->key,key))
+    if (cur_entry->hash_code==hash_code && (cur_entry->key==key || 0==strcmp(cur_entry->key,key)))
     {
       // Head of list is item to remove
       bins[ hash_code & bin_mask ] = cur_entry->next_entry;
@@ -308,7 +308,7 @@ struct StringTable
     StringTableEntry<DataType>* next_entry = cur_entry->next_entry;
     while (next_entry)
     {
-      if (next_entry->hash_code == hash_code && 0 == strcmp(next_entry->key,key))
+      if (cur_entry->hash_code==hash_code && (cur_entry->key==key || 0==strcmp(cur_entry->key,key)))
       {
         cur_entry->next_entry = next_entry->next_entry;
         delete next_entry;

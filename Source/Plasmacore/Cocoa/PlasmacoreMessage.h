@@ -1,19 +1,33 @@
 #import <Cocoa/Cocoa.h>
 
-#import "PlasmacoreMessaging.h"
-using namespace SuperCPP;
+#include "SuperCPPDataBuilder.h"
+#include "SuperCPPList.h"
 
-typedef void (^CCListener)( int listener_id, id message );
+typedef void (^PlamacoreCallback)( int this_id, id message );
 
 @interface PlasmacoreMessage : NSObject
 {
-  PLASMACORE::Message  message;
+  PlasmacoreMessageManager* manager;
+  bool                      is_incoming;
+  int                       m_type;
+  int                       m_id;
+  SuperCPP::List<int>       keys;
+  SuperCPP::List<int>       offsets;
+  SuperCPP::DataBuilder     buffer;
 }
+
+@property (nonatomic) int m_type;
+@property (nonatomic) int m_id;
+@property (nonatomic,readonly) char* data;
+@property (nonatomic,readonly) int   size;
 
 + (id)         messageWithType:(const char*)message_type;
 + (id)         messageWithReply:(int)message_id;
 
-- (id)         initWithPlasmacoreMessage:(PLASMACORE::Message)m;
+- (id)         initWithManager:(PlasmacoreMessageManager*)_manager;
+- (id)         reset;
+- (void)       decodeIncomingMessageData:(char*)data size:(int)size;
+
 - (NSString*)  getType;
 - (int)        getID;
 
@@ -23,6 +37,9 @@ typedef void (^CCListener)( int listener_id, id message );
 - (int)        pushRSVP:(CCListener)callback;
 - (void)       send;
 - (int)        sendRSVP:(CCListener)callback;
+
+- (char*)      data;
+- (int)        size;
 
 - (PlasmacoreMessage*)  setString:  (const char*)name value:(NSString*)value;
 - (PlasmacoreMessage*)  setReal64:  (const char*)name value:(double)value;

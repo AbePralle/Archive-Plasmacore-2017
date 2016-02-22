@@ -137,6 +137,11 @@ int DataReader::read_string( StringBuilder& buffer )
   return character_count;
 }
 
+int DataReader::remaining()
+{
+  return (count - position);
+}
+
 }; // namespace SuperCPP
 }; // namespace PROJECT_NAMESPACE
 

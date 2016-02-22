@@ -42,6 +42,13 @@ struct Builder
     capacity = count = 0;
   }
 
+  void reset()
+  {
+    if (data != internal_buffer) delete data;
+    data = internal_buffer;
+    capacity = count = 0;
+  }
+
   Builder<DataType>& add( DataType value )
   {
     reserve( 1 );

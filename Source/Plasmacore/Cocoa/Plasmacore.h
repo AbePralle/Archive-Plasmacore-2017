@@ -11,19 +11,15 @@
 
 @interface Plasmacore : NSObject
 {
-  PLASMACORE::MessageManager message_manager; 
-  NSTimer*               update_timer;
+  PlasmacoreMessageManager message_manager; 
+  NSTimer*                 update_timer;
 
-  NSMutableDictionary*   message_callbacks;
-  NSMutableDictionary*   listener_message_types;
-  int                    next_callback_id;
-
-  PlasmacoreResourceBank*        resources;
+  PlasmacoreResourceBank*  resources;
 }
 
 + (Plasmacore*) singleton;
 
-- (int)  handleMessageType:(const char*)type withListener:(CCListener)listener;
+- (int)  addListenerForType:(const char*)message_type withCallback:(PlasmacoreCallback)callback;
 - (int)  getWindowID:(id)window;
 - (void) removeListenerByID:(int)listener_id;
 - (void) start;

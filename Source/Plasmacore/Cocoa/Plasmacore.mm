@@ -19,8 +19,6 @@ void marco_callback( Message m, void* context )
 
 }
 */
-static void CocoaCore_listener_callback( PLASMACORE::Message m, void* context, void* data );
-static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void* data );
 
 @implementation Plasmacore
 
@@ -119,27 +117,9 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
   return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message_manager.create_message("<reply>",message_id)];
 }
 
-- (int) handleMessageType:(const char*)type withListener:(CCListener)listener
+- (int)  addListenerForType:(const char*)message_type withCallback:(PlasmacoreCallback)callback;
 {
-  // Associate a unique integer listener_id with each listener that we can use
-  // to track the listener in C++ code.  Returns the listener_id.
-  int listener_id = next_callback_id++;
-
-  // Map the id to the listener
-  [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
-
-  // Map the id to the message type
-  [listener_message_types setObject:[NSString stringWithUTF8String:type] forKey:[NSNumber numberWithInt:listener_id]];
-
-  // Pair the id with a C++ listener in C++ code
-  message_manager.add_listener( type, CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
-
-  return listener_id;
-}
-
-- (CCListener) getListenerByID:(int)listener_id
-{
-  return [message_callbacks objectForKey:[NSNumber numberWithInt:listener_id]];
+  return [message_manager addListenerForType:message_type withCallback:callback];
 }
 
 - (int) getWindowID:(id)window
@@ -149,37 +129,7 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
 
 - (void) removeListenerByID:(int)listener_id
 {
-  NSNumber* key = [NSNumber numberWithInt:listener_id];
-
-  [message_callbacks removeObjectForKey:key];
-
-  NSString* type = [listener_message_types objectForKey:key];
-  [listener_message_types removeObjectForKey:key];
-
-  message_manager.remove_listener( [type UTF8String], CocoaCore_listener_callback, (void*)(intptr_t)listener_id );
-}
-
-- (CCListener) removeReplyListenerByID:(int)listener_id
-{
-  NSNumber* key = [NSNumber numberWithInt:listener_id];
-
-  CCListener listener = [message_callbacks objectForKey:key];
-  if (listener) [message_callbacks removeObjectForKey:key];
-  return listener;
-}
-
-- (int) sendRSVP:(PLASMACORE::Message)message withReplyListener:(CCListener)listener
-{
-  // Associate a unique integer listener_id with each listener that we can use
-  // to track the listener in C++ code.  Returns the listener_id.
-  int listener_id = next_callback_id;
-
-  // Map the id to the listener
-  [message_callbacks setObject:listener forKey:[NSNumber numberWithInt:listener_id]];
-
-  message.send_rsvp( CocoaCore_reply_callback, (void*)(intptr_t)listener_id );
-
-  return listener_id;
+  [message_manager removeListenerByID:listener_id];
 }
 
 - (void) sendTestMessage
@@ -236,18 +186,4 @@ static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void
 }
 
 @end
-
-static void CocoaCore_listener_callback( PLASMACORE::Message m, void* context, void* data )
-{
-  int listener_id = (int)(intptr_t)context;
-  CCListener listener = [[Plasmacore singleton] getListenerByID:listener_id];
-  if (listener) listener( listener_id, [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:m] );
-}
-
-static void CocoaCore_reply_callback( PLASMACORE::Message m, void* context, void* data )
-{
-  int listener_id = (int)(intptr_t)context;
-  CCListener listener = [[Plasmacore singleton] removeReplyListenerByID:listener_id];
-  if (listener) listener( listener_id, [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:m] );
-}
 

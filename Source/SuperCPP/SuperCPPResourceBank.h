@@ -26,25 +26,14 @@ template <class ResourceType>
 struct ResourceBank
 {
   // PROPERTIES
-  List<ResourceType>* resources;
-  List<int>*          active_ids;
-  List<int>*          available_ids;
+  List<ResourceType> resources;
+  List<int>          active_ids;
+  List<int>          available_ids;
 
   // METHODS
   ResourceBank()
   {
-    resources = new List<ResourceType>();
-    active_ids = new List<int>();
-    available_ids = new List<int>();
-
-    resources->add( 0 );  // skip spot 0
-  }
-
-  ~ResourceBank()
-  {
-    delete resources;
-    delete active_ids;
-    delete available_ids;
+    clear();
   }
 
   int add( ResourceType resource )
@@ -54,48 +43,48 @@ struct ResourceBank
     return index;
   }
 
-  ResourceBank<ResourceType>* clear()
+  ResourceBank<ResourceType>& clear()
   {
-    resources->clear();
-    active_ids->clear();
-    available_ids->clear();
+    resources.clear();
+    active_ids.clear();
+    available_ids.clear();
 
-    resources->add( 0 );  // skip spot 0
-    return this;
+    resources.add( 0 );  // skip spot 0
+    return *this;
   }
 
   int count()
   {
-    return active_ids->count;
+    return active_ids.count;
   }
 
   int create_id()
   {
     // INTERNAL USE
     int result;
-    if (available_ids->count)
+    if (available_ids.count)
     {
-      result = available_ids->remove_last();
+      result = available_ids.remove_last();
     }
     else
     {
-      result = resources->count;
-      resources->add( 0 );
+      result = resources.count;
+      resources.add( 0 );
     }
-    active_ids->add( result );
+    active_ids.add( result );
     return result;
   }
 
   int locate_first()
   {
-    if (active_ids->count == 0) return 0;
-    return active_ids->data[0];
+    if (active_ids.count == 0) return 0;
+    return active_ids.data[0];
   }
 
   int locate_resource( ResourceType resource )
   {
-    int       i = active_ids->count;
-    ResourceType* data = resources->data;
+    int       i = active_ids.count;
+    ResourceType* data = resources.data;
 
     while (--i >= 0)
     {
@@ -107,8 +96,8 @@ struct ResourceBank
 
   ResourceType get( int id )
   {
-    if (id <= 0 || id >= resources->count) return 0;
-    return resources->data[ id ];
+    if (id <= 0 || id >= resources.count) return 0;
+    return resources.data[ id ];
   }
 
   ResourceType remove( int id )
@@ -116,17 +105,17 @@ struct ResourceBank
     int      index;
     ResourceType result;
 
-    if (id <= 0 || id >= resources->count) return 0;
+    if (id <= 0 || id >= resources.count) return 0;
 
-    available_ids->add( id );
+    available_ids.add( id );
 
-    result = resources->data[ id ];
-    resources->data[ id ] = 0;
+    result = resources.data[ id ];
+    resources.data[ id ] = 0;
 
-    index = active_ids->locate( id );
+    index = active_ids.locate( id );
     if (index >= 0)
     {
-      active_ids->data[index] = active_ids->data[ --active_ids->count ];
+      active_ids.data[index] = active_ids.data[ --active_ids.count ];
     }
 
     return result;
@@ -134,19 +123,19 @@ struct ResourceBank
 
   ResourceType remove_another()
   {
-    if (active_ids->count == 0) return 0;
+    if (active_ids.count == 0) return 0;
 
-    int id = active_ids->data[0];
+    int id = active_ids.data[0];
     if ( !id ) return 0;
 
     return remove( id );
   }
 
-  ResourceBank* set( int id, ResourceType resource )
+  ResourceBank& set( int id, ResourceType resource )
   {
-    if (id <= 0 || id >= resources->count) return this;
-    resources->data[ id ] = resource;
-    return this;
+    if (id <= 0 || id >= resources.count) return *this;
+    resources.data[ id ] = resource;
+    return *this;
   }
 };
 
