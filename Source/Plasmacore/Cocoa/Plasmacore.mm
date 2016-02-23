@@ -54,7 +54,7 @@
     {
       int window_id = [m getInt32:"id"];
 
-      NSWindowController* window = [[Plasmacore singleton] getResourceWithID:window_id];
+      NSWindowController* window = [[Plasmacore singleton] resourceWithID:window_id];
       if (window) [window showWindow:[Plasmacore singleton]];
     }
   ];
@@ -64,7 +64,7 @@
     {
       int window_id = [m getInt32:"id"];
 
-      NSWindowController* window = [[Plasmacore singleton] getResourceWithID:window_id];
+      NSWindowController* window = [[Plasmacore singleton] resourceWithID:window_id];
       if (window)
       {
         SEL selector = NSSelectorFromString( [[m getString:"method_name"] stringByAppendingString:@":"] );
@@ -97,14 +97,9 @@
   [resources addResource:resource withID:resource_id];
 }
 
-- (int) getResourceID:(id)resource
+- (int) idOfResource:(id)resource
 {
-  return [resources getIDOfResource:resource];
-}
-
-- (id) getResourceWithID:(int)resource_id
-{
-  return [resources getResourceWithID:resource_id];
+  return [resources idOfResource:resource];
 }
 
 - (PlasmacoreMessage*) obtainMessage
@@ -119,12 +114,17 @@
 
 - (id) removeResource:(id)resource
 {
-  return [self removeResourceWithID:[self getResourceID:resource]];
+  return [self removeResourceWithID:[self idOfResource:resource]];
 }
 
 - (id) removeResourceWithID:(int)resource_id
 {
   return [resources removeResourceWithID:resource_id];
+}
+
+- (id) resourceWithID:(int)resource_id
+{
+  return [resources resourceWithID:resource_id];
 }
 
 - (void) sendTestMessage

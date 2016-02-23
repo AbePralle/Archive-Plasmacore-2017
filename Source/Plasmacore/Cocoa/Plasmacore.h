@@ -21,11 +21,11 @@
 
 - (int)  addListenerForType:(const char*)message_type withCallback:(PlasmacoreCallback)callback;
 - (void) addResource:(id)resource withID:(int)resource_id;
-- (int)  getResourceID:(id)resource;
-- (id)   getResourceWithID:(int)resource_id;
+- (int)  idOfResource:(id)resource;
 - (void) removeListenerWithID:(int)listener_id;
 - (id)   removeResource:(id)resource;
 - (id)   removeResourceWithID:(int)resource_id;
+- (id)   resourceWithID:(int)resource_id;
 - (void) start;
 - (void) stop;
 - (void) update;

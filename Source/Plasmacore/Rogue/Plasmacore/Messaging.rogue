@@ -69,6 +69,7 @@ class MessageManager [requisite singleton]
       local new_id = outgoing_name_to_id.count + 1
       outgoing_name_to_id[ name ] = new_id
       outgoing_id_to_name[ new_id ] = name
+      new_outgoing_ids.add( new_id )
       return new_id
 
     method send( m:OutgoingMessage )
@@ -106,6 +107,7 @@ class MessageManager [requisite singleton]
       io_writer.reset
       
       # First comes the header with any any new message type id definitions.
+println "$ new outgoing ids, $ message bytes" (new_outgoing_ids.count,message_builder.position)
       io_writer.write_int32x( new_outgoing_ids.count )
       forEach (new_id in new_outgoing_ids)
         io_writer.write_int32x( new_id )

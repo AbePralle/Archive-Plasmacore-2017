@@ -15,9 +15,9 @@
 - (void) addResource:(id) resource withID:(int)resource_id;
 - (void) clear;
 - (int)  getCount;
-- (int)  getIDOfResource:(id)resource;
-- (id)   getResourceWithID:(int)resource_id;
+- (int)  idOfResource:(id)resource;
 - (id)   removeResourceWithID:(int)resource_id;
 - (id)   removeAnotherResource;
+- (id)   resourceWithID:(int)resource_id;
 
 @end

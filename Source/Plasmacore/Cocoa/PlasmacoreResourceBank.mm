@@ -30,7 +30,7 @@ using namespace SuperCPP;
   return (int)resources.count;
 }
 
-- (int) getIDOfResource:(id)resource
+- (int) idOfResource:(id)resource
 {
   NSEnumerator *enumerator = [resources keyEnumerator];
   NSNumber* key;
@@ -41,14 +41,9 @@ using namespace SuperCPP;
   return 0;
 }
 
-- (id) getResourceWithID:(int)resource_id
-{
-  return [resources objectForKey:[NSNumber numberWithInt:resource_id]];
-}
-
 - (id) removeResourceWithID:(int)resource_id
 {
-  id result = [self getResourceWithID:resource_id];
+  id result = [self resourceWithID:resource_id];
   [resources removeObjectForKey:[NSNumber numberWithInt:resource_id]];
   return result;
 }
@@ -63,6 +58,11 @@ using namespace SuperCPP;
   }
 
   return nil;
+}
+
+- (id) resourceWithID:(int)resource_id
+{
+  return [resources objectForKey:[NSNumber numberWithInt:resource_id]];
 }
 
 
