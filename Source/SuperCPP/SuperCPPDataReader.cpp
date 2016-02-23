@@ -142,6 +142,15 @@ int DataReader::remaining()
   return (count - position);
 }
 
+void DataReader::reset( Byte* data, int count, bool should_free )
+{
+  if (should_free_data && data) delete data;
+  should_free_data = should_free;
+  position = 0;
+  this->count = count;
+  this->data = data;
+}
+
 }; // namespace SuperCPP
 }; // namespace PROJECT_NAMESPACE
 

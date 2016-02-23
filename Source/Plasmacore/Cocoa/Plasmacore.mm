@@ -2,24 +2,6 @@
 
 #include "RogueProgram.h"
 
-/*
-void yin_listener( Message m, void* context )
-{
-  printf( "%s (%d)\n", m.type, (int)(intptr_t)context );
-
-  m.reply().set_int32( "value", m.get_int32("value") + 1 ).push();
-
-}
-
-void marco_callback( Message m, void* context )
-{
-  StringBuilder buffer;
-  m.get_string( "message", buffer );
-  printf( "%s\n", buffer.as_c_string() );
-
-}
-*/
-
 @implementation Plasmacore
 
 + (Plasmacore*) singleton
@@ -38,10 +20,8 @@ void marco_callback( Message m, void* context )
   if ( !self ) return nil;
 
   resources = [[PlasmacoreResourceBank alloc] init];
+  message_manager = [[PlasmacoreMessageManager alloc] init];
 
-  message_callbacks = [[NSMutableDictionary alloc] init];
-  next_callback_id = 1;
- 
   // Prepare command line arguments to pass in.
   NSArray *args = [[NSProcessInfo processInfo] arguments];
   int argc = (int) args.count;
@@ -58,33 +38,33 @@ void marco_callback( Message m, void* context )
   delete argv;
 
   // Set up standard message handlers
-  [self handleMessageType:"Window.create"
-    withListener:^(int this_id, PlasmacoreMessage* m)
+  [self addListenerForType:"Window.create"
+    withCallback:^(int this_id, PlasmacoreMessage* m)
     {
       NSString* window_name = [m getString:"name"];
       int       window_id   = [m getInt32:"id"];
 
       NSWindowController* window = [[NSClassFromString(window_name) alloc] initWithWindowNibName:window_name];
-      [resources addResource:window withID:window_id];
+      [[Plasmacore singleton] addResource:window withID:window_id];
     }
   ];
 
-  [self handleMessageType:"Window.show"
-    withListener:^(int this_id, PlasmacoreMessage* m)
+  [self addListenerForType:"Window.show"
+    withCallback:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
-      NSWindowController* window = [resources getResourceWithID:window_id];
-      if (window) [window showWindow:self];
+      NSWindowController* window = [[Plasmacore singleton] getResourceWithID:window_id];
+      if (window) [window showWindow:[Plasmacore singleton]];
     }
   ];
 
-  [self handleMessageType:"Window.call"
-    withListener:^(int this_id, PlasmacoreMessage* m)
+  [self addListenerForType:"Window.call"
+    withCallback:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
-      NSWindowController* window = [resources getResourceWithID:window_id];
+      NSWindowController* window = [[Plasmacore singleton] getResourceWithID:window_id];
       if (window)
       {
         SEL selector = NSSelectorFromString( [[m getString:"method_name"] stringByAppendingString:@":"] );
@@ -94,12 +74,12 @@ void marco_callback( Message m, void* context )
     }
   ];
 
-  [self handleMessageType:"Window.close"
-    withListener:^(int this_id, PlasmacoreMessage* m)
+  [self addListenerForType:"Window.close"
+    withCallback:^(int this_id, PlasmacoreMessage* m)
     {
       int window_id = [m getInt32:"id"];
 
-      NSWindowController* window = [resources removeResourceWithID:window_id];
+      NSWindowController* window = [[Plasmacore singleton] removeResourceWithID:window_id];
       if (window) [window close];
     }
   ];
@@ -107,29 +87,44 @@ void marco_callback( Message m, void* context )
   return self;
 }
 
-- (PlasmacoreMessage*) createMessage:(const char*)message_type
-{
-  return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message_manager.create_message(message_type)];
-}
-
-- (PlasmacoreMessage*) createReply:(int)message_id
-{
-  return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message_manager.create_message("<reply>",message_id)];
-}
-
 - (int)  addListenerForType:(const char*)message_type withCallback:(PlasmacoreCallback)callback;
 {
   return [message_manager addListenerForType:message_type withCallback:callback];
 }
 
-- (int) getWindowID:(id)window
+- (void) addResource:(id)resource withID:(int)resource_id
 {
-  return [resources getIDOfResource:window];
+  [resources addResource:resource withID:resource_id];
 }
 
-- (void) removeListenerByID:(int)listener_id
+- (int) getResourceID:(id)resource
 {
-  [message_manager removeListenerByID:listener_id];
+  return [resources getIDOfResource:resource];
+}
+
+- (id) getResourceWithID:(int)resource_id
+{
+  return [resources getResourceWithID:resource_id];
+}
+
+- (PlasmacoreMessage*) obtainMessage
+{
+  return [message_manager obtainMessage];
+}
+
+- (void) removeListenerWithID:(int)listener_id
+{
+  [message_manager removeListenerWithID:listener_id];
+}
+
+- (id) removeResource:(id)resource
+{
+  return [self removeResourceWithID:[self getResourceID:resource]];
+}
+
+- (id) removeResourceWithID:(int)resource_id
+{
+  return [resources removeResourceWithID:resource_id];
 }
 
 - (void) sendTestMessage
@@ -164,24 +159,21 @@ void marco_callback( Message m, void* context )
 
 - (void) update
 {
-  @synchronized (self)
+  [message_manager dispatchMessages];
+
+  // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
+  // communication.
+  for (int i=0; i<10; ++i)
   {
-    message_manager.dispach_messages();
+    if ( !message_manager.dispatchRequested ) return;
+    [message_manager dispatchMessages];
+  }
 
-    // Dispatch pushed messages up to 10 times in a row to facilitate lightweight back-and-forth
-    // communication.
-    for (int i=0; i<10; ++i)
-    {
-      if ( !message_manager.dispatch_requested ) return;
-      message_manager.dispach_messages();
-    }
-
-    // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
-    // there are still waiting messages.
-    if (message_manager.dispatch_requested)
-    {
-      [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
-    }
+  // Gotta give it a break sometime - schedule another round of updates in 1/60 sec if
+  // there are still waiting messages.
+  if (message_manager.dispatchRequested)
+  {
+    [self performSelector:@selector(update) withObject:nil afterDelay:1.0/60];
   }
 }
 

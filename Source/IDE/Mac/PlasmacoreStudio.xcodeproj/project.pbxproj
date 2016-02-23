@@ -25,7 +25,6 @@
 		30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9431C715B5500F89F60 /* SuperCPPStringBuilder.cpp */; };
 		30E2F9571C76409900F89F60 /* Plasmacore.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9541C76409900F89F60 /* Plasmacore.mm */; };
 		30E2F9581C76409900F89F60 /* PlasmacoreView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9561C76409900F89F60 /* PlasmacoreView.mm */; };
-		30E2F95D1C7640A500F89F60 /* PlasmacoreMessaging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9591C7640A500F89F60 /* PlasmacoreMessaging.cpp */; };
 		30E2F96D1C78E6AF00F89F60 /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F96B1C78E6AF00F89F60 /* MainWindow.mm */; };
 		30E2F96E1C78E6AF00F89F60 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30E2F96C1C78E6AF00F89F60 /* MainWindow.xib */; };
 /* End PBXBuildFile section */
@@ -44,6 +43,7 @@
 		30CB045E1C76674000A767FC /* PlasmacoreMessage.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreMessage.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreMessage.mm; sourceTree = "<group>"; };
 		30CB04601C77C69300A767FC /* PlasmacoreResourceBank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreResourceBank.h; path = ../../../Plasmacore/Cocoa/PlasmacoreResourceBank.h; sourceTree = "<group>"; };
 		30CB04611C77C69300A767FC /* PlasmacoreResourceBank.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreResourceBank.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreResourceBank.mm; sourceTree = "<group>"; };
+		30CB04631C7BE45400A767FC /* PlasmacoreCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreCallback.h; path = ../../../Plasmacore/Cocoa/PlasmacoreCallback.h; sourceTree = "<group>"; };
 		30E2F91A1C70187200F89F60 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30E2F91B1C70187200F89F60 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30E2F91D1C703EDC00F89F60 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -70,8 +70,6 @@
 		30E2F9541C76409900F89F60 /* Plasmacore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Plasmacore.mm; path = ../../../Plasmacore/Cocoa/Plasmacore.mm; sourceTree = "<group>"; };
 		30E2F9551C76409900F89F60 /* PlasmacoreView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreView.h; path = ../../../Plasmacore/Cocoa/PlasmacoreView.h; sourceTree = "<group>"; };
 		30E2F9561C76409900F89F60 /* PlasmacoreView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreView.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreView.mm; sourceTree = "<group>"; };
-		30E2F9591C7640A500F89F60 /* PlasmacoreMessaging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlasmacoreMessaging.cpp; path = ../../../Plasmacore/CPP/PlasmacoreMessaging.cpp; sourceTree = "<group>"; };
-		30E2F95A1C7640A500F89F60 /* PlasmacoreMessaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreMessaging.h; path = ../../../Plasmacore/CPP/PlasmacoreMessaging.h; sourceTree = "<group>"; };
 		30E2F96A1C78E6AF00F89F60 /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
 		30E2F96B1C78E6AF00F89F60 /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = "<group>"; };
 		30E2F96C1C78E6AF00F89F60 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
@@ -171,14 +169,13 @@
 		30E2F9521C76408700F89F60 /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
+				30CB04631C7BE45400A767FC /* PlasmacoreCallback.h */,
 				30C73B171C7AC6040009C7C4 /* PlasmacoreMessageManager.h */,
 				30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */,
 				30CB04601C77C69300A767FC /* PlasmacoreResourceBank.h */,
 				30CB04611C77C69300A767FC /* PlasmacoreResourceBank.mm */,
 				30CB045D1C76674000A767FC /* PlasmacoreMessage.h */,
 				30CB045E1C76674000A767FC /* PlasmacoreMessage.mm */,
-				30E2F9591C7640A500F89F60 /* PlasmacoreMessaging.cpp */,
-				30E2F95A1C7640A500F89F60 /* PlasmacoreMessaging.h */,
 				30E2F9531C76409900F89F60 /* Plasmacore.h */,
 				30E2F9541C76409900F89F60 /* Plasmacore.mm */,
 				30E2F9551C76409900F89F60 /* PlasmacoreView.h */,
@@ -289,7 +286,6 @@
 				30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */,
 				30E2F9571C76409900F89F60 /* Plasmacore.mm in Sources */,
 				309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */,
-				30E2F95D1C7640A500F89F60 /* PlasmacoreMessaging.cpp in Sources */,
 				30C73B191C7AC6040009C7C4 /* PlasmacoreMessageManager.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,3 +1,4 @@
+#import "PlasmacoreCallback.h"
 #import "PlasmacoreMessageManager.h"
 #import "RogueProgram.h"
 using namespace SuperCPP;
@@ -7,14 +8,12 @@ using namespace SuperCPP;
 //=============================================================================
 @interface PlasmacoreListenerInfo : NSObject
 {
-  int                listener_id;
-  NSString*          message_type;
-  PlasmacoreCallback callback;
+  PlasmacoreCallback _callback;
 }
 
-@property (nonatomic) int                listener_id;
-@property (nonatomic) NSString*          message_type;
-@property (nonatomic) PlasmacoreCallback callback;
+@property (nonatomic) int                         listener_id;
+@property (nonatomic) NSString*                   message_type;
+@property (nonatomic,readonly) PlasmacoreCallback callback;
 
 - (id) initWithID:(int)listener_id withMessageType:(NSString*)message_type withCallback:(PlasmacoreCallback)callback;
 
@@ -27,7 +26,7 @@ using namespace SuperCPP;
 
   self.listener_id = listener_id;
   self.message_type = message_type;
-  self.callback = callback;
+  self->_callback = callback;
 
   return self;
 }
@@ -54,12 +53,14 @@ using namespace SuperCPP;
   reply_callbacks_by_message_id = [[NSMutableDictionary alloc] init];
   next_callback_id = 1;
 
+  __weak PlasmacoreMessageManager* manager = self;
   [self addListenerForType:"<reply>"
     withCallback:^(int this_id,PlasmacoreMessage* m)
     {
-      [self handleReply:m];
+      [manager handleReply:m];
     }
   ];
+  return self;
 }
 
 - (int) addListenerForType:(const char*)type withCallback:(PlasmacoreCallback)callback
@@ -76,35 +77,12 @@ using namespace SuperCPP;
 
     int listener_id = next_callback_id++;
     PlasmacoreListenerInfo* info = [PlasmacoreListenerInfo alloc];
-    [info initWithID:listener_id withMessageType:type_name withCallback:callback];
+    info = [info initWithID:listener_id withMessageType:type_name withCallback:callback];
 
     [list addObject:info];
     [listeners_by_id setObject:info forKey:[NSNumber numberWithInt:listener_id]];
 
     return listener_id;
-  }
-}
-
-- (void) removeListenerByID:(int)listener_id
-{
-  @synchronized (self)
-  {
-    NSNumber* key = [NSNumber numberWithInt:key];
-    PlasmacoreListenerInfo* info = [listeners_by_id objectForKey:key];
-    if ( !info ) return;
-
-    [listeners_by_id removeObjectForKey:key];
-    NSMutableArray* list = [listeners_by_type objectForKey:info.message_type];
-    [list removeObject:info];
-  }
-}
-
-- (PlasmacoreMessage*) obtainMessage
-{
-  @synchronized (self)
-  {
-    if (message_pool.count) return [message_pool removeLastObject];
-    return [[PlasmacoreMessage alloc] initWithManager:self];
   }
 }
 
@@ -134,7 +112,7 @@ using namespace SuperCPP;
     // and message buffer
     RogueClassPlasmacore__MessageManager* mm =
       (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
-    RogueByteList* list = mm->incoming_buffer;
+    RogueByteList* list = mm->io_buffer;
     RogueByteList__clear( list );
     RogueByteList__reserve__Int32( list, header.count + message_buffer.count );
     memcpy( list->data->bytes, header.data, header.count );
@@ -181,7 +159,7 @@ using namespace SuperCPP;
           reader.position += size;
 
           // Dispatch the message to any listeners
-          NSMutableArray* list = [listeners objectForKey:[m messageType]];
+          NSMutableArray* list = [listeners_by_type objectForKey:[m messageType]];
           if (list)
           {
             for (int i=0; i<list.count; ++i)
@@ -215,24 +193,96 @@ using namespace SuperCPP;
   }
 }
 
+- (const char*) incomingIDToName:(int)_id
+{
+  @synchronized (self)
+  {
+    return incoming_id_to_name[ _id ];
+  }
+}
+
+- (int) incomingNameToID:(const char*)name
+{
+  @synchronized (self)
+  {
+    StringTableEntry<int>* entry = incoming_name_to_id.find( name );
+    if (entry) return entry->value;
+    return 0;
+  }
+}
+
+- (PlasmacoreMessage*) obtainMessage
+{
+  @synchronized (self)
+  {
+    if (message_pool.count)
+    {
+      PlasmacoreMessage* m = [message_pool lastObject];
+      [message_pool removeLastObject];
+      return m;
+    }
+    return [[PlasmacoreMessage alloc] initWithManager:self];
+  }
+}
+
+- (const char*) outgoingIDToName:(int)_id
+{
+  @synchronized (self)
+  {
+    return outgoing_id_to_name[ _id ];
+  }
+}
+
+- (int) outgoingNameToID:(const char*)name
+{
+  @synchronized (self)
+  {
+    StringTableEntry<int>* entry = outgoing_name_to_id.find( name );
+    if (entry) return entry->value;
+
+    // Create a new id.  Since 'outgoing_name_to_id' creates a permanent
+    // copy of the name string as a key, we'll re-used that key pointer
+    // with outgoing_id_to_name.
+    int new_id = outgoing_id_to_name.count + 1;
+    outgoing_name_to_id[ name ] = new_id;
+    outgoing_id_to_name[ new_id ] = outgoing_name_to_id.find(name)->key;
+    new_outgoing_ids.add( new_id );
+    return new_id;
+  }
+}
+
 - (void) send:(PlasmacoreMessage*)m
 {
-  @synchronized (this)
+  @synchronized (self)
   {
     int size = m.size;
     message_buffer.reserve( size + 4 );
-    message_buffer.print_int32( size );
-    message_buffer.add( m.data, size );
+    message_buffer.write_int32( size );
+    message_buffer.add( (Byte*) m.data, size );
 
     [message_pool addObject:[m reset]];
   }
 }
 
+- (void) removeListenerWithID:(int)listener_id
+{
+  @synchronized (self)
+  {
+    NSNumber* key = [NSNumber numberWithInt:listener_id];
+    PlasmacoreListenerInfo* info = [listeners_by_id objectForKey:key];
+    if ( !info ) return;
+
+    [listeners_by_id removeObjectForKey:key];
+    NSMutableArray* list = [listeners_by_type objectForKey:info.message_type];
+    [list removeObject:info];
+  }
+}
+
 - (void) sendRSVP:(PlasmacoreMessage*)m withCallback:(PlasmacoreCallback)callback
 {
-  @synchronized (this)
+  @synchronized (self)
   {
-    [reply_callbacks_by_message_id setObject:callback forKey:[m messageID]];
+    [reply_callbacks_by_message_id setObject:callback forKey:[NSNumber numberWithInt:[m messageID]]];
     [self send:m];
   }
 }

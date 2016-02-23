@@ -46,6 +46,7 @@ struct DataReader
   Real64 read_real64();
   Real32 read_real32();
   int    read_string( StringBuilder& buffer );
+  void   reset( Byte* data, int count, bool should_free=false );
   int    remaining();
 };
 

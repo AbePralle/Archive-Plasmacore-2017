@@ -4,130 +4,148 @@
 #include "SuperCPPStringBuilder.h"
 using namespace SuperCPP;
 
+static int Plasmacore_next_outgoing_message_id = 1;
+
+typedef enum
+{
+  PLASMACORE_MESSAGE_DATA_TYPE_STRING  = 1,
+  PLASMACORE_MESSAGE_DATA_TYPE_REAL64  = 2,
+  PLASMACORE_MESSAGE_DATA_TYPE_INT64   = 3,
+  PLASMACORE_MESSAGE_DATA_TYPE_INT32   = 4,
+  PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL = 5,
+  PLASMACORE_MESSAGE_DATA_TYPE_BYTES   = 6
+} PlasmacoreMessageDataType;
+
 @interface Plasmacore()
-- (PlasmacoreMessage*) createMessage:(const char*)message_type;
-- (PlasmacoreMessage*) createReply:(int)message_id;
-- (int)        sendRSVP:(PLASMACORE::Message)message withReplyListener:(CCListener)listener;
+- (PlasmacoreMessage*) obtainMessage;
 @end
 
 @implementation PlasmacoreMessage
-+ (id) messageWithType:(const char*)message_type
+- (int) writeID:(const char*)name
 {
-  return [[Plasmacore singleton] createMessage:message_type];
+  int _id = [manager outgoingNameToID:name];
+  buffer.write_int32x( _id );
+  return _id;
 }
 
-+ (id) messageWithReply:(int)message_id
++ (id) messageWithType:(const char*)message_type
 {
-  return [[Plasmacore singleton] createReply:message_id];
+  return [PlasmacoreMessage messageWithType:message_type withMessageID:Plasmacore_next_outgoing_message_id++];
+}
+
++ (id) messageWithType:(const char*)message_type withMessageID:(int)m_id
+{
+  PlasmacoreMessage* m = [[Plasmacore singleton] obtainMessage];
+  [m reset];
+  m->is_incoming = false;
+  m->_messageID = m_id;
+  m->_typeID = [m writeID:message_type];
+  m->buffer.write_int32x( m->_messageID );
+  return m;
 }
 
 - (id) initWithManager:(PlasmacoreMessageManager*)_manager
 {
+  if ( !(self = [super init]) ) return nil;
   manager = _manager;
+  return self;
 }
 
 - (id) reset
 {
-  m_type = 0;
-  m_id = 0;
+  _typeID = 0;
+  _messageID = 0;
   keys.clear();
   offsets.clear();
   buffer.reset();
   return self;
 }
 
+- (void) indexAnother:(DataReader*)reader
+{
+  keys.add( reader->read_int32x() );
+  offsets.add( reader->position );
+  
+  int data_type = reader->read_int32x();
+  switch (data_type)
+  {
+    case PLASMACORE_MESSAGE_DATA_TYPE_STRING:
+    case PLASMACORE_MESSAGE_DATA_TYPE_BYTES:
+    {
+      StringBuilder temp_buffer;
+      reader->read_string( temp_buffer );
+      return;
+    }
+      
+    case PLASMACORE_MESSAGE_DATA_TYPE_REAL64:
+      reader->read_real64();
+      return;
+      
+    case PLASMACORE_MESSAGE_DATA_TYPE_INT64:
+      reader->read_int64x();
+      return;
+      
+    case PLASMACORE_MESSAGE_DATA_TYPE_INT32:
+    case PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL:
+      reader->read_int32x();
+      return;
+      
+    default:
+      NSLog( @"ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
+      return;
+  }
+}
+
 - (void) decodeIncomingMessageData:(char*)data size:(int)size
 {
   [self reset];
   buffer.reserve( size );
-  buffer.add( data, size );
+  buffer.add( (Byte*)data, size );
   is_incoming = true;
 
-  DataReader reader( buffer.data, buffer.size );
-  m_type = reader.read_int32x();
-  m_id   = reader.read_int32x();
+  DataReader reader( buffer.data, buffer.count );
+  _typeID = reader.read_int32x();
+  _messageID   = reader.read_int32x();
   while (reader.has_another())
   {
-    [self indexAnotherProperty];
-  }
-}
-
-- (void) indexAnotherProperty
-{
-  keys.add( read_int32x() );
-  offsets.add( reader.position );
-  manager->offsets.add( reader->position );
-
-  int data_type = reader->read_int32x();
-  switch (data_type)
-  {
-    case DATA_TYPE_ID_DEFINITION:
-    case DATA_TYPE_ID:
-      read_id( reader );
-      return true;
-
-    case DATA_TYPE_STRING:
-    case DATA_TYPE_BYTES:
-    {
-      StringBuilder buffer;
-      reader->read_string( buffer );
-      return true;
-    }
-
-    case DATA_TYPE_REAL64:
-      reader->read_real64();
-      return true;
-
-    case DATA_TYPE_INT64:
-      reader->read_int64x();
-      return true;
-
-    case DATA_TYPE_INT32:
-    case DATA_TYPE_LOGICAL:
-      reader->read_int32x();
-      return true;
-
-    default:
-      printf( "ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
-      return false;
+    [self indexAnother:&reader];
   }
 }
 
 - (NSString*) messageType
 {
-  return [NSString stringWithUTF8String:message.m_type];
-}
+  const char* name;
+  if (is_incoming) name = [manager incomingIDToName:_typeID];
+  else             name = [manager outgoingIDToName:_typeID];
 
-- (int) messageID
-{
-  return message.id;
+  return [NSString stringWithUTF8String:name];
 }
 
 - (PlasmacoreMessage*) createReply
 {
-  return [[PlasmacoreMessage alloc] initWithPlasmacoreMessage:message.create_reply()];
+  return [PlasmacoreMessage messageWithType:"<reply>" withMessageID:_messageID];
 }
 
 - (void) push
 {
-  message.push();
+  [manager send:self];
+  [manager dispatchMessages];
 }
 
-- (int) pushRSVP:(CCListener)callback
+- (void) pushRSVP:(PlasmacoreCallback)callback
 {
-  int listener_id = [[Plasmacore singleton] sendRSVP:message withReplyListener:callback];
-  [[Plasmacore singleton] update];
-  return listener_id;
+  [manager sendRSVP:self withCallback:callback];
+  [manager dispatchMessages];
 }
 
 - (void) send
 {
-  message.send();
+  [manager send:self];
 }
 
-- (int) sendRSVP:(CCListener)callback
+- (void) sendRSVP:(PlasmacoreCallback)callback
 {
-  return [[Plasmacore singleton] sendRSVP:message withReplyListener:callback];
+  [manager sendRSVP:self withCallback:callback];
 }
 
 - (char*) data
@@ -140,84 +158,218 @@ using namespace SuperCPP;
   return buffer.count;
 }
 
+
 - (PlasmacoreMessage*) setString:  (const char*)name value:(NSString*)value
 {
-  StringBuilder buffer;
-  buffer.reserve( (int) value.length );
-  [value getCharacters:(unichar*)buffer.data range:NSMakeRange(0,value.length)];
-  buffer.count += (int) value.length;
-  message.set_string( name, buffer );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_STRING );
+
+  StringBuilder string_buffer;
+  string_buffer.reserve( (int) value.length );
+  [value getCharacters:(unichar*)string_buffer.data range:NSMakeRange(0,value.length)];
+  string_buffer.count += (int) value.length;
+
+  buffer.write_string( string_buffer.data, string_buffer.count );
   return self;
 }
 
 - (PlasmacoreMessage*) setReal64:  (const char*)name value:(double)value
 {
-  message.set_real64( name, value );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_REAL64 );
+  buffer.write_real64( value );
   return self;
 }
 
 - (PlasmacoreMessage*) setInt64:   (const char*)name value:(Int64)value
 {
-  message.set_int64( name, value );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_INT64 );
+  buffer.write_int64x( value );
   return self;
 }
 
 - (PlasmacoreMessage*) setInt32:   (const char*)name value:(int)value
 {
-  message.set_int32( name, value );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_INT32 );
+  buffer.write_int32x( value );
   return self;
 }
 
 - (PlasmacoreMessage*) setLogical: (const char*)name value:(bool)value
 {
-  message.set_logical( name, value );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL );
+  buffer.write_int32x( value ? 1 : 0 );
   return self;
 }
 
 - (PlasmacoreMessage*) setBytes:   (const char*)name value:(NSData*)value
 {
-  message.set_bytes( name, (Byte*) value.bytes, (int) value.length );
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_BYTES );
+
+  int count = (int) value.length;
+  buffer.write_int32x( count );
+  Byte* bytes = (Byte*) value.bytes;
+  for (int i=0; i<count; ++i)
+  {
+    buffer.write_byte( bytes[i] );
+  }
   return self;
 }
 
 
+- (int) locateKey:(const char*)name
+{
+  int key = [manager incomingNameToID:name];
+  if ( !key ) return -1;
+
+  int i = keys.count;
+  while (--i >= 0)
+  {
+    if (keys[i] == key) return offsets[ i ];
+  }
+  return -1;
+}
+
 - (bool) contains:(const char*)name
 {
-  return message.contains( name );
+  return [self locateKey:name] != -1;
 }
 
 - (NSString*) getString:(const char*)name
 {
-  StringBuilder buffer;
-  message.get_string( name, buffer );
-  return [NSString stringWithCharacters:(unichar*)buffer.data length:buffer.count];
+  int offset = [self locateKey:name];
+  if (offset == -1) return @"";
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  if (reader.read_int32x() != PLASMACORE_MESSAGE_DATA_TYPE_STRING) return @"";
+
+  StringBuilder string_buffer;
+  reader.read_string( string_buffer );
+  return [NSString stringWithCharacters:(unichar*)string_buffer.data length:string_buffer.count];
 }
 
 - (double) getReal64:(const char*)name
 {
-  return message.get_real64( name );
+  int offset = [self locateKey:name];
+  if (offset == -1) return 0.0;
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  switch (reader.read_int32x())
+  {
+    case  PLASMACORE_MESSAGE_DATA_TYPE_REAL64:
+      return reader.read_real64();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT64:
+      return reader.read_int64x();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT32:
+    case  PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL:
+      return reader.read_int32x();
+
+    default:
+      return 0.0;
+  }
 }
 
 - (Int64) getInt64:(const char*)name
 {
-  return message.get_int64( name );
+  int offset = [self locateKey:name];
+  if (offset == -1) return 0;
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  switch (reader.read_int32x())
+  {
+    case  PLASMACORE_MESSAGE_DATA_TYPE_REAL64:
+      return (Int64) reader.read_real64();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT64:
+      return reader.read_int64x();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT32:
+    case  PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL:
+      return reader.read_int32x();
+
+    default:
+      return 0;
+  }
 }
 
 - (int) getInt32:(const char*)name
 {
-  return message.get_int32( name );
+  int offset = [self locateKey:name];
+  if (offset == -1) return 0.0;
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  switch (reader.read_int32x())
+  {
+    case  PLASMACORE_MESSAGE_DATA_TYPE_REAL64:
+      return (int) reader.read_real64();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT64:
+      return (int) reader.read_int64x();
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT32:
+    case  PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL:
+      return reader.read_int32x();
+
+    default:
+      return 0.0;
+  }
 }
 
 - (bool) getLogical:(const char*)name
 {
-  return message.get_logical( name );
+  int offset = [self locateKey:name];
+  if (offset == -1) return 0.0;
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  switch (reader.read_int32x())
+  {
+    case  PLASMACORE_MESSAGE_DATA_TYPE_REAL64:
+      return reader.read_real64() != 0;
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT64:
+      return reader.read_int64x() != 0;
+
+    case  PLASMACORE_MESSAGE_DATA_TYPE_INT32:
+    case  PLASMACORE_MESSAGE_DATA_TYPE_LOGICAL:
+      return reader.read_int32x() != 0;
+
+    default:
+      return false;
+  }
 }
 
-- (NSData*)   getBytes:   (const char*)name
+- (NSData*)   getBytes:(const char*)name
 {
-  Builder<Byte> buffer;
-  message.get_bytes( name, buffer );
-  return [NSData dataWithBytes:buffer.data length:buffer.count];
+  int offset = [self locateKey:name];
+  if (offset == -1) return [NSData data];
+
+  DataReader reader( buffer.data, buffer.count );
+  reader.position = offset;
+
+  if (reader.read_int32x() != PLASMACORE_MESSAGE_DATA_TYPE_BYTES) return [NSData data];
+
+  int count = reader.read_int32x();
+  Builder<Byte> byte_buffer;
+  byte_buffer.reserve( count );
+  for (int i=0; i<count; ++i) byte_buffer.add( reader.read_byte() );
+
+  return [NSData dataWithBytes:byte_buffer.data length:byte_buffer.count];
 }
 
 @end

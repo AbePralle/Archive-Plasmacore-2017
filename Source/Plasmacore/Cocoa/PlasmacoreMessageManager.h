@@ -1,5 +1,8 @@
 #import <Cocoa/Cocoa.h>
 
+#import "PlasmacoreCallback.h"
+#import "PlasmacoreMessage.h"
+
 #include "SuperCPPIntTable.h"
 #include "SuperCPPDataBuilder.h"
 #include "SuperCPPDataReader.h"
@@ -30,9 +33,12 @@
 - (int)                addListenerForType:(const char*)type withCallback:(PlasmacoreCallback)callback;
 - (void)               dispatchMessages;
 - (const char*)        incomingIDToName:(int)type_id;
-- (PlasmacoreMessage*) obtainMessage;
-- (void)               send:(PlasmacoreMessage*)m;
-- (void)               sendRSVP:(PlasmacoreMessage*)m withCallback:(PlasmacoreCallback)callback;
-- (void)               removeListenerByID:(int)listener_id;
+- (int)                incomingNameToID:(const char*)name;
+- (id)                 obtainMessage;
+- (const char*)        outgoingIDToName:(int)type_id;
+- (int)                outgoingNameToID:(const char*)name;
+- (void)               send:(id)m;
+- (void)               sendRSVP:(id)m withCallback:(PlasmacoreCallback)callback;
+- (void)               removeListenerWithID:(int)listener_id;
 
 @end
