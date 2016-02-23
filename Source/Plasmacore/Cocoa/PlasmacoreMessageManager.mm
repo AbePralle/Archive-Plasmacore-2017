@@ -174,6 +174,8 @@ using namespace SuperCPP;
         [message_pool addObject:[m reset]];
       }
     }
+
+    Rogue_collect_garbage( false );  // optional GC
  
     dispatching_messages = false;
   } // end @synchronized

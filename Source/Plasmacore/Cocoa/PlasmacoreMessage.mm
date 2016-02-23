@@ -91,7 +91,7 @@ typedef enum
       return;
       
     default:
-      NSLog( @"ERROR: unknown data type '%d' reading incoming message in native layer.\n", data_type );
+      NSLog( @"ERROR: unknown data type '%d' (%c) reading incoming message in native layer.\n", data_type, (char)data_type );
       return;
   }
 }

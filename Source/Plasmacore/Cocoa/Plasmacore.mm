@@ -127,18 +127,18 @@
   return [resources resourceWithID:resource_id];
 }
 
-- (void) sendTestMessage
-{
-  [[PlasmacoreMessage messageWithType:"test"] send];
-}
+//- (void) sendTestMessage
+//{
+//  [[PlasmacoreMessage messageWithType:"test"] send];
+//}
 
 - (void) start
 {
   if ( !update_timer )
   {
-    static NSTimer* test_timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(sendTestMessage)
-                    userInfo:nil repeats:YES];
-    [[NSRunLoop mainRunLoop] addTimer:test_timer forMode:NSRunLoopCommonModes];
+    //static NSTimer* test_timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(sendTestMessage)
+    //                userInfo:nil repeats:YES];
+    //[[NSRunLoop mainRunLoop] addTimer:test_timer forMode:NSRunLoopCommonModes];
 
     update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(update)
                     userInfo:nil repeats:YES];
