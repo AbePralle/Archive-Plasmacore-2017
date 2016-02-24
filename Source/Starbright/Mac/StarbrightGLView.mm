@@ -68,11 +68,13 @@ static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display
 
 - (void)drawRect:(NSRect)bounds
 {
+  bool call_onCreate = false;
+
   if ( !initialized_starbright )
   {
     renderer = new GLRenderer();
     initialized_starbright = YES;
-    [self onCreate];
+    call_onCreate = true;
   }
 
   if ( !display_link )
@@ -83,6 +85,9 @@ static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display
 
   CGLLockContext( [[self openGLContext] CGLContextObj] );
   [[self openGLContext] makeCurrentContext];
+  renderer->activate();
+
+  if (call_onCreate) [self onCreate];
 
   double current_timestamp = SuperCPP::current_time_seconds();
   double elapsed_time = current_timestamp - previous_frame_timestamp;

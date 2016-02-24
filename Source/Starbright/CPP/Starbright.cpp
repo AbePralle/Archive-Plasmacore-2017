@@ -19,6 +19,11 @@ namespace Starbright
 {
 
 //=============================================================================
+//  Globals
+//=============================================================================
+Renderer* active_renderer = 0;
+
+//=============================================================================
 //  Matrix
 //=============================================================================
 Matrix::Matrix()
@@ -189,6 +194,12 @@ Renderer::Renderer()
 
     vertex_count(0)
 {
+}
+
+Renderer* Renderer::activate()
+{
+  active_renderer = this;
+  return this;
 }
 
 Vertex* Renderer::add_vertices( int count )

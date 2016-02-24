@@ -12,6 +12,8 @@ class PlasmacoreGraphics : Graphics
       return this
 
     method clear
+      native @|Starbright::active_renderer->clear_color = $this->background_color;
+              |Starbright::active_renderer->clear( Starbright::Renderer::CLEAR_COLOR );
 
     method end_draw->this
       return this
@@ -19,3 +21,6 @@ class PlasmacoreGraphics : Graphics
     method flush
 
 endClass
+
+nativeHeader #include "Starbright.h"
+

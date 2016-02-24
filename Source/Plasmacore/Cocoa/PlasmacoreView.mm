@@ -27,11 +27,6 @@
   [m_draw push];
 //printf( "-onDraw\n" );
 
-  renderer->set_clear_color( 0xff0000ff );
-  renderer->clear( Renderer::CLEAR_COLOR );
-
-
-  
   //NSLog( @"This view's name is '%@'\n", self.name );
 }
 

@@ -2,10 +2,5 @@ $using Plasmacore
 
 println "Rogue Launched!"
 
-global window = Window( "MainWindow" )
+local window = Window( "MainWindow" )
 window.show
-window( "bam" )
-window( "pow" )
-
-Window( "MainWindow" ).show  # 2
-Window( "MainWindow" ).show  # 3

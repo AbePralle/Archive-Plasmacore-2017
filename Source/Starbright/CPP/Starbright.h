@@ -198,25 +198,28 @@ struct Renderer
   Renderer();
   virtual ~Renderer() {}
 
-  virtual Vertex* add_vertices( int count );
-  virtual void begin_draw( int display_width, int display_height ) {}
-  virtual void end_draw() { flush(); }
-  virtual void clear( int flags ) {} // COLOR|DEPTH|STENCIL
-  virtual int  define_shader( const char* vertex_src, const char* pixel_src ) { return 0; }
-  virtual int  define_texture( void* pixels, int width, int height, int options ) { return 0; }
-  virtual void delete_shader( int shader_id ) {}
-  virtual void delete_texture( int texture_id ) {}
-  virtual void flush() {}
-  virtual void render() {}
-  virtual void set_clear_color( int color ) { clear_color = color; }
-  virtual void set_render_mode( RenderMode mode ) 
-               { if (render_mode.value != mode.value) render(); render_mode = mode; }
-  virtual void set_texture_count( int texture_count );
-  virtual void set_transform_2d( double left, double top, double right, double bottom );
-  virtual void use_primitive_type( int type );
-  virtual void use_shader( int shader_id );
-  virtual void use_texture( int index, int texture_id );
+  virtual Renderer* activate();
+  virtual Vertex*   add_vertices( int count );
+  virtual void      begin_draw( int display_width, int display_height ) {}
+  virtual void      end_draw() { flush(); }
+  virtual void      clear( int flags ) {} // COLOR|DEPTH|STENCIL
+  virtual int       define_shader( const char* vertex_src, const char* pixel_src ) { return 0; }
+  virtual int       define_texture( void* pixels, int width, int height, int options ) { return 0; }
+  virtual void      delete_shader( int shader_id ) {}
+  virtual void      delete_texture( int texture_id ) {}
+  virtual void      flush() {}
+  virtual void      render() {}
+  virtual void      set_clear_color( int color ) { clear_color = color; }
+  virtual void      set_render_mode( RenderMode mode ) 
+                    { if (render_mode.value != mode.value) render(); render_mode = mode; }
+  virtual void      set_texture_count( int texture_count );
+  virtual void      set_transform_2d( double left, double top, double right, double bottom );
+  virtual void      use_primitive_type( int type );
+  virtual void      use_shader( int shader_id );
+  virtual void      use_texture( int index, int texture_id );
 };
+
+extern Renderer* active_renderer;
 
 }; // namespace Starbright
 }; // namespace PROJECT_WORKSPACE
