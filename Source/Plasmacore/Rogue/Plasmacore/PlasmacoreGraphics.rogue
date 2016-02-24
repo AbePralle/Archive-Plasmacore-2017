@@ -2,11 +2,10 @@ $module Plasmacore
 
 class PlasmacoreGraphics : Graphics
   PROPERTIES
-    window    : Window
-    view_name : String
+    view : View
 
   METHODS
-    method init( window, view_name )
+    method init( view )
 
     method begin_draw( size )->this
       return this

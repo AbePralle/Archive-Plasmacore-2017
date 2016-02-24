@@ -10,6 +10,7 @@
   if ( !the_singleton )
   {
     the_singleton = [[Plasmacore alloc] init];
+    [[PlasmacoreMessage messageWithType:"App.launch"] send];
   }
   return the_singleton;
 }
@@ -134,6 +135,8 @@
 
 - (void) start
 {
+  [[PlasmacoreMessage messageWithType:"App.start"] send];
+
   if ( !update_timer )
   {
     //static NSTimer* test_timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(sendTestMessage)
@@ -155,6 +158,8 @@
     [update_timer invalidate];
     update_timer = nil;
   }
+
+  [[PlasmacoreMessage messageWithType:"App.start"] push];
 }
 
 - (void) update

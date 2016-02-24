@@ -1,0 +1,16 @@
+class Logic
+  # View controller logic
+  GLOBAL PROPERTIES
+    default_logic = Logic()
+
+  PROPERTIES
+
+  METHODS
+    method on_init
+
+    method on_draw
+      Graphics.clear( Color.YELLOW )
+
+    method on_update
+endClass
+
