@@ -9,7 +9,6 @@ class Logic
     method on_init
 
     method on_draw
-      Graphics.clear( Color.YELLOW )
 
     method on_update
 endClass

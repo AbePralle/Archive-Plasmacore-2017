@@ -2,5 +2,29 @@ $using Plasmacore
 
 println "Rogue Launched!"
 
-local window = Window( "MainWindow" )
+local window = Window( "MainWindow", GreenBlue() )
 window.show
+
+
+class GreenBlue : Logic
+  PROPERTIES
+    timer = Timer(1.0)
+
+  METHODS
+    method on_init
+      timer.restart
+
+    method on_draw
+      Graphics.clear
+
+    method on_update
+      if (timer.is_expired)
+        if (Graphics.background_color == Color.BLUE)
+          Graphics.background_color = Color.GREEN
+        else
+          Graphics.background_color = Color.BLUE
+        endIf
+        timer.restart
+      endIf
+endClass
+

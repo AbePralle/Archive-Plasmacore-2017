@@ -40,7 +40,12 @@
 
 - (void)onUpdate
 {
-  // Override as desired
+  PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"Window.update"];
+  [m_draw setInt32:"window_id" value:[[Plasmacore singleton] idOfResource:self.window.windowController]];
+  [m_draw setString:"view_name" value:[self valueForKey:@"name"] ];
+  [m_draw setInt32:"width"  value:(int)[self frame].size.width];
+  [m_draw setInt32:"height" value:(int)[self frame].size.height];
+  [m_draw push];
 }
 
 @end

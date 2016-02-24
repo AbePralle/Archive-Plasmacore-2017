@@ -43,6 +43,17 @@ class Window
     method show
       Message( "Window.show" ).set_int32("id",id).send
 
+    method handle_update( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
+      local view = views[ view_name_buffer ]
+      if (not view)
+        local view_name = view_name_buffer->String
+        view = View( this, view_name, default_view_logic )
+        views[ view_name ] = view
+      endIf
+      Graphics = view.graphics
+      Graphics.size = XY(w,h)
+      view.logic.on_update
+
 endClass
 
 class View
@@ -78,6 +89,17 @@ class WindowManager [requisite singleton]
           local height    = m.get_int32( "height" )
           local window = WindowManager.windows_by_id[ window_id ]
           if (window) window.handle_draw( view_name, width, height )
+        endFunction
+      )
+
+      MessageManager.add_listener( "Window.update",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local width     = m.get_int32( "width" )
+          local height    = m.get_int32( "height" )
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_update( view_name, width, height )
         endFunction
       )
 endClass
