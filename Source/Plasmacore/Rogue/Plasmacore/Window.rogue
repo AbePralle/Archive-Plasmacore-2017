@@ -1,8 +1,6 @@
 #==============================================================================
 # Window.rogue
 #==============================================================================
-$include "Logic.rogue"
-
 $module Plasmacore
 
 class Window
@@ -10,10 +8,10 @@ class Window
     name               : String
     id                 : Int32
     views              = StringTable<<View>>()
-    default_view_logic : Logic
+    default_view_logic : ViewLogic
 
   METHODS
-    method init( name, default_view_logic=Logic.default_logic )
+    method init( name, default_view_logic=ViewLogic.default_logic )
       id = Plasmacore.create_resource_id
       WindowManager.windows_by_id[ id ] = this
       Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
@@ -61,7 +59,7 @@ class View
     window   : Window
     name     : String
     graphics : PlasmacoreGraphics
-    logic    : Logic
+    logic    : ViewLogic
 
   METHODS
     method init( window, name, logic )

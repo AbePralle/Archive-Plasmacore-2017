@@ -4,6 +4,7 @@
 $include "Graphics"
 $include "Messaging.rogue"
 $include "PlasmacoreGraphics.rogue"
+$include "ViewLogic.rogue"
 $include "Window.rogue"
 
 class Plasmacore

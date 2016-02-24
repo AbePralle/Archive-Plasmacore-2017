@@ -1,7 +1,7 @@
-class Logic
+class ViewLogic
   # View controller logic
   GLOBAL PROPERTIES
-    default_logic = Logic()
+    default_logic = ViewLogic()
 
   PROPERTIES
 
