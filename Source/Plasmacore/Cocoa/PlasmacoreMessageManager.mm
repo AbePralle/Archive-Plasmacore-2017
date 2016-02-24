@@ -175,7 +175,11 @@ using namespace SuperCPP;
       }
     }
 
-    Rogue_collect_garbage( false );  // optional GC
+    // Optional GC
+    if (Rogue_collect_garbage(false))
+    {
+      printf( "GC\n" );
+    }
  
     dispatching_messages = false;
   } // end @synchronized
