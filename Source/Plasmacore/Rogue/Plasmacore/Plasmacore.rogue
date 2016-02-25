@@ -1,11 +1,16 @@
 #==============================================================================
 # Plasmacore.rogue
 #==============================================================================
-$include "Graphics"
+$include "Bitmap.rogue"
+$include "Box.rogue"
+$include "Color.rogue"
+$include "Graphics.rogue"
 $include "Messaging.rogue"
-$include "PlasmacoreGraphics.rogue"
 $include "ViewLogic.rogue"
 $include "Window.rogue"
+$include "XY.rogue"
+
+$module Plasmacore
 
 class Plasmacore
   GLOBAL PROPERTIES
@@ -15,4 +20,13 @@ class Plasmacore
     method create_resource_id->Int32
       ++next_resource_id
       return (next_resource_id - 1)
+
+    method find_asset( name:String )->String
+      local extension = File.extension( name )
+      if (extension.count) name = name.leftmost( -(extension.count+1) )
+
+      return native( "Plasmacore_find_asset( $name, $extension )" )->String
 endClass
+
+nativeCode RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension );
+

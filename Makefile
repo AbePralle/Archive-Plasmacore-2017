@@ -1,16 +1,21 @@
 PLASMACORE_ROGUE_SOURCE = $(shell find Source/Rogue | grep "\.rogue$$") $(shell find Source/Plasmacore/Rogue/Plasmacore | grep "\.rogue$$")
 
+ROGUEC_OPTIONS  = Plasmacore
+ROGUEC_OPTIONS += --target="C++,Mac"
+ROGUEC_OPTIONS += --libraries="../Plasmacore/Rogue"
+ROGUEC_OPTIONS += --output=Build/RogueProgram
+
 all: compile_rogue
 
 compile_rogue: Source/Rogue/Build/RogueProgram.cpp
 
 Source/Rogue/Build/RogueProgram.cpp: $(PLASMACORE_ROGUE_SOURCE)
 	mkdir -p Source/Rogue/Build
-	cd Source/Rogue/ && roguec Main.rogue Plasmacore --libraries="../Plasmacore/Rogue" --output=Build/RogueProgram
+	cd Source/Rogue/ && roguec Main.rogue $(ROGUEC_OPTIONS)
 
 remake:
 	mkdir -p Source/Rogue/Build
-	cd Source/Rogue/ && roguec Main.rogue Plasmacore --libraries="../Plasmacore/Rogue" --output=Build/RogueProgram
+	cd Source/Rogue/ && roguec Main.rogue $(ROGUEC_OPTIONS)
 
 clean:
 	rm -rf Source/Rogue/Build

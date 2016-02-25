@@ -58,12 +58,12 @@ class View
   PROPERTIES
     window   : Window
     name     : String
-    graphics : PlasmacoreGraphics
+    graphics : Graphics
     logic    : ViewLogic
 
   METHODS
     method init( window, name, logic )
-      graphics = PlasmacoreGraphics( this )
+      graphics = Graphics( this )
 
     method draw
       logic.on_draw

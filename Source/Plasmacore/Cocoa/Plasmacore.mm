@@ -4,13 +4,22 @@
 
 @implementation Plasmacore
 
+RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension )
+{
+  Plasmacore* plasmacore = [Plasmacore singleton];
+  NSString* ns_name = [plasmacore rogueStringToNSString:name];
+  NSString* ns_extension = [plasmacore rogueStringToNSString:extension];
+  NSString* ns_filepath = [[NSBundle mainBundle] pathForResource:ns_name ofType:ns_extension]; 
+  return [plasmacore nsStringToRogueString:ns_filepath];
+}
+
 + (Plasmacore*) singleton
 {
   static Plasmacore* the_singleton = nil;
   if ( !the_singleton )
   {
-    the_singleton = [[Plasmacore alloc] init];
-    [[PlasmacoreMessage messageWithType:"App.launch"] send];
+    the_singleton = [Plasmacore alloc];
+    the_singleton = [the_singleton init];
   }
   return the_singleton;
 }
@@ -85,6 +94,8 @@
     }
   ];
 
+  [[PlasmacoreMessage messageWithType:"App.launch"] send];
+
   return self;
 }
 
@@ -101,6 +112,17 @@
 - (int) idOfResource:(id)resource
 {
   return [resources idOfResource:resource];
+}
+
+- (RogueString*) nsStringToRogueString:(NSString*)st
+{
+  RogueString* result;
+  @synchronized (message_manager)
+  {
+    result = RogueString_create_with_count( (int)st.length );
+  }
+  [st getCharacters:(unichar*)result->characters range:NSMakeRange(0,st.length)];
+  return RogueString_update_hash_code( result );
 }
 
 - (PlasmacoreMessage*) obtainMessage
@@ -126,6 +148,12 @@
 - (id) resourceWithID:(int)resource_id
 {
   return [resources resourceWithID:resource_id];
+}
+
+- (NSString*) rogueStringToNSString:(RogueString*)st
+{
+  if ( !st ) return nil;
+  return [NSString stringWithCharacters:(unichar*)st->characters length:st->count];
 }
 
 //- (void) sendTestMessage

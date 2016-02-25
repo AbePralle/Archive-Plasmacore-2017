@@ -1,0 +1,50 @@
+$module Plasmacore
+
+class Graphics [singleton]
+  GLOBAL PROPERTIES
+    stack = Graphics[]
+
+  PROPERTIES
+    view                           : View
+    size                           : XY
+    background_color = Color.BLACK : Int32
+
+  METHODS
+    method init( view )
+
+    method begin_draw( size )->this
+      return this
+
+    method clear
+      native @|Starbright::active_renderer->clear_color = $this->background_color;
+              |Starbright::active_renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+
+    method clear( background_color )
+      clear
+
+    method end_draw->this
+      return this
+
+    method height->Int32 [macro]
+      this.size.y->Int32
+
+    method flush
+
+    method push( g:Graphics )->Graphics
+      stack.add( this )
+      Graphics = g
+      return g
+
+    method pop->Graphics
+      if (stack.count == 0) Graphics = Graphics()
+      else                  Graphics = stack.remove_last
+      return Graphics
+
+    method set_size( @size )->this
+      return this
+
+    method width->Int32 [macro]
+      this.size.x->Int32
+endClass
+
+nativeHeader #include "Starbright.h"

@@ -4,6 +4,7 @@ println "Rogue Launched!"
 
 local window = Window( "MainWindow", GreenBlue() )
 window.show
+println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
 
 
 class GreenBlue : ViewLogic

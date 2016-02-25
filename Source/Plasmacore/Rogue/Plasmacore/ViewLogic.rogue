@@ -1,3 +1,5 @@
+$module Plasmacore
+
 class ViewLogic
   # View controller logic
   GLOBAL PROPERTIES
