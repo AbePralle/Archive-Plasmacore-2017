@@ -1,6 +1,7 @@
 #==============================================================================
 # Plasmacore.rogue
 #==============================================================================
+$include "Anchor.rogue"
 $include "Bitmap.rogue"
 $include "Box.rogue"
 $include "Color.rogue"
