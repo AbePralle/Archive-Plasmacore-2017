@@ -1,28 +1,44 @@
-$module Plasmacore
+module Plasmacore
 
 class Graphics [singleton]
   GLOBAL PROPERTIES
     stack = Graphics[]
 
   PROPERTIES
-    view                           : View
-    size                           : XY
-    background_color = Color.BLACK : Int32
+    canvas           : Canvas
+    textures         = Table<<String,Texture>>()
+
+    size             : XY
+    background_color : Int32
+
 
   METHODS
-    method init( view )
+    method init
+      background_color = Color.BLACK
 
-    method begin_draw( size )->this
+    method begin_draw( canvas )->this
+      size = canvas.size
+      return this
+
+    method begin_update( canvas )->this
+      size = canvas.size
       return this
 
     method clear
-      native @|Starbright::active_renderer->clear_color = $this->background_color;
-              |Starbright::active_renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+      # Override
 
     method clear( background_color )
       clear
 
+    method define_texture( name:String, bitmap:Bitmap )->Texture
+      return Texture( name, 0, bitmap.size, XY(1,1) )
+
+      #method draw( texture:Texture, pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
+
     method end_draw->this
+      return this
+
+    method end_update->this
       return this
 
     method height->Int32 [macro]
@@ -39,9 +55,6 @@ class Graphics [singleton]
       if (stack.count == 0) Graphics = Graphics()
       else                  Graphics = stack.remove_last
       return Graphics
-
-    method set_size( @size )->this
-      return this
 
     method width->Int32 [macro]
       this.size.x->Int32

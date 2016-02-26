@@ -1,13 +1,17 @@
-$module Plasmacore
+module Plasmacore
 
-class Bitmap : Graphics
+class Bitmap
   PROPERTIES
+    size   : XY
     pixels : Int32[]
     error  : Logical
 
   METHODS
-    method init( size ) [requisite]
-      pixels = Int32[]( width*height, Color.BLACK )
+    method init( size, color=Color.BLACK:Int32 ) [requisite]
+      pixels = Int32[]( width*height, color )
+
+    method init( x:Int32, y:Int32, color=Color.BLACK:Int32 ) [requisite]
+      init( XY(x,y), color )
 
     method init( file:File )
       init( file.load_as_bytes )
@@ -20,12 +24,9 @@ class Bitmap : Graphics
 
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
-      Graphics.push( this )
-      existing.draw( -bounds.position )
-      Graphics.pop
+      existing.draw( -bounds.position, this )
 
-    method clear
-      local color = background_color
+    method clear( color=Color.BLACK:Int32 )
       forEach (i of pixels) pixels[i] = color
 
     method decode( bytes:Byte[] )->Logical
@@ -38,13 +39,7 @@ class Bitmap : Graphics
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
 
-    method draw( pos:XY )
-      local dest_bitmap = Graphics as Bitmap
-      if (not dest_bitmap)
-        println "Cannot draw a Bitmap to a non-Bitmap Graphics context."
-        return
-      endIf
-
+    method draw( pos:XY, dest_bitmap:Bitmap )
       local dest_width = dest_bitmap.width
       local x1 = pos.x : Int32
       local y1 = pos.y : Int32
@@ -75,6 +70,19 @@ class Bitmap : Graphics
 
     method get( x:Int32, y:Int32 )->Int32
       return pixels[ y*width + x ]
+
+    method height->Int32 [macro]
+      this.size.y->Int32
+
+    method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )
+      if (width == new_width and height == new_height) return
+
+      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
+      local reframed = Bitmap( bounds.size )
+      draw( bounds.position, reframed )
+
+      this.size = reframed.size
+      this.pixels = reframed.pixels
 
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )
@@ -114,6 +122,9 @@ class Bitmap : Graphics
       native @|memcpy( $bytes->data->bytes, encoder.encoded_bytes, $count );
 
       return bytes
+
+    method width->Int32 [macro]
+      this.size.x->Int32
 endClass
 
 nativeCode

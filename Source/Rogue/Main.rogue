@@ -1,4 +1,4 @@
-$using Plasmacore
+using Plasmacore
 
 println "Rogue Launched!"
 
@@ -11,9 +11,11 @@ println bitmap.size
 
 class GreenBlue : ViewLogic
   PROPERTIES
+    texture : Texture
 
   METHODS
     method on_init
+      texture = Graphics.define_texture( "red_box", Bitmap(16,16,Color.RED) )
 
     method on_draw
       Graphics.clear

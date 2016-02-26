@@ -4,14 +4,18 @@
 $include "Anchor.rogue"
 $include "Bitmap.rogue"
 $include "Box.rogue"
+$include "Canvas.rogue"
 $include "Color.rogue"
 $include "Graphics.rogue"
 $include "Messaging.rogue"
+$include "StarbrightGraphics.rogue"
+$include "Texture.rogue"
+$include "View.rogue"
 $include "ViewLogic.rogue"
 $include "Window.rogue"
 $include "XY.rogue"
 
-$module Plasmacore
+module Plasmacore
 
 class Plasmacore
   GLOBAL PROPERTIES

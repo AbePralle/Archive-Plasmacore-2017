@@ -1,0 +1,14 @@
+module Plasmacore
+
+class Canvas
+  PROPERTIES
+    size : XY
+
+  METHODS
+    method height->Int32 [macro]
+      this.size.y->Int32
+
+    method width->Int32 [macro]
+      this.size.x->Int32
+endClass
+

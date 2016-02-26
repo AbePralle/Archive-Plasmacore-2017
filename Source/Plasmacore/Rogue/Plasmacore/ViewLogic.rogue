@@ -1,4 +1,4 @@
-$module Plasmacore
+module Plasmacore
 
 class ViewLogic
   # View controller logic
@@ -6,6 +6,7 @@ class ViewLogic
     default_logic = ViewLogic()
 
   PROPERTIES
+    is_initialized : Logical
 
   METHODS
     method on_init

@@ -1,4 +1,4 @@
-$module Plasmacore
+module Plasmacore
 
 class Box( position:XY, size:XY ) [compound]
   GLOBAL METHODS
@@ -15,10 +15,10 @@ class Box( position:XY, size:XY ) [compound]
       return Box( top_left, bottom_right - top_left )
 
   METHODS
-    method aligned_within( enclosing:Box, alignment:XY )->Box
+    method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       # -1..1 -> 0..1
-      local align_x = alignment.x / 2 + 0.5
-      local align_y = alignment.y / 2 + 0.5
+      local align_x = anchor.position.x / 2 + 0.5
+      local align_y = anchor.position.y / 2 + 0.5
 
       local excess_x = enclosing.width - width
       local excess_y = enclosing.height - height

@@ -1,0 +1,32 @@
+module Plasmacore
+
+class View : Canvas
+  PROPERTIES
+    window   : Window
+    name     : String
+    graphics : Graphics
+    logic    : ViewLogic
+
+  METHODS
+    method init( window, name, size, logic )
+      graphics = StarbrightGraphics()
+
+    method draw
+      Graphics = this.graphics
+      Graphics.begin_draw( this )
+
+      if (not logic.is_initialized) logic.is_initialized = true; logic.on_init
+
+      logic.on_draw
+      Graphics.end_draw
+
+    method update
+      Graphics = this.graphics
+      Graphics.begin_update( this )
+
+      if (not logic.is_initialized) logic.is_initialized = true; logic.on_init
+      logic.on_update
+
+      Graphics.end_update
+endClass
+

@@ -1,0 +1,25 @@
+module Plasmacore
+
+class StarbrightGraphics : Graphics
+  METHODS
+    method clear
+      native @|Starbright::active_renderer->clear_color = $this->background_color;
+              |Starbright::active_renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+
+    method define_texture( name:String, bitmap:Bitmap )->Texture
+      local texture_id = 0
+      if (bitmap)
+        local w = bitmap.width
+        local h = bitmap.height
+        local bpp = 32
+        texture_id = native(
+          "Starbright::active_renderer->define_texture($bitmap->pixels->data->bytes, $w, $h, $bpp)" )->Int32
+      endIf
+
+      local texture = Texture( name, texture_id, bitmap.size, XY(1,1) )
+      textures[ name ] = texture
+      return texture
+
+      #method draw_texture(
+endClass
+

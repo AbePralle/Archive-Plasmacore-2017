@@ -2,7 +2,7 @@
 # Messaging.rogue
 #==============================================================================
 
-$module Plasmacore
+module Plasmacore
 
 $requisite Byte[].clear()
 $requisite Byte[].reserve(Int32)

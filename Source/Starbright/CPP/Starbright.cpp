@@ -194,6 +194,7 @@ Renderer::Renderer()
 
     vertex_count(0)
 {
+  memset( active_texture_ids, 0, MAX_CONCURRENT_TEXTURES * sizeof(int) );
 }
 
 Renderer* Renderer::activate()
@@ -215,6 +216,15 @@ Vertex* Renderer::add_vertices( int count )
   return result;
 }
 
+void Renderer::set_primitive_type( int type )
+{
+  if (primitive_type != type)
+  {
+    render();
+    primitive_type = type;
+  }
+}
+
 void Renderer::set_texture_count( int texture_count )
 {
   if (active_texture_count != texture_count)
@@ -224,22 +234,7 @@ void Renderer::set_texture_count( int texture_count )
   }
 }
 
-void Renderer::set_transform_2d( double left, double top, double right, double bottom )
-{
-  render();
-  projection_transform.set_orthographic( left, top, right, bottom );
-}
-
-void Renderer::use_primitive_type( int type )
-{
-  if (primitive_type != type)
-  {
-    render();
-    primitive_type = type;
-  }
-}
-
-void Renderer::use_shader( int shader_id )
+void Renderer::set_shader( int shader_id )
 {
   if (active_shader_id != shader_id)
   {
@@ -248,12 +243,19 @@ void Renderer::use_shader( int shader_id )
   }
 }
 
-void Renderer::use_texture( int index, int texture_id )
+void Renderer::set_transform_2d( double left, double top, double right, double bottom )
+{
+  render();
+  projection_transform.set_orthographic( left, top, right, bottom );
+}
+
+void Renderer::set_texture( int index, int texture_id )
 {
   if ((unsigned int)index < MAX_CONCURRENT_TEXTURES && active_texture_ids[index] != texture_id)
   {
     render();
     active_texture_ids[index] = texture_id;
+    if (active_texture_count <= index) set_texture_count( index + 1 );
   }
 }
 

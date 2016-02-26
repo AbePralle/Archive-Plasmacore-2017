@@ -210,13 +210,13 @@ struct Renderer
   virtual void      flush() {}
   virtual void      render() {}
   virtual void      set_clear_color( int color ) { clear_color = color; }
+  virtual void      set_primitive_type( int type );
   virtual void      set_render_mode( RenderMode mode ) 
                     { if (render_mode.value != mode.value) render(); render_mode = mode; }
+  virtual void      set_shader( int shader_id );
+  virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform_2d( double left, double top, double right, double bottom );
-  virtual void      use_primitive_type( int type );
-  virtual void      use_shader( int shader_id );
-  virtual void      use_texture( int index, int texture_id );
 };
 
 extern Renderer* active_renderer;

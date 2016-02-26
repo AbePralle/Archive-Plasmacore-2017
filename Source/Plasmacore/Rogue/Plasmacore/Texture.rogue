@@ -1,0 +1,15 @@
+module Plasmacore
+
+class Texture
+  PROPERTIES
+    name    : String
+    id      : Int32
+    size    : XY
+      # In texels
+     
+    uv_size : XY
+      # (1,1) in most cases
+
+  METHODS
+    method init( name, id, size, uv_size )
+endClass
