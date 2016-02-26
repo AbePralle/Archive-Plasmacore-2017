@@ -30,6 +30,15 @@ namespace Starbright
 #  define SB_LOWP " "
 #endif
 
+// Notes on the following:
+//   SB_TEXTURE_SHADER* works with both premultiplied alpha and regular textures.
+//   SB_PREMULTIPLIED* only works with premultiplied alpha textures.
+#define SB_COLOR_SHADER                                 1
+#define SB_TEXTURE_SHADER                               2
+#define SB_TEXTURE_SHADER_WITH_COLOR_MULTIPLY           3
+#define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_ADD  4
+#define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_FILL 5
+
 //=============================================================================
 //  RenderMode
 //=============================================================================

@@ -33,7 +33,8 @@ class Graphics [singleton]
     method define_texture( name:String, bitmap:Bitmap )->Texture
       return Texture( name, 0, bitmap.size, XY(1,1) )
 
-      #method draw( texture:Texture, pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
+    method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
+        pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
 
     method end_draw->this
       return this

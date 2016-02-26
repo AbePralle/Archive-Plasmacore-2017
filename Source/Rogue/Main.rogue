@@ -19,6 +19,8 @@ class GreenBlue : ViewLogic
 
     method on_draw
       Graphics.clear
+      Graphics.draw_textured_triangle( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
+        XY(0,0), XY(100,100), XY(0,100), XY(0,0), XY(100,100), XY(0,100) )
 
     method on_update
       local p = Math.sin( (Time.current % 2)/2 * pi )

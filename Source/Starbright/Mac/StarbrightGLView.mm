@@ -86,6 +86,7 @@ static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display
   CGLLockContext( [[self openGLContext] CGLContextObj] );
   [[self openGLContext] makeCurrentContext];
   renderer->activate();
+  renderer->begin_draw( display_width, display_height );
 
   if (call_onCreate) [self onCreate];
 
@@ -113,6 +114,7 @@ static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display
 
   [self onDraw];
 
+  renderer->end_draw();
   glFlush();
 
   CGLUnlockContext( [[self openGLContext] CGLContextObj] );
