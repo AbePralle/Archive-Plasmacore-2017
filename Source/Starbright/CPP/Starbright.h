@@ -39,6 +39,10 @@ namespace Starbright
 #define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_ADD  4
 #define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_FILL 5
 
+#define SB_TEXTURE_OPTION_8BPP  8
+#define SB_TEXTURE_OPTION_16BPP 16
+#define SB_TEXTURE_OPTION_32BPP 32
+
 //=============================================================================
 //  RenderMode
 //=============================================================================
@@ -228,7 +232,7 @@ struct Renderer
   virtual void      set_transform_2d( double left, double top, double right, double bottom );
 };
 
-extern Renderer* active_renderer;
+extern Renderer* renderer;
 
 }; // namespace Starbright
 }; // namespace PROJECT_WORKSPACE

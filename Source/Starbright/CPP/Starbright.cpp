@@ -21,7 +21,7 @@ namespace Starbright
 //=============================================================================
 //  Globals
 //=============================================================================
-Renderer* active_renderer = 0;
+Renderer* renderer = 0;
 
 //=============================================================================
 //  Matrix
@@ -199,7 +199,7 @@ Renderer::Renderer()
 
 Renderer* Renderer::activate()
 {
-  active_renderer = this;
+  renderer = this;
   return this;
 }
 

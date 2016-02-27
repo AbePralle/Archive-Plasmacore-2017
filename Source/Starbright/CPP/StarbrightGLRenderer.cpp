@@ -261,7 +261,7 @@ int  GLRenderer::define_texture( void* pixels, int width, int height, int option
   switch (bpp)
   {
     case 32:
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels );
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
       break;
 
     case 16:
