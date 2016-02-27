@@ -8,8 +8,10 @@ RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension )
 {
   Plasmacore* plasmacore = [Plasmacore singleton];
   NSString* ns_name = [plasmacore rogueStringToNSString:name];
-  NSString* ns_extension = [plasmacore rogueStringToNSString:extension];
+  NSString* ns_extension = nil;
+  if (extension) ns_extension = [plasmacore rogueStringToNSString:extension];
   NSString* ns_filepath = [[NSBundle mainBundle] pathForResource:ns_name ofType:ns_extension]; 
+  if (ns_filepath == nil) return 0;
   return [plasmacore nsStringToRogueString:ns_filepath];
 }
 

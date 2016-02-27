@@ -16,7 +16,7 @@ println bitmap.size
 
 class GreenBlue : ViewLogic
   PROPERTIES
-    #texture = Texture( "U5Tiles.png" )
+    image = Image( "U5Tiles.png" )
 
   METHODS
     method on_init
@@ -31,8 +31,8 @@ class GreenBlue : ViewLogic
 
     method on_draw
       Graphics.clear
-      Graphics.get_texture( "U5Tiles.png" )
-      Graphics.get_texture( "red_box" )
+      image.draw( XY(0,0) )
+      image.draw( XY(256,128) )
 
       #{
       forEach (x in 0..800 step 16)

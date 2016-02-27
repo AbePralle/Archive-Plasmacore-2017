@@ -898,6 +898,7 @@
 				30CB04721C7E6A0E00A767FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		30CB04781C7E6E7100A767FC /* Build configuration list for PBXNativeTarget "JPEG" */ = {
 			isa = XCConfigurationList;
@@ -906,6 +907,7 @@
 				30CB047A1C7E6E7100A767FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

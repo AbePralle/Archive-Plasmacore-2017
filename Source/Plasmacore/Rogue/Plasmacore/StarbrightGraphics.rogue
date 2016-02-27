@@ -22,7 +22,41 @@ class StarbrightGraphics : Graphics
       return texture
       }#
 
-      #{
+    method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
+        pt1:XY, pt2:XY, pt3:XY, pt4:XY, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
+      native @|Starbright::renderer->set_texture( 0, $texture->id );
+              |Starbright::renderer->set_shader( $shader.id );
+              |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
+              |Starbright::renderer->set_render_mode( $render_mode.value );
+              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
+              |
+              |v[0].x = $pt1.x;
+              |v[0].y = $pt1.y;
+              |v[0].u = $uv1.x;
+              |v[0].v = $uv1.y;
+              |v[1].x = $pt2.x;
+              |v[1].y = $pt2.y;
+              |v[1].u = $uv2.x;
+              |v[1].v = $uv2.y;
+              |v[2].x = $pt3.x;
+              |v[2].y = $pt3.y;
+              |v[2].u = $uv3.x;
+              |v[2].v = $uv3.y;
+              |
+              |v[3].x = $pt1.x;
+              |v[3].y = $pt1.y;
+              |v[3].u = $uv1.x;
+              |v[3].v = $uv1.y;
+              |v[4].x = $pt3.x;
+              |v[4].y = $pt3.y;
+              |v[4].u = $uv3.x;
+              |v[4].v = $uv3.y;
+              |v[5].x = $pt4.x;
+              |v[5].y = $pt4.y;
+              |v[5].u = $uv4.x;
+              |v[5].v = $uv4.y;
+
+
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
       native @|Starbright::renderer->set_texture( 0, $texture->id );
@@ -42,11 +76,59 @@ class StarbrightGraphics : Graphics
               |v[2].y = $pt3.y;
               |v[2].u = $uv3.x;
               |v[2].v = $uv3.y;
-              }#
+
+    method load_texture( texture:Texture, file:File )
+      local id = 0
+      local image_w : Int32
+      local image_h : Int32
+      local texture_w : Int32
+      local texture_h : Int32
+
+      native @|char filepath[ 1024 ];
+              |RogueString_to_c_string( $file->filepath, filepath, 1024 );
+              |FILE* fp = fopen( filepath, "rb" );
+              |if (fp)
+              |{
+              |  fseek( fp, 0, SEEK_END );
+              |  int file_size = (int) ftell( fp );
+              |  fseek( fp, 0, SEEK_SET );
+              |  char* file_bytes = new char[ file_size ];
+              |  fread( file_bytes, 1, file_size, fp );
+              |
+              |  Decoder decoder;
+              |  if (decoder.open((Byte*)file_bytes,file_size))
+              |  {
+              |    $image_w = decoder.width;
+              |    $image_h = decoder.height;
+              |    $texture_w = $image_w;
+              |    $texture_h = $image_h;
+              |
+              |    ARGB32* image_data = new ARGB32[ $texture_w * $texture_h ];
+              |    if (decoder.decode_argb32( image_data ))
+              |    {
+              |      $id = Starbright::renderer->define_texture( image_data, $texture_w, $texture_h, 32 );
+              |    }
+              |    delete image_data;
+              |  }
+              |
+              |  delete file_bytes;
+              |  fclose( fp );
+              |}
+
+      if (id)
+        texture.id      = id
+        texture.size    = XY( texture_w, texture_h )
+        texture.uv_size = XY( image_w, image_h ) / texture.size
+      endIf
 
     method set_transform
       local w = size.x
       local h = size.y
       native @|Starbright::renderer->set_transform_2d( 0, 0, $w, $h );
 endClass
+
+nativeCode
+#include "ImageIO.h"
+using namespace ImageIO;
+endNativeCode
 
