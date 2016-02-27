@@ -19,6 +19,15 @@ class Graphics [singleton]
       true_size = size
       background_color = Color.BLACK
 
+    method acquire_texture( name:String )->Texture
+      local entry = textures.find( name )
+      if (entry) return entry.value
+
+      local texture = Texture( name )
+      textures[ name ] = texture
+      TextureManager.load( texture )
+      return texture
+
     method begin_draw( canvas )->this
       size = canvas.size
       set_transform
@@ -56,15 +65,6 @@ class Graphics [singleton]
       this.size.y->Int32
 
     method flush
-
-    method load_texture( name:String )->Texture
-      local entry = textures.find( name )
-      if (entry) return entry.value
-
-      local texture = Texture( name )
-      textures[ name ] = texture
-      TextureManager.load( texture )
-      return texture
 
     method load_texture( texture:Texture, file:File )
       println ''Failed to load texture "$" from file "$".'' (texture.name,file)
