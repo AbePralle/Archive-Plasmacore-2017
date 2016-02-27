@@ -1,5 +1,75 @@
 module Plasmacore
 
-class Image
+class ImageManager [singleton]
+  METHODS
+    method load( image:Image )
+      # Load the image name as a texture
+      local texture = Graphics.load_texture( image.name )
+      image.data = TextureImageData( image, texture )
+      return 
 endClass
 
+class Image
+  PROPERTIES
+    name : String
+    data : ImageData
+
+  METHODS
+    method init( name )
+
+    method draw( pos:XY )
+      prepare
+      data.draw( pos )
+
+    method prepare->this
+      if (data) data.prepare
+      else      ImageManager.load( this )
+      return this
+endClass
+
+class ImageData
+  PROPERTIES
+    image : Image
+
+  METHODS
+    method init( image )
+
+    method draw( pos:XY )
+
+    method prepare
+
+endClass
+
+class TextureImageData : ImageData
+  PROPERTIES
+    texture : Texture
+      # Stores which graphics context this image's texture is loaded in.
+      # Used to recreate the image data for different contexts if necessary.
+
+  METHODS
+    method init( image, texture )
+
+    method draw( pos:XY )
+      local w = texture.width
+      local h = texture.height
+      local uw = texture.uv_width
+      local uh = texture.uv_height
+      local pt1 = pos
+      local pt2 = XY( pt1.x+w, pt1.y )
+      local pt3 = XY( pt1.x+w, pt1.y+h )
+      local pt4 = XY( pt1.x,   pt1.y+h )
+      local uv1 = XY(0,0)
+      local uv2 = XY(uw,0)
+      local uv3 = XY(uw,uh)
+      local uv4 = XY(0,uh)
+      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
+        pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
+
+    method prepare
+      if (texture.graphics isNot Graphics)
+        # Graphics Context changed; find or load the texture in the current context
+        texture = Graphics.load_texture( texture.name )
+      endIf
+
+
+endClass

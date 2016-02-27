@@ -30,11 +30,12 @@ class Plasmacore
       return (next_resource_id - 1)
 
     method find_asset( name:String )->String
-      local extension = File.extension( name )
-      if (extension.count) name = name.leftmost( -(extension.count+1) )
+      local filepath = native( "Plasmacore_find_asset( $name )" )->String
+      if (filepath) return filepath
 
-      return native( "Plasmacore_find_asset( $name, $extension )" )->String
+      name = "Assets/" + name
+      return native( "Plasmacore_find_asset( $name )" )->String
 endClass
 
-nativeCode RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension );
+nativeCode RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension=0 );
 
