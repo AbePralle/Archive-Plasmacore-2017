@@ -19,7 +19,7 @@ class GreenBlue : ViewLogic
     image = Image( "U5Tiles.png" )
 
   METHODS
-    method on_init
+    method activate
       #{
       local bitmap = Bitmap(16,16,Color.RED)
       forEach (i of bitmap.pixels)
@@ -29,10 +29,9 @@ class GreenBlue : ViewLogic
       texture = Graphics.define_texture( "red_box", bitmap )
       }#
 
-    method on_draw
+    method draw
       Graphics.clear
-      image.draw( XY(0,0) )
-      image.draw( XY(256,128) )
+      image.draw( pointer_position )
 
       #{
       forEach (x in 0..800 step 16)
@@ -43,7 +42,12 @@ class GreenBlue : ViewLogic
       endForEach
       }#
 
-    method on_update
+    method on( e:KeyEvent )
+      if (e.is_repeat)      println "'$' repeated" (e.character)
+      elseIf (e.is_press)   println "'$' pressed" (e.character)
+      elseIf (e.is_release) println "'$' released" (e.character)
+
+    method update
       local p = Math.sin( (Time.current % 2)/2 * pi )
       Graphics.background_color = 0xff000000 | (p * 255)->Int32
 endClass

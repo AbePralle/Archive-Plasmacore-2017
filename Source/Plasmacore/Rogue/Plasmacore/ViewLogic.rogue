@@ -6,13 +6,23 @@ class ViewLogic
     default_logic = ViewLogic()
 
   PROPERTIES
-    is_initialized : Logical
+    view             : View
+    is_active        : Logical
+    pointer_position : XY
 
   METHODS
-    method on_init
+    method activate
 
-    method on_draw
+    method handle( e:PointerEvent )
+      pointer_position = e.position
+      on( e )
 
-    method on_update
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method draw
+
+    method update
 endClass
 

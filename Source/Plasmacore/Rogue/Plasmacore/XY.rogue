@@ -2,6 +2,9 @@ module Plasmacore
 
 class XY( x:Real64, y:Real64 ) [compound]
   GLOBAL METHODS
+    method create->XY
+      return XY( 0, 0 )
+
     method create( m:Real64, angle:Radians )->XY
       return XY( m * angle.cos, m * angle.sin )
 

@@ -41,11 +41,19 @@ class Window
     method handle_draw( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
       find_view( view_name_buffer, w, h ).draw
 
-    method show
-      Message( "Window.show" ).set_int32("id",id).send
+    method handle_key_event( view_name_buffer:StringBuilder, e:KeyEvent )
+      local view = views[ view_name_buffer ]
+      if (view) view.handle( e )
+
+    method handle_pointer_event( view_name_buffer:StringBuilder, e:PointerEvent )
+      local view = views[ view_name_buffer ]
+      if (view) view.handle( e )
 
     method handle_update( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
       find_view( view_name_buffer, w, h ).update
+
+    method show
+      Message( "Window.show" ).set_int32("id",id).send
 
 endClass
 
@@ -64,6 +72,83 @@ class WindowManager [requisite singleton]
           local height    = m.get_int32( "height" )
           local window = WindowManager.windows_by_id[ window_id ]
           if (window) window.handle_draw( view_name, width, height )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.key_press",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local keycode   = m.get_int32( "keycode" )
+          local unicode   = m.get_int32( "unicode" )
+          local syscode   = m.get_int32( "syscode" )
+          local is_repeat = m.get_int32( "is_repeat" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_key_event( view_name, KeyEvent(keycode, unicode, syscode, true, is_repeat) )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.key_release",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local keycode   = m.get_int32( "keycode" )
+          local unicode   = m.get_int32( "unicode" )
+          local syscode   = m.get_int32( "syscode" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_key_event( view_name, KeyEvent(keycode, unicode, syscode, false ) )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.mouse_move",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local x         = m.get_int32( "x" )
+          local y         = m.get_int32( "y" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_pointer_event( view_name, PointerEvent(PointerEvent.MOVEMENT, XY(x,y), XY(), 0, 0) )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.mouse_press",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local x         = m.get_int32( "x" )
+          local y         = m.get_int32( "y" )
+          local button    = m.get_int32( "button" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_pointer_event( view_name, PointerEvent(PointerEvent.PRESS, XY(x,y), XY(), button, 0) )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.mouse_release",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local x         = m.get_int32( "x" )
+          local y         = m.get_int32( "y" )
+          local button    = m.get_int32( "button" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_pointer_event( view_name, PointerEvent(PointerEvent.RELEASE, XY(x,y), XY(), button, 0) )
+        endFunction
+      )
+
+      MessageManager.add_listener( "View.mouse_scroll",
+        function (m:Message)
+          local window_id = m.get_int32( "window_id" )
+          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local dx        = m.get_int32( "x" )
+          local dy        = m.get_int32( "y" )
+
+          local window = WindowManager.windows_by_id[ window_id ]
+          if (window) window.handle_pointer_event( view_name, PointerEvent(PointerEvent.SCROLL, XY(), XY(dx,dy), 0, 0) )
         endFunction
       )
 
