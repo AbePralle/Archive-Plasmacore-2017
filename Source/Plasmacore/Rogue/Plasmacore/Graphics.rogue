@@ -9,19 +9,24 @@ class Graphics [singleton]
     textures         = Table<<String,Texture>>()
 
     size             : XY
+    true_size        : XY
     background_color : Int32
 
 
   METHODS
-    method init
+    method init( canvas )
+      size = canvas.size
+      true_size = size
       background_color = Color.BLACK
 
     method begin_draw( canvas )->this
       size = canvas.size
+      set_transform
       return this
 
     method begin_update( canvas )->this
       size = canvas.size
+      set_transform
       return this
 
     method clear
@@ -30,11 +35,22 @@ class Graphics [singleton]
     method clear( background_color )
       clear
 
+      #{
     method define_texture( name:String, bitmap:Bitmap )->Texture
       return Texture( name, 0, bitmap.size, XY(1,1) )
+      }#
 
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
+
+    method get_texture( name:String )->Texture
+      local entry = textures.find( name )
+      if (entry) return entry.value
+
+      local texture = Texture( name )
+      textures[ name ] = texture
+      TextureManager.load( texture )
+      return texture
 
     method end_draw->this
       return this
@@ -56,6 +72,8 @@ class Graphics [singleton]
       if (stack.count == 0) Graphics = Graphics()
       else                  Graphics = stack.remove_last
       return Graphics
+
+    method set_transform
 
     method width->Int32 [macro]
       this.size.x->Int32

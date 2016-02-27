@@ -3,7 +3,6 @@ module Plasmacore
 class Texture
   PROPERTIES
     name    : String
-    id      : Int32
     size    : XY
       # In texels
      
@@ -11,5 +10,24 @@ class Texture
       # (1,1) in most cases
 
   METHODS
-    method init( name, id, size, uv_size )
+    method init( name )
 endClass
+
+
+class TextureManager [singleton]
+  PROPERTIES
+    loaders = Table<<String,Function(Texture)>>()
+      # Texture loader by texure name
+
+  METHODS
+    method load( texture:Texture )
+      local loader = loaders[ texture.name ]
+      if (loader)
+        loader( texture )
+        return
+      endIf
+
+      # Default load
+      println "Loading texture from system: " + texture.name
+endClass
+

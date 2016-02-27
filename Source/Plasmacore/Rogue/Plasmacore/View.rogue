@@ -9,7 +9,7 @@ class View : Canvas
 
   METHODS
     method init( window, name, size, logic )
-      graphics = StarbrightGraphics()
+      graphics = StarbrightGraphics( this )
 
     method draw
       Graphics = this.graphics

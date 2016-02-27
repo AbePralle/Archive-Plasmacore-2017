@@ -79,6 +79,7 @@
 		30CB05521C7E7D4900A767FC /* pngwutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05431C7E7D4900A767FC /* pngwutil.c */; };
 		30CB05551C7E7F9A00A767FC /* libPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB046F1C7E6A0E00A767FC /* libPNG.a */; };
 		30CB05561C7E7F9A00A767FC /* libJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB04771C7E6E7100A767FC /* libJPEG.a */; };
+		30CB055E1C811D5E00A767FC /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30CB055D1C811D5E00A767FC /* Assets */; };
 		30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F91A1C70187200F89F60 /* RogueProgram.cpp */; };
 		30E2F91E1C703EDC00F89F60 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E2F91D1C703EDC00F89F60 /* AppKit.framework */; };
 		30E2F9311C715B1E00F89F60 /* StarbrightGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30E2F9301C715B1E00F89F60 /* StarbrightGLView.mm */; };
@@ -192,6 +193,7 @@
 		30CB05411C7E7D4900A767FC /* pngwrite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngwrite.c; path = ../../../lpng1621/pngwrite.c; sourceTree = "<group>"; };
 		30CB05421C7E7D4900A767FC /* pngwtran.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngwtran.c; path = ../../../lpng1621/pngwtran.c; sourceTree = "<group>"; };
 		30CB05431C7E7D4900A767FC /* pngwutil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngwutil.c; path = ../../../lpng1621/pngwutil.c; sourceTree = "<group>"; };
+		30CB055D1C811D5E00A767FC /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../../Assets; sourceTree = "<group>"; };
 		30E2F91A1C70187200F89F60 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30E2F91B1C70187200F89F60 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30E2F91D1C703EDC00F89F60 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -306,6 +308,7 @@
 		30CB04641C7E575100A767FC /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				30CB055D1C811D5E00A767FC /* Assets */,
 				30CB04651C7E576200A767FC /* FontSystem17.png */,
 			);
 			name = Assets;
@@ -565,6 +568,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30CB055E1C811D5E00A767FC /* Assets in Resources */,
 				309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */,
 				309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */,
 				30E2F96E1C78E6AF00F89F60 /* MainWindow.xib in Resources */,

@@ -2,6 +2,11 @@ using Plasmacore
 
 println "Rogue Launched!"
 
+TextureManager.loaders[ "red_box" ] =
+  function( texture:Texture )
+    println "callback loading texture " + texture.name
+  endFunction
+
 local window = Window( "MainWindow", GreenBlue() )
 window.show
 println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
@@ -11,16 +16,32 @@ println bitmap.size
 
 class GreenBlue : ViewLogic
   PROPERTIES
-    texture : Texture
+    #texture = Texture( "U5Tiles.png" )
 
   METHODS
     method on_init
-      texture = Graphics.define_texture( "red_box", Bitmap(16,16,Color.RED) )
+      #{
+      local bitmap = Bitmap(16,16,Color.RED)
+      forEach (i of bitmap.pixels)
+        if (i&1) bitmap.pixels[i] = Color.RED
+        else     bitmap.pixels[i] = Color.WHITE
+      endForEach
+      texture = Graphics.define_texture( "red_box", bitmap )
+      }#
 
     method on_draw
       Graphics.clear
-      Graphics.draw_textured_triangle( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
-        XY(0,0), XY(100,100), XY(0,100), XY(0,0), XY(100,100), XY(0,100) )
+      Graphics.get_texture( "U5Tiles.png" )
+      Graphics.get_texture( "red_box" )
+
+      #{
+      forEach (x in 0..800 step 16)
+        Graphics.draw_textured_triangle( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
+          XY(x,0), XY(x+16,16), XY(x+0,16), XY(0,0), XY(1,1), XY(0,1) )
+        Graphics.draw_textured_triangle( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
+          XY(x,0), XY(x+16,0), XY(x+16,16), XY(0,0), XY(1,0), XY(1,1) )
+      endForEach
+      }#
 
     method on_update
       local p = Math.sin( (Time.current % 2)/2 * pi )
