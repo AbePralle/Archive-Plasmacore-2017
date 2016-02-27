@@ -1,0 +1,51 @@
+module Plasmacore
+
+class KeyEvent( keycode:Int32, unicode:Int32, syscode:Int32, &is_press, &is_repeat )  [compound]
+  METHODS
+    method character->Character [macro]
+      this.unicode->Character
+
+    method is_character( ch:Character )->Logical [macro]
+      (this.unicode == ch)
+
+    method is_press( ch:Character )->Logical
+      return unicode == ch and is_press
+
+    method is_repeat( ch:Character )->Logical
+      return unicode == ch and is_repeat
+
+    method is_release->Logical [macro]
+      not this.is_press
+
+    method is_release( ch:Character )->Logical
+      return unicode == ch and not is_press
+
+endClass
+
+class PointerEvent( type:Int32, position:XY, delta:XY, button:Int32, id:Int32 )  [compound]
+  ENUMERATE
+    MOVEMENT = 0
+    PRESS    = 1
+    RELEASE  = 2
+    SCROLL   = 3
+
+  METHODS
+    method is_movement->Logical [macro]
+      (this.type == 0)
+
+    method is_press->Logical [macro]
+      (this.type == 1)
+
+    method is_press( button_index:Int32 )->Logical
+      return (this.type == 1 and button == button_index)
+
+    method is_release->Logical [macro]
+      (this.type == 2)
+
+    method is_release( button_index:Int32 )->Logical
+      return (this.type == 2 and button == button_index)
+
+    method is_scroll->Logical [macro]
+      (this.type == 3)
+endClass
+

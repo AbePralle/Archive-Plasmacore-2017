@@ -395,7 +395,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (void) mouseDown:(NSEvent*)event
 {
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
-  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_button_press"];
+  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_press"];
   [m setInt32:"window_id" value:window_id];
   [m setCString:"view_name" value:view_name];
   [m setReal64:"x" value:point.x];
@@ -429,7 +429,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (void) mouseUp:(NSEvent*)event
 {
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
-  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_button_release"];
+  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_release"];
   [m setInt32:"window_id" value:window_id];
   [m setCString:"view_name" value:view_name];
   [m setReal64:"x" value:point.x];
@@ -489,7 +489,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (void) rightMouseDown:(NSEvent*)event
 {
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
-  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_button_press"];
+  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_press"];
   [m setInt32:"window_id" value:window_id];
   [m setCString:"view_name" value:view_name];
   [m setReal64:"x" value:point.x];
@@ -512,7 +512,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (void) rightMouseUp:(NSEvent*)event
 {
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
-  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_button_release"];
+  PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.mouse_release"];
   [m setInt32:"window_id" value:window_id];
   [m setCString:"view_name" value:view_name];
   [m setReal64:"x" value:point.x];
