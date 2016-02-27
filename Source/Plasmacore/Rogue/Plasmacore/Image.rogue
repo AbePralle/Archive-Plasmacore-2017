@@ -4,7 +4,7 @@ class ImageManager [singleton]
   METHODS
     method load( image:Image )
       # Load the image name as a texture
-      local texture = Graphics.load_texture( image.name )
+      local texture = Graphics.acquire_texture( image.name )
       image.data = TextureImageData( image, texture )
       return 
 endClass
@@ -68,7 +68,7 @@ class TextureImageData : ImageData
     method prepare
       if (texture.graphics isNot Graphics)
         # Graphics Context changed; find or load the texture in the current context
-        texture = Graphics.load_texture( texture.name )
+        texture = Graphics.acquire_texture( texture.name )
       endIf
 
 

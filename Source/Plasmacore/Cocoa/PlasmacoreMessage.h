@@ -40,6 +40,7 @@
 - (char*)               data;
 - (int)                 size;
 
+- (PlasmacoreMessage*)  setCString: (const char*)name value:(const char*)value;
 - (PlasmacoreMessage*)  setString:  (const char*)name value:(NSString*)value;
 - (PlasmacoreMessage*)  setReal64:  (const char*)name value:(double)value;
 - (PlasmacoreMessage*)  setInt64:   (const char*)name value:(SuperCPP::Int64)value;

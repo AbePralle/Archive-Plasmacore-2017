@@ -159,6 +159,14 @@ typedef enum
 }
 
 
+- (PlasmacoreMessage*) setCString:  (const char*)name value:(const char*)value
+{
+  [self writeID:name];
+  buffer.write_int32x( PLASMACORE_MESSAGE_DATA_TYPE_STRING );
+  buffer.write_string( value );
+  return self;
+}
+
 - (PlasmacoreMessage*) setString:  (const char*)name value:(NSString*)value
 {
   [self writeID:name];

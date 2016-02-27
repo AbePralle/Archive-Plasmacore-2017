@@ -56,7 +56,7 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
-      MessageManager.add_listener( "Window.draw",
+      MessageManager.add_listener( "View.draw",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
@@ -67,7 +67,7 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
-      MessageManager.add_listener( "Window.update",
+      MessageManager.add_listener( "View.update",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		309DECF91C81FA8300DF9973 /* SuperCPPCString.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 309DECF71C81FA8300DF9973 /* SuperCPPCString.cpp */; };
 		309EFD871C6FFD1B00FB5651 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */; };
 		309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD891C6FFD1B00FB5651 /* main.m */; };
 		309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */; };
@@ -113,6 +114,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		309DECF71C81FA8300DF9973 /* SuperCPPCString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPCString.cpp; path = ../../../SuperCPP/SuperCPPCString.cpp; sourceTree = "<group>"; };
+		309DECF81C81FA8300DF9973 /* SuperCPPCString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPCString.h; path = ../../../SuperCPP/SuperCPPCString.h; sourceTree = "<group>"; };
 		309EFD821C6FFD1B00FB5651 /* PlasmacoreStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlasmacoreStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		309EFD851C6FFD1B00FB5651 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		309EFD861C6FFD1B00FB5651 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
@@ -414,6 +417,8 @@
 		30E2F9381C715B3E00F89F60 /* SuperCPP */ = {
 			isa = PBXGroup;
 			children = (
+				309DECF71C81FA8300DF9973 /* SuperCPPCString.cpp */,
+				309DECF81C81FA8300DF9973 /* SuperCPPCString.h */,
 				30E2F9391C715B5500F89F60 /* SuperCPP.cpp */,
 				30E2F93A1C715B5500F89F60 /* SuperCPP.h */,
 				30E2F93B1C715B5500F89F60 /* SuperCPPBuilder.h */,
@@ -603,6 +608,7 @@
 				30E2F9481C715B5500F89F60 /* SuperCPPDataReader.cpp in Sources */,
 				30CB045F1C76674000A767FC /* PlasmacoreMessage.mm in Sources */,
 				30CB04621C77C69300A767FC /* PlasmacoreResourceBank.mm in Sources */,
+				309DECF91C81FA8300DF9973 /* SuperCPPCString.cpp in Sources */,
 				30E2F9461C715B5500F89F60 /* SuperCPP.cpp in Sources */,
 				309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */,
 				30E2F9311C715B1E00F89F60 /* StarbrightGLView.mm in Sources */,
