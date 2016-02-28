@@ -10,7 +10,7 @@ class View : Canvas
     pointer_exists   : Logical
 
   METHODS
-    method init( window, name, size, logic )
+    method init( window, name, logic )
       logic.view = this
       graphics = StarbrightGraphics( this )
 

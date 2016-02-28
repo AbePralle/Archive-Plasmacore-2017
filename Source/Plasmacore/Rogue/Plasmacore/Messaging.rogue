@@ -231,6 +231,20 @@ class IncomingMessage : Message
       return default
 
     method get_string( name:String, buffer:StringBuilder )->StringBuilder
+      local i = keys.locate_last( name )
+      if (not i.exists) return buffer
+
+      reader.seek( offsets[i.value] )
+      which (reader.read_int32x)
+        case DATA_TYPE_STRING
+          return reader.read_string( buffer )
+        case DATA_TYPE_BYTES
+          local count = reader.read_int32x
+          buffer.reserve( count )
+          forEach (1..count) buffer.print( reader.read->Character )
+          return buffer
+      endWhich
+
       return buffer
 
     method get_real64( name:String, default=0:Real64 )->Real64
