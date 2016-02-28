@@ -15,6 +15,7 @@
   double           time_debt;
   double           previous_frame_timestamp;
   BOOL             initialized_starbright;
+  BOOL             called_on_create;
   Starbright::Renderer* renderer;
 }
 

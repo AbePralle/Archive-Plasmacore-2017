@@ -461,29 +461,33 @@ void GLRenderer::render()
 
   if (shader->uv_attribute >= 0)
   {
-    // Copy position and data at the same time
-    Vertex*     src_vertex = vertices - 1;
-    GLVertexXY* dest_xy   = vertex_buffer_xy - 1;
-    GLVertexUV* dest_uv   = vertex_buffer_uv - 1;
+    // Copy position and uv data at the same time
+    Vertex*       src_vertex = vertices - 1;
+    GLVertexXYZW* dest_xyzw  = vertex_buffer_xyzw - 1;
+    GLVertexUV*   dest_uv    = vertex_buffer_uv - 1;
     int count = vertex_count;
     while (--count >= 0)
     {
-      (++dest_xy)->x = (++src_vertex)->x;
-      dest_xy->y     = src_vertex->y;
-      (++dest_uv)->u = src_vertex->u;
-      dest_uv->v     = src_vertex->v;
+      (++dest_xyzw)->x = (++src_vertex)->x;
+      dest_xyzw->y     = src_vertex->y;
+      dest_xyzw->z     = src_vertex->z;
+      dest_xyzw->w     = 1;
+      (++dest_uv)->u   = src_vertex->u;
+      dest_uv->v       = src_vertex->v;
     }
   }
   else
   {
     // Copy position data only
-    Vertex*     src_vertex = vertices - 1;
-    GLVertexXY* dest_xy   = vertex_buffer_xy - 1;
+    Vertex*       src_vertex = vertices - 1;
+    GLVertexXYZW* dest_xyzw   = vertex_buffer_xyzw - 1;
     int count = vertex_count;
     while (--count >= 0)
     {
-      (++dest_xy)->x = (++src_vertex)->x;
-      dest_xy->y     = src_vertex->y;
+      (++dest_xyzw)->x = (++src_vertex)->x;
+      dest_xyzw->y     = src_vertex->y;
+      dest_xyzw->z     = src_vertex->z;
+      dest_xyzw->w     = 1;
     }
   }
 
@@ -491,7 +495,7 @@ void GLRenderer::render()
   glUseProgram( shader->program );
 
   glUniformMatrix4fv( shader->transform_setting, 1, GL_FALSE, m );
-  glVertexAttribPointer( shader->position_attribute, 2, GL_FLOAT, GL_FALSE, 0, vertex_buffer_xy );
+  glVertexAttribPointer( shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0, vertex_buffer_xyzw );
   glEnableVertexAttribArray( shader->position_attribute );
 
   if (shader->color_attribute >= 0)

@@ -273,7 +273,10 @@ static int Plasmacore_syscode_to_keycode_map[128] =
   int               window_id;
   SuperCPP::CString view_name;
   int               key_modifier_flags;
+  bool              is_configured;
 }
+
+- (void)configure;
 @end
 
 @implementation PlasmacoreView
@@ -288,11 +291,25 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (BOOL)becomeFirstResponder
 {
   if ( ![super becomeFirstResponder] ) return NO;
+  if ( !is_configured ) [self configure];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.focus_gained"];
   [m setInt32:"window_id" value:window_id];
   [m setCString:"view_name" value:view_name];
   [m send];
   return YES;
+}
+
+- (void)configure
+{
+  if (is_configured) return;
+  is_configured = true;
+
+  window_id = [[Plasmacore singleton] idOfResource:self.window.windowController];
+  view_name = [[self valueForKey:@"name"] UTF8String];
+  NSLog( @"PlasmacoreView '%@' created in Window %d\n", [self valueForKey:@"name"], window_id );
+
+  [self.window setAcceptsMouseMovedEvents:YES];
+  [[self window] makeFirstResponder:self];
 }
 
 - (NSPoint)convertEventPositionToLocalCoordinates:(NSEvent*)event
@@ -303,6 +320,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) handleModifiedKey:(int)modified withMask:(int)mask pcKeycode:(int)keycode
 {
+  if ( !is_configured ) [self configure];
   if ((modified & mask) == mask)
   {
     bool pressed = !(key_modifier_flags & mask);
@@ -342,6 +360,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) keyDown:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   int syscode = [event keyCode] & 0x7f;
   int keycode = Plasmacore_syscode_to_keycode_map[ syscode ];
   NSString* characters = [event characters];
@@ -369,6 +388,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) keyUp:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   int syscode = [event keyCode] & 0x7f;
   int keycode = Plasmacore_syscode_to_keycode_map[ syscode ];
   NSString* characters = [event characters];
@@ -395,6 +415,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) mouseDown:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -408,6 +429,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) mouseDragged:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -420,6 +442,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) mouseMoved:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -432,6 +455,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) mouseUp:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -445,16 +469,12 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void)onCreate
 {
-  window_id = [[Plasmacore singleton] idOfResource:self.window.windowController];
-  view_name = [[self valueForKey:@"name"] UTF8String];
-  NSLog( @"PlasmacoreView '%@' created in Window %d\n", [self valueForKey:@"name"], window_id );
-
-  [self.window setAcceptsMouseMovedEvents:YES];
-  [[self window] makeFirstResponder:self];
+  [self configure];
 }
 
 - (void)onDraw
 {
+  if ( !is_configured ) [self configure];
   PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"View.draw"];
   [m_draw setInt32:"window_id" value:window_id];
   [m_draw setCString:"view_name" value:view_name];
@@ -473,6 +493,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void)onUpdate
 {
+  if ( !is_configured ) [self configure];
   PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"View.update"];
   [m_draw setInt32:"window_id" value:window_id];
   [m_draw setCString:"view_name" value:view_name];
@@ -483,6 +504,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (BOOL)resignFirstResponder
 {
+  if ( !is_configured ) [self configure];
   if ( ![super resignFirstResponder] ) return NO;
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.focus_lost"];
   [m setInt32:"window_id" value:window_id];
@@ -493,6 +515,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) rightMouseDown:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -506,6 +529,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) rightMouseDragged:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -518,6 +542,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) rightMouseUp:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   NSPoint point = [self convertEventPositionToLocalCoordinates:event];
   PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
   [m setInt32:"window_id" value:window_id];
@@ -531,6 +556,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void) scrollWheel:(NSEvent*)event
 {
+  if ( !is_configured ) [self configure];
   double dx = [event deltaX];
   double dy = [event deltaY];
 

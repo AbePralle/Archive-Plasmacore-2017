@@ -1,7 +1,14 @@
 module Plasmacore
 
 class StarbrightGraphics : Graphics
+  PROPERTIES
+    global_z  = -1550.0
+    dz = 2
+
   METHODS
+    method init( canvas )
+      @trace
+
     method clear
       native @|Starbright::renderer->clear_color = $this->background_color;
       |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
@@ -24,6 +31,19 @@ class StarbrightGraphics : Graphics
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, pt4:XY, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
+        if (Keyboard.is_key_pressed(KeyCode.W))
+          global_z -= dz/2
+          ++dz
+          @trace global_z, global_z/-31
+        elseIf (Keyboard.is_key_pressed(KeyCode.S))
+          global_z += dz/2
+          ++dz
+          @trace global_z, global_z/-31
+        else
+          dz = 2
+        endIf
+
+      local gz = global_z
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
               |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
@@ -31,30 +51,37 @@ class StarbrightGraphics : Graphics
               |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
               |
               |v[0].x = $pt1.x;
-              |v[0].y = $pt1.y;
+              |v[0].y = $pt1.y - 0.5f;
+              |v[1].x = $pt2.x;
+              |v[1].y = $pt2.y - 0.5f;
+              |v[2].x = $pt3.x;
+              |v[2].y = $pt3.y - 0.5f;
+              |v[3].x = $pt1.x;
+              |v[3].y = $pt1.y - 0.5f;
+              |v[4].x = $pt3.x;
+              |v[4].y = $pt3.y - 0.5f;
+              |v[5].x = $pt4.x;
+              |v[5].y = $pt4.y - 0.5f;
+              |
               |v[0].u = $uv1.x;
               |v[0].v = $uv1.y;
-              |v[1].x = $pt2.x;
-              |v[1].y = $pt2.y;
               |v[1].u = $uv2.x;
               |v[1].v = $uv2.y;
-              |v[2].x = $pt3.x;
-              |v[2].y = $pt3.y;
               |v[2].u = $uv3.x;
               |v[2].v = $uv3.y;
-              |
-              |v[3].x = $pt1.x;
-              |v[3].y = $pt1.y;
               |v[3].u = $uv1.x;
               |v[3].v = $uv1.y;
-              |v[4].x = $pt3.x;
-              |v[4].y = $pt3.y;
               |v[4].u = $uv3.x;
               |v[4].v = $uv3.y;
-              |v[5].x = $pt4.x;
-              |v[5].y = $pt4.y;
               |v[5].u = $uv4.x;
               |v[5].v = $uv4.y;
+              |
+              |v[0].z = $gz;
+              |v[1].z = $gz;
+              |v[2].z = $gz;
+              |v[3].z = $gz;
+              |v[4].z = $gz;
+              |v[5].z = $gz;
 
 
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
@@ -124,7 +151,8 @@ class StarbrightGraphics : Graphics
     method set_transform
       local w = size.x
       local h = size.y
-      native @|Starbright::renderer->set_transform_2d( 0, 0, $w, $h );
+      #native @|Starbright::renderer->set_transform_2d( 0, 0, $w, $h );
+      native @|Starbright::renderer->set_transform_3d( -$w/64, -$h/64, $w/64, $h/64, 1, 1034 );
 endClass
 
 nativeCode
