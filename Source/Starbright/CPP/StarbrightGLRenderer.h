@@ -52,12 +52,12 @@ struct GLShader : Shader
 
 
 //-----------------------------------------------------------------------------
-//  GLVertexXY
+//  GLVertexXYZW
 //-----------------------------------------------------------------------------
-typedef struct GLVertexXY
+typedef struct GLVertexXYZW
 {
-  GLfloat x, y;
-} GLVertexXY;
+  GLfloat x, y, z, w;
+} GLVertexXYZW;
 
 
 //-----------------------------------------------------------------------------
@@ -95,9 +95,9 @@ struct GLRenderer : Renderer
   int premultiplied_texture_shader_with_color_add;
   int premultiplied_texture_shader_with_color_fill;
 
-  GLVertexXY vertex_buffer_xy[Renderer::VERTEX_BUFFER_COUNT];
-  GLVertexUV vertex_buffer_uv[Renderer::VERTEX_BUFFER_COUNT];
-  GLint          color_buffer[Renderer::VERTEX_BUFFER_COUNT];
+  GLVertexXYZW vertex_buffer_xyzw[Renderer::VERTEX_BUFFER_COUNT];
+  GLVertexUV   vertex_buffer_uv[Renderer::VERTEX_BUFFER_COUNT];
+  GLint        color_buffer[Renderer::VERTEX_BUFFER_COUNT];
 
   GLRenderer();
   ~GLRenderer();

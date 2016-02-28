@@ -152,6 +152,7 @@ typedef struct Matrix
   Matrix( const Matrix& other );
   Matrix& set_identity();
   Matrix& set_orthographic( int left, int top, int right, int bottom, double near=-1, double far=1 );
+  Matrix& set_projection( double left, double top, double right, double bottom, double near, double far );
   Matrix& set_zeros();
   Matrix  times( Matrix& other );
   float*    to_float( float* dest );
@@ -230,6 +231,7 @@ struct Renderer
   virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform_2d( double left, double top, double right, double bottom );
+  virtual void      set_transform_3d( double left, double top, double right, double bottom, double near, double far );
 };
 
 extern Renderer* renderer;

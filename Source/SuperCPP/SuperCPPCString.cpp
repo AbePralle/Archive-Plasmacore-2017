@@ -57,12 +57,15 @@ CString& CString::operator=( const CString& other )
 
 CString::operator char*()
 {
+  if (characters) return characters;
+  *this = "";
   return characters;
 }
 
 CString::operator const char*()
 {
-  return characters;
+  if (characters) return characters;
+  return "";
 }
 
 

@@ -43,9 +43,9 @@ class GreenBlue : ViewLogic
       }#
 
     method on( e:KeyEvent )
-      if (e.is_repeat)      println "'$' repeated" (e.character)
-      elseIf (e.is_press)   println "'$' pressed" (e.character)
-      elseIf (e.is_release) println "'$' released" (e.character)
+      #if (e.is_repeat)      println "'$' repeated" (e.character)
+      #elseIf (e.is_press)   println "'$' pressed" (e.character)
+      #elseIf (e.is_release) println "'$' released" (e.character)
 
     method update
       local p = Math.sin( (Time.current % 2)/2 * pi )

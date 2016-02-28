@@ -47,8 +47,8 @@ Matrix& Matrix::set_identity()
 
 Matrix& Matrix::set_orthographic( int left, int top, int right, int bottom, double near, double far )
 {
-  double tx = -(right + left) / (right - left);
-  double ty = -(top + bottom) / (top - bottom);
+  double tx = -(right + left) / (double)(right - left);
+  double ty = -(top + bottom) / (double)(top - bottom);
   double tz = -(far + near) / (far - near);
 
   set_identity();
@@ -58,6 +58,28 @@ Matrix& Matrix::set_orthographic( int left, int top, int right, int bottom, doub
   r1c4 = tx;
   r2c4 = ty;
   r3c4 = tz;
+
+  return *this;
+}
+
+Matrix& Matrix::set_projection( double left, double top, double right, double bottom, double near, double far )
+{
+  // From: http://www.renderdan.com/perspective/index.htm
+  set_identity();
+  r1c1 = 2 * near / (right - left);
+  r2c2 = 2 * near / (top - bottom);
+
+  r1c3 = (right + left) / (double)(right - left);
+  r2c3 = (top + bottom) / (double)(top - bottom);
+  r3c3 = - (far + near) / (far - near);
+  r4c3 = -1;
+
+  double tx = -(right + left) / (double)(right - left);
+  double ty = -(top + bottom) / (double)(top - bottom);
+  r1c4 = tx;
+  r2c4 = ty;
+
+  r3c4 = - (2 * far * near) / (far - near);
 
   return *this;
 }
@@ -247,6 +269,12 @@ void Renderer::set_transform_2d( double left, double top, double right, double b
 {
   render();
   projection_transform.set_orthographic( left, top, right, bottom );
+}
+
+void Renderer::set_transform_3d( double left, double top, double right, double bottom, double near, double far )
+{
+  render();
+  projection_transform.set_projection( left, top, right, bottom, near, far );
 }
 
 void Renderer::set_texture( int index, int texture_id )
