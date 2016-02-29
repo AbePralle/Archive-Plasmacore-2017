@@ -28,6 +28,7 @@ Renderer* renderer = 0;
 //=============================================================================
 Matrix::Matrix()
 {
+  memset( this, 0, sizeof(Matrix) );
 }
 
 Matrix::Matrix( const Matrix& other )
@@ -64,7 +65,7 @@ Matrix& Matrix::set_orthographic( int left, int top, int right, int bottom, doub
 
 Matrix& Matrix::set_projection( double left, double top, double right, double bottom, double near, double far )
 {
-  // From: http://www.renderdan.com/perspective/index.htm
+  // Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
   set_identity();
   r1c1 = 2 * near / (right - left);
   r2c2 = 2 * near / (top - bottom);
@@ -90,7 +91,7 @@ Matrix& Matrix::set_zeros()
   return *this;
 }
 
-Matrix Matrix::times( Matrix& other )
+Matrix Matrix::times( Matrix other )
 {
   Matrix result;
   result.at[0] = at[0]  * other.at[0]
@@ -197,6 +198,25 @@ float* Matrix::to_float( float* dest )
   return dest;
 }
 
+Matrix Matrix::identity()
+{
+  Matrix m;
+  m.r1c1 = 1;
+  m.r2c2 = 1;
+  m.r3c3 = 1;
+  m.r4c4 = 1;
+  return m;
+}
+
+Matrix Matrix::translate( double tx, double ty, double tz )
+{
+  Matrix m = identity();
+  m.r1c4 = tx;
+  m.r2c4 = ty;
+  m.r3c4 = tz;
+  return m;
+}
+
 
 //=============================================================================
 //  Renderer
@@ -275,6 +295,7 @@ void Renderer::set_transform_3d( double left, double top, double right, double b
 {
   render();
   projection_transform.set_projection( left, top, right, bottom, near, far );
+  projection_transform = projection_transform.times( Matrix::translate( -400, -200, 0 ) );
 }
 
 void Renderer::set_texture( int index, int texture_id )

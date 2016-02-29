@@ -2,7 +2,8 @@ module Plasmacore
 
 class StarbrightGraphics : Graphics
   PROPERTIES
-    global_z  = -1550.0
+    #global_z  = -1550.0
+    global_z  = -31
     dz = 2
 
   METHODS
