@@ -154,8 +154,11 @@ typedef struct Matrix
   Matrix& set_orthographic( int left, int top, int right, int bottom, double near=-1, double far=1 );
   Matrix& set_projection( double left, double top, double right, double bottom, double near, double far );
   Matrix& set_zeros();
-  Matrix  times( Matrix& other );
+  Matrix  times( Matrix other );
   float*    to_float( float* dest );
+
+  static Matrix identity();
+  static Matrix translate( double tx, double ty, double tz );
 
 } Matrix;
 

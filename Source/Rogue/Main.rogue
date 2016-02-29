@@ -31,6 +31,7 @@ class GreenBlue : ViewLogic
 
     method draw
       Graphics.clear
+      #image.draw( pointer_position - Graphics.size/2 )
       image.draw( pointer_position )
 
       #{
@@ -48,7 +49,7 @@ class GreenBlue : ViewLogic
       #elseIf (e.is_release) println "'$' released" (e.character)
 
     method update
-      local p = Math.sin( (Time.current % 2)/2 * pi )
+      local p = Math.sin( (System.time % 2)/2 * pi )
       Graphics.background_color = 0xff000000 | (p * 255)->Int32
 endClass
 
