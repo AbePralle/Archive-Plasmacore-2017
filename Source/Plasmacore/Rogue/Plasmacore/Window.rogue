@@ -45,21 +45,16 @@ class Window
       current_view = view
       return view
 
-    method handle_draw( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
-      local view = find_view( view_name_buffer )
-      view.size = XY( w, h )
-      view.draw
-
     method handle_key_event( view_name_buffer:StringBuilder, e:KeyEvent )
       find_view( view_name_buffer ).handle( e )
 
     method handle_pointer_event( view_name_buffer:StringBuilder, e:PointerEvent )
       find_view( view_name_buffer ).handle( e )
 
-    method handle_update( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
+    method handle_update_and_draw( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
       local view = find_view( view_name_buffer )
       view.size = XY( w, h )
-      view.update
+      view.update_and_draw
 
     method show
       Message( "Window.show" ).set_int32("id",id).send
@@ -76,17 +71,6 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
-      MessageManager.add_listener( "View.draw",
-        function (m:Message)
-          local window_id = m.get_int32( "window_id" )
-          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
-          local width     = m.get_int32( "width" )
-          local height    = m.get_int32( "height" )
-          local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_draw( view_name, width, height )
-        endFunction
-      )
-
       MessageManager.add_listener( "View.key_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
@@ -120,14 +104,14 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
-      MessageManager.add_listener( "View.update",
+      MessageManager.add_listener( "View.update_and_draw",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
           local width     = m.get_int32( "width" )
           local height    = m.get_int32( "height" )
           local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_update( view_name, width, height )
+          if (window) window.handle_update_and_draw( view_name, width, height )
         endFunction
       )
 

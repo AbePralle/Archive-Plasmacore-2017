@@ -91,19 +91,15 @@ static CVReturn StarbrightNSView_display_link_callback( CVDisplayLinkRef display
   if (call_onCreate) [self onCreate];
 
   double current_timestamp = SuperCPP::current_time_seconds();
-  double elapsed_time = current_timestamp - previous_frame_timestamp;
+  time_debt += current_timestamp - previous_frame_timestamp;
   previous_frame_timestamp = current_timestamp;
 
-  if (elapsed_time < 0 || elapsed_time > 1.0/10.0)
+  if (time_debt < 0 || time_debt > 1.0/10.0)
   {
     // If there was more than a 1/10th second delay, assume some multitask or
     // I/O hangup caused the delay and don't worry about trying to make the
     // time up - just update a single frame's worth and draw.
     time_debt = 1.0 / 60.0;
-  }
-  else
-  {
-    time_debt += elapsed_time;
   }
 
   while (time_debt >= 1.0/60.0)

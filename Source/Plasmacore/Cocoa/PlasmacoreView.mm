@@ -475,7 +475,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 - (void)onDraw
 {
   if ( !is_configured ) [self configure];
-  PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"View.draw"];
+  PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"View.update_and_draw"];
   [m_draw setInt32:"window_id" value:window_id];
   [m_draw setCString:"view_name" value:view_name];
   [m_draw setInt32:"width"  value:(int)[self frame].size.width];
@@ -489,17 +489,6 @@ static int Plasmacore_syscode_to_keycode_map[128] =
 
 - (void)onStop
 {
-}
-
-- (void)onUpdate
-{
-  if ( !is_configured ) [self configure];
-  PlasmacoreMessage* m_draw = [PlasmacoreMessage messageWithType:"View.update"];
-  [m_draw setInt32:"window_id" value:window_id];
-  [m_draw setCString:"view_name" value:view_name];
-  [m_draw setInt32:"width"  value:(int)[self frame].size.width];
-  [m_draw setInt32:"height" value:(int)[self frame].size.height];
-  [m_draw push];
 }
 
 - (BOOL)resignFirstResponder

@@ -62,7 +62,7 @@ class TextureImageData : ImageData
       local uv2 = XY(uw,0)
       local uv3 = XY(uw,uh)
       local uv4 = XY(0,uh)
-      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT,
+      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT.enable_point_filter,
         pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
 
     method prepare

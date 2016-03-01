@@ -33,6 +33,7 @@ class GreenBlue : ViewLogic
       Graphics.clear
       #image.draw( pointer_position - Graphics.size/2 )
       image.draw( pointer_position )
+      #image.draw( XY(0,0) )
 
       #{
       forEach (x in 0..800 step 16)
