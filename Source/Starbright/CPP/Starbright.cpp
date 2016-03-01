@@ -12,6 +12,8 @@ using namespace SuperCPP;
 
 #include <stdlib.h>
 #include <string.h>
+#include <cstdio>
+using namespace std;
 
 namespace PROJECT_WORKSPACE
 {
@@ -34,6 +36,92 @@ Matrix::Matrix()
 Matrix::Matrix( const Matrix& other )
 {
   memcpy( this, &other, sizeof(Matrix) );
+}
+
+Matrix Matrix::operator*( Matrix other )
+{
+  Matrix result;
+  result.at[0] = at[0]  * other.at[0]
+               + at[4]  * other.at[1]
+               + at[8]  * other.at[2]
+               + at[12] * other.at[3];
+
+  result.at[1] = at[1]  * other.at[0]
+               + at[5]  * other.at[1]
+               + at[9]  * other.at[2]
+               + at[13] * other.at[3];
+
+  result.at[2] = at[2]  * other.at[0]
+               + at[6]  * other.at[1]
+               + at[10] * other.at[2]
+               + at[14] * other.at[3];
+
+  result.at[3] = at[3]  * other.at[0]
+               + at[7]  * other.at[1]
+               + at[11] * other.at[2]
+               + at[15] * other.at[3];
+
+  result.at[4] = at[0]  * other.at[4]
+               + at[4]  * other.at[5]
+               + at[8]  * other.at[6]
+               + at[12] * other.at[7];
+
+  result.at[5] = at[1]  * other.at[4]
+               + at[5]  * other.at[5]
+               + at[9]  * other.at[6]
+               + at[13] * other.at[7];
+
+  result.at[6] = at[2]  * other.at[4]
+               + at[6]  * other.at[5]
+               + at[10] * other.at[6]
+               + at[14] * other.at[7];
+
+  result.at[7] = at[3]  * other.at[4]
+               + at[7]  * other.at[5]
+               + at[11] * other.at[6]
+               + at[15] * other.at[7];
+
+  result.at[8] = at[0]  * other.at[8]
+               + at[4]  * other.at[9]
+               + at[8]  * other.at[10]
+               + at[12] * other.at[11];
+
+  result.at[9] = at[1]  * other.at[8]
+               + at[5]  * other.at[9]
+               + at[9]  * other.at[10]
+               + at[13] * other.at[11];
+
+  result.at[10] = at[2]  * other.at[8]
+                + at[6]  * other.at[9]
+                + at[10] * other.at[10]
+                + at[14] * other.at[11];
+
+  result.at[11] = at[3]  * other.at[8]
+                + at[7]  * other.at[9]
+                + at[11] * other.at[10]
+                + at[15] * other.at[11];
+
+  result.at[12] = at[0]  * other.at[12]
+                + at[4]  * other.at[13]
+                + at[8]  * other.at[14]
+                + at[12] * other.at[15];
+
+  result.at[13] = at[1]  * other.at[12]
+                + at[5]  * other.at[13]
+                + at[9]  * other.at[14]
+                + at[13] * other.at[15];
+
+  result.at[14] = at[2]  * other.at[12]
+                + at[6]  * other.at[13]
+                + at[10] * other.at[14]
+                + at[14] * other.at[15];
+
+  result.at[15] = at[3]  * other.at[12]
+                + at[7]  * other.at[13]
+                + at[11] * other.at[14]
+                + at[15] * other.at[15];
+
+  return result;
 }
 
 Matrix& Matrix::set_identity()
@@ -59,28 +147,6 @@ Matrix& Matrix::set_orthographic( int left, int top, int right, int bottom, doub
   r1c4 = tx;
   r2c4 = ty;
   r3c4 = tz;
-
-  return *this;
-}
-
-Matrix& Matrix::set_projection( double left, double top, double right, double bottom, double near, double far )
-{
-  // Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
-  set_identity();
-  r1c1 = 2 * near / (right - left);
-  r2c2 = 2 * near / (top - bottom);
-
-  r1c3 = (right + left) / (double)(right - left);
-  r2c3 = (top + bottom) / (double)(top - bottom);
-  r3c3 = - (far + near) / (far - near);
-  r4c3 = -1;
-
-  double tx = -(right + left) / (double)(right - left);
-  double ty = -(top + bottom) / (double)(top - bottom);
-  r1c4 = tx;
-  r2c4 = ty;
-
-  r3c4 = - (2 * far * near) / (far - near);
 
   return *this;
 }
@@ -201,10 +267,29 @@ float* Matrix::to_float( float* dest )
 Matrix Matrix::identity()
 {
   Matrix m;
+  memset( &m, 0, sizeof(Matrix) );
   m.r1c1 = 1;
   m.r2c2 = 1;
   m.r3c3 = 1;
   m.r4c4 = 1;
+  return m;
+}
+
+Matrix Matrix::projection( double left, double top, double right, double bottom, double near, double far )
+{
+  // Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
+  Matrix m = identity();
+
+  m.r1c1 = 2 * near / (right - left);
+  m.r2c2 = 2 * near / (top - bottom);
+
+  m.r1c3 = (right + left) / (right - left);
+  m.r2c3 = (top + bottom) / (top - bottom);
+  m.r3c3 = - (far + near) / (far - near);
+  m.r4c3 = -1;
+
+  m.r3c4 = - (2 * far * near) / (far - near);
+
   return m;
 }
 
@@ -214,6 +299,13 @@ Matrix Matrix::translate( double tx, double ty, double tz )
   m.r1c4 = tx;
   m.r2c4 = ty;
   m.r3c4 = tz;
+  return m;
+}
+
+Matrix Matrix::zeros()
+{
+  Matrix m;
+  memset( &m, 0, sizeof(Matrix) );
   return m;
 }
 
@@ -291,11 +383,18 @@ void Renderer::set_transform_2d( double left, double top, double right, double b
   projection_transform.set_orthographic( left, top, right, bottom );
 }
 
+void Renderer::set_transform_2dx( double x, double y, double width, double height, double near_scale, double max_distance )
+{
+  double k = near_scale * 4;
+  projection_transform = Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_distance*k)/3 );
+  projection_transform = projection_transform * Matrix::translate( -(x + width/2), -(y + height/2), 0 );
+}
+
 void Renderer::set_transform_3d( double left, double top, double right, double bottom, double near, double far )
 {
   render();
-  projection_transform.set_projection( left, top, right, bottom, near, far );
-  projection_transform = projection_transform.times( Matrix::translate( -400, -200, 0 ) );
+  projection_transform = Matrix::projection( left, top, right, bottom, near, far );
+  //projection_transform = projection_transform * Matrix::translate( -400, -200, 0 );
 }
 
 void Renderer::set_texture( int index, int texture_id )

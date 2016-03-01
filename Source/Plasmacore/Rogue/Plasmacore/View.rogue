@@ -8,6 +8,8 @@ class View : Canvas
     logic            : ViewLogic
     pointer_position : XY
     pointer_exists   : Logical
+    time_debt        : Real64
+    last_update_time : Real64
 
   METHODS
     method init( window, name, logic )
@@ -15,13 +17,7 @@ class View : Canvas
       graphics = StarbrightGraphics( this )
 
     method draw
-      Graphics = this.graphics
-      Graphics.begin_draw( this )
-
-      if (not logic.is_active) logic.is_active = true; logic.activate
-
       logic.draw
-      Graphics.end_draw
 
     method handle( e:KeyEvent )
       logic.on( e )
@@ -37,12 +33,32 @@ class View : Canvas
       logic.handle( e )
 
     method update
-      Graphics = this.graphics
-      Graphics.begin_update( this )
-
-      if (not logic.is_active) logic.is_active = true; logic.activate
       logic.update
 
-      Graphics.end_update
+    method update_and_draw
+      Graphics = this.graphics
+      Graphics.begin_draw( this )
+
+      local current_time = System.time
+      time_debt += current_time - last_update_time
+      last_update_time = current_time
+
+      if (time_debt < 0 or time_debt > 1.0/10.0)
+        # If there was more than a 1/10th second delay, assume some multitask or
+        # I/O hangup caused the delay and don't worry about trying to make the
+        # time up - just update a single frame's worth and draw.
+        time_debt = 1.0 / 60.0
+      endIf
+
+      if (not logic.is_active) logic.is_active = true; logic.activate
+
+      while (time_debt >= 1.0/60.0)
+        time_debt -= 1.0/60.0
+        update
+      endWhile
+
+      draw
+
+      Graphics.end_draw
 endClass
 

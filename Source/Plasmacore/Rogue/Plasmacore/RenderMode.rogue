@@ -34,7 +34,7 @@ class RenderMode( value=0:Int32 ) [compound]
       value = (value & 0x00ffffff) | (dest_blend:<<:28) | (src_blend:<<:24) | ENABLE_BLEND
       return this
 
-    method enable_textures( &setting )->this
+    method enable_textures( setting=true:Logical )->this
       if (setting) value |=  ENABLE_TEXTURES
       else         value &= !ENABLE_TEXTURES
       return this
@@ -45,22 +45,22 @@ class RenderMode( value=0:Int32 ) [compound]
       if (vertical)   value |= ENABLE_TEXTURE_WRAP_V
       return this
 
-    method enable_point_filter( &setting )->this
+    method enable_point_filter( setting=true:Logical )->this
       if (setting) value |=  ENABLE_POINT_FILTER
       else         value &= !ENABLE_POINT_FILTER
       return this
 
-    method enable_vertex_color_multiply( &setting )->this
+    method enable_vertex_color_multiply( setting=true:Logical )->this
       value &= !ENABLE_VERTEX_COLOR_MODE_MASK
       if (setting) value |=  ENABLE_VERTEX_COLOR_MULTIPLY
       return this
 
-    method enable_vertex_color_add( &setting )->this
+    method enable_vertex_color_add( setting=true:Logical )->this
       value &= !ENABLE_VERTEX_COLOR_MODE_MASK
       if (setting) value |=  ENABLE_VERTEX_COLOR_ADD
       return this
 
-    method enable_vertex_color_fill( &setting )->this
+    method enable_vertex_color_fill( setting=true:Logical )->this
       value &= !ENABLE_VERTEX_COLOR_MODE_MASK
       if (setting) value |=  ENABLE_VERTEX_COLOR_FILL
       return this

@@ -16,6 +16,5 @@ using namespace Starbright;
 - (void)onDraw;
 - (void)onStart;
 - (void)onStop;
-- (void)onUpdate;
 
 @end

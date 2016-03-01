@@ -2,8 +2,8 @@ module Plasmacore
 
 class StarbrightGraphics : Graphics
   PROPERTIES
-    #global_z  = -1550.0
-    global_z  = -31
+    initial_z = -31
+    global_z  = initial_z : Int32
     dz = 2
 
   METHODS
@@ -149,11 +149,13 @@ class StarbrightGraphics : Graphics
         texture.uv_size = XY( image_w, image_h ) / texture.size
       endIf
 
-    method set_transform
-      local w = size.x
-      local h = size.y
-      #native @|Starbright::renderer->set_transform_2d( 0, 0, $w, $h );
-      native @|Starbright::renderer->set_transform_3d( -$w/64, -$h/64, $w/64, $h/64, 1, 1034 );
+    method set_mode_2dx( _bounds=Graphics.bounds:Box, near_scale=16:Real64, max_z=40:Real64 )
+      local x  = _bounds.position.x
+      local y  = _bounds.position.y
+      local w  = _bounds.size.x
+      local h  = _bounds.size.y
+      native @|Starbright::renderer->set_transform_2dx( $x, $y, $w, $h, 16, 40 );
+
 endClass
 
 nativeCode

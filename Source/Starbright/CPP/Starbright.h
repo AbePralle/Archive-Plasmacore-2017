@@ -150,15 +150,19 @@ typedef struct Matrix
   // METHODS
   Matrix();  // caution: garbage content
   Matrix( const Matrix& other );
+
+  Matrix operator*( Matrix other );
+
   Matrix& set_identity();
   Matrix& set_orthographic( int left, int top, int right, int bottom, double near=-1, double far=1 );
-  Matrix& set_projection( double left, double top, double right, double bottom, double near, double far );
   Matrix& set_zeros();
   Matrix  times( Matrix other );
-  float*    to_float( float* dest );
+  float*  to_float( float* dest );
 
   static Matrix identity();
+  static Matrix projection( double left, double top, double right, double bottom, double near, double far );
   static Matrix translate( double tx, double ty, double tz );
+  static Matrix zeros();
 
 } Matrix;
 
@@ -234,6 +238,8 @@ struct Renderer
   virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform_2d( double left, double top, double right, double bottom );
+  virtual void      set_transform_2dx( double x, double y, double width, double height,
+                                       double near_scale, double max_distance );
   virtual void      set_transform_3d( double left, double top, double right, double bottom, double near, double far );
 };
 
