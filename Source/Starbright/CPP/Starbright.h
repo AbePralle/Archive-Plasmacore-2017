@@ -238,8 +238,7 @@ struct Renderer
   virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform_2d( double left, double top, double right, double bottom );
-  virtual void      set_transform_2dx( double x, double y, double width, double height,
-                                       double near_scale, double max_distance );
+  virtual void      set_transform_2dx( double width, double height, double near_scale, double max_distance );
   virtual void      set_transform_3d( double left, double top, double right, double bottom, double near, double far );
 };
 

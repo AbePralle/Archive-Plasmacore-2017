@@ -383,11 +383,11 @@ void Renderer::set_transform_2d( double left, double top, double right, double b
   projection_transform.set_orthographic( left, top, right, bottom );
 }
 
-void Renderer::set_transform_2dx( double x, double y, double width, double height, double near_scale, double max_distance )
+void Renderer::set_transform_2dx( double width, double height, double near_scale, double max_distance )
 {
   double k = near_scale * 4;
   projection_transform = Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_distance*k)/3 );
-  projection_transform = projection_transform * Matrix::translate( -(x + width/2), -(y + height/2), 0 );
+  projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
 }
 
 void Renderer::set_transform_3d( double left, double top, double right, double bottom, double near, double far )
