@@ -74,7 +74,7 @@ class Graphics [singleton]
       else                  Graphics = stack.remove_last
       return Graphics
 
-    method set_mode_2dx( _bounds=Graphics.bounds:Box, near_scale=16:Real64, max_z=40:Real64 )
+    method set_mode_2dx( _size=Graphics.size:XY, near_scale=16:Real64, max_z=40:Real64 )
 
     method set_transform
 
