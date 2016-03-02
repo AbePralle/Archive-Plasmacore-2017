@@ -13,7 +13,10 @@ using namespace SuperCPP;
 #include <stdlib.h>
 #include <string.h>
 #include <cstdio>
+#include <cmath>
 using namespace std;
+
+extern double rotation_degrees;
 
 namespace PROJECT_WORKSPACE
 {
@@ -385,9 +388,25 @@ void Renderer::set_transform_2d( double left, double top, double right, double b
 
 void Renderer::set_transform_2dx( double width, double height, double near_scale, double max_distance )
 {
+  projection_transform = Matrix::identity();
+  //projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
+
   double k = near_scale * 4;
-  projection_transform = Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_distance*k)/3 );
-  projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
+  projection_transform = projection_transform * Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_distance*k)/3 );
+
+  projection_transform = projection_transform * Matrix::translate( 0, 0, -399 );
+
+  Matrix rotate = Matrix::identity();
+  double angle = (rotation_degrees / 180.0) * acos(-1.0);
+  double sin0 = sin( angle );
+  double cos0 = cos( angle );
+  rotate.r1c1 = cos0;
+  rotate.r3c3 = cos0;
+  rotate.r1c3 = sin0;
+  rotate.r3c1 = -sin0;
+  projection_transform = projection_transform * rotate;
+
+  //projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
 }
 
 void Renderer::set_transform_3d( double left, double top, double right, double bottom, double near, double far )
