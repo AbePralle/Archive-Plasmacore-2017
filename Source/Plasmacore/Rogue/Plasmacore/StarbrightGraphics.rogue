@@ -1,5 +1,7 @@
 module Plasmacore
 
+nativeHeader #include "Starbright.h"
+
 nativeCode
 double rotation_degrees = 0.0;
 endNativeCode

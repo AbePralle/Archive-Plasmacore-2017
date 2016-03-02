@@ -84,4 +84,3 @@ class Graphics [singleton]
       this.size.x->Int32
 endClass
 
-nativeHeader #include "Starbright.h"

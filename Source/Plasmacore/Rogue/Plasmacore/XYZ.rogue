@@ -49,7 +49,7 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
       return XYZ( x^value, y^value, z^value )
 
     method to->String
-      return "($,$,$)" (x,y,z)
+      return "[$,$,$]" (x,y,z)
 
     method xy->XY
       return XY(x,y)

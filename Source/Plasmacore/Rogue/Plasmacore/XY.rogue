@@ -64,7 +64,7 @@ class XY( x:Real64, y:Real64 ) [compound]
       return Radians( Math.atan2( y, x ) )
 
     method to->String
-      return "(" + x + "," + y + ")"
+      return "[$,$]" (x,y)
 
     method xv->XY
       return XY(x,0)
