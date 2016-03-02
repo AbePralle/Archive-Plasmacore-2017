@@ -1,0 +1,24 @@
+module Plasmacore
+
+class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
+  GLOBAL METHODS
+    method create->XYZW
+      return XYZW( 0, 0, 0, 1 )
+
+    method create( xy:XY )->XYZW
+      return XYZW( xy.x, xy.y, 1, 1 )
+
+    method create( xyz:XYZ )->XYZW
+      return XYZW( xyz.x, xyz.y, xyz.z, 1 )
+
+  METHODS
+    method to->String
+      return "[$,$,$,$]" (x,y,z,w)
+
+    method xy->XY
+      return XY(x,y)
+
+    method xyz->XYZ
+      return XYZ(x,y,z)
+endClass
+

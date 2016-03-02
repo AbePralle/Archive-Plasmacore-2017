@@ -1,3 +1,5 @@
+.PHONY: test
+
 PLASMACORE_ROGUE_SOURCE = $(shell find Source/Rogue | grep "\.rogue$$") $(shell find Source/Plasmacore/Rogue/Plasmacore | grep "\.rogue$$")
 
 ROGUEC_OPTIONS  = Plasmacore
@@ -16,6 +18,9 @@ Source/Rogue/Build/RogueProgram.cpp: $(PLASMACORE_ROGUE_SOURCE)
 remake:
 	mkdir -p Source/Rogue/Build
 	cd Source/Rogue/ && roguec Main.rogue $(ROGUEC_OPTIONS)
+
+test:
+	cd Test && roguec Test.rogue --libraries="../Source/Plasmacore/Rogue" --execute
 
 clean:
 	rm -rf Source/Rogue/Build

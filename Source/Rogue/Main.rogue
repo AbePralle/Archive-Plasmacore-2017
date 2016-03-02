@@ -30,6 +30,7 @@ class GreenBlue : ViewLogic
       endForEach
       texture = Graphics.define_texture( "red_box", bitmap )
       }#
+      println Matrix.identity
 
     method draw
       Graphics.clear
