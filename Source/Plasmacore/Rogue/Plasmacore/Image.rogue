@@ -50,11 +50,10 @@ class TextureImageData : ImageData
     method init( image, texture )
 
     method draw( pos:XYZ )
-      local w = texture.width / 5.0
-      local h = texture.height / 5.0
+      local w = texture.width
+      local h = texture.height
       local uw = texture.uv_width
       local uh = texture.uv_height
-pos.z = 0
       local pt1 = pos
       local z   = pos.z
       local pt2 = XYZ( pt1.x+w, pt1.y,   z )
@@ -74,6 +73,13 @@ pos.z = 0
       local uv2 = XY(uw,0)
       local uv3 = XY(uw,uh)
       local uv4 = XY(0,uh)
+
+local dw  = Graphics.size.x
+local dh  = Graphics.size.y
+local uz  = Graphics.unit_z
+local tz  = pos.z
+native @|Starbright::renderer->set_transform_2dx( $dw, $dh, $uz, 16, $tz );
+
       Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT.enable_point_filter,
         pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
 

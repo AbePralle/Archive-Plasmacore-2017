@@ -27,7 +27,8 @@ class View : Canvas
         if (e.is_scroll)
           e.position = pointer_position
         else
-          e.delta = e.position - pointer_position; pointer_position = e.position
+          e.delta = e.position - pointer_position
+          pointer_position = e.position
         endIf
       else
         pointer_exists = true

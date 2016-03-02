@@ -386,15 +386,15 @@ void Renderer::set_transform_2d( double left, double top, double right, double b
   projection_transform.set_orthographic( left, top, right, bottom );
 }
 
-void Renderer::set_transform_2dx( double width, double height, double near_scale, double max_distance )
+void Renderer::set_transform_2dx( double width, double height, double unit_z, double max_z, double tz )
 {
   projection_transform = Matrix::identity();
   //projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
 
-  double k = near_scale * 4;
-  projection_transform = projection_transform * Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_distance*k)/3 );
+  double k = (unit_z + 1) * 2;
+  projection_transform = projection_transform * Matrix::projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 );
 
-  projection_transform = projection_transform * Matrix::translate( 0, 0, -399 );
+  projection_transform = projection_transform * Matrix::translate( 0, 0, -tz*unit_z );
 
   Matrix rotate = Matrix::identity();
   double angle = (rotation_degrees / 180.0) * acos(-1.0);
@@ -405,6 +405,8 @@ void Renderer::set_transform_2dx( double width, double height, double near_scale
   rotate.r1c3 = sin0;
   rotate.r3c1 = -sin0;
   projection_transform = projection_transform * rotate;
+
+  projection_transform = projection_transform * Matrix::translate( 0, 0, tz*unit_z );
 
   //projection_transform = projection_transform * Matrix::translate( -width/2, -height/2, 0 );
 }
