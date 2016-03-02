@@ -1,0 +1,57 @@
+module Plasmacore
+
+class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
+  GLOBAL METHODS
+    method create->XYZ
+      return XYZ( 0, 0, 1 )
+
+    method create( xy:XY, z=1:Real64 )->XYZ
+      return XYZ( xy.x, xy.y, z )
+
+  METHODS
+    method operator+( other:XYZ )->XYZ
+      return XYZ( x+other.x, y+other.y, z+other.z )
+
+    method operator+( value:Real64 )->XYZ
+      return XYZ( x+value, y+value, z+value )
+
+    method operator-()->XYZ
+      return XYZ( -x, -y, -z )
+
+    method operator-( other:XYZ )->XYZ
+      return XYZ( x-other.x, y-other.y, z-other.z )
+
+    method operator-( value:Real64 )->XYZ
+      return XYZ( x-value, y-value, z-value )
+
+    method operator*( other:XYZ )->XYZ
+      return XYZ( x*other.x, y*other.y, z*other.z )
+
+    method operator*( value:Real64 )->XYZ
+      return XYZ( x*value, y*value, z*value )
+
+    method operator/( other:XYZ )->XYZ
+      return XYZ( x/other.x, y/other.y, z/other.z )
+
+    method operator/( value:Real64 )->XYZ
+      return XYZ( x/value, y/value, z/value )
+
+    method operator%( other:XYZ )->XYZ
+      return XYZ( x%other.x, y%other.y, z%other.z )
+
+    method operator%( value:Real64 )->XYZ
+      return XYZ( x%value, y%value, z%value )
+
+    method operator^( other:XYZ )->XYZ
+      return XYZ( x^other.x, y^other.y, z^other.z )
+
+    method operator^( value:Real64 )->XYZ
+      return XYZ( x^value, y^value, z^value )
+
+    method to->String
+      return "($,$,$)" (x,y,z)
+
+    method xy->XY
+      return XY(x,y)
+endClass
+

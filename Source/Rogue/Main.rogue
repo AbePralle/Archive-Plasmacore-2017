@@ -17,6 +17,7 @@ println bitmap.size
 class GreenBlue : ViewLogic
   PROPERTIES
     image = Image( "U5Tiles.png" )
+    z     = 1.0
 
   METHODS
     method activate
@@ -32,8 +33,7 @@ class GreenBlue : ViewLogic
     method draw
       Graphics.clear
       #image.draw( pointer_position - Graphics.size/2 )
-      image.draw( pointer_position )
-      #image.draw( XY(0,0) )
+      image.draw( XYZ(pointer_position,z) )
 
       #{
       forEach (x in 0..800 step 16)
@@ -48,6 +48,9 @@ class GreenBlue : ViewLogic
       #if (e.is_repeat)      println "'$' repeated" (e.character)
       #elseIf (e.is_press)   println "'$' pressed" (e.character)
       #elseIf (e.is_release) println "'$' released" (e.character)
+
+    method on( e:PointerEvent )
+      if (e.is_scroll) z += e.delta.y/50
 
     method update
       local p = Math.sin( (System.time % 2)/2 * pi )

@@ -19,6 +19,7 @@ $include "View.rogue"
 $include "ViewLogic.rogue"
 $include "Window.rogue"
 $include "XY.rogue"
+$include "XYZ.rogue"
 
 module Plasmacore
 

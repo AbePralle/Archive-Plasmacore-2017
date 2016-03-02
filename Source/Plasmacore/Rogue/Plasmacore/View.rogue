@@ -24,8 +24,11 @@ class View : Canvas
 
     method handle( e:PointerEvent )
       if (pointer_exists)
-        if (e.is_scroll) e.position = pointer_position
-        else             e.delta = e.position - pointer_position
+        if (e.is_scroll)
+          e.position = pointer_position
+        else
+          e.delta = e.position - pointer_position; pointer_position = e.position
+        endIf
       else
         pointer_exists = true
         pointer_position = e.position

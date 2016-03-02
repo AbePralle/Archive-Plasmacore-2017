@@ -48,7 +48,7 @@ class Graphics [singleton]
       }#
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XY, pt2:XY, pt3:XY, pt4:XY, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
+        pt1:XYZ, pt2:XYZ, pt3:XYZ, pt4:XYZ, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
 
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
