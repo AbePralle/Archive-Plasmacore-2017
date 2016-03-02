@@ -1,9 +1,11 @@
 module Plasmacore
 
-class StarbrightGraphics : Graphics
-  PROPERTIES
-    nominal_z : Real64
+nativeCode
+double rotation_degrees = 0.0;
+endNativeCode
 
+
+class StarbrightGraphics : Graphics
   METHODS
     method init( canvas )
       @trace
@@ -136,11 +138,12 @@ class StarbrightGraphics : Graphics
         texture.uv_size = XY( image_w, image_h ) / texture.size
       endIf
 
-    method set_mode_2dx( _size=Graphics.size:XY, near_scale=16:Real64, max_z=40:Real64 )
+    method set_mode_2dx( _size=Graphics.size:XY, near_scale=16:Real64, max_z=30:Real64 )
       local w  = _size.x
       local h  = _size.y
+      near_scale = 200
       nominal_z = -((near_scale * 2) - 1)
-      native @|Starbright::renderer->set_transform_2dx( $w, $h, 16, 40 );
+      native @|Starbright::renderer->set_transform_2dx( $w, $h, $near_scale, $max_z );
 
 endClass
 
