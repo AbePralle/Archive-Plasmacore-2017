@@ -31,21 +31,21 @@ class PointerEvent( type:Int32, position:XY, delta:XY, button:Int32, id:Int32 ) 
 
   METHODS
     method is_movement->Logical [macro]
-      (this.type == 0)
+      (this.type == PointerEvent.MOVEMENT)
 
     method is_press->Logical [macro]
-      (this.type == 1)
+      (this.type == PointerEvent.PRESS)
 
     method is_press( button_index:Int32 )->Logical
-      return (this.type == 1 and button == button_index)
+      return (this.type == PRESS and button == button_index)
 
     method is_release->Logical [macro]
-      (this.type == 2)
+      (this.type == PointerEvent.RELEASE)
 
     method is_release( button_index:Int32 )->Logical
-      return (this.type == 2 and button == button_index)
+      return (this.type == RELEASE and button == button_index)
 
     method is_scroll->Logical [macro]
-      (this.type == 3)
+      (this.type == PointerEvent.SCROLL)
 endClass
 

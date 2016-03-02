@@ -554,7 +554,7 @@ static int Plasmacore_syscode_to_keycode_map[128] =
     PlasmacoreMessage* m = [PlasmacoreMessage messageWithType:"View.pointer_event"];
     [m setInt32:"window_id" value:window_id];
     [m setCString:"view_name" value:view_name];
-    [m setInt32:"type" value:0];   // 3 = scroll
+    [m setInt32:"type" value:3];   // 3 = scroll
     [m setReal64:"dx" value:dx];
     [m setReal64:"dy" value:dy];
     [m send];

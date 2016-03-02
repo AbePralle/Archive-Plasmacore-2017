@@ -11,13 +11,13 @@ endClass
 
 class Image
   PROPERTIES
-    name : String
-    data : ImageData
+    name   : String
+    data   : ImageData
 
   METHODS
     method init( name )
 
-    method draw( pos:XY )
+    method draw( pos:XYZ )
       prepare
       data.draw( pos )
 
@@ -34,7 +34,7 @@ class ImageData
   METHODS
     method init( image )
 
-    method draw( pos:XY )
+    method draw( pos:XYZ )
 
     method prepare
 
@@ -49,15 +49,16 @@ class TextureImageData : ImageData
   METHODS
     method init( image, texture )
 
-    method draw( pos:XY )
+    method draw( pos:XYZ )
       local w = texture.width
       local h = texture.height
       local uw = texture.uv_width
       local uh = texture.uv_height
       local pt1 = pos
-      local pt2 = XY( pt1.x+w, pt1.y )
-      local pt3 = XY( pt1.x+w, pt1.y+h )
-      local pt4 = XY( pt1.x,   pt1.y+h )
+      local z   = pos.z
+      local pt2 = XYZ( pt1.x+w, pt1.y,   z )
+      local pt3 = XYZ( pt1.x+w, pt1.y+h, z )
+      local pt4 = XYZ( pt1.x,   pt1.y+h, z )
       local uv1 = XY(0,0)
       local uv2 = XY(uw,0)
       local uv3 = XY(uw,uh)
