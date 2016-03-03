@@ -12,9 +12,10 @@ class StarbrightGraphics : Graphics
     method init( canvas )
       @trace
 
-    method clear
+    method clear->this
       native @|Starbright::renderer->clear_color = $this->background_color;
-      |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+              |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+      return this
 
       #{
     method define_texture( name:String, bitmap:Bitmap )->Texture
