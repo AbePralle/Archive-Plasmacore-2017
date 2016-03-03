@@ -5,14 +5,22 @@ class Graphics [singleton]
     stack = Graphics[]
 
   PROPERTIES
-    canvas           : Canvas
-    textures         = Table<<String,Texture>>()
+    canvas            : Canvas
+    textures          = Table<<String,Texture>>()
 
-    size             : XY
-    true_size        : XY
-    background_color : Int32
+    size              : XY
+    true_size         : XY
+    background_color  : Int32
 
-    unit_z           : Real64
+    transform         : Matrix
+    view_transform    : Matrix
+    object_transform  : Matrix
+    view_transforms   = Matrix[]
+    object_transforms = Matrix[]
+    view_transform_modified   : Logical
+    object_transform_modified : Logical
+
+    unit_z            : Real64
 
 
   METHODS
@@ -71,10 +79,34 @@ class Graphics [singleton]
       Graphics = g
       return g
 
+    method push_object_transform( m:Matrix )->this
+      object_transforms.add( m )
+      object_transform_modified = true
+      return this
+
+    method push_view_transform( m:Matrix )->this
+      view_transforms.add( m )
+      view_transform_modified = true
+      return this
+
     method pop->Graphics
       if (stack.count == 0) Graphics = Graphics()
       else                  Graphics = stack.remove_last
       return Graphics
+
+    method pop_object_transform->this
+      if (object_transforms.count)
+        object_transforms.remove_last
+        object_transform_modified = true
+      endIf
+      return this
+
+    method pop_view_transform->this
+      if (view_transforms.count)
+        view_transforms.remove_last
+        view_transform_modified = true
+      endIf
+      return this
 
     method set_mode_2dx( _size=Graphics.size:XY, near_scale=384:Real64, max_z=16:Real64 )
 
