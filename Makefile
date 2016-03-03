@@ -20,7 +20,7 @@ remake:
 	cd Source/Rogue/ && roguec Main.rogue $(ROGUEC_OPTIONS)
 
 test:
-	cd Test && roguec Test.rogue --libraries="../Source/Plasmacore/Rogue" --execute
+	cd Test && roguec Test.rogue --target="Console,C++" --libraries="../Source/Plasmacore/Rogue" --execute
 
 clean:
 	rm -rf Source/Rogue/Build

@@ -71,6 +71,7 @@ class Matrix( ...
       m.r1c1 = k.x
       m.r2c2 = k.y
       m.r3c3 = k.z
+      m.r4c4 = 1
       return m
 
     METHODS

@@ -46,11 +46,19 @@ class Graphics [singleton]
     method bounds->Box
       return Box( XY(0,0), size )
 
-    method clear
+    method clear->this
       # Override
 
-    method clear( background_color )
-      clear
+    method clear( background_color )->this
+      return clear
+
+    method clear_transforms->this
+      object_transforms.clear
+      view_transforms.clear
+      view_transform_modified = true
+      object_transform_modified = true
+      return this
+
 
       #{
     method define_texture( name:String, bitmap:Bitmap )->Texture
@@ -74,21 +82,6 @@ class Graphics [singleton]
     method load_texture( texture:Texture, file:File )
       println ''Failed to load texture "$" from file "$".'' (texture.name,file)
 
-    method push( g:Graphics )->Graphics
-      stack.add( this )
-      Graphics = g
-      return g
-
-    method push_object_transform( m:Matrix )->this
-      object_transforms.add( m )
-      object_transform_modified = true
-      return this
-
-    method push_view_transform( m:Matrix )->this
-      view_transforms.add( m )
-      view_transform_modified = true
-      return this
-
     method pop->Graphics
       if (stack.count == 0) Graphics = Graphics()
       else                  Graphics = stack.remove_last
@@ -108,9 +101,64 @@ class Graphics [singleton]
       endIf
       return this
 
+    method push( g:Graphics )->Graphics
+      stack.add( this )
+      Graphics = g
+      return g
+
+    method push_object_transform( m:Matrix )->this
+      object_transforms.add( m )
+      object_transform_modified = true
+      return this
+
+    method push_view_transform( m:Matrix )->this
+      view_transforms.add( m )
+      view_transform_modified = true
+      return this
+
     method set_mode_2dx( _size=Graphics.size:XY, near_scale=384:Real64, max_z=16:Real64 )
 
-    method set_transform
+    method transform->Matrix
+      if (not (view_transform_modified or object_transform_modified))
+        return @transform
+      endIf
+
+      if (view_transform_modified)
+        view_transform_modified = false
+        if (view_transforms.count)
+          view_transform = view_transforms.first
+          forEach (i in 1..view_transforms.count-1)
+            view_transform = view_transform * view_transforms[i]
+          endForEach
+        endIf
+      endIf
+
+      if (object_transform_modified)
+        object_transform_modified = false
+        if (object_transforms.count)
+          object_transform = object_transforms.last
+          forEach (i in 0..object_transforms.count-2 step -1)
+            object_transform = object_transforms[i] * object_transform
+          endForEach
+        endIf
+      endIf
+
+      if (view_transforms.count)
+        if (object_transforms.count)
+          transform = view_transform * object_transform
+        else
+          transform = view_transform
+        endIf
+      else
+        if (object_transforms.count)
+          transform = object_transform
+        else
+          transform = Matrix.identity
+        endIf
+      endIf
+
+      return @transform
+
 
     method width->Int32 [macro]
       this.size.x->Int32
