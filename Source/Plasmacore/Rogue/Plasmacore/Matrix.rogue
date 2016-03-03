@@ -4,8 +4,17 @@ $include "XYZW.rogue"
 
 module Plasmacore
 
-class Matrix
+class Matrix( ...
+    r1c1:Real64, r2c1:Real64, r3c1:Real64, r4c1:Real64,
+    r1c2:Real64, r2c2:Real64, r3c2:Real64, r4c2:Real64,
+    r1c3:Real64, r2c3:Real64, r3c3:Real64, r4c3:Real64,
+    r1c4:Real64, r2c4:Real64, r3c4:Real64, r4c4:Real64
+  ) [compound]
+
   GLOBAL METHODS
+    method create->Matrix
+      return Matrix( 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 )
+
     method identity->Matrix
       local m = Matrix()
       m.r1c1 = 1
@@ -64,40 +73,12 @@ class Matrix
       m.r3c3 = k.z
       return m
 
-  PROPERTIES
-    native @|union
-            |{
-            |  RogueReal64 at[16];
-            |  struct
-            |  {
-            |    RogueReal64 r1c1;
-            |    RogueReal64 r2c1;
-            |    RogueReal64 r3c1;
-            |    RogueReal64 r4c1;
-            |
-            |    RogueReal64 r1c2;
-            |    RogueReal64 r2c2;
-            |    RogueReal64 r3c2;
-            |    RogueReal64 r4c2;
-            |
-            |    RogueReal64 r1c3;
-            |    RogueReal64 r2c3;
-            |    RogueReal64 r3c3;
-            |    RogueReal64 r4c3;
-            |
-            |    RogueReal64 r1c4;
-            |    RogueReal64 r2c4;
-            |    RogueReal64 r3c4;
-            |    RogueReal64 r4c4;
-            |  };
-            |};
-
     METHODS
       method count->Int32 [macro]
         16
 
       method get( index:Int32 )->Real64 [macro]
-        native( "$this->at[ $index ]" )
+        native( "(&$this.r1c1)[ $index ]" )
 
       method operator*( other:Matrix )->Matrix
         local result = Matrix()
@@ -239,48 +220,8 @@ class Matrix
           this[15]  * v.w
         )
 
-      method r1c1->Real64 [macro]: native "$this->r1c1"
-      method r2c1->Real64 [macro]: native "$this->r2c1"
-      method r3c1->Real64 [macro]: native "$this->r3c1"
-      method r4c1->Real64 [macro]: native "$this->r4c1"
-
-      method r1c2->Real64 [macro]: native "$this->r1c2"
-      method r2c2->Real64 [macro]: native "$this->r2c2"
-      method r3c2->Real64 [macro]: native "$this->r3c2"
-      method r4c2->Real64 [macro]: native "$this->r4c2"
-
-      method r1c3->Real64 [macro]: native "$this->r1c3"
-      method r2c3->Real64 [macro]: native "$this->r2c3"
-      method r3c3->Real64 [macro]: native "$this->r3c3"
-      method r4c3->Real64 [macro]: native "$this->r4c3"
-
-      method r1c4->Real64 [macro]: native "$this->r1c4"
-      method r2c4->Real64 [macro]: native "$this->r2c4"
-      method r3c4->Real64 [macro]: native "$this->r3c4"
-      method r4c4->Real64 [macro]: native "$this->r4c4"
-
       method set( index:Int32, value:Real64 ) [macro]
-        native( "$this->at[ $index ] = $value" )
-
-      method set_r1c1( value:Real64 ) [macro]: native "$this->r1c1 = $value"
-      method set_r2c1( value:Real64 ) [macro]: native "$this->r2c1 = $value"
-      method set_r3c1( value:Real64 ) [macro]: native "$this->r3c1 = $value"
-      method set_r4c1( value:Real64 ) [macro]: native "$this->r4c1 = $value"
-
-      method set_r1c2( value:Real64 ) [macro]: native "$this->r1c2 = $value"
-      method set_r2c2( value:Real64 ) [macro]: native "$this->r2c2 = $value"
-      method set_r3c2( value:Real64 ) [macro]: native "$this->r3c2 = $value"
-      method set_r4c2( value:Real64 ) [macro]: native "$this->r4c2 = $value"
-
-      method set_r1c3( value:Real64 ) [macro]: native "$this->r1c3 = $value"
-      method set_r2c3( value:Real64 ) [macro]: native "$this->r2c3 = $value"
-      method set_r3c3( value:Real64 ) [macro]: native "$this->r3c3 = $value"
-      method set_r4c3( value:Real64 ) [macro]: native "$this->r4c3 = $value"
-
-      method set_r1c4( value:Real64 ) [macro]: native "$this->r1c4 = $value"
-      method set_r2c4( value:Real64 ) [macro]: native "$this->r2c4 = $value"
-      method set_r3c4( value:Real64 ) [macro]: native "$this->r3c4 = $value"
-      method set_r4c4( value:Real64 ) [macro]: native "$this->r4c4 = $value"
+        native( "(&$this.r1c1)[ $index ] = $value" )
 
       method to->String
         local min_whole_digits = 0
@@ -306,3 +247,4 @@ class Matrix
         return buffer->String
 
 endClass
+
