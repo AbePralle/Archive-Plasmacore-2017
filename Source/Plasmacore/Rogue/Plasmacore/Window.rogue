@@ -61,6 +61,7 @@ class Window
 
 endClass
 
+$if not "Console"
 class WindowManager [requisite singleton]
   PROPERTIES
     windows_by_id = Table<<Int32,Window>>()
@@ -121,3 +122,4 @@ class WindowManager [requisite singleton]
       current_window_id = window_id
       return current_window
 endClass
+$endIf

@@ -29,7 +29,14 @@ class Bitmap
     method clear( color=Color.BLACK:Int32 )
       forEach (i of pixels) pixels[i] = color
 
+    method include_native_code
+      nativeCode
+        #include "ImageIO.h"
+        using namespace ImageIO;
+      endNativeCode
+
     method decode( bytes:Byte[] )->Logical
+      include_native_code
       native @|Decoder decoder;
               |if ( !decoder.open($bytes->data->bytes, $bytes->count) ) return 0;
 
@@ -95,6 +102,7 @@ class Bitmap
       return this
 
     method to_png_bytes->Byte[]
+      include_native_code
       local w = width
       local h = height
       local count : Int32
@@ -109,6 +117,7 @@ class Bitmap
       return bytes
 
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
+      include_native_code
       local w = width
       local h = height
       local count : Int32
@@ -127,8 +136,4 @@ class Bitmap
       this.size.x->Int32
 endClass
 
-nativeCode
-#include "ImageIO.h"
-using namespace ImageIO;
-endNativeCode
 
