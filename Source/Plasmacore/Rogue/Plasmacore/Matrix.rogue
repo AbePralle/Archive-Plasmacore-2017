@@ -23,6 +23,22 @@ class Matrix( ...
       m.r4c4 = 1
       return m
 
+    method projection( left:Real64, top:Real64, right:Real64, bottom:Real64, near:Real64, far:Real64 )->Matrix
+      # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
+      local m = identity
+
+      m.r1c1 = 2 * near / (right - left)
+      m.r2c2 = 2 * near / (top - bottom)
+
+      m.r1c3 = (right + left) / (right - left)
+      m.r2c3 = (top + bottom) / (top - bottom)
+      m.r3c3 = - (far + near) / (far - near)
+      m.r4c3 = -1
+
+      m.r3c4 = - (2 * far * near) / (far - near)
+
+      return m
+
     method rotate( degrees:XYZ )->Matrix
       return rotate_x( Degrees(degrees.x) ) * rotate_y( Degrees(degrees.y) ) * rotate_z( Degrees(degrees.z) )
 
@@ -228,8 +244,13 @@ class Matrix( ...
         local min_whole_digits = 0
         local min_decimal_digits = 0
         forEach (value in this)
+println "pt1"
+println value
+println "pt1.1"
           local whole_digits = value.whole_digit_count
+println "pt2"
           local decimal_digits = value.decimal_digit_count
+println "pt3"
           min_whole_digits = Math.max( min_whole_digits, whole_digits )
           min_decimal_digits = Math.max( min_decimal_digits, decimal_digits )
         endForEach

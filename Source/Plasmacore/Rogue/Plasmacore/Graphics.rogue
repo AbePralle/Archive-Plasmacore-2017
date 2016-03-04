@@ -116,7 +116,10 @@ class Graphics [singleton]
       view_transform_modified = true
       return this
 
-    method set_mode_2dx( _size=Graphics.size:XY, near_scale=384:Real64, max_z=16:Real64 )
+    method set_mode_2dx( _size=Graphics.size:XY, unit_z=384, max_z=16:Real64 )
+      clear_transforms
+      local k = (unit_z + 1) * 2
+      push_view_transform Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 )
 
     method transform->Matrix
       if (not (view_transform_modified or object_transform_modified))
