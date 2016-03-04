@@ -1,13 +1,12 @@
 module Plasmacore
 
-nativeHeader #include "Starbright.h"
-
 nativeCode
 double rotation_degrees = 0.0;
 endNativeCode
 
 
 class StarbrightGraphics : Graphics
+  nativeHeader #include "Starbright.h"
   METHODS
     method init( canvas )
       @trace
@@ -98,6 +97,11 @@ class StarbrightGraphics : Graphics
               |v[2].v = $uv3.y;
 
     method load_texture( texture:Texture, file:File )
+      nativeCode
+        #include "ImageIO.h"
+        using namespace ImageIO;
+      endNativeCode
+
       local id = 0
       local image_w : Int32
       local image_h : Int32
@@ -147,9 +151,4 @@ class StarbrightGraphics : Graphics
       native @|Starbright::renderer->set_transform_2dx( $w, $h, $unit_z, $max_z  );
 
 endClass
-
-nativeCode
-#include "ImageIO.h"
-using namespace ImageIO;
-endNativeCode
 
