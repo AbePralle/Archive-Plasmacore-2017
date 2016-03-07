@@ -30,12 +30,12 @@ class GreenBlue : ViewLogic
       endForEach
       texture = Graphics.define_texture( "red_box", bitmap )
       }#
-      println Matrix.identity
+      #println Matrix.identity
 
     method draw
       Graphics.clear
+      image.draw( XYZ(0,0,Graphics.unit_z) )
       #image.draw( XYZ(pointer_position-Graphics.size/2,z) )
-      image.draw( XYZ(pointer_position-Graphics.size/2,z) )
 
       #{
       forEach (x in 0..800 step 16)

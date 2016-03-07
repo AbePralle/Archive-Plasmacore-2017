@@ -50,37 +50,22 @@ class TextureImageData : ImageData
     method init( image, texture )
 
     method draw( pos:XYZ )
-      local w = texture.width
-      local h = texture.height
+      local hw = texture.width / 2
+      local hh = texture.height / 2
       local uw = texture.uv_width
       local uh = texture.uv_height
-      local pt1 = pos
       local z   = pos.z
-      local pt2 = XYZ( pt1.x+w, pt1.y,   z )
-      local pt3 = XYZ( pt1.x+w, pt1.y+h, z )
-      local pt4 = XYZ( pt1.x,   pt1.y+h, z )
-
-      pt1.x -= w/2
-      pt2.x -= w/2
-      pt3.x -= w/2
-      pt4.x -= w/2
-      pt1.y -= h/2
-      pt2.y -= h/2
-      pt3.y -= h/2
-      pt4.y -= h/2
+      local pt1 = XYZ( pos.x-hw, pos.y+hh, z ) 
+      local pt2 = XYZ( pos.x+hw, pos.y+hh, z )
+      local pt3 = XYZ( pos.x+hw, pos.y-hh, z )
+      local pt4 = XYZ( pos.x-hw, pos.y-hh, z )
 
       local uv1 = XY(0,0)
       local uv2 = XY(uw,0)
       local uv3 = XY(uw,uh)
       local uv4 = XY(0,uh)
 
-local dw  = Graphics.size.x
-local dh  = Graphics.size.y
-local uz  = Graphics.unit_z
-local tz  = pos.z
-native @|Starbright::renderer->set_transform_2dx( $dw, $dh, $uz, 16, $tz );
-
-      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT.enable_point_filter,
+      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
         pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
 
     method prepare

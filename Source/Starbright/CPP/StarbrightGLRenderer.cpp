@@ -151,7 +151,11 @@ GLRenderer::GLRenderer()
     "}                                                   \n"
   );
 
-  projection_transform.set_identity();
+  memset( transform, 0, 16 * sizeof(float) );
+  transform[0]  = 1.0f;
+  transform[5]  = 1.0f;
+  transform[10] = 1.0f;
+  transform[15] = 1.0f;
 }
 
 GLRenderer::~GLRenderer()
@@ -316,7 +320,6 @@ void GLRenderer::flush()
 
 void GLRenderer::render()
 {
-  GLfloat m[16];
   GLShader* shader;
 
   if ( !vertex_count ) return;
@@ -352,8 +355,6 @@ void GLRenderer::render()
   if ( !shader ) return;
 
   glViewport( 0, 0, display_width, display_height );
-
-  projection_transform.to_float( m );
 
   if (render_mode.blend_enabled())
   {
@@ -494,7 +495,7 @@ void GLRenderer::render()
   // Configure shader
   glUseProgram( shader->program );
 
-  glUniformMatrix4fv( shader->transform_setting, 1, GL_FALSE, m );
+  glUniformMatrix4fv( shader->transform_setting, 1, GL_FALSE, transform );
   glVertexAttribPointer( shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0, vertex_buffer_xyzw );
   glEnableVertexAttribArray( shader->position_attribute );
 

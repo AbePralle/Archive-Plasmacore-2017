@@ -115,58 +115,6 @@ struct Texture
 };
 
 //=============================================================================
-//  Matrix
-//=============================================================================
-typedef struct Matrix
-{
-  // PROPERTIES
-  union
-  {
-    double at[16];
-    struct
-    {
-      double r1c1;
-      double r2c1;
-      double r3c1;
-      double r4c1;
-
-      double r1c2;
-      double r2c2;
-      double r3c2;
-      double r4c2;
-
-      double r1c3;
-      double r2c3;
-      double r3c3;
-      double r4c3;
-
-      double r1c4;
-      double r2c4;
-      double r3c4;
-      double r4c4;
-    };
-  };
-
-  // METHODS
-  Matrix();  // caution: garbage content
-  Matrix( const Matrix& other );
-
-  Matrix operator*( Matrix other );
-
-  Matrix& set_identity();
-  Matrix& set_orthographic( int left, int top, int right, int bottom, double near=-1, double far=1 );
-  Matrix& set_zeros();
-  Matrix  times( Matrix other );
-  float*  to_float( float* dest );
-
-  static Matrix identity();
-  static Matrix projection( double left, double top, double right, double bottom, double near, double far );
-  static Matrix translate( double tx, double ty, double tz );
-  static Matrix zeros();
-
-} Matrix;
-
-//=============================================================================
 //  Vertex
 //=============================================================================
 typedef struct Vertex
@@ -213,7 +161,7 @@ struct Renderer
   Vertex vertices[ VERTEX_BUFFER_COUNT ];
   int      vertex_count;
 
-  Matrix projection_transform;
+  float transform[16];
 
   // METHODS
   Renderer();
@@ -237,9 +185,8 @@ struct Renderer
   virtual void      set_shader( int shader_id );
   virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
-  virtual void      set_transform_2d( double left, double top, double right, double bottom );
-  virtual void      set_transform_2dx( double width, double height, double unit_z, double max_z, double tz=0 );
-  virtual void      set_transform_3d( double left, double top, double right, double bottom, double near, double far );
+  virtual void      set_transform( double matrix[16] );
+  virtual void      set_transform( float matrix[16] );
 };
 
 extern Renderer* renderer;

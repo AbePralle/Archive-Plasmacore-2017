@@ -20,6 +20,7 @@ class Graphics [singleton]
     view_transform_modified   : Logical
     object_transform_modified : Logical
 
+    mode              = GraphicsMode()
     unit_z            : Real64
 
 
@@ -40,7 +41,9 @@ class Graphics [singleton]
 
     method begin_draw( canvas )->this
       size = canvas.size
-      set_mode_2dx
+      mode = mode.configure( size )
+      mode.activate
+      update_transform
       return this
 
     method bounds->Box
@@ -48,6 +51,7 @@ class Graphics [singleton]
 
     method clear->this
       # Override
+      return this
 
     method clear( background_color )->this
       return clear
@@ -116,15 +120,20 @@ class Graphics [singleton]
       view_transform_modified = true
       return this
 
-    method set_mode_2dx( _size=Graphics.size:XY, unit_z=384, max_z=16:Real64 )
+    method set_mode_2dx( left=-Graphics.width/2:Real64, top=Graphics.height/2:Real64,
+                         right=Graphics.width/2:Real64, bottom=-Graphics.height/2:Real64,
+                         unit_z=384, max_z=16:Real64 )
       clear_transforms
-      local k = (unit_z + 1) * 2
-      push_view_transform Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 )
+      mode = mode.configure_2dx( left, top, right, bottom, unit_z, max_z )
+      mode.activate
+      update_transform
 
     method transform->Matrix
-      if (not (view_transform_modified or object_transform_modified))
-        return @transform
-      endIf
+      update_transform
+      return @transform
+
+    method update_transform
+      if (not (view_transform_modified or object_transform_modified)) return
 
       if (view_transform_modified)
         view_transform_modified = false
@@ -159,9 +168,6 @@ class Graphics [singleton]
           transform = Matrix.identity
         endIf
       endIf
-
-      return @transform
-
 
     method width->Int32 [macro]
       this.size.x->Int32

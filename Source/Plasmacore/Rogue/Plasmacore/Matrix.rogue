@@ -244,13 +244,8 @@ class Matrix( ...
         local min_whole_digits = 0
         local min_decimal_digits = 0
         forEach (value in this)
-println "pt1"
-println value
-println "pt1.1"
           local whole_digits = value.whole_digit_count
-println "pt2"
           local decimal_digits = value.decimal_digit_count
-println "pt3"
           min_whole_digits = Math.max( min_whole_digits, whole_digits )
           min_decimal_digits = Math.max( min_decimal_digits, decimal_digits )
         endForEach
