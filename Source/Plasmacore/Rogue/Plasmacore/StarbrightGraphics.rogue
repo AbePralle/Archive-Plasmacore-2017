@@ -145,10 +145,9 @@ class StarbrightGraphics : Graphics
         texture.uv_size = XY( image_w, image_h ) / texture.size
       endIf
 
-    method set_mode_2dx( _size=Graphics.size:XY, unit_z=384, max_z=16:Real64 )
-      local w  = _size.x
-      local h  = _size.y
-      native @|Starbright::renderer->set_transform_2dx( $w, $h, $unit_z, $max_z  );
+    method update_transform
+      prior.update_transform
+      native "Starbright::renderer->set_transform( &$this->transform.r1c1 );"
 
 endClass
 

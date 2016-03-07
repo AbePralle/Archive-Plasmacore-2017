@@ -1,7 +1,7 @@
 //=============================================================================
 //  SuperCPPBuilder.h
 //
-//  v1.1.2 - 2016.02.17 by Abe Pralle
+//  v1.1.3 - 2016.03.05 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
@@ -46,7 +46,8 @@ struct Builder
   {
     if (data != internal_buffer) delete data;
     data = internal_buffer;
-    capacity = count = 0;
+    count = 0;
+    capacity = 1024 / sizeof(DataType);
   }
 
   Builder<DataType>& add( DataType value )

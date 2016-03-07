@@ -1,7 +1,7 @@
 //=============================================================================
 //  SuperCPPCString.cpp
 //
-//  v1.1.2 - 2016.02.17 by Abe Pralle
+//  v1.1.3 - 2016.03.05 by Abe Pralle
 //
 //  See README.md for instructions.
 //=============================================================================
@@ -40,6 +40,14 @@ CString::~CString()
 CString& CString::operator=( const char* value )
 {
   if (characters) delete characters;
+
+  if ( !value )
+  {
+    characters = 0;
+    count = 0;
+    return *this;
+  }
+
   count = (int) strlen( value );
   characters = new char[ count+1 ];
   strcpy( characters, value );
@@ -49,7 +57,14 @@ CString& CString::operator=( const char* value )
 CString& CString::operator=( const CString& other )
 {
   if (characters) delete characters;
+
   count = other.count;
+  if ( !count )
+  {
+    characters = 0;
+    return *this;
+  }
+
   this->characters = new char[ count+1 ];
   strcpy( this->characters, other.characters );
   return *this;
