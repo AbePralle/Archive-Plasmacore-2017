@@ -29,15 +29,16 @@ class GraphicsMode2DX : GraphicsMode
     method init( left, top, right, bottom, unit_z, max_z )
 
     method activate
-      local k = (unit_z + 1) * 4
-      local w = Math.abs( right - left)
-      local h = Math.abs( top - bottom )
+      local k = (unit_z + 1) * 2
+      local w = right - left
+      local h = bottom - top
       Graphics.unit_z = unit_z
-      Graphics.push_view_transform Matrix.projection( left/k, top/k, right/k, bottom/k, 1, (max_z*k*2)/3 )
-      if ((left  + right) != 0 or (top + bottom) != 0)
-        Graphics.push_view_transform Matrix.translate( XYZ(-w/2,-h/2,0) )
+      Graphics.push_view_transform Matrix.projection( -w/k, -h/k, w/k, h/k, 1, (max_z*k)/3 )
+      local fix_x = select{ (w->Int32 & 1 == 1):-0.5, 0 }
+      local fix_y = select{ (h->Int32 & 1 == 1): 0.5, 0 }
+      if (fix_x or fix_y or (left  + right) != 0 or (top + bottom) != 0)
+        Graphics.push_view_transform Matrix.translate( XYZ(-(left+right)/2+fix_x,-(top+bottom)/2+fix_y,0) )
       endIf
-      #trace Graphics.@transform
 
     method configure_2dx( left, top, right, bottom, unit_z, max_z )->GraphicsMode
       return this

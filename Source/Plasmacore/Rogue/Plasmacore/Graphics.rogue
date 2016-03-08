@@ -13,8 +13,8 @@ class Graphics [singleton]
     background_color  : Int32
 
     transform         : Matrix
-    view_transform    : Matrix
-    object_transform  : Matrix
+    view_transform    = Matrix.identity : Matrix
+    object_transform  = Matrix.identity : Matrix
     view_transforms   = Matrix[]
     object_transforms = Matrix[]
     view_transform_modified   : Logical
@@ -40,6 +40,7 @@ class Graphics [singleton]
       return texture
 
     method begin_draw( canvas )->this
+      clear_transforms
       size = canvas.size
       mode = mode.configure( size )
       mode.activate
@@ -149,7 +150,7 @@ class Graphics [singleton]
         object_transform_modified = false
         if (object_transforms.count)
           object_transform = object_transforms.last
-          forEach (i in 0..object_transforms.count-2 step -1)
+          forEach (i in object_transforms.count-2 downTo 0)
             object_transform = object_transforms[i] * object_transform
           endForEach
         endIf

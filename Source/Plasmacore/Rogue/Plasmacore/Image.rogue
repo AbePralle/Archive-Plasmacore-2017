@@ -54,7 +54,7 @@ class TextureImageData : ImageData
       local hh = texture.height / 2
       local uw = texture.uv_width
       local uh = texture.uv_height
-      local z   = pos.z
+      local z   = -pos.z
       local pt1 = XYZ( pos.x-hw, pos.y+hh, z ) 
       local pt2 = XYZ( pos.x+hw, pos.y+hh, z )
       local pt3 = XYZ( pos.x+hw, pos.y-hh, z )
