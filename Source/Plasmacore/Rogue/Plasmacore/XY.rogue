@@ -15,6 +15,9 @@ class XY( x:Real64, y:Real64 ) [compound]
     method degrees->Degrees [macro]
       Degrees( this.radians )
 
+    method floor->XY
+      return XY( Math.floor(x), Math.floor(y) )
+
     method magnitude->Real64
       return Math.sqrt( x*x + y*y )
 

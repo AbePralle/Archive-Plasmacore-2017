@@ -1,9 +1,6 @@
 module Plasmacore
 
 class GraphicsMode
-  PROPERTIES
-    left, top, right, bottom : Real64
-
   METHODS
     method init
 
@@ -14,33 +11,41 @@ class GraphicsMode
       # Default: configure graphics mode 2DX
       local w = display_size.x
       local h = display_size.y
-      return configure_2dx( -w/2, h/2, w/2, -h/2 )
+      return configure_2dx( w, h )
 
-    method configure_2dx( left, top, right, bottom, unit_z=384:Real64, max_z=16:Real64 )->GraphicsMode
-      return GraphicsMode2DX( left, top, right, bottom, unit_z, max_z )
+    method configure_2dx( width:Real64, height:Real64, unit_z=384:Real64, max_z=16:Real64 )->GraphicsMode
+      return GraphicsMode2DX( width, height, unit_z, max_z )
 endClass
 
 class GraphicsMode2DX : GraphicsMode
   PROPERTIES
+    width  : Real64
+    height : Real64
     unit_z : Real64
     max_z  : Real64
 
   METHODS
-    method init( left, top, right, bottom, unit_z, max_z )
+    method init( width, height, unit_z, max_z )
 
     method activate
       local k = (unit_z + 1) * 2
-      local w = right - left
-      local h = bottom - top
       Graphics.unit_z = unit_z
-      Graphics.push_view_transform Matrix.projection( -w/k, -h/k, w/k, h/k, 1, (max_z*k)/3 )
-      local fix_x = select{ (w->Int32 & 1 == 1):-0.5, 0 }
-      local fix_y = select{ (h->Int32 & 1 == 1): 0.5, 0 }
-      if (fix_x or fix_y or (left  + right) != 0 or (top + bottom) != 0)
-        Graphics.push_view_transform Matrix.translate( XYZ(-(left+right)/2+fix_x,-(top+bottom)/2+fix_y,0) )
+      Graphics.push_view_transform Matrix.projection( -width/k, height/k, width/k, -height/k, 1, (max_z*k)/3 )
+      local odd_x = (width->Int32 & 1)
+      local odd_y = (height->Int32 & 1)
+      if (odd_x or odd_y)
+        Graphics.push_view_transform Matrix.translate( XYZ(-odd_x/2.0,odd_y/2.0,0) )
       endIf
 
-    method configure_2dx( left, top, right, bottom, unit_z, max_z )->GraphicsMode
+    method configure( display_size:XY )->this
+      if (display_size.x != width or display_size.y != height)
+        @trace display_size
+      endIf
+      width  = display_size.x
+      height = display_size.y
+      return configure_2dx( width, height, unit_z, max_z )
+
+    method configure_2dx( width, height, unit_z, max_z )->this
       return this
 
 endClass

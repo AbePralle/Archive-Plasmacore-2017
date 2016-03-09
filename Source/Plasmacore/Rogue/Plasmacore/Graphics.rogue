@@ -121,11 +121,9 @@ class Graphics [singleton]
       view_transform_modified = true
       return this
 
-    method set_mode_2dx( left=-Graphics.width/2:Real64, top=Graphics.height/2:Real64,
-                         right=Graphics.width/2:Real64, bottom=-Graphics.height/2:Real64,
-                         unit_z=384, max_z=16:Real64 )
+    method set_mode_2dx( size=Graphics.size, unit_z=384, max_z=16:Real64 )
       clear_transforms
-      mode = mode.configure_2dx( left, top, right, bottom, unit_z, max_z )
+      mode = mode.configure_2dx( size.x, size.y, unit_z, max_z )
       mode.activate
       update_transform
 
