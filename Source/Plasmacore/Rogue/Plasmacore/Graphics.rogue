@@ -44,7 +44,6 @@ class Graphics [singleton]
       size = canvas.size
       mode = mode.configure( size )
       mode.activate
-      update_transform
       return this
 
     method bounds->Box
@@ -92,18 +91,22 @@ class Graphics [singleton]
       else                  Graphics = stack.remove_last
       return Graphics
 
-    method pop_object_transform->this
-      if (object_transforms.count)
-        object_transforms.remove_last
-        object_transform_modified = true
-      endIf
+    method pop_object_transform( n=1:Int32 )->this
+      forEach (1..n)
+        if (object_transforms.count)
+          object_transforms.remove_last
+          object_transform_modified = true
+        endIf
+      endForEach
       return this
 
-    method pop_view_transform->this
-      if (view_transforms.count)
-        view_transforms.remove_last
-        view_transform_modified = true
-      endIf
+    method pop_view_transform( n=1:Int32 )->this
+      forEach (1..n)
+        if (view_transforms.count)
+          view_transforms.remove_last
+          view_transform_modified = true
+        endIf
+      endForEach
       return this
 
     method push( g:Graphics )->Graphics
@@ -125,7 +128,6 @@ class Graphics [singleton]
       clear_transforms
       mode = mode.configure_2dx( size.x, size.y, unit_z, max_z )
       mode.activate
-      update_transform
 
     method transform->Matrix
       update_transform
@@ -149,7 +151,7 @@ class Graphics [singleton]
         if (object_transforms.count)
           object_transform = object_transforms.last
           forEach (i in object_transforms.count-2 downTo 0)
-            object_transform = object_transforms[i] * object_transform
+            object_transform = object_transform * object_transforms[i]
           endForEach
         endIf
       endIf

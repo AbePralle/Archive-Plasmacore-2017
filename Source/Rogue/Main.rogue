@@ -36,11 +36,14 @@ class GreenBlue : ViewLogic
     method draw
       Graphics.clear
       local final_z = z * Graphics.unit_z
-      local pos = XYZ( pointer_position.x-256, pointer_position.y-128, final_z )
+      local pos = XYZ( pointer_position.x, pointer_position.y, final_z )
       #local pos = XYZ( 0, 0, Graphics.unit_z )
-      Graphics.push_object_transform( XYZ(0,0,final_z) )
-      Graphics.push_object_transform( XYZ(0,0,-final_z) )
+      #Graphics.push_object_transform( Matrix.translate( XYZ(0,0,final_z) ) )
+      #Graphics.push_object_transform( Matrix.translate( XYZ(0,0,-final_z) ) )
+      Graphics.push_object_transform( Matrix.rotate_y(yaw) )
       image.draw( pos )
+      Graphics.pop_object_transform
+      #Graphics.pop_object_transform( 3 )
       #image.draw( XYZ(pointer_position-Graphics.size/2,z) )
 
       #{
