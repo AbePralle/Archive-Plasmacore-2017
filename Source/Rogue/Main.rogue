@@ -34,7 +34,9 @@ class GreenBlue : ViewLogic
 
     method draw
       Graphics.clear
-      image.draw( XYZ(0,0,Graphics.unit_z) )
+      #local pos = XYZ( pointer_position.x, pointer_position.y, Graphics.unit_z )
+      local pos = XYZ( 0, 0, Graphics.unit_z )
+      image.draw( pos )
       #image.draw( XYZ(pointer_position-Graphics.size/2,z) )
 
       #{
