@@ -6,7 +6,7 @@ class ImageManager [singleton]
       # Load the image name as a texture
       local texture = Graphics.acquire_texture( image.name )
       image.data = TextureImageData( image, texture )
-      return 
+      return
 endClass
 
 class Image
@@ -50,23 +50,26 @@ class TextureImageData : ImageData
     method init( image, texture )
 
     method draw( pos:XYZ )
-      local w = texture.width
-      local h = texture.height
+      local hw = texture.width / 2
+      local hh = texture.height / 2
       local uw = texture.uv_width
       local uh = texture.uv_height
-      local z   = -pos.z
-      local pt1 = XYZ( pos.x,   pos.y,   z ) 
-      local pt2 = XYZ( pos.x+w, pos.y,   z )
-      local pt3 = XYZ( pos.x+w, pos.y+h, z )
-      local pt4 = XYZ( pos.x,   pos.y+h, z )
+      local pt1 = XYZ( -hw, -hh, 0 )
+      local pt2 = XYZ(  hw, -hh, 0 )
+      local pt3 = XYZ(  hw,  hh, 0 )
+      local pt4 = XYZ( -hw,  hh, 0 )
 
       local uv1 = XY(0,0)
       local uv2 = XY(uw,0)
       local uv3 = XY(uw,uh)
       local uv4 = XY(0,uh)
 
+      Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-pos.z)) )
+
       Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
         pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
+
+      Graphics.pop_object_transform
 
     method prepare
       if (texture.graphics isNot Graphics)

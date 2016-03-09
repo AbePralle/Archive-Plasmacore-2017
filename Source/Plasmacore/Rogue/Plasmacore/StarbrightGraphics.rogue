@@ -35,6 +35,8 @@ class StarbrightGraphics : Graphics
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XYZ, pt2:XYZ, pt3:XYZ, pt4:XYZ, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
 
+      update_transform
+
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
               |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
@@ -76,6 +78,9 @@ class StarbrightGraphics : Graphics
 
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
+
+      update_transform
+
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
               |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );

@@ -41,7 +41,8 @@ class GraphicsMode2DX : GraphicsMode
       }#
       local odd_x = (width & 1) / 2.0
       local odd_y = (height & 1) / 2.0
-      Graphics.push_view_transform Matrix.translate( XYZ(-width/2-odd_x,-height/2-odd_y,0) )
+      #Graphics.push_view_transform Matrix.translate( XYZ(-width/2-odd_x,-height/2-odd_y,0) )
+      Graphics.push_view_transform Matrix.translate( XYZ(-odd_x,-odd_y,0) )
 
     method configure( display_size:XY )->this
       if (display_size.x != width or display_size.y != height)
