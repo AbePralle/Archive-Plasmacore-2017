@@ -50,15 +50,15 @@ class TextureImageData : ImageData
     method init( image, texture )
 
     method draw( pos:XYZ )
-      local hw = texture.width / 2
-      local hh = texture.height / 2
+      local w = texture.width
+      local h = texture.height
       local uw = texture.uv_width
       local uh = texture.uv_height
       local z   = -pos.z
-      local pt1 = XYZ( pos.x-hw, pos.y+hh, z ) 
-      local pt2 = XYZ( pos.x+hw, pos.y+hh, z )
-      local pt3 = XYZ( pos.x+hw, pos.y-hh, z )
-      local pt4 = XYZ( pos.x-hw, pos.y-hh, z )
+      local pt1 = XYZ( pos.x,   pos.y,   z ) 
+      local pt2 = XYZ( pos.x+w, pos.y,   z )
+      local pt3 = XYZ( pos.x+w, pos.y+h, z )
+      local pt4 = XYZ( pos.x,   pos.y+h, z )
 
       local uv1 = XY(0,0)
       local uv2 = XY(uw,0)

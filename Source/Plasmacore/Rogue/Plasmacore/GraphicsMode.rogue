@@ -19,8 +19,8 @@ endClass
 
 class GraphicsMode2DX : GraphicsMode
   PROPERTIES
-    width  : Real64
-    height : Real64
+    width  : Int32
+    height : Int32
     unit_z : Real64
     max_z  : Real64
 
@@ -30,12 +30,18 @@ class GraphicsMode2DX : GraphicsMode
     method activate
       local k = (unit_z + 1) * 2
       Graphics.unit_z = unit_z
-      Graphics.push_view_transform Matrix.projection( -width/k, height/k, width/k, -height/k, 1, (max_z*k)/3 )
+      #Graphics.push_view_transform Matrix.translate( XYZ(-0.5,0,0) )
+      Graphics.push_view_transform Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 )
+      #{
       local odd_x = (width->Int32 & 1)
       local odd_y = (height->Int32 & 1)
       if (odd_x or odd_y)
         Graphics.push_view_transform Matrix.translate( XYZ(-odd_x/2.0,odd_y/2.0,0) )
       endIf
+      }#
+      local odd_x = (width & 1) / 2.0
+      local odd_y = (height & 1) / 2.0
+      Graphics.push_view_transform Matrix.translate( XYZ(-width/2-odd_x,-height/2-odd_y,0) )
 
     method configure( display_size:XY )->this
       if (display_size.x != width or display_size.y != height)
