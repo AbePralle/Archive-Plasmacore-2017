@@ -20,7 +20,7 @@ class Graphics [singleton]
     view_transform_modified   : Logical
     object_transform_modified : Logical
 
-    mode              = GraphicsMode()
+    mode              = ProjectionMode()
     unit_z            : Real64
 
 

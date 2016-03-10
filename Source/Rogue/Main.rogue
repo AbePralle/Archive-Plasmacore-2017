@@ -16,10 +16,10 @@ println bitmap.size
 
 class GreenBlue : ViewLogic
   PROPERTIES
-    #image = Image( "King.png" )
-    image = Image( "U5Tiles.png" )
-    z     = 1.0
-    yaw   : Degrees
+    image = Image( "King.png" )
+    #image  = Image( "U5Tiles.png" )
+    z      = 1.0
+    yaw    : Degrees
 
   METHODS
     method activate

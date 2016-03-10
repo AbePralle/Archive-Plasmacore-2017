@@ -1,0 +1,53 @@
+class Sprite
+  PROPERTIES
+    position         : XY
+    depth            = 1.0
+    size             : XY
+    scale            = XY(1,1)
+    anchor           = Anchor.CENTER
+    sequences        : Table<<String,AnimationSequence>>
+    current_sequence : AnimationSequence
+
+  METHODS
+    method init( image_name:String )
+      add( 0, Image(image_name) )
+
+    method define_sequence
+
+endClass
+
+
+class Animation
+  ENUMERATE
+    RESET   = 1
+    LOOPING = 1
+endClass
+
+class Frame
+  PROPERTIES
+    duration : Real64
+
+  METHODS
+    method activate
+
+    method update
+endClass
+
+
+
+class SpriteLayer
+  PROPERTIES
+    frames = SpriteFrame[](1)
+
+  METHODS
+endClass
+
+
+class SpriteFrame
+  PROPERTIES
+    image : Image
+
+  METHODS
+    method init( image )
+endClass
+
