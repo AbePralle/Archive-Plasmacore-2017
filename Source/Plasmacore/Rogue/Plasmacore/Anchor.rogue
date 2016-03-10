@@ -1,7 +1,7 @@
 module Plasmacore
 
 class Anchor( position:XY ) [compound]
-  GLOBAL PROPERTIES
+  DEFINITIONS
     TOP_LEFT      = Anchor( XY(-1,-1) )
     TOP           = Anchor( XY( 0,-1) )
     TOP_RIGHT     = Anchor( XY( 1,-1) )
@@ -12,7 +12,6 @@ class Anchor( position:XY ) [compound]
     BOTTOM        = Anchor( XY( 0, 1) )
     BOTTOM_RIGHT  = Anchor( XY( 1, 1) )
 
-  DEFINITIONS
     LEFT_TOP      = TOP_LEFT
     TOP_CENTER    = TOP
     CENTER_TOP    = TOP
@@ -25,6 +24,9 @@ class Anchor( position:XY ) [compound]
     RIGHT_BOTTOM  = BOTTOM_RIGHT
 
   GLOBAL METHODS
+    method create->Anchor [macro]
+      Anchor(XY(0,0))
+
     method create( x:Real64, y:Real64 )->Anchor [macro]
       Anchor(XY(x,y))
 
