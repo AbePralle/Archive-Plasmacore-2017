@@ -1,0 +1,259 @@
+module Plasmacore
+
+class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
+  # Adapted from the Iirlicht Quaternion by Nikolaus Gebhardt
+  GLOBAL METHODS
+    method create( aa:AxisAngle )->Quaternion [macro]
+      local half_angle = aa.angle / 2
+      local sin = half_angle.sin
+      return Quaternion(
+          half_angle.cos,
+          sin * aa.axis.x,
+          sin * aa.axis.y,
+          sin * aa.axis.z
+      )
+
+    method create( rotation:Rotation )->Quaternion
+      local radians = rotation.radians / 2
+
+      local ax = radians.x.cos
+      local ay = radians.x.sin
+      local bx = radians.y.cos
+      local by = radians.y.sin
+      local cy = radians.z.sin
+      local cx = radians.z.cos
+
+      local bxcx = bx * cx
+      local bycx = by * cx
+      local bxcy = bx * cy
+      local bycy = by * cy
+
+      return Quaternion(
+          (ay * bxcx) - (ax * bycy),
+          (ax * bycx) + (ay * bxcy),
+          (ax * bxcy) - (ay * bycx),
+          (ax * bxcx) + (ay * bycy)
+      ).normalized
+
+
+    method create( m:Matrix )
+      local result = Quaternion()
+      const diagonal = m[0] + m[5] + m[10] + 1
+
+      if (diagonal > 0.0)
+        local scale = Math.sqrt( diagonal ) * 2.0
+
+        result.x = (m[6] - m[9]) / scale
+        result.y = (m[8] - m[2]) / scale
+        result.z = (m[1] - m[4]) / scale
+        result.w = 0.25 * scale
+
+      else
+        if (m[0]>m[5] and m[0]>m[10])
+          local scale = Math.sqrt(1.0 + m[0] - m[5] - m[10]) * 2.0
+
+          result.x = scale / 4
+          result.y = (m[4] + m[1]) / scale
+          result.z = (m[2] + m[8]) / scale
+          result.w = (m[6] - m[9]) / scale
+
+        elseIf (m[5]>m[10])
+          local scale = Math.sqrt(1.0 + m[5] - m[0] - m[10]) * 2.0
+
+          result.x = (m[4] + m[1]) / scale
+          result.y = scale / 4
+          result.z = (m[9] + m[6]) / scale
+          result.w = (m[8] - m[2]) / scale
+
+        else
+          local scale = Math.sqrt( 1.0 + m[10] - m[0] - m[5] ) * 2
+
+          result.x = (m[8] + m[2]) / scale
+          result.y = (m[9] + m[6]) / scale
+          result.z = scale / scale
+          result.w = (m[1] - m[4]) / scale
+        endIf
+      endIf
+
+      return result.normalized
+
+    method identity->Quaternion
+      return Quaternion(0,0,0,1)
+
+    method between( from:XYZ, to:XYZ )->Quaternion
+      from.normalized()
+      to.normalized()
+      local d = from.dot( to )
+
+      if (d >= 1)
+        return identity
+
+      elseIf (d <= -1)
+        local axis = XYZ( 1, 0, 0 )
+        axis = axis.cross( from )
+        if (axis.magnitude == 0)
+          axis = XYZ( 0, 1, 0 )
+          axis = axis.cross( from )
+        endIf
+        return Quaternion( axis.x, axis.y, axis.z, 0 ).normalized
+
+      endIf
+
+      local root = Math.sqrt( (1+d)*2 )
+      local c = from.cross( to ) * (1 / root)
+      return Quaternion( c.x, c.y, c.z, root / 2 ).normalized
+
+
+  METHODS
+    method operator==( other:Quaternion )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
+
+    method operator*( other:Quaternion )->Quaternion
+      return Quaternion(
+          (other.w * x) + (other.x * w) + (other.y * z) - (other.z * y),
+          (other.w * y) + (other.y * w) + (other.z * x) - (other.x * z),
+          (other.w * z) + (other.z * w) + (other.x * y) - (other.y * x),
+          (other.w * w) - (other.x * x) - (other.y * y) - (other.z * z)
+      )
+
+    method operator*( n:Real64 )->Quaternion
+      return Quaternion( n*x, n*y, n*z, n*w )
+
+    method operator/( n:Real64 )->Quaternion
+      return Quaternion( x/n, y/n, z/n, w/n )
+
+    method operator+( other:Quaternion )->Quaternion
+      return Quaternion( x+other.x, y+other.y, z+other.z, w+other.w )
+
+    method to_matrix( pivot:XYZ )->Matrix
+      return Matrix(
+          1     - 2*y*y - 2*z*z,
+          2*x*y + 2*z*w,
+          2*x*z - 2*y*w,
+          0,
+
+          2*x*y - 2*z*w,
+          1     - 2*x*x - 2*z*z,
+          2*z*y + 2*x*w,
+          0
+
+          2*x*z + 2*y*w,
+          2*z*y - 2*x*w,
+          1     - 2*x*x - 2*y*y,
+          0,
+
+          pivot.x,
+          pivot.y,
+          pivot.z,
+          1
+      )
+
+    method to_matrix( pivot:XYZ, position:XYZ )->Matrix
+      local m = Matrix(
+          1     - 2*Y*Y - 2*Z*Z,
+          2*X*Y + 2*Z*W,
+          2*X*Z - 2*Y*W,
+          0,
+
+          2*X*Y - 2*Z*W,
+          1     - 2*X*X - 2*Z*Z,
+          2*Z*Y + 2*X*W,
+          0,
+
+          2*X*Z + 2*Y*W,
+          2*Z*Y - 2*X*W,
+          1     - 2*X*X - 2*Y*Y,
+          0
+      )
+
+      m[12] = -m[0]*pivot.x - m[4]*pivot.y - m[8]*pivot.z  + (pivot.x - position.x)
+      m[13] = -m[1]*pivot.x - m[5]*pivot.y - m[9]*pivot.z  + (pivot.y - position.y)
+      m[14] = -m[2]*pivot.x - m[6]*pivot.y - m[10]*pivot.z + (pivot.z - position.z)
+      m[15] = 1
+
+      return m
+
+    method inverted->Quaternion
+      return Quaternion( -x, -y, -z, w )
+
+    method matches( other:Quaternion, tolerance:Real64 )->Logical
+      return (Math.abs(x - other.x) <= tolerance) and
+             (Math.abs(y - other.y) <= tolerance) and
+             (Math.abs(z - other.z) <= tolerance) and
+             (Math.abs(w - other.w) <= tolerance)
+
+    method normalized->Quaternion
+      local n = x*x + y*y + z*z + w*w
+      if (n == 1) return this
+      return this * (1.0 / Math.sqrt(n))
+
+    method linear_tween( target:Quaternion, t:Real64 )->Quaternion
+      return this * (1 - t) + target * t
+
+    method tween( target:Quaternion, t:Real64, threshold=0.05:Real64 )->Quaternion
+      local angle = this.dot( target )
+
+      local source = this
+      if (angle < 0)
+        source *= -1
+        angle  *= -1
+      endIf
+
+      if (angle <= (1-threshold))
+        local theta = Math.acos( angle )
+        local inverse_sin_theta = 1 / Math.sin(theta)
+        local scale = Math.sin( theta * (1-t) ) * inverse_sin_theta
+        local inverse_scale = Math.sin(theta * t) * inverse_sin_theta
+        return (source*scale) + (target*inverse_scale)
+      else
+        return linear_tween( target,t )
+      endIf
+
+    method dot( other:Quaternion )->Quaternion
+      return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w)
+
+    method to->AxisAngle
+      local scale = Math.sqrt( x*x + y*y + z*z )
+      if (scale <= 0.00000001 or w > 1 or w < -1)
+        return AxisAngle( XYZ(0,1,0), 0 )
+      else
+        return AxisAngle( XYZ(x/scale,y/scale,z/scale), 2 * Math.acos(w) )
+      endIf
+
+    method to->Rotation
+      local sqw  = w * w
+      local sqx  = x * x
+      local sqy  = y * y
+      local sqz  = z * z
+      local test = 2.0 * (y*w - x*z)
+
+      if ((test-1).abs <= 0.000001)
+        return Rotation.radians(
+            0,
+            pi / 2,
+            (-2*Math.atan2(x, w))
+        )
+      elseIf ((test+1).abs <= 0.000001)
+        return Rotation.radians(
+            0
+            pi/2,
+            (2*Math.atan2(x,w))
+        )
+      else
+        return Rotation.radians(
+            Math.atan2( 2 * (y*z +x*w),(-sqx - sqy + sqz + sqw) )
+            Math.asin( test.clamped( -1, 1 ) )
+            Math.atan2( 2 * (x*y +z*w),(sqx - sqy - sqz + sqw) )
+        )
+      endIf
+
+    method operator*( v:XYZ )->XYZ
+      local qv  = XYZ( x, y, z )
+      local uv  = qv.cross( v )
+      local uuv = qv.cross( uv )
+      uv  *= w * 2
+      uuv *= 2
+      return v + uv + uuv
+
+endClass
+

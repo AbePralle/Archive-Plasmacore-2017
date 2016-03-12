@@ -1,0 +1,29 @@
+module Plasmacore
+
+class AxisAngle( axis:XYZ, angle:Radians ) [compound]
+  GLOBAL METHODS
+    method create( axis:XYZ, angle:Degrees )->AxisAngle
+      return AxisAngle( axis, angle->Radians )
+endClass
+
+class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
+  # Represents a Euler angle rotation.
+  GLOBAL METHODS
+    method degrees( x:Real64, y:Real64, z:Real64 )->Rotation [macro]
+      Rotation( Degrees(x), Degrees(z), Degrees(z) )
+
+    method radians( x:Real64, y:Real64, z:Real64 )->Rotation
+      return Rotation( Radians(x)->Degrees, Radians(y)->Degrees, Radians(z)->Degrees )
+
+  METHODS
+    method to_degrees->XYZ
+      return XYZ( x.value, y.value, z.value )
+
+    method to_radians->XYZ
+      return XYZ( x->Radians.value, y->Radians.value, z->Radians.value )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+
+endClass
+
