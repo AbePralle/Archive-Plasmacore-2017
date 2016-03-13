@@ -2,6 +2,15 @@ using Plasmacore
 
 println "Rogue Launched!"
 
+MessageManager.add_listener( "some_button_clicked",
+  function(m:Message)
+    local n = Random.next_int32(3)
+    SweetWindowViewLogic.clear_color = select(n){ 0:Color.RED, 1:Color.GREEN || Color.BLUE }
+    Message("add_result").set_string( "color",
+      select(n){ 0:"Red", 1:"Green" || "Blue" } ).send
+  endFunction
+)
+
 TextureManager.loaders[ "red_box" ] =
   function( texture:Texture )
     println "callback loading texture " + texture.name
@@ -9,10 +18,24 @@ TextureManager.loaders[ "red_box" ] =
 
 local window = Window( "MainWindow", GreenBlue() )
 window.show
+
+local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
+sweet_window.show
+
+
 println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
 local bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
 println bitmap.size
 
+
+class SweetWindowViewLogic : ViewLogic
+  GLOBAL PROPERTIES
+    clear_color = Color.YELLOW : Int32
+
+  METHODS
+    method draw
+      Graphics.clear( clear_color )
+endClass
 
 class GreenBlue : ViewLogic
   PROPERTIES

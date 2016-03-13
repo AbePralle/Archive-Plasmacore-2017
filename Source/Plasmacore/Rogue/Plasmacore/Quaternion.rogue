@@ -77,10 +77,7 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
 
       return result.normalized
 
-    method identity->Quaternion
-      return Quaternion(0,0,0,1)
-
-    method between( from:XYZ, to:XYZ )->Quaternion
+    method create( from:XYZ, to:XYZ )->Quaternion
       from.normalized()
       to.normalized()
       local d = from.dot( to )
@@ -104,6 +101,9 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
       return Quaternion( c.x, c.y, c.z, root / 2 ).normalized
 
 
+    method identity->Quaternion
+      return Quaternion(0,0,0,1)
+
   METHODS
     method operator==( other:Quaternion )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
@@ -116,14 +116,22 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           (other.w * w) - (other.x * x) - (other.y * y) - (other.z * z)
       )
 
+    method operator+( other:Quaternion )->Quaternion
+      return Quaternion( x+other.x, y+other.y, z+other.z, w+other.w )
+
     method operator*( n:Real64 )->Quaternion
       return Quaternion( n*x, n*y, n*z, n*w )
 
+    method operator*( v:XYZ )->XYZ
+      local qv  = XYZ( x, y, z )
+      local uv  = qv.cross( v )
+      local uuv = qv.cross( uv )
+      uv  *= w * 2
+      uuv *= 2
+      return v + uv + uuv
+
     method operator/( n:Real64 )->Quaternion
       return Quaternion( x/n, y/n, z/n, w/n )
-
-    method operator+( other:Quaternion )->Quaternion
-      return Quaternion( x+other.x, y+other.y, z+other.z, w+other.w )
 
     method to_matrix( pivot:XYZ )->Matrix
       return Matrix(
@@ -246,14 +254,6 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
             Math.atan2( 2 * (x*y +z*w),(sqx - sqy - sqz + sqw) )
         )
       endIf
-
-    method operator*( v:XYZ )->XYZ
-      local qv  = XYZ( x, y, z )
-      local uv  = qv.cross( v )
-      local uuv = qv.cross( uv )
-      uv  *= w * 2
-      uuv *= 2
-      return v + uv + uuv
 
 endClass
 

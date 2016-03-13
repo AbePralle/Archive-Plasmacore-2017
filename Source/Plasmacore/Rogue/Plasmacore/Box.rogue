@@ -48,4 +48,16 @@ class Box( position:XY, size:XY ) [compound]
     method y->Real64 [macro]
       this.position.y
 
+    method x1->Real64 [macro]
+      this.position.x
+
+    method y1->Real64 [macro]
+      this.position.y
+
+    method x2->Real64
+      return this.position.x + this.size.x
+
+    method y2->Real64
+      return this.position.y + this.size.y
+
 endClass

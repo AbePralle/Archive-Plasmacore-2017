@@ -12,17 +12,70 @@ class XY( x:Real64, y:Real64 ) [compound]
       return XY( m * angle.cos, m * angle.sin )
 
   METHODS
+    method abs->XY
+      return XY( select{x>=0:x||-x}, select{y>=0:y||-y} )
+
+    method ceiling->XY
+      return XY( Math.ceiling(x), Math.ceiling(y) )
+
+    method clamped( box:Box )->XY
+      # Adjusts this point to be within the boundaries of the given box.
+      local vx = x
+      local vy = y
+      local x1 = box.x1
+      local y1 = box.y1
+      local x2 = box.x2
+      local y2 = box.y2
+
+      if (vx < x1)     vx = x1
+      elseIf (vx > x2) vx = x2
+
+      if (vy < y1)     vy = y1
+      elseIf (vy > y2) vy = y2
+
+      return XY(vx,vy)
+
+    method cross( other:XY )->Real64
+      return x * other.y - y * other.x
+
     method degrees->Degrees [macro]
       Degrees( this.radians )
+
+    method distance_to( other:XY )->Real64
+      return (other - this).magnitude
+
+    method dot( other:XY )->Real64
+      return x * other.x + y * other.y
 
     method floor->XY
       return XY( Math.floor(x), Math.floor(y) )
 
-    method magnitude->Real64
-      return Math.sqrt( x*x + y*y )
+    method has_magnitude_greater_than( n:Real64 )->Logical
+      # Equivalent to and faster than v.magnitude >= n
+      return x*x + y*y >= n*n
+
+    method has_magnitude_less_than( n:Real64 )->Logical
+      # Equivalent to and faster than v.magnitude <= n
+      return x*x + y*y <= n*n
+
+    method magnitude->Real64 [macro]
+      Math.sqrt( x*x + y*y )
 
     method magnitude_squared->Real64
       return x*x + y*y
+
+    method max->Real64
+      return select{ x>=y:x || y }
+
+    method min->Real64
+      return select{ x<=y:x || y }
+
+    method normal->XY
+      # Returns the normal of the this vector.
+      return XY( -y, x )
+
+    method normalized->XY [macro]
+      XY( 1.0, this.radians )
 
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
@@ -63,8 +116,27 @@ class XY( x:Real64, y:Real64 ) [compound]
     method operator^( value:Real64 )->XY
       return XY( x^value, y^value )
 
+    method parallelum( axis:XY )->XY
+      # Returns the component of this vector that lies along the axis defined
+      # by the parameter.
+      return (this.dot(axis) / axis.dot(axis)) * axis
+
+    method perpendiculum( axis:XY )->XY
+      # Returns the component of this vector that lies perpendicular to the axis defined
+      # by the parameter.
+      return this - this.parallelum( axis )
+
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
+
+    method rotated( angle:Degrees )->XY [macro]
+      XY( this.magnitude, angle )
+
+    method rotated( angle:Radians )->XY [macro]
+      XY( this.magnitude, angle )
+
+    method round->XY
+      return (this + 0.5).floor
 
     method to->String
       return "[$,$]" (x,y)
@@ -74,5 +146,27 @@ class XY( x:Real64, y:Real64 ) [compound]
 
     method yv->XY
       return XY(0,y)
+
+    method yx->XY
+      return XY(y,x)
+
+  GLOBAL METHODS
+    method operator+( value:Real64, v:XY )->XY
+      return XY( value+v.x, value+v.y )
+
+    method operator-( value:Real64, v:XY )->XY
+      return XY( value-v.x, value-v.y )
+
+    method operator*( value:Real64, v:XY )->XY
+      return XY( value*v.x, value*v.y )
+
+    method operator/( value:Real64, v:XY )->XY
+      return XY( value/v.x, value/v.y )
+
+    method operator%( value:Real64, v:XY )->XY
+      return XY( value%v.x, value%v.y )
+
+    method operator^( value:Real64, v:XY )->XY
+      return XY( value^v.x, value^v.y )
 endClass
 
