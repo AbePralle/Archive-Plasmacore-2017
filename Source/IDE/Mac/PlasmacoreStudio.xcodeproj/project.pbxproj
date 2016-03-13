@@ -12,6 +12,8 @@
 		309EFD8A1C6FFD1B00FB5651 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 309EFD891C6FFD1B00FB5651 /* main.m */; };
 		309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */; };
 		309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 309EFD8D1C6FFD1B00FB5651 /* MainMenu.xib */; };
+		30AB98871C94F0FC00B0A595 /* SweetWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30AB98851C94F0FC00B0A595 /* SweetWindow.mm */; };
+		30AB98881C94F0FC00B0A595 /* SweetWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30AB98861C94F0FC00B0A595 /* SweetWindow.xib */; };
 		30C73B191C7AC6040009C7C4 /* PlasmacoreMessageManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */; };
 		30CB045F1C76674000A767FC /* PlasmacoreMessage.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30CB045E1C76674000A767FC /* PlasmacoreMessage.mm */; };
 		30CB04621C77C69300A767FC /* PlasmacoreResourceBank.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30CB04611C77C69300A767FC /* PlasmacoreResourceBank.mm */; };
@@ -123,6 +125,9 @@
 		309EFD8B1C6FFD1B00FB5651 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		309EFD8E1C6FFD1B00FB5651 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		309EFD901C6FFD1B00FB5651 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30AB98841C94F0FC00B0A595 /* SweetWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SweetWindow.h; sourceTree = "<group>"; };
+		30AB98851C94F0FC00B0A595 /* SweetWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SweetWindow.mm; sourceTree = "<group>"; };
+		30AB98861C94F0FC00B0A595 /* SweetWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SweetWindow.xib; sourceTree = "<group>"; };
 		30C73B171C7AC6040009C7C4 /* PlasmacoreMessageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreMessageManager.h; path = ../../../Plasmacore/Cocoa/PlasmacoreMessageManager.h; sourceTree = "<group>"; };
 		30C73B181C7AC6040009C7C4 /* PlasmacoreMessageManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlasmacoreMessageManager.mm; path = ../../../Plasmacore/Cocoa/PlasmacoreMessageManager.mm; sourceTree = "<group>"; };
 		30CB045D1C76674000A767FC /* PlasmacoreMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlasmacoreMessage.h; path = ../../../Plasmacore/Cocoa/PlasmacoreMessage.h; sourceTree = "<group>"; };
@@ -259,6 +264,9 @@
 		309EFD791C6FFD1B00FB5651 = {
 			isa = PBXGroup;
 			children = (
+				30AB98841C94F0FC00B0A595 /* SweetWindow.h */,
+				30AB98851C94F0FC00B0A595 /* SweetWindow.mm */,
+				30AB98861C94F0FC00B0A595 /* SweetWindow.xib */,
 				30E2F91D1C703EDC00F89F60 /* AppKit.framework */,
 				309EFD841C6FFD1B00FB5651 /* PlasmacoreStudio */,
 				309EFD831C6FFD1B00FB5651 /* Products */,
@@ -575,6 +583,7 @@
 			files = (
 				30CB055E1C811D5E00A767FC /* Assets in Resources */,
 				309EFD8C1C6FFD1B00FB5651 /* Assets.xcassets in Resources */,
+				30AB98881C94F0FC00B0A595 /* SweetWindow.xib in Resources */,
 				309EFD8F1C6FFD1B00FB5651 /* MainMenu.xib in Resources */,
 				30E2F96E1C78E6AF00F89F60 /* MainWindow.xib in Resources */,
 				30CB04661C7E576200A767FC /* FontSystem17.png in Resources */,
@@ -617,6 +626,7 @@
 				30E2F9371C715B3200F89F60 /* StarbrightGLRenderer.cpp in Sources */,
 				30E2F9581C76409900F89F60 /* PlasmacoreView.mm in Sources */,
 				30E2F91C1C70187200F89F60 /* RogueProgram.cpp in Sources */,
+				30AB98871C94F0FC00B0A595 /* SweetWindow.mm in Sources */,
 				30CB046A1C7E69C500A767FC /* ImageIO.cpp in Sources */,
 				30E2F9491C715B5500F89F60 /* SuperCPPStringBuilder.cpp in Sources */,
 				30E2F9571C76409900F89F60 /* Plasmacore.mm in Sources */,

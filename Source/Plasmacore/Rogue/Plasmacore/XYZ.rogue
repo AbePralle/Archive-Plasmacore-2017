@@ -9,6 +9,16 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
       return XYZ( xy.x, xy.y, z )
 
   METHODS
+    method cross( other:XYZ )->XYZ
+      return XYZ(
+          y*other.z - (z*other.y),
+          z*other.x - (x*other.z),
+          x*other.y - (y*other.x)	
+      )
+
+    method dot( other:XYZ )->Real64
+      return x*other.x + y*other.y + z*other.z
+
     method operator+( other:XYZ )->XYZ
       return XYZ( x+other.x, y+other.y, z+other.z )
 
