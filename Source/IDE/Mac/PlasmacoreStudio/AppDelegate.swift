@@ -9,19 +9,22 @@
 import Cocoa
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
-
+class AppDelegate: NSObject, NSApplicationDelegate
+{
   @IBOutlet weak var window: NSWindow!
 
+  func applicationDidFinishLaunching( notification:NSNotification )
+  {
+    Plasmacore.singleton.sayHello();
 
-  func applicationDidFinishLaunching(aNotification: NSNotification) {
+    hello_c( "What are the haps my friends?".cStringUsingEncoding(NSUTF8StringEncoding) );
+
     // Insert code here to initialize your application
   }
 
-  func applicationWillTerminate(aNotification: NSNotification) {
+  func applicationWillTerminate( notification:NSNotification)
+  {
     // Insert code here to tear down your application
   }
-
-
 }
 

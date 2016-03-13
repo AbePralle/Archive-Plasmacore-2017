@@ -10,6 +10,8 @@
 		308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308B60091C960D1300F0E1DF /* AppDelegate.swift */; };
 		308B600C1C960D1300F0E1DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308B600B1C960D1300F0E1DF /* Assets.xcassets */; };
 		308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 308B600D1C960D1300F0E1DF /* MainMenu.xib */; };
+		30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201A1C961732007347E0 /* Plasmacore.swift */; };
+		30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201D1C961C00007347E0 /* RogueInterface.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,10 @@
 		308B600B1C960D1300F0E1DF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		308B600E1C960D1300F0E1DF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		308B60101C960D1300F0E1DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30DB201A1C961732007347E0 /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Plasmacore.swift; sourceTree = "<group>"; };
+		30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueBridgingHeader.h; sourceTree = "<group>"; };
+		30DB201D1C961C00007347E0 /* RogueInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RogueInterface.cpp; sourceTree = "<group>"; };
+		30DB201E1C961C00007347E0 /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueInterface.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +56,10 @@
 		308B60081C960D1300F0E1DF /* PlasmacoreStudio */ = {
 			isa = PBXGroup;
 			children = (
+				30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */,
+				30DB201D1C961C00007347E0 /* RogueInterface.cpp */,
+				30DB201E1C961C00007347E0 /* RogueInterface.h */,
+				30DB201A1C961732007347E0 /* Plasmacore.swift */,
 				308B60091C960D1300F0E1DF /* AppDelegate.swift */,
 				308B600B1C960D1300F0E1DF /* Assets.xcassets */,
 				308B600D1C960D1300F0E1DF /* MainMenu.xib */,
@@ -128,6 +138,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
+				30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */,
 				308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -235,6 +247,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = PlasmacoreStudio/RogueBridgingHeader.h;
 			};
 			name = Debug;
 		};
@@ -247,6 +260,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = PlasmacoreStudio/RogueBridgingHeader.h;
 			};
 			name = Release;
 		};
@@ -269,6 +283,7 @@
 				308B60151C960D1300F0E1DF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
