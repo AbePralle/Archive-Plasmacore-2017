@@ -8,5 +8,10 @@ class Plasmacore
   {
     NSLog( "Hello!\n" );
   }
+
+  class func message( type:String )->PlasmacoreMessage
+  {
+    return PlasmacoreMessage( type:type );
+  }
 }
 

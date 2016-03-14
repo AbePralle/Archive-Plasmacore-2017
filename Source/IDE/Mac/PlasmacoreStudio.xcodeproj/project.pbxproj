@@ -12,6 +12,7 @@
 		308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 308B600D1C960D1300F0E1DF /* MainMenu.xib */; };
 		30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201A1C961732007347E0 /* Plasmacore.swift */; };
 		30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201D1C961C00007347E0 /* RogueInterface.cpp */; };
+		30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueBridgingHeader.h; sourceTree = "<group>"; };
 		30DB201D1C961C00007347E0 /* RogueInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RogueInterface.cpp; sourceTree = "<group>"; };
 		30DB201E1C961C00007347E0 /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueInterface.h; sourceTree = "<group>"; };
+		30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlasmacoreMessage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 		308B60081C960D1300F0E1DF /* PlasmacoreStudio */ = {
 			isa = PBXGroup;
 			children = (
+				30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */,
 				30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */,
 				30DB201D1C961C00007347E0 /* RogueInterface.cpp */,
 				30DB201E1C961C00007347E0 /* RogueInterface.h */,
@@ -140,6 +143,7 @@
 			files = (
 				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
 				30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */,
+				30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */,
 				308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
