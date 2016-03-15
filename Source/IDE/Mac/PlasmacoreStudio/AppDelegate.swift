@@ -17,7 +17,11 @@ class AppDelegate: NSObject, NSApplicationDelegate
   {
     Plasmacore.singleton.sayHello();
 
-    hello_c( "What are the haps my friends?".cStringUsingEncoding(NSUTF8StringEncoding) );
+    let mesg = PlasmacoreMessage( type: "Test" )
+    mesg.setString( "stuff", value: "Whatever" )
+    NSLog( "type: \(mesg.type)" )
+    NSLog( "id: \(mesg.message_id)" )
+    NSLog( "stuff: \(mesg.getString("stuff"))" )
 
     // Insert code here to initialize your application
   }
