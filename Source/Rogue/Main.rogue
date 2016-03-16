@@ -5,9 +5,9 @@ println "Rogue Launched!"
 MessageManager.add_listener( "some_button_clicked",
   function(m:Message)
     local n = Random.next_int32(3)
-    SweetWindowViewLogic.clear_color = select(n){ 0:Color.RED, 1:Color.GREEN || Color.BLUE }
+    SweetWindowViewLogic.clear_color = select(n){ 0:Color.RED || 1:Color.GREEN || Color.BLUE }
     Message("add_result").set_string( "color",
-      select(n){ 0:"Red", 1:"Green" || "Blue" } ).send
+      select(n){ 0:"Red" || 1:"Green" || "Blue" } ).send
   endFunction
 )
 
