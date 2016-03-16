@@ -35,6 +35,35 @@ class PlasmacoreMessage
     writeIntX( message_id )
   }
 
+  /*
+  func getBytes( name:String, default_value:[Int]() )->Int
+  {
+    if let offset = entries[ name ]
+    {
+      position = offset
+      switch (readIntX())
+      {
+      case DataType.REAL64:
+        return Int(readReal64())
+
+      case DataType.INT64:
+        return Int(readInt64X())
+
+      case DataType.INT32:
+        return readIntX()
+
+      case DataType.LOGICAL:
+        return readIntX()
+
+      default:
+        return default_value
+      }
+    }
+    return default_value
+
+  }
+  */
+
   func getInt32( name:String, default_value:Int=0 )->Int
   {
     if let offset = entries[ name ]
@@ -135,6 +164,20 @@ class PlasmacoreMessage
       }
     }
     return default_value
+  }
+
+  func setBytes( name:String, value:[UInt8] )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.BYTES )
+    writeIntX( value.count )
+    for byte in value
+    {
+      writeIntX( Int(byte) )
+    }
+    return self
   }
 
   func setInt64( name:String, value:Int64 )->PlasmacoreMessage
