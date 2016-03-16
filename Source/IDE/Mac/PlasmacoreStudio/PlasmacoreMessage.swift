@@ -35,27 +35,172 @@ class PlasmacoreMessage
     writeIntX( message_id )
   }
 
-  func getString( name:String, default_value:String="" )->String
+  func getInt32( name:String, default_value:Int=0 )->Int
   {
-    var result = default_value
     if let offset = entries[ name ]
     {
       position = offset
-      switch (offset)
+      switch (readIntX())
+      {
+      case DataType.REAL64:
+        return Int(readReal64())
+
+      case DataType.INT64:
+        return Int(readInt64X())
+
+      case DataType.INT32:
+        return readIntX()
+
+      case DataType.LOGICAL:
+        return readIntX()
+
+      default:
+        return default_value
+      }
+    }
+    return default_value
+
+  }
+
+  func getInt64( name:String, default_value:Int64=0 )->Int64
+  {
+    if let offset = entries[ name ]
+    {
+      position = offset
+      switch (readIntX())
+      {
+      case DataType.REAL64:
+        return Int64(readReal64())
+
+      case DataType.INT64:
+        return readInt64X()
+
+      case DataType.INT32:
+        return Int64(readIntX())
+
+      case DataType.LOGICAL:
+        return Int64(readIntX())
+
+      default:
+        return default_value
+      }
+    }
+    return default_value
+
+  }
+
+  func getLogical( name:String, default_value:Bool=false )->Bool
+  {
+    return getInt32( name, default_value:(default_value ? 1 : 0) ) != 0
+  }
+
+  func getReal64( name:String, default_value:Double=0.0 )->Double
+  {
+    if let offset = entries[ name ]
+    {
+      position = offset
+      switch (readIntX())
+      {
+      case DataType.REAL64:
+        return readReal64()
+
+      case DataType.INT64:
+        return Double(readInt64X())
+
+      case DataType.INT32:
+        return Double(readIntX())
+
+      case DataType.LOGICAL:
+        return Double(readIntX())
+
+      default:
+        return default_value
+      }
+    }
+    return default_value
+
+  }
+
+  func getString( name:String, default_value:String="" )->String
+  {
+    if let offset = entries[ name ]
+    {
+      position = offset
+      switch (readIntX())
       {
         case DataType.STRING:
-          result = readString()
+          return readString()
         default:
-          break
+          return default_value
       }
-      position = data.count
     }
-    return result
+    return default_value
   }
+
+  func setInt64( name:String, value:Int64 )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.INT64 )
+    writeIntX( Int(value>>32) )
+    writeIntX( Int(value) )
+    return self
+  }
+
+  func setInt32( name:String, value:Int )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.INT32 )
+    writeIntX( value )
+    return self
+  }
+
+  func setLogical( name:String, value:Bool )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.LOGICAL )
+    writeIntX( value ? 1 : 0 )
+    return self
+  }
+
+  func setReal64( name:String, value:Double )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.REAL64 )
+    writeReal64( value )
+    return self
+  }
+
+  func setString( name:String, value:String )->PlasmacoreMessage
+  {
+    position = data.count
+    writeString( name )
+    entries[ name ] = position
+    writeIntX( DataType.STRING )
+    writeString( value )
+    return self
+  }
+
+  //---------------------------------------------------------------------------
+  // PRIVATE
+  //---------------------------------------------------------------------------
 
   func readByte()->Int
   {
     return (position < data.count) ?  Int(data[position++]) : 0
+  }
+
+  func readInt64X()->Int64
+  {
+    let result = Int64( readIntX() ) << 32
+    return result | Int64( UInt32(readIntX()) )
   }
 
   func readInt32()->Int
@@ -102,6 +247,13 @@ class PlasmacoreMessage
     }
   }
 
+  func readReal64()->Double
+  {
+    var n = UInt64( readInt32() ) << 32
+    n = n | UInt64( UInt32(readInt32()) )
+    return Double._fromBitPattern( n )
+  }
+
   func readString()->String
   {
     string_buffer.removeAll( keepCapacity:true )
@@ -113,33 +265,15 @@ class PlasmacoreMessage
     return String( utf16CodeUnits:string_buffer, count:count )
   }
 
-  func setString( name:String, value:String )->PlasmacoreMessage
-  {
-    writeString( name )
-    entries[ name ] = position
-    writeIntX( DataType.STRING )
-    writeString( value )
-    return self
-  }
-
-  func setInt32( name:String, value:Int )->PlasmacoreMessage
-  {
-    writeString( name )
-    entries[ name ] = position
-    writeIntX( DataType.INT32 )
-    writeIntX( value )
-    return self
-  }
-
   private func writeByte( value:Int )
   {
-    if (position == data.count)
+    if (position++ == data.count)
     {
       data.append( UInt8(value) )
     }
     else
     {
-      data[ position++ ] = UInt8( value )
+      data[ position-1 ] = UInt8( value )
     }
   }
 
@@ -149,6 +283,12 @@ class PlasmacoreMessage
     writeByte( value >> 16 )
     writeByte( value >> 8  )
     writeByte( value )
+  }
+
+  private func writeInt64X( value:Int64 )
+  {
+    writeIntX( Int(value>>32) )
+    writeIntX( Int(value) )
   }
 
   private func writeIntX( value:Int )
@@ -180,6 +320,13 @@ class PlasmacoreMessage
       writeByte( 0xb0 )
       writeInt32( value )
     }
+  }
+
+  private func writeReal64( value:Double )
+  {
+    let bits = Double._BitsType( value )
+    writeInt32( Int(bits>>32) )
+    writeInt32( Int(bits) )
   }
 
   private func writeString( value:String )
