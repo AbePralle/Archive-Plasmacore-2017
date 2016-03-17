@@ -84,8 +84,9 @@
 		30CB06551C9A18BC00A767FC /* libLibJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB058A1C9A150800A767FC /* libLibJPEG.a */; };
 		30CB06561C9A18BC00A767FC /* libLibPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB05921C9A151C00A767FC /* libLibPNG.a */; };
 		30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201A1C961732007347E0 /* Plasmacore.swift */; };
-		30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201D1C961C00007347E0 /* RogueInterface.cpp */; };
+		30DB201F1C961C00007347E0 /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201D1C961C00007347E0 /* RogueInterface.mm */; };
 		30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */; };
+		30DB20241C9B08FE007347E0 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30DB20231C9B08FE007347E0 /* Assets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -200,10 +201,11 @@
 		30CB06531C9A188600A767FC /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		30CB06571C9A18BC00A767FC /* PlasmacoreStudio.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PlasmacoreStudio.xcodeproj; sourceTree = "<group>"; };
 		30DB201A1C961732007347E0 /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Plasmacore.swift; sourceTree = "<group>"; };
-		30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueBridgingHeader.h; sourceTree = "<group>"; };
-		30DB201D1C961C00007347E0 /* RogueInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RogueInterface.cpp; sourceTree = "<group>"; };
+		30DB201C1C961C00007347E0 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		30DB201D1C961C00007347E0 /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RogueInterface.mm; sourceTree = "<group>"; };
 		30DB201E1C961C00007347E0 /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RogueInterface.h; sourceTree = "<group>"; };
 		30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlasmacoreMessage.swift; sourceTree = "<group>"; };
+		30DB20231C9B08FE007347E0 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../Assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -237,6 +239,7 @@
 		308B5FFD1C960D1300F0E1DF = {
 			isa = PBXGroup;
 			children = (
+				30DB20231C9B08FE007347E0 /* Assets */,
 				30CB06571C9A18BC00A767FC /* PlasmacoreStudio.xcodeproj */,
 				30CB06531C9A188600A767FC /* libz.tbd */,
 				30CB05B51C9A169200A767FC /* LibJPEG */,
@@ -264,8 +267,8 @@
 			isa = PBXGroup;
 			children = (
 				30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */,
-				30DB201C1C961C00007347E0 /* RogueBridgingHeader.h */,
-				30DB201D1C961C00007347E0 /* RogueInterface.cpp */,
+				30DB201C1C961C00007347E0 /* Bridging-Header.h */,
+				30DB201D1C961C00007347E0 /* RogueInterface.mm */,
 				30DB201E1C961C00007347E0 /* RogueInterface.h */,
 				30DB201A1C961732007347E0 /* Plasmacore.swift */,
 				308B60091C960D1300F0E1DF /* AppDelegate.swift */,
@@ -534,6 +537,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				308B600C1C960D1300F0E1DF /* Assets.xcassets in Resources */,
+				30DB20241C9B08FE007347E0 /* Assets in Resources */,
 				308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -565,7 +569,7 @@
 				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
 				30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */,
 				30CB05851C9A14DA00A767FC /* ImageIO.cpp in Sources */,
-				30DB201F1C961C00007347E0 /* RogueInterface.cpp in Sources */,
+				30DB201F1C961C00007347E0 /* RogueInterface.mm in Sources */,
 				30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */,
 				30CB057E1C9A135800A767FC /* SuperCPPCString.cpp in Sources */,
 				30CB057F1C9A135800A767FC /* SuperCPPDataBuilder.cpp in Sources */,
@@ -768,7 +772,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = PlasmacoreStudio/RogueBridgingHeader.h;
+				SWIFT_OBJC_BRIDGING_HEADER = "PlasmacoreStudio/Bridging-Header.h";
 				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Debug;
@@ -782,7 +786,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = PlasmacoreStudio/RogueBridgingHeader.h;
+				SWIFT_OBJC_BRIDGING_HEADER = "PlasmacoreStudio/Bridging-Header.h";
 				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Release;
@@ -847,6 +851,7 @@
 				30CB058D1C9A150800A767FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		30CB05931C9A151C00A767FC /* Build configuration list for PBXNativeTarget "LibPNG" */ = {
 			isa = XCConfigurationList;
@@ -855,6 +860,7 @@
 				30CB05951C9A151C00A767FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
