@@ -35,34 +35,49 @@ class PlasmacoreMessage
     writeIntX( message_id )
   }
 
-  /*
-  func getBytes( name:String, default_value:[Int]() )->Int
+  func getBytes( name:String )->[UInt8]
   {
     if let offset = entries[ name ]
     {
       position = offset
       switch (readIntX())
       {
-      case DataType.REAL64:
-        return Int(readReal64())
-
-      case DataType.INT64:
-        return Int(readInt64X())
-
-      case DataType.INT32:
-        return readIntX()
-
-      case DataType.LOGICAL:
-        return readIntX()
-
+      case DataType.BYTES:
+        let count = readIntX()
+        var buffer = [UInt8]()
+        buffer.reserveCapacity( count )
+        for _ in 1...count
+        {
+          buffer.append( UInt8(readByte()) )
+        }
+        return buffer
       default:
-        return default_value
+        break
       }
     }
-    return default_value
-
+    return [UInt8]()
   }
-  */
+
+  func getBytes( name:String, var buffer:[UInt8] )->[UInt8]
+  {
+    if let offset = entries[ name ]
+    {
+      position = offset
+      switch (readIntX())
+      {
+      case DataType.BYTES:
+        let count = readIntX()
+        buffer.reserveCapacity( count )
+        for _ in 1...count
+        {
+          buffer.append( UInt8(readByte()) )
+        }
+      default:
+        break
+      }
+    }
+    return buffer
+  }
 
   func getInt32( name:String, default_value:Int=0 )->Int
   {
