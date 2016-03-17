@@ -5,8 +5,10 @@
 extern "C" {
 #endif
 
-void RogueInterface_set_arg_count( int count );
-void RogueInterface_set_arg_value( int index, const char* value );
+void         RogueInterface_configure();
+void         RogueInterface_launch();
+void         RogueInterface_set_arg_count( int count );
+void         RogueInterface_set_arg_value( int index, const char* value );
 
 #ifdef __cplusplus
 } // extern "C"

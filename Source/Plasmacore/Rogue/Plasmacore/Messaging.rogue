@@ -18,6 +18,9 @@ class MessageManager [requisite singleton]
     next_id   = 1
     id_buffer = StringBuilder()
 
+    message_type_lookup = StringTable<<String>>()
+    # Maps StringBuilder to String
+
     incoming_id_to_name = Table<<Int32,String>>()
     incoming_name_to_id = Table<<String,Int32>>()
     outgoing_id_to_name = Table<<Int32,String>>()
@@ -54,11 +57,18 @@ class MessageManager [requisite singleton]
       local list = listeners[ message_type ]
       if (list) list.remove( listener )
 
+    method consolidate_type_name( name:String )->String
+      local consolidated = message_type_lookup[ name ]
+      if (consolidated) return consolidated
+      message_type_lookup[ name ] = name
+      return name
+
     method create_message( message_type:String, message_id=null:Int32? )->Message
       if (not message_id.exists)
         message_id = next_id
         ++next_id
       endIf
+
       outgoing_message.init( message_type, message_id.value )
       return outgoing_message
 
@@ -130,83 +140,40 @@ class Message
     DATA_TYPE_LOGICAL       = 5
     DATA_TYPE_BYTES         = 6
 
-  PROPERTIES
-    message_type : String
-    message_id   : Int32
-
   GLOBAL METHODS
     method create( name:String )->Message
       return MessageManager.create_message( name )
 
-  METHODS
-    method contains( name:String )->Logical
-      throw UnsupportedOperationError( "$::contains()" (type_name) )
-
-    method get_string( name:String, default="":String )->String
-      throw UnsupportedOperationError( "$::get_string()" (type_name) )
-
-    method get_string( name:String, buffer:StringBuilder )->StringBuilder
-      throw UnsupportedOperationError( "$::get_string()" (type_name) )
-
-    method get_real64( name:String, default=0:Real64 )->Real64
-      throw UnsupportedOperationError( "$::get_real64()" (type_name) )
-
-    method get_int64( name:String, default=0:Int64 )->Int64
-      throw UnsupportedOperationError( "$::get_int64()" (type_name) )
-
-    method get_int32( name:String, default=0:Int32 )->Int32
-      throw UnsupportedOperationError( "$::get_int32()" (type_name) )
-
-    method get_logical( name:String, default=false:Logical )->Logical
-      throw UnsupportedOperationError( "$::get_logical()" (type_name) )
-
-    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
-      throw UnsupportedOperationError( "$::get_bytes()" (type_name) )
-
-    method create_reply->Message
-      throw UnsupportedOperationError( "$::create_reply()" (type_name) )
-
-    method set_string( name:String, value:String )->this
-      throw UnsupportedOperationError( "$::set_string()" (type_name) )
-
-    method set_real64( name:String, value:Real64 )->this
-      throw UnsupportedOperationError( "$::set_real64()" (type_name) )
-
-    method set_int64( name:String, value:Int64 )->this
-      throw UnsupportedOperationError( "$::set_int64()" (type_name) )
-
-    method set_int32( name:String, value:Int32 )->this
-      throw UnsupportedOperationError( "$::set_int32()" (type_name) )
-
-    method set_logical( name:String, value:Logical )->this
-      throw UnsupportedOperationError( "$::set_logical()" (type_name) )
-
-    method set_bytes( name:String, bytes:Byte[] )->this
-      throw UnsupportedOperationError( "$::set_bytes()" (type_name) )
-
-    method send
-      throw UnsupportedOperationError( "$::send()" (type_name) )
-
-    method send_rsvp( callback:Function(Message) )
-      throw UnsupportedOperationError( "$::send_rsvp()" (type_name) )
-endClass
-
-class IncomingMessage : Message
   PROPERTIES
-    reader    = BufferedDataReader()
-    keys      = String[]
-    offsets   = Int32[]
+    message_type : String
+    message_id   : Int32
+    data         = Byte[]
+    reader       = BufferedDataReader( data )
+    writer       = BufferedDataWriter( data )
+
+    # Using arrays instead of tables to reduce dynamic allocation overhead
+    keys         = String[]
+    offsets      = Int32[]
 
   METHODS
     method init
-      
+
+    method init( new_type:String, message_id )
+      if (not sent) println "ERROR: unsent outgoing message of type '$'." (message_type)
+      message_type = MessageManager.consolidate_type_name( new_type )
+      sent = false
+      writer.clear
+
+      write_string( message_type )
+      writer.write_int32x( message_id )
+
     method init( source:DataReader )
       keys.clear
       offsets.clear
       local size = source.read_int32
-      source.read( reader.buffer.clear, size )
+      source.read( data.clear, size )
       reader.reset
-      message_type = MessageManager.incoming_id_to_name[ reader.read_int32x ]
+      message_type = reader.read_string
       message_id = reader.read_int32x
       while (index_another) noAction
 
@@ -385,46 +352,33 @@ class OutgoingMessage : Message
   METHODS
     method init
 
-    method init( new_type:String, message_id )
-      if (not sent) println "ERROR: unsent outgoing message of type '$'." (message_type)
-      message_type = new_type
-      sent = false
-      writer.clear
-
-      write_id( message_type )
-      writer.write_int32x( message_id )
-
-    method write_id( value:String )->this
-      writer.write_int32x( MessageManager.get_outgoing_id(value) )
-      return this
-
     method set_string( name:String, value:String )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
       return this
 
     method set_real64( name:String, value:Real64 )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
       return this
 
     method set_int64( name:String, value:Int64 )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
       return this
 
     method set_int32( name:String, value:Int32 )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
       return this
 
     method set_logical( name:String, value:Logical )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
       return this
 
     method set_bytes( name:String, bytes:Byte[] )->this
-      write_id( name )
+      write_string( name )
       writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
       forEach (b in bytes) writer.write_byte( b )
       return this

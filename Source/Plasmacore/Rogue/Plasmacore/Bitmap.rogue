@@ -14,7 +14,17 @@ class Bitmap
       init( XY(x,y), color )
 
     method init( file:File )
-      init( file.load_as_bytes )
+      if (file and file.filepath)
+        init( file.load_as_bytes )
+      else
+        if (not file)
+          println "Attempting to load Bitmap with null file reference."
+        else
+          println "Attempting to load Bitmap with null filepath."
+        endIf
+        init( XY(1,1) )
+        error = true
+      endIf
 
     method init( bytes:Byte[] )
       if (not decode(bytes))

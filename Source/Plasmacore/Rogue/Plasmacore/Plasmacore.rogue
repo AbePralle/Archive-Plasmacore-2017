@@ -46,5 +46,5 @@ class Plasmacore
       return native( "Plasmacore_find_asset( $name )" )->String
 endClass
 
-nativeCode RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension=0 );
+nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );
 
