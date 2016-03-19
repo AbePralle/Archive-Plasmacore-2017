@@ -79,7 +79,7 @@ class WindowManager [requisite singleton]
           local keycode   = m.get_int32( "keycode" )
           local unicode   = m.get_int32( "unicode" )
           local syscode   = m.get_int32( "syscode" )
-          local is_repeat = m.get_int32( "is_repeat" )
+          local is_repeat = m.get_logical( "is_repeat" )
           local is_press  = m.get_logical( "is_press" )
           if (not is_repeat) Keyboard.key_pressed[ keycode & 255 ] = is_press
 

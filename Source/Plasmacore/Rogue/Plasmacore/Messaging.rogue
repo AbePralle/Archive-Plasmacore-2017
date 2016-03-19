@@ -16,7 +16,7 @@ class MessageManager [requisite singleton]
     io_writer       = BufferedDataWriter( io_buffer )
 
     next_id   = 1
-    id_buffer = StringBuilder()
+    string_buffer = StringBuilder()
 
     message_type_lookup = StringTable<<String>>()
     # Maps StringBuilder to String
@@ -27,10 +27,10 @@ class MessageManager [requisite singleton]
     outgoing_name_to_id = Table<<String,Int32>>()
     new_outgoing_ids    = Int32[]
 
-    incoming_message = IncomingMessage()
+    incoming_message = Message()
       # Recycled for incoming messages
 
-    outgoing_message = OutgoingMessage()
+    outgoing_message = Message()
       # Recycled for outgoing messages
 
     listeners             = Table<<String,Function(Message)[]>>()
@@ -57,11 +57,18 @@ class MessageManager [requisite singleton]
       local list = listeners[ message_type ]
       if (list) list.remove( listener )
 
-    method consolidate_type_name( name:String )->String
+    method consolidated_type_name( name:String )->String
       local consolidated = message_type_lookup[ name ]
       if (consolidated) return consolidated
       message_type_lookup[ name ] = name
       return name
+
+    method consolidated_type_name( buffer:StringBuilder )->String
+      local consolidated = message_type_lookup[ buffer ]
+      if (consolidated) return consolidated
+      consolidated = buffer->String
+      message_type_lookup[ consolidated ] = consolidated
+      return consolidated
 
     method create_message( message_type:String, message_id=null:Int32? )->Message
       if (not message_id.exists)
@@ -82,16 +89,16 @@ class MessageManager [requisite singleton]
       new_outgoing_ids.add( new_id )
       return new_id
 
-    method send( m:OutgoingMessage )
-      message_builder.write_int32( m.writer.buffer.count )
-      message_builder.write( m.writer.buffer )
+    method send( m:Message )
+      message_builder.write_int32( m.data.count )
+      message_builder.write( m.data )
 
-    method send_rsvp( m:OutgoingMessage, callback:Function(Message) )
+    method send_rsvp( m:Message, callback:Function(Message) )
       send( m )
       reply_callbacks_by_id[ m.message_id ] = callback
 
     method update->Byte[] [requisite]
-      # 'io_reader' has already been set up to decode 'io_buffer', which 
+      # 'io_reader' has already been set up to decode 'io_buffer', which
       # in turn has already been filled with incoming message bytes by the
       # native layer.
       io_reader.reset
@@ -100,7 +107,7 @@ class MessageManager [requisite singleton]
       local new_id_count = io_reader.read_int32x
       forEach (1..new_id_count)
         local new_id = io_reader.read_int32x
-        local new_name = io_reader.read_string( id_buffer.clear )->String
+        local new_name = io_reader.read_string( string_buffer.clear )->String
         incoming_id_to_name[ new_id ] = new_name
         incoming_name_to_id[ new_name ] = new_id
       endForEach
@@ -115,7 +122,7 @@ class MessageManager [requisite singleton]
 
       # Finalize the outgoing message data.
       io_writer.clear
-      
+
       # First comes the header with any any new message type id definitions.
       io_writer.write_int32x( new_outgoing_ids.count )
       forEach (new_id in new_outgoing_ids)
@@ -155,16 +162,18 @@ class Message
     keys         = String[]
     offsets      = Int32[]
 
+    sent         : Logical
+
   METHODS
     method init
 
     method init( new_type:String, message_id )
       if (not sent) println "ERROR: unsent outgoing message of type '$'." (message_type)
-      message_type = MessageManager.consolidate_type_name( new_type )
+      message_type = MessageManager.consolidated_type_name( new_type )
       sent = false
       writer.clear
 
-      write_string( message_type )
+      writer.write_string( message_type )
       writer.write_int32x( message_id )
 
     method init( source:DataReader )
@@ -173,12 +182,15 @@ class Message
       local size = source.read_int32
       source.read( data.clear, size )
       reader.reset
-      message_type = reader.read_string
+      message_type = read_type_name
       message_id = reader.read_int32x
       while (index_another) noAction
 
     method contains( name:String )->Logical
       return keys.locate(name).exists
+
+    method create_reply->Message
+      return MessageManager.create_message( "<reply>", message_id )
 
     method get_string( name:String, default="":String )->String
       local i = keys.locate_last( name )
@@ -187,12 +199,12 @@ class Message
       reader.seek( offsets[i.value] )
       which (reader.read_int32x)
         case DATA_TYPE_STRING
-          return reader.read_string
+          return reader.read_string( MessageManager.string_buffer.clear )->String
         case DATA_TYPE_BYTES
           local count = reader.read_int32x
-          local buffer = StringBuilder( count )
-          forEach (1..count) buffer.print( reader.read->Character )
-          return buffer->String
+          MessageManager.string_buffer.clear
+          forEach (1..count) MessageManager.string_buffer.print( reader.read->Character )
+          return MessageManager.string_buffer->String
       endWhich
 
       return default
@@ -305,10 +317,50 @@ class Message
 
       return bytes
 
-    # INTERNAL USE
+    method set_string( name:String, value:String )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
+      return this
+
+    method set_real64( name:String, value:Real64 )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
+      return this
+
+    method set_int64( name:String, value:Int64 )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
+      return this
+
+    method set_int32( name:String, value:Int32 )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
+      return this
+
+    method set_logical( name:String, value:Logical )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
+      return this
+
+    method set_bytes( name:String, bytes:Byte[] )->this
+      writer.write_string( name )
+      writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
+      forEach (b in bytes) writer.write_byte( b )
+      return this
+
+    method send
+      MessageManager.send( this )
+      sent = true
+
+    method send_rsvp( callback:Function(Message) )
+      MessageManager.send_rsvp( this, callback )
+      sent = true
+
+    # INTERNAL USE ------------------------------------------------------------
+
     method index_another->Logical
       if (not reader.has_another) return false
-      local key    = MessageManager.incoming_id_to_name[ reader.read_int32x ]
+      local key    = read_type_name
       local offset = reader.position
       keys.add( key )
       offsets.add( offset )
@@ -338,57 +390,8 @@ class Message
       endWhich
       return true
 
-    method create_reply->Message
-      return MessageManager.create_message( "<reply>", message_id )
+    method read_type_name->String
+      return MessageManager.consolidated_type_name( reader.read_string(MessageManager.string_buffer.clear) )
 
-endClass
-
-
-class OutgoingMessage : Message
-  PROPERTIES
-    sent   = true
-    writer = BufferedDataWriter()
-
-  METHODS
-    method init
-
-    method set_string( name:String, value:String )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
-      return this
-
-    method set_real64( name:String, value:Real64 )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
-      return this
-
-    method set_int64( name:String, value:Int64 )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
-      return this
-
-    method set_int32( name:String, value:Int32 )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
-      return this
-
-    method set_logical( name:String, value:Logical )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
-      return this
-
-    method set_bytes( name:String, bytes:Byte[] )->this
-      write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
-      forEach (b in bytes) writer.write_byte( b )
-      return this
-
-    method send
-      MessageManager.send( this )
-      sent = true
-
-    method send_rsvp( callback:Function(Message) )
-      MessageManager.send_rsvp( this, callback )
-      sent = true
 endClass
 
