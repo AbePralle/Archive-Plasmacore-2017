@@ -21,12 +21,6 @@ class MessageManager [requisite singleton]
     message_type_lookup = StringTable<<String>>()
     # Maps StringBuilder to String
 
-    incoming_id_to_name = Table<<Int32,String>>()
-    incoming_name_to_id = Table<<String,Int32>>()
-    outgoing_id_to_name = Table<<Int32,String>>()
-    outgoing_name_to_id = Table<<String,Int32>>()
-    new_outgoing_ids    = Int32[]
-
     incoming_message = Message()
       # Recycled for incoming messages
 
@@ -45,16 +39,16 @@ class MessageManager [requisite singleton]
         endFunction
       )
 
-    method add_listener( message_type:String, listener:Function(Message) )
-      local list = listeners[ message_type ]
+    method add_listener( type:String, listener:Function(Message) )
+      local list = listeners[ type ]
       if (not list)
         list = Function(Message)[]
-        listeners[ message_type ] = list
+        listeners[ type ] = list
       endIf
       list.add( listener )
 
-    method remove_listener( message_type:String, listener:Function(Message) )
-      local list = listeners[ message_type ]
+    method remove_listener( type:String, listener:Function(Message) )
+      local list = listeners[ type ]
       if (list) list.remove( listener )
 
     method consolidated_type_name( name:String )->String
@@ -70,24 +64,14 @@ class MessageManager [requisite singleton]
       message_type_lookup[ consolidated ] = consolidated
       return consolidated
 
-    method create_message( message_type:String, message_id=null:Int32? )->Message
+    method create_message( type:String, message_id=null:Int32? )->Message
       if (not message_id.exists)
         message_id = next_id
         ++next_id
       endIf
 
-      outgoing_message.init( message_type, message_id.value )
+      outgoing_message.init( type, message_id.value )
       return outgoing_message
-
-    method get_outgoing_id( name:String )->Int32
-      local entry = outgoing_name_to_id.find( name )
-      if (entry) return entry.value
-
-      local new_id = outgoing_name_to_id.count + 1
-      outgoing_name_to_id[ name ] = new_id
-      outgoing_id_to_name[ new_id ] = name
-      new_outgoing_ids.add( new_id )
-      return new_id
 
     method send( m:Message )
       message_builder.write_int32( m.data.count )
@@ -103,18 +87,9 @@ class MessageManager [requisite singleton]
       # native layer.
       io_reader.reset
 
-      # Header contains new message type ID definitions
-      local new_id_count = io_reader.read_int32x
-      forEach (1..new_id_count)
-        local new_id = io_reader.read_int32x
-        local new_name = io_reader.read_string( string_buffer.clear )->String
-        incoming_id_to_name[ new_id ] = new_name
-        incoming_name_to_id[ new_name ] = new_id
-      endForEach
-
       while (io_reader.has_another)
         incoming_message.init( io_reader )
-        local list = listeners[ incoming_message.message_type ]
+        local list = listeners[ incoming_message.type ]
         if (list)
           forEach (listener in list step -1) listener( incoming_message )
         endIf
@@ -122,14 +97,6 @@ class MessageManager [requisite singleton]
 
       # Finalize the outgoing message data.
       io_writer.clear
-
-      # First comes the header with any any new message type id definitions.
-      io_writer.write_int32x( new_outgoing_ids.count )
-      forEach (new_id in new_outgoing_ids)
-        io_writer.write_int32x( new_id )
-        io_writer.write_string( outgoing_id_to_name[new_id] )
-      endForEach
-      new_outgoing_ids.clear
 
       # Write out all the buffered data
       io_writer.write( message_builder.buffer )
@@ -152,28 +119,28 @@ class Message
       return MessageManager.create_message( name )
 
   PROPERTIES
-    message_type : String
-    message_id   : Int32
-    data         = Byte[]
-    reader       = BufferedDataReader( data )
-    writer       = BufferedDataWriter( data )
+    type       : String
+    message_id : Int32
+    data       = Byte[]
+    reader     = BufferedDataReader( data )
+    writer     = BufferedDataWriter( data )
 
     # Using arrays instead of tables to reduce dynamic allocation overhead
-    keys         = String[]
-    offsets      = Int32[]
+    keys       = String[]
+    offsets    = Int32[]
 
-    sent         : Logical
+    sent       : Logical
 
   METHODS
     method init
 
     method init( new_type:String, message_id )
-      if (not sent) println "ERROR: unsent outgoing message of type '$'." (message_type)
-      message_type = MessageManager.consolidated_type_name( new_type )
+      if (not sent and type) println "ERROR: unsent outgoing message of type '$'." (type)
+      type = MessageManager.consolidated_type_name( new_type )
       sent = false
       writer.clear
 
-      writer.write_string( message_type )
+      writer.write_string( type )
       writer.write_int32x( message_id )
 
     method init( source:DataReader )
@@ -182,7 +149,7 @@ class Message
       local size = source.read_int32
       source.read( data.clear, size )
       reader.reset
-      message_type = read_type_name
+      type = read_type_name
       message_id = reader.read_int32x
       while (index_another) noAction
 

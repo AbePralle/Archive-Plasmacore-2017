@@ -17,13 +17,18 @@ class AppDelegate: NSObject, NSApplicationDelegate
   func applicationDidFinishLaunching( notification:NSNotification )
   {
     Plasmacore.singleton.configure().launch()
-    /*
-    let mesg = PlasmacoreMessage( type: "Test" )
+
+    var mesg = PlasmacoreMessage( type: "Test" )
     mesg.setString( "stuff", value: "Whatever" )
     NSLog( "type: \(mesg.type)" )
     NSLog( "id: \(mesg.message_id)" )
     NSLog( "stuff: \(mesg.getString("stuff"))" )
-    */
+    mesg.send()
+
+    mesg = PlasmacoreMessage( type:"AnotherMessage" )
+    mesg.setInt32( "hex", value:0x11223344 )
+    mesg.setReal64( "pi", value:3.1415926 )
+    mesg.send()
 
     //print_args( Int32(Process.arguments.count), Process.arguments )
     //hello_c( "hi" )

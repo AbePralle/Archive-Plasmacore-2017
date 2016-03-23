@@ -1,5 +1,3 @@
-#import <Cocoa/Cocoa.h>
-
 #include "RogueInterface.h"
 #include "RogueProgram.h"
 
@@ -41,6 +39,25 @@ extern "C" void RogueInterface_configure()
 extern "C" void RogueInterface_launch()
 {
   Rogue_launch();
+}
+
+extern "C" NSData* RogueInterface_send_messages( const unsigned char* data, int count )
+{
+  RogueClassPlasmacore__MessageManager* mm =
+    (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
+  RogueByte_List* list = mm->io_buffer;
+
+  RogueByte_List__clear( list );
+  RogueByte_List__reserve__Int32( list, count );
+  memcpy( list->data->bytes, data, count );
+  list->count = count;
+
+  // Call Rogue MessageManager.update(), which sends back a reference to another byte
+  // list containing messages to us.
+  list = RoguePlasmacore__MessageManager__update( mm );
+  
+  if ( !list ) return [NSData data];
+  return [[NSData alloc] initWithBytes:list->data->bytes length:list->count];
 }
 
 extern "C" void RogueInterface_set_arg_count( int count )
