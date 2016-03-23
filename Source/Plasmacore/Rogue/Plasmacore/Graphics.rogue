@@ -87,8 +87,7 @@ class Graphics [singleton]
       println ''Failed to load texture "$" from file "$".'' (texture.name,file)
 
     method pop->Graphics
-      if (stack.count == 0) Graphics = Graphics()
-      else                  Graphics = stack.remove_last
+      if (stack.count) Graphics = stack.remove_last
       return Graphics
 
     method pop_object_transform( n=1:Int32 )->this

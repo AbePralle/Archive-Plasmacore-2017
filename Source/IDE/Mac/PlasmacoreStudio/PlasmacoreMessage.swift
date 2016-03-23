@@ -27,12 +27,28 @@ class PlasmacoreMessage
     self.init( type:type, message_id:PlasmacoreMessage.next_message_id++ )
   }
 
-  init( type:String, message_id:Int )
+  convenience init( data:[UInt8] )
   {
+    self.init()
+    self.data = data
+    type = readString()
+    message_id = readIntX()
+    while (indexAnother()) {}
+  }
+
+  convenience init( type:String, message_id:Int )
+  {
+    self.init()
     self.type = type
     self.message_id = message_id
     writeString( type )
     writeIntX( message_id )
+  }
+
+  init()
+  {
+    type = "Unspecified"
+    message_id = 0
   }
 
   func getBytes( name:String )->[UInt8]
@@ -181,6 +197,52 @@ class PlasmacoreMessage
     return default_value
   }
 
+  func indexAnother()->Bool
+  {
+    if (position == data.count) { return false }
+    let name = readString()
+    entries[ name ] = position
+
+    switch (readIntX())
+    {
+    case DataType.STRING:
+      let count = readIntX()
+      for _ in 1...count
+      {
+        readIntX()
+      }
+      return true
+
+    case DataType.REAL64:
+      readReal64()
+      return true
+
+    case DataType.INT64:
+      readInt64X()
+      return true
+
+    case DataType.INT32:
+      readIntX()
+      return true
+
+    case DataType.LOGICAL:
+      readIntX()
+      return true
+
+    case DataType.BYTES:
+      position += readIntX()
+      return true
+
+    default:
+      return false
+    }
+  }
+
+  func send()
+  {
+    Plasmacore.singleton.send( self );
+  }
+
   func setBytes( name:String, value:[UInt8] )->PlasmacoreMessage
   {
     position = data.count
@@ -250,18 +312,18 @@ class PlasmacoreMessage
   // PRIVATE
   //---------------------------------------------------------------------------
 
-  func readByte()->Int
+  private func readByte()->Int
   {
     return (position < data.count) ?  Int(data[position++]) : 0
   }
 
-  func readInt64X()->Int64
+  private func readInt64X()->Int64
   {
     let result = Int64( readIntX() ) << 32
     return result | Int64( UInt32(readIntX()) )
   }
 
-  func readInt32()->Int
+  private func readInt32()->Int
   {
     var result = readByte()
     result = (result << 8) | readByte()
@@ -269,7 +331,7 @@ class PlasmacoreMessage
     return (result << 8) | readByte()
   }
 
-  func readIntX()->Int
+  private func readIntX()->Int
   {
     let b = readByte()
     if ((b & 0xc0) != 0x80)
@@ -305,20 +367,20 @@ class PlasmacoreMessage
     }
   }
 
-  func readReal64()->Double
+  private func readReal64()->Double
   {
     var n = UInt64( readInt32() ) << 32
     n = n | UInt64( UInt32(readInt32()) )
     return Double._fromBitPattern( n )
   }
 
-  func readString()->String
+  private func readString()->String
   {
     string_buffer.removeAll( keepCapacity:true )
     let count = readIntX()
     for _ in 0..<count
     {
-      string_buffer.append( UInt16(readIntX()) )
+      string_buffer.append( UInt16(readIntX() & 65535) )
     }
     return String( utf16CodeUnits:string_buffer, count:count )
   }
@@ -327,7 +389,7 @@ class PlasmacoreMessage
   {
     if (position++ == data.count)
     {
-      data.append( UInt8(value) )
+      data.append( UInt8(value&255) )
     }
     else
     {
@@ -382,7 +444,7 @@ class PlasmacoreMessage
 
   private func writeReal64( value:Double )
   {
-    let bits = Double._BitsType( value )
+    let bits = Double._toBitPattern( value )()
     writeInt32( Int(bits>>32) )
     writeInt32( Int(bits) )
   }
