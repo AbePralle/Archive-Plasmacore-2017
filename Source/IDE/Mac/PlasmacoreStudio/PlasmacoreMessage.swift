@@ -243,6 +243,11 @@ class PlasmacoreMessage
     Plasmacore.singleton.send( self );
   }
 
+  func send_rsvp( callback:((PlasmacoreMessage)->Void) )
+  {
+    Plasmacore.singleton.send_rsvp( self, callback:callback );
+  }
+
   func setBytes( name:String, value:[UInt8] )->PlasmacoreMessage
   {
     position = data.count

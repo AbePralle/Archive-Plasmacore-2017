@@ -72,7 +72,7 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
-      MessageManager.add_listener( "View.key_event",
+      MessageManager.add_handler( "View.key_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
@@ -88,7 +88,7 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
-      MessageManager.add_listener( "View.pointer_event",
+      MessageManager.add_handler( "View.pointer_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
@@ -105,7 +105,7 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
-      MessageManager.add_listener( "View.update_and_draw",
+      MessageManager.add_handler( "View.update_and_draw",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
