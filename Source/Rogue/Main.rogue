@@ -2,7 +2,11 @@ using Plasmacore
 
 println "Rogue Launched!"
 
-MessageManager.add_listener( "some_button_clicked",
+MessageManager.add_handler( "Marco",
+  function(m:Message) trace; m.create_reply.set_string( "message", "Polo" ).send
+)
+
+MessageManager.add_handler( "some_button_clicked",
   function(m:Message)
     local n = Random.next_int32(3)
     SweetWindowViewLogic.clear_color = select(n){ 0:Color.RED || 1:Color.GREEN || Color.BLUE }

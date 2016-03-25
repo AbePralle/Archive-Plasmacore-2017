@@ -4,16 +4,73 @@ class Plasmacore
 {
   static let singleton = Plasmacore()
 
+  var        nextHandlerID = 1
+
   var pending_message_data = [UInt8]()
   var io_buffer = [UInt8]()
   var is_sending = false
+  var handlers = [String:[PlasmacoreMessageHandler]]()
+  var handlers_by_id = [Int:PlasmacoreMessageHandler]()
+  var reply_handlers = [Int:PlasmacoreMessageHandler]()
+  
+  var update_timer : NSTimer?
 
   private init()
   {
   }
 
+  func addMessageHandler( type:String, handler:((PlasmacoreMessage)->Void) )->Int
+  {
+    let info = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:type, callback:handler )
+    handlers_by_id[ info.handlerID ] = info
+    if handlers[ type ] != nil
+    {
+      handlers[ type ]!.append( info )
+    }
+    else
+    {
+      var list = [PlasmacoreMessageHandler]()
+      list.append( info )
+      handlers[ type ] = list
+    }
+    return info.handlerID
+  }
+
   func configure()->Plasmacore
   {
+    let handlerID = Plasmacore.singleton.nextHandlerID
+
+    addMessageHandler( "<reply>", handler:
+      {
+        (m:PlasmacoreMessage) in
+          if let info = Plasmacore.singleton.reply_handlers.removeValueForKey( m.message_id )
+          {
+            info.callback( m )
+          }
+      }
+    )
+
+    addMessageHandler( "Window.create", handler:
+      {
+        (m:PlasmacoreMessage) in
+          NSLog( "Window.create 1, handlerID:\(handlerID)" )
+          Plasmacore.singleton.removeMessageHandler( handlerID )
+          PlasmacoreMessage( type:"Marco" ).send_rsvp(
+            {
+              (m:PlasmacoreMessage) in
+                NSLog( "Got reply \(m.getString("message"))" )
+            }
+          )
+      }
+    )
+
+    addMessageHandler( "Window.create", handler:
+      {
+        (m:PlasmacoreMessage) in
+          NSLog( "Window.create 2" )
+      }
+    )
+
     RogueInterface_set_arg_count( Int32(Process.arguments.count) )
     for (index,arg) in Process.arguments.enumerate()
     {
@@ -30,6 +87,25 @@ class Plasmacore
     return self
   }
 
+  func removeMessageHandler( handlerID:Int )
+  {
+    if let handler = handlers_by_id[ handlerID ]
+    {
+      handlers_by_id.removeValueForKey( handlerID )
+      if let handler_list = handlers[ handler.type ]
+      {
+        for i in 0..<handler_list.count
+        {
+          if (handler_list[i] === handler)
+          {
+            handlers[ handler.type ]!.removeAtIndex( i );
+            return;
+          }
+        }
+      }
+    }
+  }
+
   func send( m:PlasmacoreMessage )
   {
     let size = m.data.count
@@ -41,7 +117,34 @@ class Plasmacore
     {
       pending_message_data.append( b )
     }
+    update()
+  }
 
+  func send_rsvp( m:PlasmacoreMessage, callback:((PlasmacoreMessage)->Void) )
+  {
+    reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:"<reply>", callback:callback )
+    send( m )
+  }
+
+  func start()
+  {
+    if (update_timer === nil)
+    {
+      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: "update", userInfo: nil, repeats: true )
+    }
+  }
+
+  func stop()
+  {
+    if (update_timer !== nil)
+    {
+      update_timer!.invalidate()
+      update_timer = nil
+    }
+  }
+
+  @objc func update()
+  {
     if ( !is_sending )
     {
       // This flag will cause recursive sends to queue up.
@@ -72,11 +175,16 @@ class Plasmacore
           {
             message_data.append( bytes[read_pos+i] )
           }
+
           let m = PlasmacoreMessage( data:message_data )
-          NSLog( "Message type \(m.type)" )
-          NSLog( "Airline: \(m.getString("airline"))" )
-          NSLog( "pi: \(m.getReal64("pi"))" )
-          //NSLog( "Message type \(m.type), id:\(m.message_id)" )
+          //NSLog( "Received message type \(m.type)" )
+          if let handler_list = handlers[ m.type ]
+          {
+            for handler in handler_list
+            {
+              handler.callback( m )
+            }
+          }
         }
         else
         {
@@ -85,18 +193,23 @@ class Plasmacore
         read_pos += size
       }
 
-
-      io_buffer.removeAll()
-      //for i in 0..<received_ns_data.length
-      //{
-        //io_buffer.append( received_ns_data.bytes[i] )
-      //}
-
-      //NSLog( "Received \(received_ns_data.count) in response!" )
-
       io_buffer.removeAll()
       is_sending = false
     }
+  }
+}
+
+class PlasmacoreMessageHandler
+{
+  var handlerID : Int
+  var type      : String
+  var callback  : ((PlasmacoreMessage)->Void)
+
+  init( handlerID:Int, type:String, callback:((PlasmacoreMessage)->Void) )
+  {
+    self.handlerID = handlerID
+    self.type = type
+    self.callback = callback
   }
 }
 
