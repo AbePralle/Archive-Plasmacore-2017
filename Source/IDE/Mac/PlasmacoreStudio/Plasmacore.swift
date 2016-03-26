@@ -4,11 +4,14 @@ class Plasmacore
 {
   static let singleton = Plasmacore()
 
-  var        nextHandlerID = 1
+  var nextHandlerID = 1
 
   var pending_message_data = [UInt8]()
   var io_buffer = [UInt8]()
+
   var is_sending = false
+  var update_requested = false
+
   var handlers = [String:[PlasmacoreMessageHandler]]()
   var handlers_by_id = [Int:PlasmacoreMessageHandler]()
   var reply_handlers = [Int:PlasmacoreMessageHandler]()
@@ -38,8 +41,6 @@ class Plasmacore
 
   func configure()->Plasmacore
   {
-    let handlerID = Plasmacore.singleton.nextHandlerID
-
     addMessageHandler( "<reply>", handler:
       {
         (m:PlasmacoreMessage) in
@@ -53,21 +54,7 @@ class Plasmacore
     addMessageHandler( "Window.create", handler:
       {
         (m:PlasmacoreMessage) in
-          NSLog( "Window.create 1, handlerID:\(handlerID)" )
-          Plasmacore.singleton.removeMessageHandler( handlerID )
-          PlasmacoreMessage( type:"Marco" ).send_rsvp(
-            {
-              (m:PlasmacoreMessage) in
-                NSLog( "Got reply \(m.getString("message"))" )
-            }
-          )
-      }
-    )
-
-    addMessageHandler( "Window.create", handler:
-      {
-        (m:PlasmacoreMessage) in
-          NSLog( "Window.create 2" )
+          NSLog( "TODO: Window.create" )
       }
     )
 
@@ -130,8 +117,9 @@ class Plasmacore
   {
     if (update_timer === nil)
     {
-      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: "update", userInfo: nil, repeats: true )
+      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: "update", userInfo:nil, repeats: true )
     }
+    update()
   }
 
   func stop()
@@ -145,10 +133,21 @@ class Plasmacore
 
   @objc func update()
   {
-    if ( !is_sending )
+    if (is_sending)
     {
-      // This flag will cause recursive sends to queue up.
-      is_sending = true
+      update_requested = true
+      return
+    }
+
+    is_sending = true
+
+    // Execute a small burst of message dispatching and receiving.  Stop after
+    // 10 iterations or when there are no new messages.  Global state updates
+    // are frequency capped to 1/60 second intervals and draws are synced to
+    // the display refresh so this isn't triggering large amounts of extra work.
+    for _ in 1...10
+    {
+      update_requested = false
 
       // Swap pending data with io_buffer data
       let temp = io_buffer
@@ -194,7 +193,20 @@ class Plasmacore
       }
 
       io_buffer.removeAll()
-      is_sending = false
+
+      if ( !update_requested )
+      {
+        break
+      }
+    }
+
+    is_sending = false
+
+    if (update_requested)
+    {
+      // There are still some pending messages after 10 iterations.  Schedule another round
+      // in 1/60 second instead of the usual 1.0 seconds.
+      NSTimer.scheduledTimerWithTimeInterval( 1.0/60.0, target:self, selector: "update", userInfo:nil, repeats:false )
     }
   }
 }

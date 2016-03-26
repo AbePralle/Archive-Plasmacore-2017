@@ -51,6 +51,11 @@ class PlasmacoreMessage
     message_id = 0
   }
 
+  func createReply()->PlasmacoreMessage
+  {
+    return PlasmacoreMessage( type:"<reply>", message_id:message_id )
+  }
+
   func getBytes( name:String )->[UInt8]
   {
     if let offset = entries[ name ]
