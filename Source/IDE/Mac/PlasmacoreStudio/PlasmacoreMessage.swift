@@ -24,7 +24,8 @@ class PlasmacoreMessage
 
   convenience init( type:String )
   {
-    self.init( type:type, message_id:PlasmacoreMessage.next_message_id++ )
+    self.init( type:type, message_id:PlasmacoreMessage.next_message_id )
+    PlasmacoreMessage.next_message_id += 1
   }
 
   convenience init( data:[UInt8] )
@@ -77,27 +78,6 @@ class PlasmacoreMessage
       }
     }
     return [UInt8]()
-  }
-
-  func getBytes( name:String, var buffer:[UInt8] )->[UInt8]
-  {
-    if let offset = entries[ name ]
-    {
-      position = offset
-      switch (readIntX())
-      {
-      case DataType.BYTES:
-        let count = readIntX()
-        buffer.reserveCapacity( count )
-        for _ in 1...count
-        {
-          buffer.append( UInt8(readByte()) )
-        }
-      default:
-        break
-      }
-    }
-    return buffer
   }
 
   func getInt32( name:String, default_value:Int=0 )->Int
@@ -324,7 +304,9 @@ class PlasmacoreMessage
 
   private func readByte()->Int
   {
-    return (position < data.count) ?  Int(data[position++]) : 0
+    if (position >= data.count) { return 0 }
+    position += 1
+    return Int(data[position-1])
   }
 
   private func readInt64X()->Int64
@@ -397,7 +379,8 @@ class PlasmacoreMessage
 
   private func writeByte( value:Int )
   {
-    if (position++ == data.count)
+    position += 1
+    if (position > data.count)
     {
       data.append( UInt8(value&255) )
     }

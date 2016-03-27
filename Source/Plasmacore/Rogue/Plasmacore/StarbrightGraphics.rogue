@@ -135,10 +135,10 @@ class StarbrightGraphics : Graphics
               |    {
               |      $id = Starbright::renderer->define_texture( image_data, $texture_w, $texture_h, 32 );
               |    }
-              |    delete image_data;
+              |    delete[] image_data;
               |  }
               |
-              |  delete file_bytes;
+              |  delete[] file_bytes;
               |  fclose( fp );
               |}
 
