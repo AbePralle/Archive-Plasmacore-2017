@@ -10,6 +10,7 @@
 		302E60D11CA73DFD002E141E /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302E60CF1CA73DFD002E141E /* MainWindow.swift */; };
 		302E60D21CA73DFD002E141E /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302E60D01CA73DFD002E141E /* MainWindow.xib */; };
 		302E60D41CA78C6E002E141E /* SweetWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302E60D31CA78C6E002E141E /* SweetWindow.xib */; };
+		30736A131CA8398500E90A21 /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30736A121CA8398500E90A21 /* PlasmacoreView.swift */; };
 		308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308B60091C960D1300F0E1DF /* AppDelegate.swift */; };
 		308B600C1C960D1300F0E1DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308B600B1C960D1300F0E1DF /* Assets.xcassets */; };
 		308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 308B600D1C960D1300F0E1DF /* MainMenu.xib */; };
@@ -113,6 +114,7 @@
 		302E60CF1CA73DFD002E141E /* MainWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		302E60D01CA73DFD002E141E /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		302E60D31CA78C6E002E141E /* SweetWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SweetWindow.xib; sourceTree = "<group>"; };
+		30736A121CA8398500E90A21 /* PlasmacoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreView.swift; path = PlasmacoreStudio/PlasmacoreView.swift; sourceTree = "<group>"; };
 		308B60061C960D1300F0E1DF /* PlasmacoreStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlasmacoreStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		308B60091C960D1300F0E1DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		308B600B1C960D1300F0E1DF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				30DB201D1C961C00007347E0 /* RogueInterface.mm */,
 				30DB201E1C961C00007347E0 /* RogueInterface.h */,
 				30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */,
+				30736A121CA8398500E90A21 /* PlasmacoreView.swift */,
 			);
 			name = Plasmacore;
 			sourceTree = "<group>";
@@ -584,6 +587,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30736A131CA8398500E90A21 /* PlasmacoreView.swift in Sources */,
 				30CB05801C9A135800A767FC /* SuperCPPDataReader.cpp in Sources */,
 				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
 				30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */,
