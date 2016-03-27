@@ -15,6 +15,7 @@ class Plasmacore
   var handlers = [String:[PlasmacoreMessageHandler]]()
   var handlers_by_id = [Int:PlasmacoreMessageHandler]()
   var reply_handlers = [Int:PlasmacoreMessageHandler]()
+  var resources = [Int:AnyObject]()
   
   var update_timer : NSTimer?
 
@@ -54,7 +55,30 @@ class Plasmacore
     addMessageHandler( "Window.create", handler:
       {
         (m:PlasmacoreMessage) in
-          NSLog( "TODO: Window.create" )
+          let reply = m.createReply()
+          let name = m.getString( "name" )
+          if let window = Plasmacore_create_window( name )
+          {
+            reply.setLogical( "success", value:true )
+            Plasmacore.singleton.resources[ m.getInt32("id") ] = window
+          }
+          else
+          {
+            reply.setLogical( "success", value:false )
+            NSLog( "Window.create failed - could not find a WindowController or XIB named \"\(name)\"." )
+          }
+          reply.send()
+      }
+    )
+
+    addMessageHandler( "Window.show", handler:
+      {
+        (m:PlasmacoreMessage) in
+          let window_id = m.getInt32( "id" )
+          if let window = Plasmacore.singleton.resources[ window_id ] as? NSWindowController
+          {
+            window.showWindow( self )
+          }
       }
     )
 

@@ -8,6 +8,15 @@ using namespace std;
 static int          RogueInterface_argc = 0;
 static const char** RogueInterface_argv = {0};
 
+NSWindowController* Plasmacore_create_window( NSString* name )
+{
+  Class controller_class = NSClassFromString( name );
+  if (controller_class == nil) controller_class = NSWindowController.self;
+
+  NSWindowController* window = [[controller_class alloc] initWithWindowNibName:name];
+  return window;
+}
+
 NSString* Plasmacore_rogue_string_to_ns_string( RogueString* st )
 {
   if ( !st ) return nil;
