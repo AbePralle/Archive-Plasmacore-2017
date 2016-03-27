@@ -25,6 +25,8 @@ class Plasmacore
 
   func addMessageHandler( type:String, handler:((PlasmacoreMessage)->Void) )->Int
   {
+    objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
+
     let info = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:type, callback:handler )
     handlers_by_id[ info.handlerID ] = info
     if handlers[ type ] != nil
@@ -100,6 +102,8 @@ class Plasmacore
 
   func removeMessageHandler( handlerID:Int )
   {
+    objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
+
     if let handler = handlers_by_id[ handlerID ]
     {
       handlers_by_id.removeValueForKey( handlerID )
@@ -119,6 +123,8 @@ class Plasmacore
 
   func send( m:PlasmacoreMessage )
   {
+    objc_sync_enter( self ); defer { objc_sync_exit(self) }    // @synchronized (self)
+
     let size = m.data.count
     pending_message_data.append( UInt8((size>>24)&255) )
     pending_message_data.append( UInt8((size>>16)&255) )
@@ -133,6 +139,8 @@ class Plasmacore
 
   func send_rsvp( m:PlasmacoreMessage, callback:((PlasmacoreMessage)->Void) )
   {
+    objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
+
     reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:"<reply>", callback:callback )
     send( m )
   }
@@ -157,6 +165,8 @@ class Plasmacore
 
   @objc func update()
   {
+    objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
+
     if (is_sending)
     {
       update_requested = true
