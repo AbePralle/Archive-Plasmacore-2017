@@ -27,7 +27,9 @@ class Plasmacore
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
-    let info = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:type, callback:handler )
+    let info = PlasmacoreMessageHandler( handlerID:nextHandlerID, type:type, callback:handler )
+    nextHandlerID += 1
+
     handlers_by_id[ info.handlerID ] = info
     if handlers[ type ] != nil
     {
@@ -141,7 +143,8 @@ class Plasmacore
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
-    reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( handlerID:nextHandlerID++, type:"<reply>", callback:callback )
+    reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( handlerID:nextHandlerID, type:"<reply>", callback:callback )
+    nextHandlerID += 1
     send( m )
   }
 
@@ -149,7 +152,7 @@ class Plasmacore
   {
     if (update_timer === nil)
     {
-      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: "update", userInfo:nil, repeats: true )
+      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )
     }
     update()
   }
@@ -204,7 +207,7 @@ class Plasmacore
         {
           var message_data = [UInt8]()
           message_data.reserveCapacity( size )
-          for (var i=0; i<size; ++i)
+          for i in 0..<size
           {
             message_data.append( bytes[read_pos+i] )
           }
@@ -240,7 +243,7 @@ class Plasmacore
     {
       // There are still some pending messages after 10 iterations.  Schedule another round
       // in 1/60 second instead of the usual 1.0 seconds.
-      NSTimer.scheduledTimerWithTimeInterval( 1.0/60.0, target:self, selector: "update", userInfo:nil, repeats:false )
+      NSTimer.scheduledTimerWithTimeInterval( 1.0/60.0, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats:false )
     }
   }
 }
