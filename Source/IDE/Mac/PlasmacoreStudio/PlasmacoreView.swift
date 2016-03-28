@@ -11,7 +11,10 @@ import GLKit
 
 class PlasmacoreView: NSOpenGLView
 {
-  var displayLink : CVDisplayLink?
+  var isConfigured = false
+  var viewName     : String?
+  var windowID     : Int?
+  var displayLink  : CVDisplayLink?
 
   required init?(coder: NSCoder)
   {
@@ -37,6 +40,22 @@ class PlasmacoreView: NSOpenGLView
   deinit
   {
     stopDisplayLink()
+  }
+
+  func configure()
+  {
+    if (isConfigured) { return }
+    isConfigured = true
+
+
+
+    //guard let viewName =
+  //windowID = [[Plasmacore singleton] idOfResource:self.window.windowController];
+  //viewName = [[self valueForKey:@"name"] UTF8String];
+  //NSLog( @"PlasmacoreView '%@' created in Window %d\n", [self valueForKey:@"name"], windowID );
+
+  //[self.window setAcceptsMouseMovedEvents:YES];
+  //[[self window] makeFirstResponder:self];
   }
 
   override func drawRect( bounds:NSRect )
