@@ -5,6 +5,7 @@ class Plasmacore
   static let singleton = Plasmacore()
 
   var nextHandlerID = 1
+  var idleUpdateFrequency = 0.5
 
   var pending_message_data = [UInt8]()
   var io_buffer = [UInt8]()
@@ -16,7 +17,7 @@ class Plasmacore
   var handlers_by_id = [Int:PlasmacoreMessageHandler]()
   var reply_handlers = [Int:PlasmacoreMessageHandler]()
   var resources = [Int:AnyObject]()
-  
+
   var update_timer : NSTimer?
 
   private init()
@@ -148,11 +149,22 @@ class Plasmacore
     send( m )
   }
 
+  func setIdleUpdateFrequency( f:Double )->Plasmacore
+  {
+    idleUpdateFrequency = f
+    if (update_timer != nil)
+    {
+      stop()
+      start()
+    }
+    return self
+  }
+
   func start()
   {
     if (update_timer === nil)
     {
-      update_timer = NSTimer.scheduledTimerWithTimeInterval( 1.0, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )
+      update_timer = NSTimer.scheduledTimerWithTimeInterval( idleUpdateFrequency, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )
     }
     update()
   }
