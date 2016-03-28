@@ -13,7 +13,7 @@
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="196" y="240" width="521" height="459"/>
             <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
-            <view key="contentView" id="EiT-Mj-1SZ">
+            <view key="contentView" id="EiT-Mj-1SZ" customClass="PlasmacoreView" customModule="PlasmacoreStudio" customModuleProvider="target">
                 <rect key="frame" x="0.0" y="0.0" width="521" height="459"/>
                 <autoresizingMask key="autoresizingMask"/>
             </view>
