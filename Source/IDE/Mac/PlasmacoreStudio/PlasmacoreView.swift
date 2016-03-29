@@ -12,7 +12,7 @@ import GLKit
 class PlasmacoreView: NSOpenGLView
 {
   var isConfigured = false
-  var viewName     : String?
+  var name         = "unnamed"
   var windowID     : Int?
   var displayLink  : CVDisplayLink?
 
@@ -47,20 +47,26 @@ class PlasmacoreView: NSOpenGLView
     if (isConfigured) { return }
     isConfigured = true
 
+    if (name == "unnamed")
+    {
+      NSLog( "ERROR: Unnamed PlasmacoreView.  Set a 'name' string attribute in the interface builder's User Defined Runtime Attributes section." )
+    }
 
+    if let window = window
+    {
+      NSLog( "window controller: \(window.windowController) " )
+      windowID = Plasmacore.singleton.getResourceID( window.windowController )
+      window.acceptsMouseMovedEvents = true
+      window.makeFirstResponder( self )
+    }
 
-    //guard let viewName =
-  //windowID = [[Plasmacore singleton] idOfResource:self.window.windowController];
-  //viewName = [[self valueForKey:@"name"] UTF8String];
-  //NSLog( @"PlasmacoreView '%@' created in Window %d\n", [self valueForKey:@"name"], windowID );
-
-  //[self.window setAcceptsMouseMovedEvents:YES];
-  //[[self window] makeFirstResponder:self];
+    NSLog( "PlasmacoreView \(name) created in Window \(windowID)\n" )
   }
 
   override func drawRect( bounds:NSRect )
   {
     super.drawRect( bounds )
+    configure()
 
     guard let context = self.openGLContext else { return }
 

@@ -56,6 +56,8 @@ class Plasmacore
           }
       }
     )
+    
+    NSLog( "String from class: \(String(NSApplication.sharedApplication().delegate))" )
 
     addMessageHandler( "Window.create", handler:
       {
@@ -65,6 +67,7 @@ class Plasmacore
           if let window = Plasmacore_create_window( name )
           {
             reply.setLogical( "success", value:true )
+NSLog( "Setting window \(name) to resource id \(m.getInt32("id")), window \(window.window)." )
             Plasmacore.singleton.resources[ m.getInt32("id") ] = window
           }
           else
@@ -95,6 +98,18 @@ class Plasmacore
 
     RogueInterface_configure();
     return self
+  }
+
+  func getResourceID( resource:AnyObject? )->Int?
+  {
+    guard let resource = resource else { return nil }
+
+    for (key,value) in resources
+    {
+NSLog( "getResourceID checking \(key), \(value) === \(resource)" )
+      if (value === resource) { return key }
+    }
+    return nil
   }
 
   func launch()->Plasmacore
