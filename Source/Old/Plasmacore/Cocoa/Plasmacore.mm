@@ -56,6 +56,8 @@ RogueString* Plasmacore_find_asset( RogueString* name, RogueString* extension )
       NSString* window_name = [m getString:"name"];
       int       window_id   = [m getInt32:"id"];
 
+// name to class
+// http://stackoverflow.com/questions/24030814/swift-language-nsclassfromstring/32265287#32265287
       NSWindowController* window = [[NSClassFromString(window_name) alloc] initWithWindowNibName:window_name];
       [[Plasmacore singleton] addResource:window withID:window_id];
     }

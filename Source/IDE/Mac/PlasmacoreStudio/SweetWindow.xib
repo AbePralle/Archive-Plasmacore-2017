@@ -16,6 +16,9 @@
             <view key="contentView" id="EiT-Mj-1SZ" customClass="PlasmacoreView" customModule="PlasmacoreStudio" customModuleProvider="target">
                 <rect key="frame" x="0.0" y="0.0" width="521" height="459"/>
                 <autoresizingMask key="autoresizingMask"/>
+                <userDefinedRuntimeAttributes>
+                    <userDefinedRuntimeAttribute type="string" keyPath="name" value="sweet_view"/>
+                </userDefinedRuntimeAttributes>
             </view>
             <point key="canvasLocation" x="319.5" y="254.5"/>
         </window>

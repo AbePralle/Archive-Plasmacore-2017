@@ -11,10 +11,17 @@ static const char** RogueInterface_argv = {0};
 NSWindowController* Plasmacore_create_window( NSString* name )
 {
   Class controller_class = NSClassFromString( name );
-  if (controller_class == nil) controller_class = NSWindowController.self;
-
-  NSWindowController* window = [[controller_class alloc] initWithWindowNibName:name];
-  return window;
+NSLog( @"finding controller class %@\n", name );
+  if (controller_class)
+  {  
+NSLog( @"  found\n" );
+    return [[controller_class alloc] initWithWindowNibName:name];
+  }
+  else
+  {
+NSLog( @"  not found\n" );
+    return [[NSWindowController alloc] initWithWindowNibName:name];
+  }
 }
 
 NSString* Plasmacore_rogue_string_to_ns_string( RogueString* st )
