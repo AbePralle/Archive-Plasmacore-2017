@@ -438,8 +438,8 @@ class PlasmacoreMessage
   private func writeReal64( value:Double )
   {
     let bits = Double._toBitPattern( value )()
-    writeInt32( Int(bits>>32) )
-    writeInt32( Int(bits) )
+    writeInt32( Int((bits>>32)&0xFFFFffff) )
+    writeInt32( Int(bits&0xFFFFffff) )
   }
 
   private func writeString( value:String )
