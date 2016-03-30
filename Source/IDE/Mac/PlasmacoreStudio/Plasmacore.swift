@@ -56,26 +56,42 @@ class Plasmacore
           }
       }
     )
-    
-    NSLog( "String from class: \(String(NSApplication.sharedApplication().delegate))" )
 
     addMessageHandler( "Window.create", handler:
       {
         (m:PlasmacoreMessage) in
-          let reply = m.createReply()
-          let name = m.getString( "name" )
-          if let window = Plasmacore_create_window( name )
+        let name = m.getString( "name" )
+        var className = name
+        if let bundleID = NSBundle.mainBundle().bundleIdentifier
+        {
+          if let dotIndex = Plasmacore.lastIndexOf( bundleID, lookFor:"." )
           {
-            reply.setLogical( "success", value:true )
-NSLog( "Setting window \(name) to resource id \(m.getInt32("id")), window \(window.window)." )
-            Plasmacore.singleton.resources[ m.getInt32("id") ] = window
+            className = "\(bundleID.substringFromIndex(bundleID.startIndex.advancedBy(dotIndex+1))).\(name)"
           }
-          else
-          {
-            reply.setLogical( "success", value:false )
-            NSLog( "Window.create failed - could not find a WindowController or XIB named \"\(name)\"." )
-          }
-          reply.send()
+        }
+
+        let controller : NSWindowController
+        if let controllerType = NSClassFromString( className ) as? NSWindowController.Type
+        {
+          NSLog( "Found controller \(className)" )
+          controller = controllerType.init( windowNibName:name )
+        }
+        else if let controllerType = NSClassFromString( name ) as? NSWindowController.Type
+        {
+          NSLog( "Found controller \(name)" )
+          controller = controllerType.init( windowNibName:name )
+        }
+        else
+        {
+          NSLog( "===============================================================================" )
+          NSLog( "ERROR" )
+          NSLog( "  No class found named \(name) or \(className)." )
+          NSLog( "===============================================================================" )
+          controller = NSWindowController( windowNibName:name )
+        }
+
+        Plasmacore.singleton.resources[ m.getInt32("id") ] = controller
+        NSLog( "Controller window:\(controller.window)" )
       }
     )
 
@@ -100,22 +116,31 @@ NSLog( "Setting window \(name) to resource id \(m.getInt32("id")), window \(wind
     return self
   }
 
-  func getResourceID( resource:AnyObject? )->Int?
+  func getResourceID( resource:AnyObject? )->Int
   {
-    guard let resource = resource else { return nil }
+    guard let resource = resource else { return 0 }
 
     for (key,value) in resources
     {
-NSLog( "getResourceID checking \(key), \(value) === \(resource)" )
       if (value === resource) { return key }
     }
-    return nil
+    return 0
   }
 
   func launch()->Plasmacore
   {
     RogueInterface_launch();
     return self
+  }
+
+  static func lastIndexOf( st:String, lookFor:String )->Int?
+  {
+    if let r = st.rangeOfString( lookFor, options:.BackwardsSearch )
+    {
+      return st.startIndex.distanceTo( r.startIndex )
+    }
+
+    return nil
   }
 
   func removeMessageHandler( handlerID:Int )
