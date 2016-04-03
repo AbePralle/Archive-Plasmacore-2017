@@ -27,16 +27,16 @@ NSLog( @"  not found\n" );
 NSString* Plasmacore_rogue_string_to_ns_string( RogueString* st )
 {
   if ( !st ) return nil;
-  return [NSString stringWithCharacters:(unichar*)st->characters length:st->count];
+  return [NSString stringWithUTF8String:(const char*)st->utf8];
+  //return [NSString stringWithCharacters:(unichar*)st->characters length:st->count];
 }
 
 RogueString* Plasmacore_ns_string_to_rogue_string( NSString* st )
 {
   if ( !st ) return 0;
 
-  RogueString* result = RogueString_create_with_count( (int)st.length );
-  [st getCharacters:(unichar*)result->characters range:NSMakeRange(0,st.length)];
-  return RogueString_update_hash_code( result );
+  RogueString* result = RogueString_create_from_utf8( [st UTF8String] );
+  return RogueString_validate( result );
 }
 
 extern "C" RogueString* Plasmacore_find_asset( RogueString* filepath )

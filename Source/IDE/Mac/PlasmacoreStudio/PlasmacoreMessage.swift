@@ -18,7 +18,7 @@ class PlasmacoreMessage
   var message_id : Int
 
   var data          = [UInt8]()
-  var string_buffer = [UInt16]()
+  var string_buffer = [Character]()
   var entries  = [String:Int]()
   var position = 0
 
@@ -372,9 +372,9 @@ class PlasmacoreMessage
     let count = readIntX()
     for _ in 0..<count
     {
-      string_buffer.append( UInt16(readIntX() & 65535) )
+      string_buffer.append( Character(UnicodeScalar(readIntX())) )
     }
-    return String( utf16CodeUnits:string_buffer, count:count )
+    return String( string_buffer )
   }
 
   private func writeByte( value:Int )
@@ -444,10 +444,10 @@ class PlasmacoreMessage
 
   private func writeString( value:String )
   {
-    writeIntX( value.utf16.count )
-    for ch in value.utf16
+    writeIntX( value.unicodeScalars.count )
+    for ch in value.unicodeScalars
     {
-      writeIntX( Int(ch) )
+      writeIntX( Int(ch.value) )
     }
   }
 }
