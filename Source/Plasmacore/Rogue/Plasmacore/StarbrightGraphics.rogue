@@ -111,9 +111,7 @@ class StarbrightGraphics : Graphics
       local texture_w : Int32
       local texture_h : Int32
 
-      native @|char filepath[ 1024 ];
-              |RogueString_to_c_string( $file->filepath, filepath, 1024 );
-              |FILE* fp = fopen( filepath, "rb" );
+      native @|FILE* fp = fopen( (const char*)$file->filepath->utf8, "rb" );
               |if (fp)
               |{
               |  fseek( fp, 0, SEEK_END );
