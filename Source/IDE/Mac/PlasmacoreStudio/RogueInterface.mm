@@ -1,5 +1,8 @@
 #include "RogueInterface.h"
 #include "RogueProgram.h"
+#include "Starbright.h"
+#include "StarbrightGL.h"
+#include "SuperCPPResourceBank.h"
 
 #include <cstdio>
 #include <cstring>
@@ -8,27 +11,12 @@ using namespace std;
 static int          RogueInterface_argc = 0;
 static const char** RogueInterface_argv = {0};
 
-NSWindowController* Plasmacore_create_window( NSString* name )
-{
-  Class controller_class = NSClassFromString( name );
-NSLog( @"finding controller class %@\n", name );
-  if (controller_class)
-  {  
-NSLog( @"  found\n" );
-    return [[controller_class alloc] initWithWindowNibName:name];
-  }
-  else
-  {
-NSLog( @"  not found\n" );
-    return [[NSWindowController alloc] initWithWindowNibName:name];
-  }
-}
+SuperCPP::ResourceBank<Starbright::Renderer*> starbright_renderers;
 
 NSString* Plasmacore_rogue_string_to_ns_string( RogueString* st )
 {
   if ( !st ) return nil;
   return [NSString stringWithUTF8String:(const char*)st->utf8];
-  //return [NSString stringWithCharacters:(unichar*)st->characters length:st->count];
 }
 
 RogueString* Plasmacore_ns_string_to_rogue_string( NSString* st )
@@ -90,4 +78,16 @@ extern "C" void RogueInterface_set_arg_value( int index, const char* value )
   strcpy( copy, value );
   RogueInterface_argv[ index ] = copy;
 }
+
+int Starbright_create_renderer()
+{
+  return starbright_renderers.add( new Starbright::GLRenderer() );
+}
+
+void Starbright_activate_renderer( int renderer_id )
+{
+  Starbright::Renderer* renderer = starbright_renderers.get( renderer_id );
+  if (renderer) renderer->activate();
+}
+
 
