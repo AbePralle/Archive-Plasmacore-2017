@@ -18,6 +18,7 @@ class PlasmacoreView: NSOpenGLView
   var windowID     = 0
   var displayLink  : CVDisplayLink?
   var keyModifierFlags:UInt = 0
+  var renderer_id:Int32 = 0
 
   required init?(coder: NSCoder)
   {
@@ -77,9 +78,9 @@ class PlasmacoreView: NSOpenGLView
     NSLog( "PlasmacoreView \(name) created in Window \(windowID)\n" )
   }
 
-  override func drawRect( bounds:NSRect )
+  override func drawRect( area:NSRect )
   {
-    super.drawRect( bounds )
+    super.drawRect( area )
     configure()
 
     guard let context = self.openGLContext else { return }
@@ -87,12 +88,15 @@ class PlasmacoreView: NSOpenGLView
     context.makeCurrentContext()
     CGLLockContext( context.CGLContextObj )
 
-    let value = Float(sin(1.00 * CACurrentMediaTime()))
-    glClearColor( 0, 0, value, 1.0 )
-    glClear(GLbitfield(GL_COLOR_BUFFER_BIT))
+    Starbright_activate_renderer( renderer_id )
+
+    let m = PlasmacoreMessage( type:"View.update_and_draw" )
+    m.setInt32( "window_id", value:windowID ).setString( "view_name", value:name )
+    m.setInt32( "width",  value:Int(bounds.width) )
+    m.setInt32( "height", value:Int(bounds.height) )
+    m.send()
 
     CGLFlushDrawable( context.CGLContextObj )
-
     CGLUnlockContext( context.CGLContextObj )
 
     startDisplayLink()
@@ -243,6 +247,7 @@ class PlasmacoreView: NSOpenGLView
   override func prepareOpenGL()
   {
     self.openGLContext?.setValues( [1], forParameter:.GLCPSwapInterval )
+    renderer_id = Starbright_create_renderer()
   }
 
   func startDisplayLink()

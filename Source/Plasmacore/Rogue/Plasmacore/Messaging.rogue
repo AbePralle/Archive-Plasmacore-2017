@@ -89,7 +89,6 @@ class MessageManager [requisite singleton]
 
       while (io_reader.has_another)
         incoming_message.init( io_reader )
-@trace incoming_message.type
         local list = handlers[ incoming_message.type ]
         if (list)
           forEach (handler in list step -1) handler( incoming_message )

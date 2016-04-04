@@ -39,9 +39,9 @@ namespace Starbright
 #define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_ADD  4
 #define SB_PREMULTIPLIED_TEXTURE_SHADER_WITH_COLOR_FILL 5
 
-#define SB_TEXTURE_OPTION_8BPP  8
-#define SB_TEXTURE_OPTION_16BPP 16
-#define SB_TEXTURE_OPTION_32BPP 32
+#define SB_TEXTURE_OPTION_8_BPP  8
+#define SB_TEXTURE_OPTION_16_BPP 16
+#define SB_TEXTURE_OPTION_32_BPP 32
 
 //=============================================================================
 //  RenderMode

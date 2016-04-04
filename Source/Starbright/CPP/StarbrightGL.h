@@ -1,7 +1,7 @@
-#ifndef STARBRIGHT_GL_RENDERER_H
-#define STARBRIGHT_GL_RENDERER_H
+#ifndef STARBRIGHT_GL_H
+#define STARBRIGHT_GL_H
 //=============================================================================
-//  StarbrightGLRenderer.h
+//  StarbrightGL.h
 //
 //  HISTORY
 //    2015.12.08 - Created by Abe Pralle.
@@ -117,4 +117,4 @@ struct GLRenderer : Renderer
 }; // namespace PROJECT_WORKSPACE
 using namespace PROJECT_WORKSPACE;
 
-#endif // STARBRIGHT_GL_RENDERER_H
+#endif // STARBRIGHT_GL_H

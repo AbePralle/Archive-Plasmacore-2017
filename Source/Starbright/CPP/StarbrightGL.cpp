@@ -1,5 +1,5 @@
 #include "SuperCPP.h"
-#include "StarbrightGLRenderer.h"
+#include "StarbrightGL.h"
 using namespace SuperCPP;
 
 #include <stdio.h>
