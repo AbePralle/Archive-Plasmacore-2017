@@ -30,7 +30,7 @@ class PlasmacoreView: NSOpenGLView
       UInt32(NSOpenGLPFAColorSize), UInt32(32),
       UInt32(NSOpenGLPFADoubleBuffer),
       UInt32(NSOpenGLPFAOpenGLProfile),
-      UInt32(NSOpenGLProfileVersion3_2Core),
+      UInt32(NSOpenGLProfileVersionLegacy),
       UInt32(0)
     ]
 
@@ -88,13 +88,18 @@ class PlasmacoreView: NSOpenGLView
     context.makeCurrentContext()
     CGLLockContext( context.CGLContextObj )
 
-    Starbright_activate_renderer( renderer_id )
+
+    let display_width  = Int(bounds.width)
+    let display_height = Int(bounds.height)
+    Starbright_begin_draw( renderer_id, Int32(display_width), Int32(display_height) )
 
     let m = PlasmacoreMessage( type:"View.update_and_draw" )
     m.setInt32( "window_id", value:windowID ).setString( "view_name", value:name )
-    m.setInt32( "width",  value:Int(bounds.width) )
-    m.setInt32( "height", value:Int(bounds.height) )
+    m.setInt32( "width",  value:display_width )
+    m.setInt32( "height", value:display_height )
     m.send()
+
+    Starbright_end_draw( renderer_id )
 
     CGLFlushDrawable( context.CGLContextObj )
     CGLUnlockContext( context.CGLContextObj )

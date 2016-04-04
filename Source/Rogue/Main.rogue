@@ -21,8 +21,8 @@ TextureManager.loaders[ "red_box" ] =
 local window = Window( "MainWindow", GreenBlue() )
 window.show
 
-local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
-sweet_window.show
+#local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
+#sweet_window.show
 
 
 println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )

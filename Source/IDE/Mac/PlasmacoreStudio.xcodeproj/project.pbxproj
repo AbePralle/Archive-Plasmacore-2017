@@ -581,7 +581,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "make -C ../../..";
+			shellScript = "make -C ../../.. update\nmake -C ../../..";
 		};
 /* End PBXShellScriptBuildPhase section */
 

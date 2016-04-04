@@ -105,6 +105,7 @@ struct GLRenderer : Renderer
   void begin_draw( int display_width, int display_height );
   void end_draw();
   void clear( int flags ); // COLOR|DEPTH|STENCIL
+  void check_for_shader_compile_errors( int shader_id );
   int  define_shader( const char* vertex_src, const char* pixel_src );
   int  define_texture( void* pixels, int width, int height, int options );
   void delete_shader( int shader_id );

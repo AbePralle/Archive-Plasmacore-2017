@@ -84,10 +84,22 @@ int Starbright_create_renderer()
   return starbright_renderers.add( new Starbright::GLRenderer() );
 }
 
-void Starbright_activate_renderer( int renderer_id )
+void Starbright_begin_draw( int renderer_id, int display_width, int display_height )
 {
   Starbright::Renderer* renderer = starbright_renderers.get( renderer_id );
-  if (renderer) renderer->activate();
+  if (renderer)
+  {
+    renderer->activate();
+    renderer->begin_draw( display_width, display_height );
+  }
 }
 
+void Starbright_end_draw( int renderer_id )
+{
+  Starbright::Renderer* renderer = starbright_renderers.get( renderer_id );
+  if (renderer)
+  {
+    renderer->end_draw();
+  }
+}
 
