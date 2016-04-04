@@ -18,7 +18,7 @@ TextureManager.loaders[ "red_box" ] =
     println "callback loading texture " + texture.name
   endFunction
 
-local window = Window( "MainWindow", GreenBlue() )
+local window = Window( "LaunchWindow" )
 window.show
 
 #local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
