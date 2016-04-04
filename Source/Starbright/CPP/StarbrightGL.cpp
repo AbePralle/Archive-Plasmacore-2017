@@ -22,6 +22,7 @@ GLRenderer::GLRenderer()
 {
   color_shader = define_shader(
     // Vertex Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform mat4   transform;                 \n"
     "attribute vec4 position;                  \n"
@@ -34,6 +35,7 @@ GLRenderer::GLRenderer()
     "}                                         \n",
 
     // Pixel Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "varying" SB_LOWP "vec4 vertex_color;    \n"
     "void main()                             \n"
@@ -44,6 +46,7 @@ GLRenderer::GLRenderer()
 
   texture_shader = define_shader(
     // Vertex Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform mat4   transform;             \n"
     "attribute vec4 position;              \n"
@@ -56,6 +59,7 @@ GLRenderer::GLRenderer()
     "}                                     \n",
 
     // Pixel Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform              sampler2D texture_0;        \n"
     "varying              vec2      vertex_uv;        \n"
@@ -67,6 +71,7 @@ GLRenderer::GLRenderer()
 
   texture_shader_with_color_multiply = define_shader(
     // Vertex Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform mat4   transform;                  \n"
     "attribute vec4 position;                   \n"
@@ -82,6 +87,7 @@ GLRenderer::GLRenderer()
     "}                                          \n",
 
     // Pixel Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform              sampler2D texture_0;                       \n"
     "varying              vec2      vertex_uv;                     \n"
@@ -94,6 +100,7 @@ GLRenderer::GLRenderer()
 
   premultiplied_texture_shader_with_color_add = define_shader(
     // Vertex Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform mat4   transform;                 \n"
     "attribute vec4 position;                  \n"
@@ -109,6 +116,7 @@ GLRenderer::GLRenderer()
     "}                                         \n",
 
     // Pixel Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform              sampler2D texture_0;                       \n"
     "varying              vec2      vertex_uv;                     \n"
@@ -122,6 +130,7 @@ GLRenderer::GLRenderer()
 
   premultiplied_texture_shader_with_color_fill = define_shader(
     // Vertex Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform mat4   transform;                            \n"
     "attribute vec4 position;                             \n"
@@ -139,6 +148,7 @@ GLRenderer::GLRenderer()
     "}                                                    \n",
 
     // Pixel Shader
+    SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform                sampler2D texture_0;            \n"
     "varying                vec2      vertex_uv;          \n"
@@ -210,6 +220,22 @@ void GLRenderer::clear( int flags )
   if (gl_flags) glClear( gl_flags );
 }
 
+void GLRenderer::check_for_shader_compile_errors( int shader_id )
+{
+  GLint success = 0;
+  glGetShaderiv( shader_id, GL_COMPILE_STATUS, &success );
+  if (success) return;
+
+  GLint log_size = 0;
+  glGetShaderiv( shader_id, GL_INFO_LOG_LENGTH, &log_size );
+
+  char* log = new char[ log_size ];
+  glGetShaderInfoLog( shader_id, log_size, &log_size, log );
+
+  printf( "ERROR compiling StarbrightGL shader:\n%s\n", log );
+  delete[] log;
+}
+
 // COLOR|DEPTH|STENCIL
 int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
 {
@@ -220,11 +246,11 @@ int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
 
   glShaderSource( shader->vertex_shader, 1, (const char**) &vertex_src, 0 );
   glCompileShader( shader->vertex_shader );
-  //SB_check_for_shader_compile_errors( shader->vertex_shader );
+  check_for_shader_compile_errors( shader->vertex_shader );
 
   glShaderSource( shader->pixel_shader, 1, (const char**) &pixel_src, 0 );
   glCompileShader( shader->pixel_shader );
-  //SB_check_for_shader_compile_errors( shader->pixel_shader );
+  check_for_shader_compile_errors( shader->pixel_shader );
 
   shader->program = glCreateProgram();
   glAttachShader( shader->program, shader->vertex_shader );

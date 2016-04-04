@@ -30,6 +30,10 @@ namespace Starbright
 #  define SB_LOWP " "
 #endif
 
+#ifndef SB_GLSL_VERSION
+  #define SB_GLSL_VERSION "#version 110\n"
+#endif
+
 // Notes on the following:
 //   SB_TEXTURE_SHADER* works with both premultiplied alpha and regular textures.
 //   SB_PREMULTIPLIED* only works with premultiplied alpha textures.
