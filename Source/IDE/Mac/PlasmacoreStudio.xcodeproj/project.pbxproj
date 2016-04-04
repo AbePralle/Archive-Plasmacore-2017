@@ -7,15 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		302E60D11CA73DFD002E141E /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302E60CF1CA73DFD002E141E /* MainWindow.swift */; };
-		302E60D21CA73DFD002E141E /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302E60D01CA73DFD002E141E /* MainWindow.xib */; };
-		302E60D41CA78C6E002E141E /* SweetWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302E60D31CA78C6E002E141E /* SweetWindow.xib */; };
-		304E20A01CAB3E2900FAA829 /* SweetWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E209F1CAB3E2900FAA829 /* SweetWindow.swift */; };
 		30736A131CA8398500E90A21 /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30736A121CA8398500E90A21 /* PlasmacoreView.swift */; };
 		30736A181CB1FB1700E90A21 /* StarbrightGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30736A161CB1FB1700E90A21 /* StarbrightGL.cpp */; };
 		308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308B60091C960D1300F0E1DF /* AppDelegate.swift */; };
 		308B600C1C960D1300F0E1DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308B600B1C960D1300F0E1DF /* Assets.xcassets */; };
 		308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 308B600D1C960D1300F0E1DF /* MainMenu.xib */; };
+		30C712B91CB2E722001DC9F6 /* LaunchWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C712B71CB2E722001DC9F6 /* LaunchWindow.swift */; };
+		30C712BA1CB2E722001DC9F6 /* LaunchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30C712B81CB2E722001DC9F6 /* LaunchWindow.xib */; };
 		30CB05651C9A130600A767FC /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05631C9A130600A767FC /* RogueProgram.cpp */; };
 		30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05671C9A133D00A767FC /* Starbright.cpp */; };
 		30CB057D1C9A135800A767FC /* SuperCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB056E1C9A135800A767FC /* SuperCPP.cpp */; };
@@ -112,10 +110,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		302E60CF1CA73DFD002E141E /* MainWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
-		302E60D01CA73DFD002E141E /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
-		302E60D31CA78C6E002E141E /* SweetWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SweetWindow.xib; sourceTree = "<group>"; };
-		304E209F1CAB3E2900FAA829 /* SweetWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SweetWindow.swift; sourceTree = "<group>"; };
 		30736A121CA8398500E90A21 /* PlasmacoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreView.swift; path = PlasmacoreStudio/PlasmacoreView.swift; sourceTree = "<group>"; };
 		30736A161CB1FB1700E90A21 /* StarbrightGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StarbrightGL.cpp; path = ../../Starbright/CPP/StarbrightGL.cpp; sourceTree = "<group>"; };
 		30736A171CB1FB1700E90A21 /* StarbrightGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGL.h; path = ../../Starbright/CPP/StarbrightGL.h; sourceTree = "<group>"; };
@@ -124,6 +118,8 @@
 		308B600B1C960D1300F0E1DF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		308B600E1C960D1300F0E1DF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		308B60101C960D1300F0E1DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30C712B71CB2E722001DC9F6 /* LaunchWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchWindow.swift; sourceTree = "<group>"; };
+		30C712B81CB2E722001DC9F6 /* LaunchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchWindow.xib; sourceTree = "<group>"; };
 		30CB05631C9A130600A767FC /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30CB05641C9A130600A767FC /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30CB05671C9A133D00A767FC /* Starbright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Starbright.cpp; path = ../../Starbright/CPP/Starbright.cpp; sourceTree = "<group>"; };
@@ -289,15 +285,13 @@
 		308B60081C960D1300F0E1DF /* PlasmacoreStudio */ = {
 			isa = PBXGroup;
 			children = (
-				304E209F1CAB3E2900FAA829 /* SweetWindow.swift */,
-				302E60D31CA78C6E002E141E /* SweetWindow.xib */,
-				302E60CF1CA73DFD002E141E /* MainWindow.swift */,
-				302E60D01CA73DFD002E141E /* MainWindow.xib */,
 				30DB201C1C961C00007347E0 /* Bridging-Header.h */,
 				308B60091C960D1300F0E1DF /* AppDelegate.swift */,
 				308B600B1C960D1300F0E1DF /* Assets.xcassets */,
 				308B600D1C960D1300F0E1DF /* MainMenu.xib */,
 				308B60101C960D1300F0E1DF /* Info.plist */,
+				30C712B71CB2E722001DC9F6 /* LaunchWindow.swift */,
+				30C712B81CB2E722001DC9F6 /* LaunchWindow.xib */,
 			);
 			path = PlasmacoreStudio;
 			sourceTree = "<group>";
@@ -559,8 +553,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				302E60D21CA73DFD002E141E /* MainWindow.xib in Resources */,
-				302E60D41CA78C6E002E141E /* SweetWindow.xib in Resources */,
+				30C712BA1CB2E722001DC9F6 /* LaunchWindow.xib in Resources */,
 				308B600C1C960D1300F0E1DF /* Assets.xcassets in Resources */,
 				30DB20241C9B08FE007347E0 /* Assets in Resources */,
 				308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */,
@@ -594,14 +587,13 @@
 				30CB05801C9A135800A767FC /* SuperCPPDataReader.cpp in Sources */,
 				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
 				30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */,
+				30C712B91CB2E722001DC9F6 /* LaunchWindow.swift in Sources */,
 				30CB05851C9A14DA00A767FC /* ImageIO.cpp in Sources */,
 				30DB201F1C961C00007347E0 /* RogueInterface.mm in Sources */,
 				30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */,
-				302E60D11CA73DFD002E141E /* MainWindow.swift in Sources */,
 				30CB057E1C9A135800A767FC /* SuperCPPCString.cpp in Sources */,
 				30CB057F1C9A135800A767FC /* SuperCPPDataBuilder.cpp in Sources */,
 				308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */,
-				304E20A01CAB3E2900FAA829 /* SweetWindow.swift in Sources */,
 				30CB05651C9A130600A767FC /* RogueProgram.cpp in Sources */,
 				30CB05811C9A135800A767FC /* SuperCPPStringBuilder.cpp in Sources */,
 				30736A181CB1FB1700E90A21 /* StarbrightGL.cpp in Sources */,
