@@ -14,6 +14,7 @@
 		308B600F1C960D1300F0E1DF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 308B600D1C960D1300F0E1DF /* MainMenu.xib */; };
 		30C712B91CB2E722001DC9F6 /* LaunchWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C712B71CB2E722001DC9F6 /* LaunchWindow.swift */; };
 		30C712BA1CB2E722001DC9F6 /* LaunchWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30C712B81CB2E722001DC9F6 /* LaunchWindow.xib */; };
+		30C712BD1CB318B9001DC9F6 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30C712BC1CB318B9001DC9F6 /* libfreetype.a */; };
 		30CB05651C9A130600A767FC /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05631C9A130600A767FC /* RogueProgram.cpp */; };
 		30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05671C9A133D00A767FC /* Starbright.cpp */; };
 		30CB057D1C9A135800A767FC /* SuperCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB056E1C9A135800A767FC /* SuperCPP.cpp */; };
@@ -120,6 +121,7 @@
 		308B60101C960D1300F0E1DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		30C712B71CB2E722001DC9F6 /* LaunchWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchWindow.swift; sourceTree = "<group>"; };
 		30C712B81CB2E722001DC9F6 /* LaunchWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchWindow.xib; sourceTree = "<group>"; };
+		30C712BC1CB318B9001DC9F6 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../FreeType/Mac/libfreetype.a; sourceTree = "<group>"; };
 		30CB05631C9A130600A767FC /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
 		30CB05641C9A130600A767FC /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
 		30CB05671C9A133D00A767FC /* Starbright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Starbright.cpp; path = ../../Starbright/CPP/Starbright.cpp; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30C712BD1CB318B9001DC9F6 /* libfreetype.a in Frameworks */,
 				30CB06541C9A188600A767FC /* libz.tbd in Frameworks */,
 				30CB06551C9A18BC00A767FC /* libLibJPEG.a in Frameworks */,
 				30CB06561C9A18BC00A767FC /* libLibPNG.a in Frameworks */,
@@ -257,6 +260,7 @@
 		308B5FFD1C960D1300F0E1DF = {
 			isa = PBXGroup;
 			children = (
+				30C712BC1CB318B9001DC9F6 /* libfreetype.a */,
 				302E60CE1CA73DA2002E141E /* Plasmacore */,
 				30DB20231C9B08FE007347E0 /* Assets */,
 				30CB06571C9A18BC00A767FC /* PlasmacoreStudio.xcodeproj */,
@@ -790,6 +794,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PlasmacoreStudio/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "PlasmacoreStudio/Bridging-Header.h";
@@ -804,6 +809,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PlasmacoreStudio/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = com.plasmaworks.PlasmacoreStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "PlasmacoreStudio/Bridging-Header.h";
