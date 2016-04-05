@@ -2,11 +2,11 @@ module Plasmacore
 
 class Texture
   PROPERTIES
-    name     : String
-    id       : Int32    # id in loading Graphics context
-    size     : XY       # In texels
-    uv_size  : XY       # (1,1) in most cases
-    graphics : Graphics
+    name         : String
+    id           : Int32    # id in loading Graphics context
+    texture_size : XY       # In texels
+    uv_size      : XY       # (1,1) in most cases
+    graphics     : Graphics
       # The graphics context this texture was created in; used by images
       # to reload the texture if drawn in a new context.
 
@@ -16,7 +16,7 @@ class Texture
       graphics = Graphics
 
     method height->Int32 [macro]
-      this.size.y
+      this.texture_size.y
 
     method uv_height->Real64 [macro]
       this.uv_size.y
@@ -25,7 +25,7 @@ class Texture
       this.uv_size.x
 
     method width->Int32 [macro]
-      this.size.x
+      this.texture_size.x
 endClass
 
 
