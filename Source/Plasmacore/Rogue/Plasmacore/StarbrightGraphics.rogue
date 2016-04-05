@@ -103,7 +103,9 @@ class StarbrightGraphics : Graphics
       nativeCode
         #include "ImageIO.h"
         using namespace ImageIO;
+        #include "GGBitmap.h"
       endNativeCode
+
 
       local id = 0
       local image_w : Int32
@@ -125,15 +127,15 @@ class StarbrightGraphics : Graphics
               |  {
               |    $image_w = decoder.width;
               |    $image_h = decoder.height;
-              |    $texture_w = $image_w;
-              |    $texture_h = $image_h;
               |
-              |    ARGB32* image_data = new ARGB32[ $texture_w * $texture_h ];
-              |    if (decoder.decode_argb32( image_data ))
+              |    GG::Bitmap bitmap( 0, $image_w, $image_h, 32 );
+              |    if (decoder.decode_argb32( (ARGB32*)bitmap.data ))
               |    {
-              |      $id = Starbright::renderer->define_texture( image_data, $texture_w, $texture_h, 32 );
+              |      bitmap.expand_to_power_of_two();
+              |      $texture_w = bitmap.width;
+              |      $texture_h = bitmap.height;
+              |      $id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |    }
-              |    delete[] image_data;
               |  }
               |
               |  delete[] file_bytes;
@@ -141,9 +143,9 @@ class StarbrightGraphics : Graphics
               |}
 
       if (id)
-        texture.id      = id
-        texture.size    = XY( texture_w, texture_h )
-        texture.uv_size = XY( image_w, image_h ) / texture.size
+        texture.id           = id
+        texture.texture_size = XY( texture_w, texture_h )
+        texture.uv_size      = XY( image_w, image_h ) / texture.texture_size
       endIf
 
     method update_transform

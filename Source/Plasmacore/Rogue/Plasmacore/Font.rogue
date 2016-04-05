@@ -3,10 +3,29 @@ module Plasmacore
 class Font
   PROPERTIES
     name   : String
-    height : Real64
+    height : Int32
+    data   : FontData
 
   METHODS
-    #method init( name, height=0, characters= )
+endClass
+
+class BitmapFont : Font
+  PROPERTIES
+    width  : Int32
+
+  METHODS
+    method init( name, width, height, characters=' '..'~':Range<<Character>> )
+      data = FontManager.font_data[ name ]
+
+      if (data) return this
+
+      local filepath = Plasmacore.find_asset( name )
+      if (not filepath)
+        println "ERROR loading BitmapFont - no such file $." (name)
+        return this
+      endIf
+
+
 endClass
 
 class FontData

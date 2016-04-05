@@ -1,6 +1,7 @@
 using Plasmacore
 
 println "Rogue Launched!"
+local font = BitmapFont( "FontSystem17.png", 9, 17 )
 
 MessageManager.add_handler( "Ping", function(m:Message) println System.time; Message("Pong").send )
 
@@ -18,7 +19,7 @@ TextureManager.loaders[ "red_box" ] =
     println "callback loading texture " + texture.name
   endFunction
 
-local window = Window( "LaunchWindow" )
+local window = Window( "LaunchWindow", LaunchWindowViewLogic() )
 window.show
 
 #local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
@@ -29,6 +30,12 @@ println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
 local bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
 println bitmap.size
 
+
+class LaunchWindowViewLogic : ViewLogic
+  METHODS
+    method activate
+      Graphics.load_texture( Texture("Test"), File("test") )
+endClass
 
 class SweetWindowViewLogic : ViewLogic
   GLOBAL PROPERTIES
