@@ -1,0 +1,20 @@
+module Plasmacore
+
+class Font
+  PROPERTIES
+    name   : String
+    height : Real64
+
+  METHODS
+    #method init( name, height=0, characters= )
+endClass
+
+class FontData
+  METHODS
+endClass
+
+
+class FontManager [singleton]
+  PROPERTIES
+    font_data = Table<<String,FontData>>()
+endClass
