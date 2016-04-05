@@ -17,19 +17,53 @@ class BitmapFont : Font
     method init( name, width, height, characters=' '..'~':Range<<Character>> )
       data = FontManager.font_data[ name ]
 
-      if (data) return this
+      if (data) return
 
       local filepath = Plasmacore.find_asset( name )
       if (not filepath)
         println "ERROR loading BitmapFont - no such file $." (name)
-        return this
+        return
       endIf
 
+      local src = Bitmap( File(filepath) )
+      if (src.error) return
+
+      data = FontData( height )
+
+      local src_w = src.width / width
+      local src_h = src.height / height
+
+      forEach (j in 0..<src_h)
+        forEach (i in 0..<src_w)
+          local x = i * width
+          local y = j * height
+          local ch_data = Bitmap( src, Box(x,y,width,height) )
+          data.add( characters.read, ch_data )
+        endForEach
+      endForEach
 
 endClass
 
 class FontData
+  PROPERTIES
+    bitmap   : Bitmap
+    height   : Int32
+    cursor_x : Int32
+    cursor_y : Int32
+
   METHODS
+    method init( height )
+      bitmap = Bitmap( 1024, height+2 )
+
+    method add( ch:Character, data:Bitmap )
+      if (cursor_x + data.width+2 > bitmap.width)
+        cursor_x = 0
+        cursor_y += height+2
+        bitmap.add_rows( height+2 )
+      endIf
+
+      data.draw( XY(cursor_x,cursor_y), bitmap )
+
 endClass
 
 

@@ -36,6 +36,12 @@ class Bitmap
       init( bounds.size )
       existing.draw( -bounds.position, this )
 
+    method add_rows( rows:Int32, color=0:Int32 )->this
+      pixels.reserve( width*rows )
+      forEach (1..width*rows) pixels.add( color )
+      size += XY( 0, rows )
+      return this
+
     method clear( color=Color.BLACK:Int32 )
       forEach (i of pixels) pixels[i] = color
 
