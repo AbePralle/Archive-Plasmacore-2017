@@ -6,7 +6,8 @@ class Graphics [singleton]
 
   PROPERTIES
     canvas            : Canvas
-    textures          = Table<<String,Texture>>()
+    named_textures    = Table<<String,Texture>>()  # textures created from a filename
+    bitmap_textures   = Table<<Bitmap,Texture>>()  # textures created from Bitmaps
 
     size              : XY
     true_size         : XY
@@ -31,12 +32,20 @@ class Graphics [singleton]
       background_color = Color.BLACK
 
     method acquire_texture( name:String )->Texture
-      local entry = textures.find( name )
+      local entry = named_textures.find( name )
       if (entry) return entry.value
 
       local texture = Texture( name )
-      textures[ name ] = texture
+      named_textures[ name ] = texture
       TextureManager.load( texture )
+      return texture
+
+    method acquire_texture( bitmap:Bitmap )->Texture
+      local entry = bitmap_textures.find( bitmap )
+      if (entry) return entry.value
+
+      local texture = Texture( bitmap )
+      bitmap_textures[ bitmap ] = texture
       return texture
 
     method begin_draw( canvas )->this
@@ -64,10 +73,8 @@ class Graphics [singleton]
       return this
 
 
-      #{
-    method define_texture( name:String, bitmap:Bitmap )->Texture
-      return Texture( name, 0, bitmap.size, XY(1,1) )
-      }#
+    method define_texture( texture:Texture, bitmap:Bitmap )
+      println ''Failed to define texture from $x$ bitmap.'' (bitmap.width,bitmap.height)
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XYZ, pt2:XYZ, pt3:XYZ, pt4:XYZ, uv1:XY, uv2:XY, uv3:XY, uv4:XY )

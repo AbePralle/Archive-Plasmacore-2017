@@ -4,7 +4,8 @@ class Texture
   PROPERTIES
     name         : String
     id           : Int32    # id in loading Graphics context
-    texture_size : XY       # In texels
+    image_size   : XY       # In pixels
+    texture_size : XY       # In pixels
     uv_size      : XY       # (1,1) in most cases
     graphics     : Graphics
       # The graphics context this texture was created in; used by images
@@ -14,6 +15,10 @@ class Texture
   METHODS
     method init( name )
       graphics = Graphics
+
+    method init( bitmap:Bitmap )
+      name = "Bitmap Texture"
+      Graphics.define_texture( this, bitmap )
 
     method height->Int32 [macro]
       this.texture_size.y

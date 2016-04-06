@@ -42,28 +42,91 @@ class BitmapFont : Font
         endForEach
       endForEach
 
+      prepare
+
+    method prepare
+      if (data) data.prepare
+
 endClass
+
 
 class FontData
   PROPERTIES
-    bitmap   : Bitmap
-    height   : Int32
-    cursor_x : Int32
-    cursor_y : Int32
+    bitmap      : Bitmap
+    image       : Image
+    height      : Int32
+    cursor_x=1  : Int32
+    cursor_y=1  : Int32
+    ascii       = FontCharacter[]( 128, null )
+    lookup      : Table<<Character,FontCharacter>>
+    is_modified : Logical
 
   METHODS
     method init( height )
       bitmap = Bitmap( 1024, height+2 )
 
     method add( ch:Character, data:Bitmap )
-      if (cursor_x + data.width+2 > bitmap.width)
-        cursor_x = 0
+      local w = data.width
+
+      if (cursor_x + w+1 > bitmap.width)
+        cursor_x = 1
         cursor_y += height+2
         bitmap.add_rows( height+2 )
       endIf
 
+      if (data.height > height)
+        # This character is taller than the nominal max height of the font.
+        # Make room for it and adjust the height.
+        bitmap.add_rows( data.height - height )
+        height = data.height
+      endIf
+
       data.draw( XY(cursor_x,cursor_y), bitmap )
 
+      local info = FontCharacter( ch, cursor_x, cursor_y, w, height )
+      if (ch <= 127)
+        ascii[ ch ] = info
+      else
+        if (not lookup) lookup = Table<<Character,FontCharacter>>()
+        lookup[ ch ] = info
+      endIf
+
+      cursor_x += w + 2
+      is_modified = true
+
+    method get( ch:Character )->FontCharacter
+      if (ch <= 127) return ascii[ ch ]
+      if (lookup)    return lookup[ ch ]
+      return null
+
+    method prepare
+      if (not is_modified) return
+
+      # TODO
+      #{
+      if (image)
+      else
+        image = Image(
+      endIf
+      }#
+
+endClass
+
+
+class FontCharacter
+  PROPERTIES
+    unicode  : Character
+    x1       : Int32
+    y1       : Int32
+    width    : Int32
+    height   : Int32
+    offset_x : Int32
+    offset_y : Int32
+    image    : Image
+
+  METHODS
+    method init( unicode, x1, y1, width, height )
+trace unicode, x1, y1, width, height
 endClass
 
 

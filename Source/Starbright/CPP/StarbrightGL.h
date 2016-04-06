@@ -75,6 +75,7 @@ typedef struct GLVertexUV
 struct GLTexture : Texture
 {
   GLuint gl_id;
+  int    texture_id;
   int    width, height;
   int    options;
 
@@ -112,6 +113,7 @@ struct GLRenderer : Renderer
   void delete_texture( int texture_id );
   void flush();
   void render();
+  void update_texture( int texture_id, void* pixels, int width, int height, int options );
 };
 
 }; // namespace Starbright

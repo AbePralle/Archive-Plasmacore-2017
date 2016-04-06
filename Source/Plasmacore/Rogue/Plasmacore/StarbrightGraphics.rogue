@@ -16,21 +16,34 @@ class StarbrightGraphics : Graphics
               |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
       return this
 
-      #{
-    method define_texture( name:String, bitmap:Bitmap )->Texture
-      local texture_id = 0
-      if (bitmap)
-        local w = bitmap.width
-        local h = bitmap.height
-        local bpp = 32
-        texture_id = native(
-        "Starbright::renderer->define_texture($bitmap->pixels->data->bytes,$w,$h,$bpp)" )->Int32
-      endIf
+    method define_texture( texture:Texture, bitmap:Bitmap )
+      nativeCode
+        #include "ImageIO.h"
+        using namespace ImageIO;
+        #include "GGBitmap.h"
+      endNativeCode
 
-      local texture = Texture( name, texture_id, bitmap.size, XY(1,1) )
-      textures[ name ] = texture
-      return texture
-      }#
+      local image_w = bitmap.width
+      local image_h = bitmap.height
+      local texture_w, texture_h : Int32
+      local bpp = 32
+
+      native @|GG::Bitmap bitmap( bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
+              |bitmap.expand_to_power_of_two();
+              |$texture_w = bitmap.width;
+              |$texture_h = bitmap.height;
+              |if ($bitmap->id)
+              |{
+              |  Starbright::renderer->update_texture( $bitmap->id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |}
+              |else
+              |{
+              |  $id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |}
+
+      texture.image_size   = XY( image_w, image_h )
+      texture.texture_size = XY( texture_w, texture_h )
+      texture.uv_size      = texture.image_size / texture.texture_size
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XYZ, pt2:XYZ, pt3:XYZ, pt4:XYZ, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
@@ -144,8 +157,9 @@ class StarbrightGraphics : Graphics
 
       if (id)
         texture.id           = id
+        texture.image_size   = XY( image_w, image_h )
         texture.texture_size = XY( texture_w, texture_h )
-        texture.uv_size      = XY( image_w, image_h ) / texture.texture_size
+        texture.uv_size      = texture.image_size / texture.texture_size
       endIf
 
     method update_transform
