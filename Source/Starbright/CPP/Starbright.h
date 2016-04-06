@@ -184,13 +184,14 @@ struct Renderer
   virtual void      render() {}
   virtual void      set_clear_color( int color ) { clear_color = color; }
   virtual void      set_primitive_type( int type );
-  virtual void      set_render_mode( RenderMode mode ) 
+  virtual void      set_render_mode( RenderMode mode )
                     { if (render_mode.value != mode.value) render(); render_mode = mode; }
   virtual void      set_shader( int shader_id );
   virtual void      set_texture( int index, int texture_id );
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform( double matrix[16] );
   virtual void      set_transform( float matrix[16] );
+  virtual void      update_texture( int texture_id, void* pixels, int width, int height, int options ) {}
 };
 
 extern Renderer* renderer;

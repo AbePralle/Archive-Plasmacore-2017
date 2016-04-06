@@ -17,6 +17,9 @@ class Image
   METHODS
     method init( name )
 
+    method init( bitmap:Bitmap )
+      data = TextureImageData( bitmap )
+
     method draw( pos:XYZ )
       prepare
       data.draw( pos )
@@ -43,11 +46,15 @@ endClass
 class TextureImageData : ImageData
   PROPERTIES
     texture : Texture
-      # Stores which graphics context this image's texture is loaded in.
-      # Used to recreate the image data for different contexts if necessary.
+
+    bitmap  : Bitmap
+    # Optional backing bitmap that, if present, is used to recreate the texture in different
+    # graphics contexts.
 
   METHODS
     method init( image, texture )
+
+    method init( bitmap )
 
     method draw( pos:XYZ )
       local hw = texture.width / 2

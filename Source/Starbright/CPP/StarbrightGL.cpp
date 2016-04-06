@@ -55,7 +55,7 @@ GLRenderer::GLRenderer()
     "void main()                           \n"
     "{                                     \n"
     "  gl_Position = transform * position; \n"
-    "  vertex_uv = uv;                     \n" 
+    "  vertex_uv = uv;                     \n"
     "}                                     \n",
 
     // Pixel Shader
@@ -82,7 +82,7 @@ GLRenderer::GLRenderer()
     "void main()                                \n"
     "{                                          \n"
     "  gl_Position = transform * position;      \n"
-    "  vertex_uv = uv;                          \n" 
+    "  vertex_uv = uv;                          \n"
     "  vertex_color = color / 255.0;            \n"
     "}                                          \n",
 
@@ -111,7 +111,7 @@ GLRenderer::GLRenderer()
     "void main()                               \n"
     "{                                         \n"
     "  gl_Position = transform * position;     \n"
-    "  vertex_uv = uv;                         \n" 
+    "  vertex_uv = uv;                         \n"
     "  vertex_color = color / 255.0;           \n"
     "}                                         \n",
 
@@ -142,7 +142,7 @@ GLRenderer::GLRenderer()
     "void main()                                          \n"
     "{                                                    \n"
     "  gl_Position = transform * position;                \n"
-    "  vertex_uv = uv;                                    \n" 
+    "  vertex_uv = uv;                                    \n"
     "  vertex_color = color / 255.0;                      \n"
     "  vertex_inverse_a = 1.0 - vertex_color.a;           \n"
     "}                                                    \n",
@@ -157,7 +157,7 @@ GLRenderer::GLRenderer()
     "void main()                                          \n"
     "{                                                    \n"
     "  vec4 texture_color = texture2D(texture_0,vertex_uv); \n"
-    "  gl_FragColor = vec4( ((texture_color.xyz*vertex_inverse_a)+vertex_color.xyz) * texture_color.a, texture_color.a );  \n" 
+    "  gl_FragColor = vec4( ((texture_color.xyz*vertex_inverse_a)+vertex_color.xyz) * texture_color.a, texture_color.a );  \n"
     "}                                                   \n"
   );
 
@@ -279,41 +279,10 @@ int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
 int  GLRenderer::define_texture( void* pixels, int width, int height, int options )
 {
   GLTexture* texture = new GLTexture();
-  int bpp = options & (32|16|8);
-
-  texture->width  = width;
-  texture->height = height;
-  texture->options = options;
-
   glGenTextures( 1, &texture->gl_id );
-  glBindTexture( GL_TEXTURE_2D, texture->gl_id );
-
-  switch (bpp)
-  {
-    case 32:
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
-      break;
-
-    case 16:
-      {
-        // Convert 16-bit ARGB to 16-bit RGBA
-        int count = width*height;
-        UInt16* cursor = ((UInt16*) pixels) - 1;
-        while (--count >= 0)
-        {
-          UInt16 pixel = *(++cursor);
-          *cursor = (UInt16)
-                  ( ((pixel<<4) & 0x0f00)
-                  | ((pixel>>4)&0xf0) 
-                  | ((pixel<<12)&0xf000)
-                  | ((pixel>>12)&15) );
-        }
-      }
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
-      break;
-  }
-
-  return textures.add( texture );
+  texture->texture_id = textures.add( texture );
+  update_texture( texture->texture_id, pixels, width, height, options );
+  return texture->texture_id;
 }
 
 void GLRenderer::delete_shader( int shader_id )
@@ -392,7 +361,7 @@ void GLRenderer::render()
       case RenderMode::BLEND_ONE:               gl_src_blend = GL_ONE;                 break;
       case RenderMode::BLEND_SRC_ALPHA:         gl_src_blend = GL_SRC_ALPHA;           break;
       case RenderMode::BLEND_INVERSE_SRC_ALPHA: gl_src_blend = GL_ONE_MINUS_SRC_ALPHA; break;
-      default: 
+      default:
         printf( "Superbright OpenGL Renderer: Invalid source blend (%d), defaulting to BLEND_ONE.\n", render_mode.src_blend() );
         gl_src_blend = GL_ONE;
     }
@@ -403,7 +372,7 @@ void GLRenderer::render()
       case RenderMode::BLEND_ONE:               gl_dest_blend = GL_ONE;                 break;
       case RenderMode::BLEND_SRC_ALPHA:         gl_dest_blend = GL_SRC_ALPHA;           break;
       case RenderMode::BLEND_INVERSE_SRC_ALPHA: gl_dest_blend = GL_ONE_MINUS_SRC_ALPHA; break;
-      default: 
+      default:
         printf( "Superbright OpenGL Renderer: Invalid destination blend (%d), defaulting to BLEND_ZERO.\n", render_mode.dest_blend() );
         gl_dest_blend = GL_ONE;
     }
@@ -564,6 +533,45 @@ void GLRenderer::render()
 
   vertex_count = 0;
   memset( vertices, 0, sizeof(Vertex) * Renderer::VERTEX_BUFFER_COUNT );
+}
+
+void GLRenderer::update_texture( int texture_id, void* pixels, int width, int height, int options )
+{
+  GLTexture* texture = (GLTexture*) textures.get( texture_id );
+  if ( !texture ) return;
+
+  int bpp = options & (32|16|8);
+
+  texture->width  = width;
+  texture->height = height;
+  texture->options = options;
+
+  glBindTexture( GL_TEXTURE_2D, texture->gl_id );
+
+  switch (bpp)
+  {
+    case 32:
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
+      break;
+
+    case 16:
+      {
+        // Convert 16-bit ARGB to 16-bit RGBA
+        int count = width*height;
+        UInt16* cursor = ((UInt16*) pixels) - 1;
+        while (--count >= 0)
+        {
+          UInt16 pixel = *(++cursor);
+          *cursor = (UInt16)
+                  ( ((pixel<<4) & 0x0f00)
+                  | ((pixel>>4)&0xf0)
+                  | ((pixel<<12)&0xf000)
+                  | ((pixel>>12)&15) );
+        }
+      }
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
+      break;
+  }
 }
 
 }; // namespace Starbright

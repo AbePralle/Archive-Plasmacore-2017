@@ -75,7 +75,6 @@ class Bitmap
       if (x_limit > dest_width)  x_limit = dest_width
       if (y_limit > dest_bitmap.height) y_limit = dest_bitmap.height
       if (x1 >= x_limit or y1 >= y_limit) return
-      local x2 = x_limit - 1
       local y2 = y_limit - 1
 
       local w = x_limit - x1
