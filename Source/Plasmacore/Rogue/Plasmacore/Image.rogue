@@ -55,6 +55,7 @@ class TextureImageData : ImageData
     method init( image, texture )
 
     method init( bitmap )
+      texture = Texture( bitmap )
 
     method draw( pos:XYZ )
       local hw = texture.width / 2
@@ -83,6 +84,7 @@ class TextureImageData : ImageData
         # Graphics Context changed; find or load the texture in the current context
         texture = Graphics.acquire_texture( texture.name )
       endIf
+      texture.prepare
 
 
 endClass
