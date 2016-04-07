@@ -14,10 +14,12 @@ MessageManager.add_handler( "some_button_clicked",
   endFunction
 )
 
+#{
 TextureManager.loaders[ "red_box" ] =
   function( texture:Texture )
     println "callback loading texture " + texture.name
   endFunction
+  }#
 
 local window = Window( "LaunchWindow", LaunchWindowViewLogic() )
 window.show
@@ -30,20 +32,22 @@ window.show
 class LaunchWindowViewLogic : ViewLogic
   PROPERTIES
     img : Image
+    bitmap : Bitmap
 
   METHODS
     method activate
       #Graphics.load_texture( Texture("Test"), File("test") )
 
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
-      local bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
+      bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
       println bitmap.size
       img = Image( bitmap )
+      #img = Image( "King.png" )
 
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( XYZ(0,0) )
+      img.draw( XYZ(Math.floor(Graphics.width/2)+0.5,Math.floor(Graphics.height/2)+0.5,Graphics.unit_z) )
 
     method update
 endClass

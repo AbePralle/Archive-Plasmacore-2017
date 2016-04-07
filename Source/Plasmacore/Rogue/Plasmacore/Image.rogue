@@ -1,65 +1,65 @@
 module Plasmacore
 
-class ImageManager [singleton]
-  METHODS
-    method load( image:Image )
-      # Load the image name as a texture
-      local texture = Graphics.acquire_texture( image.name )
-      image.data = TextureImageData( image, texture )
-      return
-endClass
-
 class Image
   PROPERTIES
-    name   : String
     data   : ImageData
 
   METHODS
-    method init( name )
+    method init( name:String )
+      data = ImageManager.load( name )
 
     method init( bitmap:Bitmap )
-      data = TextureImageData( bitmap )
+      data = ImageManager.load( bitmap )
 
     method draw( pos:XYZ )
-      prepare
-      data.draw( pos )
+      if (is_ready) data.draw( pos )
 
-    method prepare->this
-      if (data) data.prepare
-      else      ImageManager.load( this )
-      return this
+    method height->Real64
+      return data.size.y
+
+    method is_ready->Logical
+      if (not data.is_ready) data = data.prepare
+      return data.is_ready
+
+    method width->Real64
+      return data.size.x
 endClass
 
 class ImageData
   PROPERTIES
-    image : Image
+    size : XY
 
   METHODS
-    method init( image )
-
     method draw( pos:XYZ )
 
-    method prepare
+    method is_ready->Logical
+      return false
 
+    method prepare->ImageData
+      return this
+endClass
+
+class UnresolvedImageData( name:String ) : ImageData
+  METHODS
+    method prepare->ImageData
+      if (Graphics.is_ready and ImageManager.is_ready)
+        return ImageManager.load( name )
+      else
+        return this
+      endIf
 endClass
 
 class TextureImageData : ImageData
   PROPERTIES
     texture : Texture
 
-    bitmap  : Bitmap
-    # Optional backing bitmap that, if present, is used to recreate the texture in different
-    # graphics contexts.
-
   METHODS
-    method init( image, texture )
-
-    method init( bitmap )
-      texture = Texture( bitmap )
+    method init( texture )
+      size = texture.image_size
 
     method draw( pos:XYZ )
-      local hw = texture.width / 2
-      local hh = texture.height / 2
+      local hw = texture.image_width  / 2
+      local hh = texture.image_height / 2
       local uw = texture.uv_width
       local uh = texture.uv_height
       local pt1 = XYZ( -hw, -hh, 0 )
@@ -79,12 +79,30 @@ class TextureImageData : ImageData
 
       Graphics.pop_object_transform
 
-    method prepare
-      if (texture.graphics isNot Graphics)
-        # Graphics Context changed; find or load the texture in the current context
-        texture = Graphics.acquire_texture( texture.name )
-      endIf
-      texture.prepare
+    method is_ready->Logical
+      return texture.is_ready
 
+    method prepare->ImageData
+      # The graphics context changed or a backing bitmap was updated;
+      # find or load the texture in the current context
+      texture = texture.reload
+      size = texture.image_size
+
+      return this
 
 endClass
+
+
+class ImageManager [singleton]
+  METHODS
+    method is_ready->Logical
+      return true
+
+    method load( name:String )->ImageData
+      if (not Graphics.is_ready) return UnresolvedImageData( name )
+      return TextureImageData( Graphics.acquire_texture(name) )
+
+    method load( bitmap:Bitmap )->ImageData
+      return TextureImageData( Graphics.acquire_texture(bitmap) )
+endClass
+
