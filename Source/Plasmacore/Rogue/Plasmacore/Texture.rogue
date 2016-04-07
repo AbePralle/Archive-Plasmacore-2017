@@ -2,26 +2,33 @@ module Plasmacore
 
 class Texture
   PROPERTIES
-    name         : String
-    id           : Int32    # id in loading Graphics context
-    image_size   : XY       # In pixels
-    texture_size : XY       # In pixels
-    uv_size      : XY       # (1,1) in most cases
-    graphics     : Graphics
+    name          : String
+    id            : Int32    # id in loading Graphics context
+    image_size    : XY       # In pixels
+    texture_size  : XY       # In pixels
+    uv_size       : XY       # (1,1) in most cases
+    bitmap        : Bitmap   # Optional backing bitmap
+    version       : Int32    # Used to keep this texture in sync with the bitmap
+    graphics      = Graphics : Graphics
       # The graphics context this texture was created in; used by images
       # to reload the texture if drawn in a new context.
 
 
   METHODS
     method init( name )
-      graphics = Graphics
 
-    method init( bitmap:Bitmap )
+    method init( bitmap )
       name = "Bitmap Texture"
-      Graphics.define_texture( this, bitmap )
+      prepare
 
     method height->Int32 [macro]
       this.texture_size.y
+
+    method prepare
+      if (bitmap and version != bitmap.version)
+        Graphics.define_texture( this, bitmap )
+        version = bitmap.version
+      endIf
 
     method uv_height->Real64 [macro]
       this.uv_size.y

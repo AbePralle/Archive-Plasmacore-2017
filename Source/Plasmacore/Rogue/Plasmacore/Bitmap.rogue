@@ -2,9 +2,10 @@ module Plasmacore
 
 class Bitmap
   PROPERTIES
-    size   : XY
-    pixels : Int32[]
-    error  : Logical
+    size    : XY
+    pixels  : Int32[]
+    error   : Logical
+    version : Int32  # A counter that is sometimes used to sync textures with this bitmap
 
   METHODS
     method init( size, color=Color.BLACK:Int32 ) [requisite]

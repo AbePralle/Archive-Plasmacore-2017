@@ -6,7 +6,9 @@ endNativeCode
 
 
 class StarbrightGraphics : Graphics
-  nativeHeader #include "Starbright.h"
+  CLASS
+    nativeHeader #include "Starbright.h"
+
   METHODS
     method init( canvas )
       @trace
@@ -28,17 +30,17 @@ class StarbrightGraphics : Graphics
       local texture_w, texture_h : Int32
       local bpp = 32
 
-      native @|GG::Bitmap bitmap( bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
+      native @|GG::Bitmap bitmap( $bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
               |bitmap.expand_to_power_of_two();
               |$texture_w = bitmap.width;
               |$texture_h = bitmap.height;
-              |if ($bitmap->id)
+              |if ($texture->id)
               |{
-              |  Starbright::renderer->update_texture( $bitmap->id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |  Starbright::renderer->update_texture( $texture->id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |}
               |else
               |{
-              |  $id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |  $texture->id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |}
 
       texture.image_size   = XY( image_w, image_h )

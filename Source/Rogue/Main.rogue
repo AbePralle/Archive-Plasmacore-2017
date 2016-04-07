@@ -26,15 +26,26 @@ window.show
 #sweet_window.show
 
 
-println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
-local bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
-println bitmap.size
-
 
 class LaunchWindowViewLogic : ViewLogic
+  PROPERTIES
+    img : Image
+
   METHODS
     method activate
-      Graphics.load_texture( Texture("Test"), File("test") )
+      #Graphics.load_texture( Texture("Test"), File("test") )
+
+      println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
+      local bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
+      println bitmap.size
+      img = Image( bitmap )
+
+
+    method draw
+      Graphics.clear( Color.BLUE )
+      img.draw( XYZ(0,0) )
+
+    method update
 endClass
 
 class SweetWindowViewLogic : ViewLogic
