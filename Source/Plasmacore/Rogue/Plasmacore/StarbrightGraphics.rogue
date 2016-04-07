@@ -114,6 +114,9 @@ class StarbrightGraphics : Graphics
               |v[2].u = $uv3.x;
               |v[2].v = $uv3.y;
 
+    method is_ready->Logical
+      return true
+
     method load_texture( texture:Texture, file:File )
       nativeCode
         #include "ImageIO.h"

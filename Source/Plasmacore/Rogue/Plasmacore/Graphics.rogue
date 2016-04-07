@@ -36,16 +36,36 @@ class Graphics [singleton]
       if (entry) return entry.value
 
       local texture = Texture( name )
+
+      local filepath = Plasmacore.find_asset( name )
       named_textures[ name ] = texture
-      TextureManager.load( texture )
+
+      if (filepath)
+        Graphics.load_texture( texture, File(filepath) )
+      else
+        println "No such texture: " + texture.name
+      endIf
+
       return texture
 
     method acquire_texture( bitmap:Bitmap )->Texture
       local entry = bitmap_textures.find( bitmap )
-      if (entry) return entry.value
+      if (entry)
+        local texture = entry.value
+        if (texture.version != bitmap.version)
+          # Backing bitmap has changed; redefine the texture
+          Graphics.define_texture( texture, bitmap )
+          texture.version = bitmap.version
+        endIf
+        return texture
+      endIf
 
       local texture = Texture( bitmap )
       bitmap_textures[ bitmap ] = texture
+
+      Graphics.define_texture( texture, bitmap )
+      texture.version = bitmap.version
+
       return texture
 
     method begin_draw( canvas )->this
@@ -72,7 +92,6 @@ class Graphics [singleton]
       object_transform_modified = true
       return this
 
-
     method define_texture( texture:Texture, bitmap:Bitmap )
       println ''Failed to define texture from $x$ bitmap.'' (bitmap.width,bitmap.height)
 
@@ -89,6 +108,11 @@ class Graphics [singleton]
       this.size.y->Int32
 
     method flush
+
+    method is_ready->Logical
+      # The default Graphics context returns false.  Valid renderer-specific
+      # contexts override this to return true.
+      return false
 
     method load_texture( texture:Texture, file:File )
       println ''Failed to load texture "$" from file "$".'' (texture.name,file)
