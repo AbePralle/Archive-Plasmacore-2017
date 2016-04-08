@@ -5,8 +5,8 @@ class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
     method create->XYZW
       return XYZW( 0, 0, 0, 1 )
 
-    method create( xy:XY )->XYZW
-      return XYZW( xy.x, xy.y, 1, 1 )
+    method create( xy:XY, z=0:Real64 )->XYZW
+      return XYZW( xy.x, xy.y, z, 1 )
 
     method create( xyz:XYZ )->XYZW
       return XYZW( xyz.x, xyz.y, xyz.z, 1 )

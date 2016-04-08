@@ -8,6 +8,12 @@ class Box( position:XY, size:XY ) [compound]
     method create( width:Real64, height:Real64 )->Box
       return Box( XY(0,0), XY(width,height) )
 
+    method create( x:Real64, y:Real64, size:XY )->Box
+      return Box( XY(x,y), size )
+
+    method create( position:XY, width:Real64, height:Real64 )->Box
+      return Box( position, XY(width,height) )
+
     method create( size:XY )->Box
       return Box( XY(0,0), size )
 

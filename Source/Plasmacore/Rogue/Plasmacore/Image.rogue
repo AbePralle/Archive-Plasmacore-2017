@@ -14,8 +14,42 @@ class Image
     method init( existing:Image, subset:Box )
       data = existing.data.create_subset( subset )
 
-    method draw( pos:XYZ )
-      if (is_ready) data.draw( pos )
+    method draw( bounds:Box, origin=XY(0,0):XY )
+      local transform = Graphics.transform
+      local z   = -Graphics.unit_z
+      local pt1 = transform * XYZW( bounds.top_left,     z )
+      local pt2 = transform * XYZW( bounds.top_right,    z )
+      local pt3 = transform * XYZW( bounds.bottom_right, z )
+      local pt4 = transform * XYZW( bounds.bottom_left,  z )
+      data.draw( pt1, pt2, pt3, pt4 )
+
+      #{
+      local origin = bounds.position + (anchor.position * bounds.size).floor
+      local z   = -Graphics.unit_z
+      local pt1 = XYZ( bounds.top_left     - origin, z )
+      local pt2 = XYZ( bounds.top_right    - origin, z )
+      local pt3 = XYZ( bounds.bottom_right - origin, z )
+      local pt4 = XYZ( bounds.bottom_left  - origin, z )
+
+      local uv21 = XY(uv2.x,uv1.y)
+      local uv12 = XY(uv1.x,uv2.y)
+
+      Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-(pos.z+Graphics.unit_z))) )
+
+      local transform = Graphics.transform
+
+      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
+          transform*pt1, transform*pt2, transform*pt3, transform*pt4, uv1, uv21, uv2, uv12 )
+
+      Graphics.pop_object_transform
+
+      draw( XYZW(bounds.top_left), XYZW(bounds.top_right),
+          XYZW(bounds.bottom_right), XYZW(bounds.bottom_left),
+          bounds.position + (anchor.position * bounds.size).floor )
+      }#
+
+    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
+      if (is_ready) data.draw( pt1, pt2, pt3, pt4 )
 
     method height->Real64
       return data.size.y
@@ -24,17 +58,21 @@ class Image
       if (not data.is_ready) data = data.prepare
       return data.is_ready
 
+    method size->XY
+      return data.size
+
     method width->Real64
       return data.size.x
 endClass
 
 class ImageData
   PROPERTIES
-    size   : XY
-    anchor : Anchor
+    size        : XY
+    shader      : Shader
+    render_mode : RenderMode
 
   METHODS
-    method draw( pos:XYZ )
+    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
 
     method create_subset( subset:Box )->ImageData
       return ImageData()
@@ -58,12 +96,15 @@ endClass
 
 class TextureImageData : ImageData
   PROPERTIES
-    texture : Texture
-    uv1     : XY
-    uv2     : XY
+    texture     : Texture
+    uv1         : XY
+    uv2         : XY
+
 
   METHODS
     method init( texture )
+      shader      = Shader.TEXTURE
+      render_mode = RenderMode.IMAGE_DEFAULT
 
     method create_subset( subset:Box )->ImageData
       local result = TextureImageData( texture )
@@ -72,25 +113,12 @@ class TextureImageData : ImageData
       result.uv2 = subset.bottom_right / texture.texture_size
       return result
 
-    method draw( pos:XYZ )
-      local hw = size.x / 2
-      local hh = size.y / 2
-      local pt1 = XYZ( -hw, -hh, 0 )
-      local pt2 = XYZ(  hw, -hh, 0 )
-      local pt3 = XYZ(  hw,  hh, 0 )
-      local pt4 = XYZ( -hw,  hh, 0 )
-
+    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
       local uv21 = XY(uv2.x,uv1.y)
       local uv12 = XY(uv1.x,uv2.y)
 
-      Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-pos.z)) )
-
-      local transform = Graphics.transform
-
-      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
-          transform*pt1, transform*pt2, transform*pt3, transform*pt4, uv1, uv21, uv2, uv12 )
-
-      Graphics.pop_object_transform
+      Graphics.draw_textured_quad( texture, shader, render_mode,
+          pt1, pt2, pt3, pt4, uv1, uv21, uv2, uv12 )
 
     method is_ready->Logical
       return texture.is_ready

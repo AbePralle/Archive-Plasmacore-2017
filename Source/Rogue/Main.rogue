@@ -49,8 +49,8 @@ class LaunchWindowViewLogic : ViewLogic
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( XYZ(Math.floor(Graphics.width/2),Math.floor(Graphics.height/2),Graphics.unit_z) )
-      img2.draw( XYZ(1+9.0/2,1+17.0/2,Graphics.unit_z) )
+      img.draw( Box(1,1,img.size) )
+      img2.draw( Box(1,19,img2.size) )
 
     method update
 endClass
