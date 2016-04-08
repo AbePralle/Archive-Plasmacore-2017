@@ -11,6 +11,9 @@ class Image
     method init( bitmap:Bitmap )
       data = ImageManager.load( bitmap )
 
+    method init( existing:Image, subset:Box )
+      data = existing.data.create_subset( subset )
+
     method draw( pos:XYZ )
       if (is_ready) data.draw( pos )
 
@@ -32,6 +35,9 @@ class ImageData
   METHODS
     method draw( pos:XYZ )
 
+    method create_subset( subset:Box )->ImageData
+      return ImageData()
+
     method is_ready->Logical
       return false
 
@@ -52,30 +58,34 @@ endClass
 class TextureImageData : ImageData
   PROPERTIES
     texture : Texture
+    uv1     : XY
+    uv2     : XY
 
   METHODS
     method init( texture )
-      size = texture.image_size
+
+    method create_subset( subset:Box )->ImageData
+      local result = TextureImageData( texture )
+      result.size = subset.size
+      result.uv1 = subset.top_left / texture.texture_size
+      result.uv2 = subset.bottom_right / texture.texture_size
+      return result
 
     method draw( pos:XYZ )
-      local hw = texture.image_width  / 2
-      local hh = texture.image_height / 2
-      local uw = texture.uv_width
-      local uh = texture.uv_height
+      local hw = size.x / 2
+      local hh = size.y / 2
       local pt1 = XYZ( -hw, -hh, 0 )
       local pt2 = XYZ(  hw, -hh, 0 )
       local pt3 = XYZ(  hw,  hh, 0 )
       local pt4 = XYZ( -hw,  hh, 0 )
 
-      local uv1 = XY(0,0)
-      local uv2 = XY(uw,0)
-      local uv3 = XY(uw,uh)
-      local uv4 = XY(0,uh)
+      local uv21 = XY(uv2.x,uv1.y)
+      local uv12 = XY(uv1.x,uv2.y)
 
       Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-pos.z)) )
 
       Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
-        pt1, pt2, pt3, pt4, uv1, uv2, uv3, uv4 )
+          pt1, pt2, pt3, pt4, uv1, uv21, uv2, uv12 )
 
       Graphics.pop_object_transform
 
@@ -100,9 +110,19 @@ class ImageManager [singleton]
 
     method load( name:String )->ImageData
       if (not Graphics.is_ready) return UnresolvedImageData( name )
-      return TextureImageData( Graphics.acquire_texture(name) )
+      local texture = Graphics.acquire_texture( name )
+      local image_data = TextureImageData( texture )
+      image_data.size = texture.image_size
+      image_data.uv1  = XY(0,0)
+      image_data.uv2  = texture.uv_size
+      return image_data
 
     method load( bitmap:Bitmap )->ImageData
-      return TextureImageData( Graphics.acquire_texture(bitmap) )
+      local texture = Graphics.acquire_texture( bitmap )
+      local image_data = TextureImageData( texture )
+      image_data.size = texture.image_size
+      image_data.uv1  = XY(0,0)
+      image_data.uv2  = texture.uv_size
+      return image_data
 endClass
 

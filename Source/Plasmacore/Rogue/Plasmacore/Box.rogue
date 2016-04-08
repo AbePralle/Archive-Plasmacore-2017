@@ -24,6 +24,9 @@ class Box( position:XY, size:XY ) [compound]
       local excess_y = enclosing.height - height
       return Box( XY(enclosing.x + excess_x * align_x, enclosing.y + excess_y * align_y), size )
 
+    method bottom_left->XY
+      return (position + XY(0,size.y))
+
     method bottom_right->XY
       return (position + size)
 
@@ -38,6 +41,12 @@ class Box( position:XY, size:XY ) [compound]
 
     method to->String
       return "[@$,$ $x$]" (x,y,width,height)
+
+    method top_left->XY [macro]
+      position
+
+    method top_right->XY
+      return (position + XY(size.x,0))
 
     method width->Real64 [macro]
       this.size.x
