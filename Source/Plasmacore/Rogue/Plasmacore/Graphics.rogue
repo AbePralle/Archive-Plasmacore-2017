@@ -13,13 +13,16 @@ class Graphics [singleton]
     true_size         : XY
     background_color  : Int32
 
-    transform         : Matrix
-    view_transform    = Matrix.identity : Matrix
-    object_transform  = Matrix.identity : Matrix
-    view_transforms   = Matrix[]
-    object_transforms = Matrix[]
-    view_transform_modified   : Logical
-    object_transform_modified : Logical
+    projection_transform : Matrix
+
+    transform            : Matrix
+    view_transform       = Matrix.identity : Matrix
+    object_transform     = Matrix.identity : Matrix
+    view_transforms      = Matrix[]
+    object_transforms    = Matrix[]
+
+    view_transform_modified       : Logical
+    object_transform_modified     : Logical
 
     mode              = ProjectionMode()
     unit_z            : Real64
@@ -108,6 +111,7 @@ class Graphics [singleton]
       this.size.y->Int32
 
     method flush
+      render
 
     method is_ready->Logical
       # The default Graphics context returns false.  Valid renderer-specific
@@ -153,6 +157,8 @@ class Graphics [singleton]
       view_transforms.add( m )
       view_transform_modified = true
       return this
+
+    method render
 
     method set_mode_2dx( size=Graphics.size, unit_z=384, max_z=16:Real64 )
       clear_transforms

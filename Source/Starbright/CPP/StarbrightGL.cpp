@@ -467,7 +467,7 @@ void GLRenderer::render()
       (++dest_xyzw)->x = (++src_vertex)->x;
       dest_xyzw->y     = src_vertex->y;
       dest_xyzw->z     = src_vertex->z;
-      dest_xyzw->w     = 1;
+      dest_xyzw->w     = src_vertex->w;
       (++dest_uv)->u   = src_vertex->u;
       dest_uv->v       = src_vertex->v;
     }
@@ -483,7 +483,7 @@ void GLRenderer::render()
       (++dest_xyzw)->x = (++src_vertex)->x;
       dest_xyzw->y     = src_vertex->y;
       dest_xyzw->z     = src_vertex->z;
-      dest_xyzw->w     = 1;
+      dest_xyzw->w     = src_vertex->w;
     }
   }
 
