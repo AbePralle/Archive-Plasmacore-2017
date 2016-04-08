@@ -184,6 +184,9 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
     method inverted->Quaternion
       return Quaternion( -x, -y, -z, w )
 
+    method is_identity->Logical
+      return not (x or y or z or w != 1)
+
     method matches( other:Quaternion, tolerance:Real64 )->Logical
       return (Math.abs(x - other.x) <= tolerance) and
              (Math.abs(y - other.y) <= tolerance) and
