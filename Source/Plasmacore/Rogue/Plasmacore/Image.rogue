@@ -30,7 +30,8 @@ endClass
 
 class ImageData
   PROPERTIES
-    size : XY
+    size   : XY
+    anchor : Anchor
 
   METHODS
     method draw( pos:XYZ )
@@ -84,8 +85,10 @@ class TextureImageData : ImageData
 
       Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-pos.z)) )
 
+      local transform = Graphics.transform
+
       Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
-          pt1, pt2, pt3, pt4, uv1, uv21, uv2, uv12 )
+          transform*pt1, transform*pt2, transform*pt3, transform*pt4, uv1, uv21, uv2, uv12 )
 
       Graphics.pop_object_transform
 
