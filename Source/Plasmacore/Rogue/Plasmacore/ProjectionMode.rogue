@@ -30,19 +30,10 @@ class GraphicsMode2DX : ProjectionMode
     method activate
       local k = (unit_z + 1) * 2
       Graphics.unit_z = unit_z
-      Graphics.push_view_transform Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 )
-      #{
-      local odd_x = (width->Int32 & 1)
-      local odd_y = (height->Int32 & 1)
-      if (odd_x or odd_y)
-        Graphics.push_view_transform Matrix.translate( XYZ(-odd_x/2.0,odd_y/2.0,0) )
-      endIf
-      }#
       local tx = width / 2.0
       local ty = height / 2.0
-      #tx += (tx->Int32 & 1) / 2.0
-      #ty += (ty->Int32 & 1) / 2.0
-      Graphics.push_view_transform Matrix.translate( XYZ(-tx,-ty,0) )
+      Graphics.projection_transform = Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 ) ...
+          * Matrix.translate( XYZ(-tx,-ty,0) )
 
     method configure( display_size:XY )->this
       if (display_size.x != width or display_size.y != height)

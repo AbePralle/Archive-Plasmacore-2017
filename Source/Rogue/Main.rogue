@@ -43,14 +43,14 @@ class LaunchWindowViewLogic : ViewLogic
       bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
       println bitmap.size
       img = Image( bitmap )
-      img2 = Image( img, Box(9,0,9,17) )
+      img2 = Image( img, Box(9,0,8,16) )
       #img = Image( "King.png" )
 
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( XYZ(Math.floor(Graphics.width/2)+0.5,Math.floor(Graphics.height/2)+0.5,Graphics.unit_z) )
-      img2.draw( XYZ(Math.floor(Graphics.width/2)+0.5,Math.floor(Graphics.height/2)+34.5,Graphics.unit_z) )
+      img.draw( XYZ(Math.floor(Graphics.width/2),Math.floor(Graphics.height/2),Graphics.unit_z) )
+      img2.draw( XYZ(1+9.0/2,1+17.0/2,Graphics.unit_z) )
 
     method update
 endClass

@@ -50,7 +50,11 @@ class StarbrightGraphics : Graphics
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XYZ, pt2:XYZ, pt3:XYZ, pt4:XYZ, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
 
-      update_transform
+      local xform = transform
+      local a = xform * pt1
+      local b = xform * pt2
+      local c = xform * pt3
+      local d = xform * pt4
 
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
@@ -58,24 +62,30 @@ class StarbrightGraphics : Graphics
               |Starbright::renderer->set_render_mode( $render_mode.value );
               |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
               |
-              |v[0].x = $pt1.x;
-              |v[0].y = $pt1.y;
-              |v[0].z = $pt1.z;
-              |v[1].x = $pt2.x;
-              |v[1].y = $pt2.y;
-              |v[1].z = $pt2.z;
-              |v[2].x = $pt3.x;
-              |v[2].y = $pt3.y;
-              |v[2].z = $pt3.z;
-              |v[3].x = $pt1.x;
-              |v[3].y = $pt1.y;
-              |v[3].z = $pt1.z;
-              |v[4].x = $pt3.x;
-              |v[4].y = $pt3.y;
-              |v[4].z = $pt3.z;
-              |v[5].x = $pt4.x;
-              |v[5].y = $pt4.y;
-              |v[5].z = $pt4.z;
+              |v[0].x = $a.x;
+              |v[0].y = $a.y;
+              |v[0].z = $a.z;
+              |v[0].w = $a.w;
+              |v[1].x = $b.x;
+              |v[1].y = $b.y;
+              |v[1].z = $b.z;
+              |v[1].w = $b.w;
+              |v[2].x = $c.x;
+              |v[2].y = $c.y;
+              |v[2].z = $c.z;
+              |v[2].w = $c.w;
+              |v[3].x = $a.x;
+              |v[3].y = $a.y;
+              |v[3].z = $a.z;
+              |v[3].w = $a.w;
+              |v[4].x = $c.x;
+              |v[4].y = $c.y;
+              |v[4].z = $c.z;
+              |v[4].w = $c.w;
+              |v[5].x = $d.x;
+              |v[5].y = $d.y;
+              |v[5].z = $d.z;
+              |v[5].w = $d.w;
               |
               |v[0].u = $uv1.x;
               |v[0].v = $uv1.y;
@@ -91,6 +101,7 @@ class StarbrightGraphics : Graphics
               |v[5].v = $uv4.y;
 
 
+              #{
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
         pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
 
@@ -113,6 +124,10 @@ class StarbrightGraphics : Graphics
               |v[2].y = $pt3.y;
               |v[2].u = $uv3.x;
               |v[2].v = $uv3.y;
+              }#
+
+    method flush
+      native @|Starbright::renderer->flush();
 
     method is_ready->Logical
       return true
@@ -167,9 +182,12 @@ class StarbrightGraphics : Graphics
         texture.uv_size      = texture.image_size / texture.texture_size
       endIf
 
+    method render
+      native @|Starbright::renderer->render();
+
     method update_transform
       prior.update_transform
-      native "Starbright::renderer->set_transform( &$this->transform.r1c1 );"
+      native "Starbright::renderer->set_transform( &$this->projection_transform.r1c1 );"
 
 endClass
 

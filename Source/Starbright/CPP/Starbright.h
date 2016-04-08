@@ -124,7 +124,7 @@ struct Texture
 typedef struct Vertex
 {
   // A renderer-agnostic vertex format used in buffered 2D drawing.
-  SuperCPP::Real32 x, y, z;
+  SuperCPP::Real32 x, y, z, w;
   SuperCPP::Real32 u, v;
   SuperCPP::Int32  color;
 } Vertex;
