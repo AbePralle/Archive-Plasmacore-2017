@@ -9,7 +9,7 @@ class Bitmap
 
   METHODS
     method init( size, color=Color.BLACK:Int32 ) [requisite]
-      pixels = Int32[]( width*height, color )
+      init( size, Int32[]( width*height, color ) )
 
     method init( x:Int32, y:Int32, color=Color.BLACK:Int32 ) [requisite]
       init( XY(x,y), color )
@@ -33,9 +33,20 @@ class Bitmap
         error = true
       endIf
 
+    method init( size, pixels )
+      size = size.floor
+
+    method init( x:Int32, y:Int32, pixels )
+      init( XY(x,y), pixels )
+
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
       existing.draw( -bounds.position, this )
+
+    method clone->Bitmap
+      local result = Bitmap( size, pixels.clone )
+      result.error = this.error
+      return result
 
     method add_rows( rows:Int32, color=0:Int32 )->this
       pixels.reserve( width*rows )
@@ -107,6 +118,32 @@ class Bitmap
 
       this.size = reframed.size
       this.pixels = reframed.pixels
+
+    method resize( new_width:Int32, new_height:Int32 )->this
+      return resize( XY(new_width,new_height) )
+
+    method resize( new_size:XY )->this
+      local result = resized( new_size )
+      size = result.size
+      pixels = result.pixels
+      error = result.error
+      version = result.version
+      return this
+
+    method resize_to( other:Bitmap )
+      nativeCode #include "GGBitmap.h"
+    
+      native @|GG::Bitmap src( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
+              |GG::Bitmap dest( $other->pixels->data->bytes, (int)$other->size.x, (int)$other->size.y, 32 );
+              |src.resize_to( &dest );
+
+    method resized( new_width:Int32, new_height:Int32 )->Bitmap
+      return resized( XY(new_width,new_height) )
+
+    method resized( new_size:XY )->Bitmap
+      local result = Bitmap( new_size )
+      resize_to( result )
+      return result
 
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )

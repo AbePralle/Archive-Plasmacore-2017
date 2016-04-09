@@ -177,7 +177,7 @@ struct Renderer
   virtual void      end_draw() { flush(); }
   virtual void      clear( int flags ) {} // COLOR|DEPTH|STENCIL
   virtual int       define_shader( const char* vertex_src, const char* pixel_src ) { return 0; }
-  virtual int       define_texture( void* pixels, int width, int height, int options ) { return 0; }
+  virtual int       define_texture( int mip_level, void* pixels, int width, int height, int options ) { return 0; }
   virtual void      delete_shader( int shader_id ) {}
   virtual void      delete_texture( int texture_id ) {}
   virtual void      flush() {}
@@ -191,7 +191,7 @@ struct Renderer
   virtual void      set_texture_count( int texture_count );
   virtual void      set_transform( double matrix[16] );
   virtual void      set_transform( float matrix[16] );
-  virtual void      update_texture( int texture_id, void* pixels, int width, int height, int options ) {}
+  virtual void      update_texture( int texture_id, int mip_level, void* pixels, int width, int height, int options ) {}
 };
 
 extern Renderer* renderer;

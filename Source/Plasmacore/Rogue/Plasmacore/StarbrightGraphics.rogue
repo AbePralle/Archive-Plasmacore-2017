@@ -37,11 +37,11 @@ class StarbrightGraphics : Graphics
               |$texture_h = bitmap.height;
               |if ($texture->id)
               |{
-              |  Starbright::renderer->update_texture( $texture->id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |  Starbright::renderer->update_texture( $texture->id, 0, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |}
               |else
               |{
-              |  $texture->id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |  $texture->id = Starbright::renderer->define_texture( 0, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |}
 
       texture.image_size   = XY( image_w, image_h )
@@ -163,7 +163,7 @@ class StarbrightGraphics : Graphics
               |      bitmap.expand_to_power_of_two();
               |      $texture_w = bitmap.width;
               |      $texture_h = bitmap.height;
-              |      $id = Starbright::renderer->define_texture( (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+              |      $id = Starbright::renderer->define_texture( 0, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
               |    }
               |  }
               |
