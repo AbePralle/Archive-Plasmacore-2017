@@ -58,7 +58,7 @@ class FontData
     cursor_x=1  : Int32
     cursor_y=1  : Int32
     ascii       = FontCharacter[]( 128, null )
-    lookup      : Table<<Character,FontCharacter>>
+    lookup      : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
     is_modified : Logical
 
   METHODS
@@ -66,6 +66,7 @@ class FontData
       bitmap = Bitmap( 1024, height+2 )
 
     method define( ch:Character, data:Bitmap )
+      is_modified = true
       local w = data.width
 
       if (cursor_x + w+1 > bitmap.width)
@@ -92,7 +93,6 @@ class FontData
       endIf
 
       cursor_x += w + 2
-      is_modified = true
 
     method get( ch:Character )->FontCharacter
       if (ch <= 127) return ascii[ ch ]
@@ -101,14 +101,18 @@ class FontData
 
     method prepare
       if (not is_modified) return
+      is_modified = false
 
-      # TODO
-      #{
       if (image)
-      else
-        image = Image(
+        # Changing the bitmap version will automatically update the texture
+        # when the image is prepare()d again.
+        ++bitmap.version
+        image.prepare
+
+        # Have the characters recalculate their UV coordinates
+        #else
+        #image = Image(
       endIf
-      }#
 
 endClass
 
