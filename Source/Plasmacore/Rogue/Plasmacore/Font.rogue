@@ -38,7 +38,7 @@ class BitmapFont : Font
           local x = i * width
           local y = j * height
           local ch_data = Bitmap( src, Box(x,y,width,height) )
-          data.add( characters.read, ch_data )
+          data.define( characters.read, ch_data )
         endForEach
       endForEach
 
@@ -65,7 +65,7 @@ class FontData
     method init( height )
       bitmap = Bitmap( 1024, height+2 )
 
-    method add( ch:Character, data:Bitmap )
+    method define( ch:Character, data:Bitmap )
       local w = data.width
 
       if (cursor_x + w+1 > bitmap.width)

@@ -276,12 +276,49 @@ int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
   return shaders.add( shader );
 }
 
-int  GLRenderer::define_texture( int mip_level, void* pixels, int width, int height, int options )
+int  GLRenderer::define_texture( int texture_id, void* pixels, int width, int height, int options )
 {
-  GLTexture* texture = new GLTexture();
-  glGenTextures( 1, &texture->gl_id );
-  texture->texture_id = textures.add( texture );
-  update_texture( texture->texture_id, mip_level, pixels, width, height, options );
+  GLTexture* texture = (GLTexture*) textures.get( texture_id );
+  if ( !texture )
+  {
+    texture = new GLTexture();
+    glGenTextures( 1, &texture->gl_id );
+    texture->texture_id = textures.add( texture );
+  }
+
+  int bpp = options & (32|16|8);
+
+  texture->width  = width;
+  texture->height = height;
+  texture->options = options;
+
+  glBindTexture( GL_TEXTURE_2D, texture->gl_id );
+
+  switch (bpp)
+  {
+    case 32:
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
+      break;
+
+    case 16:
+      {
+        // Convert 16-bit ARGB to 16-bit RGBA
+        int count = width*height;
+        UInt16* cursor = ((UInt16*) pixels) - 1;
+        while (--count >= 0)
+        {
+          UInt16 pixel = *(++cursor);
+          *cursor = (UInt16)
+                  ( ((pixel<<4) & 0x0f00)
+                  | ((pixel>>4)&0xf0)
+                  | ((pixel<<12)&0xf000)
+                  | ((pixel>>12)&15) );
+        }
+      }
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
+      break;
+  }
+
   return texture->texture_id;
 }
 
@@ -533,45 +570,6 @@ void GLRenderer::render()
 
   vertex_count = 0;
   memset( vertices, 0, sizeof(Vertex) * Renderer::VERTEX_BUFFER_COUNT );
-}
-
-void GLRenderer::update_texture( int texture_id, int mip_level, void* pixels, int width, int height, int options )
-{
-  GLTexture* texture = (GLTexture*) textures.get( texture_id );
-  if ( !texture ) return;
-
-  int bpp = options & (32|16|8);
-
-  texture->width  = width;
-  texture->height = height;
-  texture->options = options;
-
-  glBindTexture( GL_TEXTURE_2D, texture->gl_id );
-
-  switch (bpp)
-  {
-    case 32:
-      glTexImage2D( GL_TEXTURE_2D, mip_level, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
-      break;
-
-    case 16:
-      {
-        // Convert 16-bit ARGB to 16-bit RGBA
-        int count = width*height;
-        UInt16* cursor = ((UInt16*) pixels) - 1;
-        while (--count >= 0)
-        {
-          UInt16 pixel = *(++cursor);
-          *cursor = (UInt16)
-                  ( ((pixel<<4) & 0x0f00)
-                  | ((pixel>>4)&0xf0)
-                  | ((pixel<<12)&0xf000)
-                  | ((pixel>>12)&15) );
-        }
-      }
-      glTexImage2D( GL_TEXTURE_2D, mip_level, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
-      break;
-  }
 }
 
 }; // namespace Starbright
