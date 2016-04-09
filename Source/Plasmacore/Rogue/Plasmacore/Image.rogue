@@ -14,39 +14,41 @@ class Image
     method init( existing:Image, subset:Box )
       data = existing.data.create_subset( subset )
 
-    method draw( bounds:Box, origin=XY(0,0):XY )
+    method draw( position:XY, _size:XY, anchor:Anchor )
       local transform = Graphics.transform
-      local z   = -Graphics.unit_z
-      local pt1 = transform * XYZW( bounds.top_left,     z )
-      local pt2 = transform * XYZW( bounds.top_right,    z )
-      local pt3 = transform * XYZW( bounds.bottom_right, z )
-      local pt4 = transform * XYZW( bounds.bottom_left,  z )
+      position  -= ((anchor.position/2+0.5) * _size).floor
+      local z    = -Graphics.unit_z
+
+      local pt1  = transform * XYZ( position,          z )
+      local pt2  = transform * XYZ( position+_size.xv, z )
+      local pt3  = transform * XYZ( position+_size,    z )
+      local pt4  = transform * XYZ( position+_size.yv, z )
+
       data.draw( pt1, pt2, pt3, pt4 )
 
-      #{
-      local origin = bounds.position + (anchor.position * bounds.size).floor
-      local z   = -Graphics.unit_z
-      local pt1 = XYZ( bounds.top_left     - origin, z )
-      local pt2 = XYZ( bounds.top_right    - origin, z )
-      local pt3 = XYZ( bounds.bottom_right - origin, z )
-      local pt4 = XYZ( bounds.bottom_left  - origin, z )
+    method draw( position:XY, _size:XY, anchor:Anchor, rotation:Rotation )
+      draw( position, _size, anchor, Quaternion(rotation) )
 
-      local uv21 = XY(uv2.x,uv1.y)
-      local uv12 = XY(uv1.x,uv2.y)
+    method draw( position:XY, _size:XY, anchor:Anchor, rotation:Quaternion )
+      local handle = ((anchor.position/2+0.5) * _size).floor
+      local z      = -Graphics.unit_z
+      local origin = XYZ( position + handle, z )
+      position -= handle
 
-      Graphics.push_object_transform( Matrix.translate(XYZ(pos.x,pos.y,-(pos.z+Graphics.unit_z))) )
+      Graphics.push_object_transform( rotation.to_matrix(origin,XYZ(0,0,0)) )
+      #Graphics.push_object_transform( Matrix.identity )
 
       local transform = Graphics.transform
 
-      Graphics.draw_textured_quad( texture, Shader.TEXTURE, RenderMode.IMAGE_DEFAULT, #.enable_point_filter,
-          transform*pt1, transform*pt2, transform*pt3, transform*pt4, uv1, uv21, uv2, uv12 )
+      local pt1  = transform * XYZ( position,          z )
+      local pt2  = transform * XYZ( position+_size.xv, z )
+      local pt3  = transform * XYZ( position+_size,    z )
+      local pt4  = transform * XYZ( position+_size.yv, z )
+
+      data.draw( pt1, pt2, pt3, pt4 )
 
       Graphics.pop_object_transform
 
-      draw( XYZW(bounds.top_left), XYZW(bounds.top_right),
-          XYZW(bounds.bottom_right), XYZW(bounds.bottom_left),
-          bounds.position + (anchor.position * bounds.size).floor )
-      }#
 
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
       if (is_ready) data.draw( pt1, pt2, pt3, pt4 )

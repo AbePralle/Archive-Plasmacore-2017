@@ -19,6 +19,12 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
     method dot( other:XYZ )->Real64
       return x*other.x + y*other.y + z*other.z
 
+    method magnitude->Real64
+      return Math.sqrt( x*x + y*y + z*z )
+
+    method normalized->XYZ
+      return this / magnitude
+
     method operator+( other:XYZ )->XYZ
       return XYZ( x+other.x, y+other.y, z+other.z )
 

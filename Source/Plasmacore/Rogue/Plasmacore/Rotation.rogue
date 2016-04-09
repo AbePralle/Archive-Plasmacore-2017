@@ -15,7 +15,28 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
     method radians( x:Real64, y:Real64, z:Real64 )->Rotation
       return Rotation( Radians(x)->Degrees, Radians(y)->Degrees, Radians(z)->Degrees )
 
+    method x( value:Degrees )->Rotation [macro]
+      Rotation( value, Degrees(0), Degrees(0) )
+
+    method y( value:Degrees )->Rotation [macro]
+      Rotation( Degrees(0), value, Degrees(0) )
+
+    method z( value:Degrees )->Rotation [macro]
+      Rotation( Degrees(0), Degrees(0), value)
+
+    method x( r:Radians )->Rotation [macro]
+      Rotation.radians( r.value, 0, 0 )
+
+    method y( r:Radians )->Rotation [macro]
+      Rotation.radians( 0, r.value, 0 )
+
+    method z( r:Radians )->Rotation [macro]
+      Rotation.radians( 0, 0, r.value )
+
   METHODS
+    method is_zero->Logical
+      return not (x or y or z)
+
     method to_degrees->XYZ
       return XYZ( x.value, y.value, z.value )
 

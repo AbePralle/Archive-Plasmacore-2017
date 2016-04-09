@@ -81,6 +81,9 @@ class Graphics [singleton]
     method bounds->Box
       return Box( XY(0,0), size )
 
+    method center->XY
+      return (size/2).floor
+
     method clear->this
       # Override
       return this

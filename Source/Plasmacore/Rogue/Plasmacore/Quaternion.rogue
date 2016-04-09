@@ -3,7 +3,7 @@ module Plasmacore
 class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
   # Adapted from the Iirlicht Quaternion by Nikolaus Gebhardt
   GLOBAL METHODS
-    method create( aa:AxisAngle )->Quaternion [macro]
+    method create( aa:AxisAngle )->Quaternion
       local half_angle = aa.angle / 2
       local sin = half_angle.sin
       return Quaternion(
@@ -14,14 +14,14 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
       )
 
     method create( rotation:Rotation )->Quaternion
-      local radians = rotation.radians / 2
+      local radians = rotation.to_radians / 2
 
-      local ax = radians.x.cos
-      local ay = radians.x.sin
-      local bx = radians.y.cos
-      local by = radians.y.sin
-      local cy = radians.z.sin
-      local cx = radians.z.cos
+      local ax = Math.cos( radians.x )
+      local ay = Math.sin( radians.x )
+      local bx = Math.cos( radians.y )
+      local by = Math.sin( radians.y )
+      local cy = Math.sin( radians.z )
+      local cx = Math.cos( radians.z )
 
       local bxcx = bx * cx
       local bycx = by * cx
@@ -36,9 +36,9 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
       ).normalized
 
 
-    method create( m:Matrix )
+    method create( m:Matrix )->Quaternion
       local result = Quaternion()
-      const diagonal = m[0] + m[5] + m[10] + 1
+      local diagonal = m[0] + m[5] + m[10] + 1
 
       if (diagonal > 0.0)
         local scale = Math.sqrt( diagonal ) * 2.0
@@ -78,8 +78,8 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
       return result.normalized
 
     method create( from:XYZ, to:XYZ )->Quaternion
-      from.normalized()
-      to.normalized()
+      from = from.normalized()
+      to = to.normalized()
       local d = from.dot( to )
 
       if (d >= 1)
@@ -143,7 +143,7 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           2*x*y - 2*z*w,
           1     - 2*x*x - 2*z*z,
           2*z*y + 2*x*w,
-          0
+          0,
 
           2*x*z + 2*y*w,
           2*z*y - 2*x*w,
@@ -158,26 +158,30 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
 
     method to_matrix( pivot:XYZ, position:XYZ )->Matrix
       local m = Matrix(
-          1     - 2*Y*Y - 2*Z*Z,
-          2*X*Y + 2*Z*W,
-          2*X*Z - 2*Y*W,
+          1     - 2*y*y - 2*z*z,
+          2*x*y + 2*z*w,
+          2*x*z - 2*y*w,
           0,
 
-          2*X*Y - 2*Z*W,
-          1     - 2*X*X - 2*Z*Z,
-          2*Z*Y + 2*X*W,
+          2*x*y - 2*z*w,
+          1     - 2*x*x - 2*z*z,
+          2*z*y + 2*x*w,
           0,
 
-          2*X*Z + 2*Y*W,
-          2*Z*Y - 2*X*W,
-          1     - 2*X*X - 2*Y*Y,
-          0
+          2*x*z + 2*y*w,
+          2*z*y - 2*x*w,
+          1     - 2*x*x - 2*y*y,
+          0,
+
+          0,
+          0,
+          0,
+          1
       )
 
       m[12] = -m[0]*pivot.x - m[4]*pivot.y - m[8]*pivot.z  + (pivot.x - position.x)
       m[13] = -m[1]*pivot.x - m[5]*pivot.y - m[9]*pivot.z  + (pivot.y - position.y)
       m[14] = -m[2]*pivot.x - m[6]*pivot.y - m[10]*pivot.z + (pivot.z - position.z)
-      m[15] = 1
 
       return m
 
@@ -220,15 +224,15 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
         return linear_tween( target,t )
       endIf
 
-    method dot( other:Quaternion )->Quaternion
+    method dot( other:Quaternion )->Real64
       return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w)
 
     method to->AxisAngle
       local scale = Math.sqrt( x*x + y*y + z*z )
       if (scale <= 0.00000001 or w > 1 or w < -1)
-        return AxisAngle( XYZ(0,1,0), 0 )
+        return AxisAngle( XYZ(0,1,0), Radians(0) )
       else
-        return AxisAngle( XYZ(x/scale,y/scale,z/scale), 2 * Math.acos(w) )
+        return AxisAngle( XYZ(x/scale,y/scale,z/scale), Radians(2 * Math.acos(w)) )
       endIf
 
     method to->Rotation
@@ -246,14 +250,14 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
         )
       elseIf ((test+1).abs <= 0.000001)
         return Rotation.radians(
-            0
+            0,
             pi/2,
             (2*Math.atan2(x,w))
         )
       else
         return Rotation.radians(
-            Math.atan2( 2 * (y*z +x*w),(-sqx - sqy + sqz + sqw) )
-            Math.asin( test.clamped( -1, 1 ) )
+            Math.atan2( 2 * (y*z +x*w),(-sqx - sqy + sqz + sqw) ),
+            Math.asin( test.clamped( -1, 1 ) ),
             Math.atan2( 2 * (x*y +z*w),(sqx - sqy - sqz + sqw) )
         )
       endIf
