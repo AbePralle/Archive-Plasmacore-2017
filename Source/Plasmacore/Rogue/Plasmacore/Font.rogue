@@ -7,6 +7,8 @@ class Font
     data   : FontData
 
   METHODS
+    method get( ch:Character )->FontCharacter
+      return data[ ch ]
 endClass
 
 class BitmapFont : Font
@@ -64,6 +66,7 @@ class FontData
   METHODS
     method init( height )
       bitmap = Bitmap( 1024, height+2 )
+      image = Image( bitmap )
 
     method define( ch:Character, data:Bitmap )
       is_modified = true
@@ -82,9 +85,10 @@ class FontData
         height = data.height
       endIf
 
-      data.draw( XY(cursor_x,cursor_y), bitmap )
+      data.draw( bitmap, XY(cursor_x,cursor_y) )
+      bitmap.extend_edges( Box(cursor_x,cursor_y,w,height) )
 
-      local info = FontCharacter( ch, cursor_x, cursor_y, w, height )
+      local info = FontCharacter( ch, image, XY(cursor_x,cursor_y), XY(w,height) )
       if (ch <= 127)
         ascii[ ch ] = info
       else
@@ -105,13 +109,12 @@ class FontData
 
       if (image)
         # Changing the bitmap version will automatically update the texture
-        # when the image is prepare()d again.
+        # when the image is prepare()d.  Other images based on the texture
+        # (such as character images) will automatically update as well.
         ++bitmap.version
         image.prepare
-
-        # Have the characters recalculate their UV coordinates
-        #else
-        #image = Image(
+      else
+        image = Image( bitmap )
       endIf
 
 endClass
@@ -120,17 +123,15 @@ endClass
 class FontCharacter
   PROPERTIES
     unicode  : Character
-    x1       : Int32
-    y1       : Int32
-    width    : Int32
-    height   : Int32
+    top_left : XY
+    size     : XY
     offset_x : Int32
     offset_y : Int32
     image    : Image
 
   METHODS
-    method init( unicode, x1, y1, width, height )
-trace unicode, x1, y1, width, height
+    method init( unicode, src_image:Image, top_left, size )
+      image = Image( src_image, Box(top_left,size) )
 endClass
 
 

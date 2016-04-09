@@ -1,7 +1,7 @@
 //=============================================================================
 //  Bitmap.cpp
 //
-//  v1.0.3 - February 12, 2016
+//  v1.0.4 - April 9, 2016
 //=============================================================================
 #include "GGBitmap.h"
 
@@ -269,9 +269,9 @@ void Bitmap::blit_area( int src_x1, int src_y1, int w, int h, Bitmap* dest_bitma
     src_xlimit  -= delta;
     dest_xlimit -= delta;
   }
-  if (src_ylimit > width)
+  if (src_ylimit > height)
   {
-    int delta    = src_ylimit - width;
+    int delta    = src_ylimit - height;
     src_ylimit  -= delta;
     dest_ylimit -= delta;
   }

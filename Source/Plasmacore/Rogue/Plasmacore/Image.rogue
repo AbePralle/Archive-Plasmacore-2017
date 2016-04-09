@@ -15,6 +15,8 @@ class Image
       data = existing.data.create_subset( subset )
 
     method draw( position:XY, _size:XY, anchor:Anchor )
+      if (not is_ready) return
+
       local transform = Graphics.transform
       position  -= (anchor.position * _size).floor
       local z    = -Graphics.unit_z
@@ -30,6 +32,8 @@ class Image
       draw( position, _size, anchor, Quaternion(rotation) )
 
     method draw( position:XY, _size:XY, anchor:Anchor, rotation:Quaternion )
+      if (not is_ready) return
+
       local handle = XYZ( (anchor.position * _size).floor, 0 )
       local z      = -Graphics.unit_z
       local origin = XYZ( position, z ) + handle
