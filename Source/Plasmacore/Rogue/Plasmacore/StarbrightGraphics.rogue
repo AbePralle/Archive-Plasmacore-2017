@@ -31,6 +31,7 @@ class StarbrightGraphics : Graphics
       local bpp = 32
 
       native @|GG::Bitmap bitmap( $bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
+              |bitmap.filter( GG::FilterFn_premultiply_alpha );
               |bitmap.expand_to_power_of_two();
               |$texture_w = bitmap.width;
               |$texture_h = bitmap.height;
@@ -158,6 +159,7 @@ class StarbrightGraphics : Graphics
               |    GG::Bitmap bitmap( 0, $image_w, $image_h, 32 );
               |    if (decoder.decode_argb32( (ARGB32*)bitmap.data ))
               |    {
+              |      bitmap.filter( GG::FilterFn_premultiply_alpha );
               |      bitmap.expand_to_power_of_two();
               |      $texture_w = bitmap.width;
               |      $texture_h = bitmap.height;

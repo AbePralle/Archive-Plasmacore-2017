@@ -59,6 +59,7 @@ class Bitmap
 
       size = XY( native("decoder.width")->Int32, native("decoder.height")->Int32 )
       pixels = Int32[]( width * height )
+      pixels.count = width * height
 
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true

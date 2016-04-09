@@ -34,6 +34,7 @@ class LaunchWindowViewLogic : ViewLogic
     img : Image
     img2 : Image
     bitmap : Bitmap
+    angle = Degrees(-25)
 
   METHODS
     method activate
@@ -41,6 +42,12 @@ class LaunchWindowViewLogic : ViewLogic
 
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
       bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
+      #{
+      forEach (i of bitmap.pixels)
+        if (not (bitmap.pixels[i] & 0xFF000000)) bitmap.pixels[i] = Color.RED
+      endForEach
+      }#
+      bitmap.pixels.modify( function(color) = select{ (color&0xff000000):color || Color.RED } )
       println bitmap.size
       img = Image( bitmap )
       img2 = Image( img, Box(9,0,8,16) )
@@ -49,10 +56,12 @@ class LaunchWindowViewLogic : ViewLogic
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( Box(1,1,img.size) )
-      img2.draw( Box(1,19,img2.size) )
+      img.draw( Graphics.center.yv, img.size, Anchor.LEFT, Rotation.z(angle) )
+      img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
 
     method update
+      angle += 0.2
+      if (angle.value > 25) angle = Degrees(-25)
 endClass
 
 class SweetWindowViewLogic : ViewLogic
