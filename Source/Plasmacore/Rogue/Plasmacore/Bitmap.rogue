@@ -1,6 +1,13 @@
 module Plasmacore
 
 class Bitmap
+  CLASS
+    nativeCode
+      #include "ImageIO.h"
+      using namespace ImageIO;
+      #include "GGBitmap.h"
+    endNativeCode
+
   PROPERTIES
     size    : XY
     pixels  : Int32[]
@@ -41,7 +48,7 @@ class Bitmap
 
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
-      existing.draw( this, -bounds.position )
+      existing.blit( this, -bounds.position )
 
     method clone->Bitmap
       local result = Bitmap( size, pixels.clone )
@@ -54,6 +61,15 @@ class Bitmap
       size += XY( 0, rows )
       return this
 
+    method blit( dest_bitmap:Bitmap, pos:XY )
+      blit( Box(0,0,size), dest_bitmap, pos )
+
+    method blit( bounds:Box, dest_bitmap:Bitmap, dest_position:XY )
+      native @|GG::Bitmap src( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
+              |GG::Bitmap dest( $dest_bitmap->pixels->data->bytes, (int)$dest_bitmap->size.x, (int)$dest_bitmap->size.y, 32 );
+              |src.blit_area( $bounds.position.x, $bounds.position.y, $bounds.size.x, $bounds.size.y,
+              |               &dest, $dest_position.x, $dest_position.y );
+
     method clear( color=Color.BLACK:Int32 )
       forEach (i of pixels) pixels[i] = color
 
@@ -64,19 +80,20 @@ class Bitmap
       local h  = bounds.size.y
       local x2 = x1 + (w - 1)
       local y2 = y1 + (h - 1)
-      draw( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
-      draw( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
-      draw( Box(x1,y1,1,h), this, XY(x1-1,y1) )  # left
-      draw( Box(x2,y1,1,h), this, XY(x2+1,y1) )  # right
+      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
+      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
-    method include_native_code
-      nativeCode
-        #include "ImageIO.h"
-        using namespace ImageIO;
-      endNativeCode
+    method fill( box:Box, color:Int32 )
+      local x = box.position.x
+      local y = box.position.y
+      local w = box.size.x
+      local h = box.size.y
+      native @|GG::Bitmap bitmap( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
+              |bitmap.draw_border( $x, $y, $w, $h, (int)$color );
 
     method decode( bytes:Byte[] )->Logical
-      include_native_code
       native @|Decoder decoder;
               |if ( !decoder.open($bytes->data->bytes, $bytes->count) ) return 0;
 
@@ -86,17 +103,6 @@ class Bitmap
 
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
-
-    method draw( dest_bitmap:Bitmap, pos:XY )
-      draw( Box(0,0,size), dest_bitmap, pos )
-
-    method draw( bounds:Box, dest_bitmap:Bitmap, dest_position:XY )
-      nativeCode #include "GGBitmap.h"
-
-      native @|GG::Bitmap src( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
-              |GG::Bitmap dest( $dest_bitmap->pixels->data->bytes, (int)$dest_bitmap->size.x, (int)$dest_bitmap->size.y, 32 );
-              |src.blit_area( $bounds.position.x, $bounds.position.y, $bounds.size.x, $bounds.size.y,
-              |               &dest, $dest_position.x, $dest_position.y );
 
     method get( x:Int32, y:Int32 )->Int32
       return pixels[ y*width + x ]
@@ -109,7 +115,7 @@ class Bitmap
 
       local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
       local reframed = Bitmap( bounds.size )
-      draw( reframed, bounds.position )
+      blit( reframed, bounds.position )
 
       this.size = reframed.size
       this.pixels = reframed.pixels
@@ -126,8 +132,6 @@ class Bitmap
       return this
 
     method resize_to( other:Bitmap )
-      nativeCode #include "GGBitmap.h"
-    
       native @|GG::Bitmap src( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
               |GG::Bitmap dest( $other->pixels->data->bytes, (int)$other->size.x, (int)$other->size.y, 32 );
               |src.resize_to( &dest );
@@ -151,7 +155,6 @@ class Bitmap
       return this
 
     method to_png_bytes->Byte[]
-      include_native_code
       local w = width
       local h = height
       local count : Int32
@@ -166,7 +169,6 @@ class Bitmap
       return bytes
 
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
-      include_native_code
       local w = width
       local h = height
       local count : Int32
