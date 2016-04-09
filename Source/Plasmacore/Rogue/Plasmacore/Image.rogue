@@ -16,7 +16,7 @@ class Image
 
     method draw( position:XY, _size:XY, anchor:Anchor )
       local transform = Graphics.transform
-      position  -= ((anchor.position/2+0.5) * _size).floor
+      position  -= (anchor.position * _size).floor
       local z    = -Graphics.unit_z
 
       local pt1  = transform * XYZ( position,          z )
@@ -30,12 +30,11 @@ class Image
       draw( position, _size, anchor, Quaternion(rotation) )
 
     method draw( position:XY, _size:XY, anchor:Anchor, rotation:Quaternion )
-      local handle = ((anchor.position/2+0.5) * _size).floor
+      local handle = XYZ( (anchor.position * _size).floor, 0 )
       local z      = -Graphics.unit_z
-      local origin = XYZ( position + handle, z )
-      position -= handle
+      local origin = XYZ( position, z ) + handle
 
-      Graphics.push_object_transform( rotation.to_matrix(origin,XYZ(0,0,0)) )
+      Graphics.push_object_transform( rotation.to_matrix(origin,handle) )
       #Graphics.push_object_transform( Matrix.identity )
 
       local transform = Graphics.transform

@@ -133,30 +133,7 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
     method operator/( n:Real64 )->Quaternion
       return Quaternion( x/n, y/n, z/n, w/n )
 
-    method to_matrix( pivot:XYZ )->Matrix
-      return Matrix(
-          1     - 2*y*y - 2*z*z,
-          2*x*y + 2*z*w,
-          2*x*z - 2*y*w,
-          0,
-
-          2*x*y - 2*z*w,
-          1     - 2*x*x - 2*z*z,
-          2*z*y + 2*x*w,
-          0,
-
-          2*x*z + 2*y*w,
-          2*z*y - 2*x*w,
-          1     - 2*x*x - 2*y*y,
-          0,
-
-          pivot.x,
-          pivot.y,
-          pivot.z,
-          1
-      )
-
-    method to_matrix( pivot:XYZ, position:XYZ )->Matrix
+    method to_matrix( origin:XYZ, handle:XYZ )->Matrix
       local m = Matrix(
           1     - 2*y*y - 2*z*z,
           2*x*y + 2*z*w,
@@ -179,9 +156,9 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           1
       )
 
-      m[12] = -m[0]*pivot.x - m[4]*pivot.y - m[8]*pivot.z  + (pivot.x - position.x)
-      m[13] = -m[1]*pivot.x - m[5]*pivot.y - m[9]*pivot.z  + (pivot.y - position.y)
-      m[14] = -m[2]*pivot.x - m[6]*pivot.y - m[10]*pivot.z + (pivot.z - position.z)
+      m[12] = -m[0]*origin.x - m[4]*origin.y - m[8]*origin.z  + (origin.x - handle.x)
+      m[13] = -m[1]*origin.x - m[5]*origin.y - m[9]*origin.z  + (origin.y - handle.y)
+      m[14] = -m[2]*origin.x - m[6]*origin.y - m[10]*origin.z + (origin.z - handle.z)
 
       return m
 

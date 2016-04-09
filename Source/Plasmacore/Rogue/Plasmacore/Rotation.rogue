@@ -10,7 +10,7 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
   # Represents a Euler angle rotation.
   GLOBAL METHODS
     method degrees( x:Real64, y:Real64, z:Real64 )->Rotation [macro]
-      Rotation( Degrees(x), Degrees(z), Degrees(z) )
+      Rotation( Degrees(x), Degrees(y), Degrees(z) )
 
     method radians( x:Real64, y:Real64, z:Real64 )->Rotation
       return Rotation( Radians(x)->Degrees, Radians(y)->Degrees, Radians(z)->Degrees )
