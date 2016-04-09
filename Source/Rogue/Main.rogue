@@ -34,7 +34,9 @@ class LaunchWindowViewLogic : ViewLogic
     img : Image
     img2 : Image
     bitmap : Bitmap
-    angle = Degrees(-25)
+    yangle = 0.0
+    zangle  = -25 : Real64
+    delta  = 0.2
 
   METHODS
     method activate
@@ -56,12 +58,14 @@ class LaunchWindowViewLogic : ViewLogic
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( Graphics.center.yv, img.size, Anchor.LEFT, Rotation.z(angle) )
+      img.draw( Graphics.center, img.size, Anchor.CENTER, Rotation.degrees(0,yangle,zangle) )
       img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
 
     method update
-      angle += 0.2
-      if (angle.value > 25) angle = Degrees(-25)
+      zangle += delta
+      if (zangle >=  25) delta = -0.2
+      if (zangle <= -25) delta =  0.2
+      yangle += 0.2
 endClass
 
 class SweetWindowViewLogic : ViewLogic

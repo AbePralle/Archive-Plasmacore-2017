@@ -22,13 +22,7 @@ class Box( position:XY, size:XY ) [compound]
 
   METHODS
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
-      # -1..1 -> 0..1
-      local align_x = anchor.position.x / 2 + 0.5
-      local align_y = anchor.position.y / 2 + 0.5
-
-      local excess_x = enclosing.width - width
-      local excess_y = enclosing.height - height
-      return Box( XY(enclosing.x + excess_x * align_x, enclosing.y + excess_y * align_y), size )
+      return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
     method bottom_left->XY
       return (position + XY(0,size.y))
