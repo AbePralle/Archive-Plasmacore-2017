@@ -85,7 +85,7 @@ class FontData
         height = data.height
       endIf
 
-      data.draw( bitmap, XY(cursor_x,cursor_y) )
+      data.blit( bitmap, XY(cursor_x,cursor_y) )
       bitmap.extend_edges( Box(cursor_x,cursor_y,w,height) )
 
       local info = FontCharacter( ch, image, XY(cursor_x,cursor_y), XY(w,height) )
