@@ -41,7 +41,7 @@ class Bitmap
 
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
-      existing.draw( -bounds.position, this )
+      existing.draw( this, -bounds.position )
 
     method clone->Bitmap
       local result = Bitmap( size, pixels.clone )
@@ -56,6 +56,18 @@ class Bitmap
 
     method clear( color=Color.BLACK:Int32 )
       forEach (i of pixels) pixels[i] = color
+
+    method extend_edges( bounds:Box )
+      local x1 = bounds.position.x
+      local y1 = bounds.position.y
+      local w  = bounds.size.x
+      local h  = bounds.size.y
+      local x2 = x1 + (w - 1)
+      local y2 = y1 + (h - 1)
+      draw( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      draw( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      draw( Box(x1,y1,1,h), this, XY(x1-1,y1) )  # left
+      draw( Box(x2,y1,1,h), this, XY(x2+1,y1) )  # right
 
     method include_native_code
       nativeCode
@@ -75,33 +87,16 @@ class Bitmap
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
 
-    method draw( pos:XY, dest_bitmap:Bitmap )
-      local dest_width = dest_bitmap.width
-      local x1 = pos.x : Int32
-      local y1 = pos.y : Int32
-      local x_limit = x1 + width : Int32
-      local y_limit = y1 + height : Int32
-      local i1 = 0
-      local j1 = 0
-      if (x1 < 0) i1 -= x1; x1 = 0
-      if (y1 < 0) j1 -= y1; y1 = 0
-      if (x_limit > dest_width)  x_limit = dest_width
-      if (y_limit > dest_bitmap.height) y_limit = dest_bitmap.height
-      if (x1 >= x_limit or y1 >= y_limit) return
-      local y2 = y_limit - 1
+    method draw( dest_bitmap:Bitmap, pos:XY )
+      draw( Box(0,0,size), dest_bitmap, pos )
 
-      local w = x_limit - x1
-      local src_width = width
+    method draw( bounds:Box, dest_bitmap:Bitmap, dest_position:XY )
+      nativeCode #include "GGBitmap.h"
 
-      local src = j1 * width + i1 : Int32
-      local dest = y1 * dest_width + x1 : Int32
-      local src_pixels = pixels.data
-      local dest_pixels = dest_bitmap.pixels.data
-      forEach (y1..y2)
-        dest_pixels.set( dest, src_pixels, src, w )
-        src  += src_width
-        dest += dest_width
-      endForEach
+      native @|GG::Bitmap src( $this->pixels->data->bytes, (int)$this->size.x, (int)$this->size.y, 32 );
+              |GG::Bitmap dest( $dest_bitmap->pixels->data->bytes, (int)$dest_bitmap->size.x, (int)$dest_bitmap->size.y, 32 );
+              |src.blit_area( $bounds.position.x, $bounds.position.y, $bounds.size.x, $bounds.size.y,
+              |               &dest, $dest_position.x, $dest_position.y );
 
     method get( x:Int32, y:Int32 )->Int32
       return pixels[ y*width + x ]
@@ -114,7 +109,7 @@ class Bitmap
 
       local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
       local reframed = Bitmap( bounds.size )
-      draw( bounds.position, reframed )
+      draw( reframed, bounds.position )
 
       this.size = reframed.size
       this.pixels = reframed.pixels

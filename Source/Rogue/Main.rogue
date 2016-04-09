@@ -1,7 +1,6 @@
 using Plasmacore
 
 println "Rogue Launched!"
-local font = BitmapFont( "FontSystem17.png", 9, 17 )
 
 MessageManager.add_handler( "Ping", function(m:Message) println System.time; Message("Pong").send )
 
@@ -37,9 +36,11 @@ class LaunchWindowViewLogic : ViewLogic
     yangle = 0.0
     zangle  = -25 : Real64
     delta  = 0.2
+    font : BitmapFont #( "FontSystem17.png", 9, 17 )
 
   METHODS
     method activate
+      font = BitmapFont( "FontSystem17.png", 9, 17 )
       #Graphics.load_texture( Texture("Test"), File("test") )
 
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
@@ -58,8 +59,14 @@ class LaunchWindowViewLogic : ViewLogic
 
     method draw
       Graphics.clear( Color.BLUE )
-      img.draw( Graphics.center, img.size, Anchor.CENTER, Rotation.degrees(0,yangle,zangle) )
-      img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
+      #img.draw( Graphics.center, img.size, Anchor.CENTER, Rotation.degrees(0,yangle,zangle) )
+      #img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
+      #font.data.image.draw( Graphics.center, font.data.image.size, Anchor.CENTER )
+      local ch = font[ 'A' ]
+      if (ch)
+        ch.image.draw( Graphics.center, ch.size*2.5, Anchor.TOP_LEFT )
+      endIf
+
 
     method update
       zangle += delta
