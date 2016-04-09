@@ -29,14 +29,6 @@ class Texture
     method is_ready->Logical
       return (graphics is Graphics) and (not bitmap or bitmap.version == version)
 
-      #{
-    method prepare
-      if (bitmap and version != bitmap.version)
-        Graphics.define_texture( this, bitmap )
-        version = bitmap.version
-      endIf
-      }#
-
     method reload->Texture
       if (name) return Graphics.acquire_texture( name )
       else      return Graphics.acquire_texture( bitmap )

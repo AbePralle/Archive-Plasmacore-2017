@@ -50,27 +50,32 @@ class Image
 
 
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
-      if (is_ready) data.draw( pt1, pt2, pt3, pt4 )
+      if (prepare) data.draw( pt1, pt2, pt3, pt4 )
 
     method height->Real64
-      return data.size.y
+      return data.bounds.size.y
 
     method is_ready->Logical
+      return prepare
+
+    method prepare->Logical
       if (not data.is_ready) data = data.prepare
       return data.is_ready
 
     method size->XY
-      return data.size
+      return data.bounds.size
 
     method width->Real64
-      return data.size.x
+      return data.bounds.size.x
 endClass
 
 class ImageData
   PROPERTIES
-    size        : XY
+    bounds      : Box
     shader      : Shader
     render_mode : RenderMode
+    version     : Int32
+    # Used to keep this images in sync with textures
 
   METHODS
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
@@ -98,37 +103,50 @@ endClass
 class TextureImageData : ImageData
   PROPERTIES
     texture     : Texture
+    is_subset   : Logical
     uv1         : XY
     uv2         : XY
-
 
   METHODS
     method init( texture )
       shader      = Shader.TEXTURE
       render_mode = RenderMode.IMAGE_DEFAULT
+      uv1         = XY(0,0)
+      uv2         = texture.image_size / texture.texture_size
+      bounds      = Box( 0, 0, texture.image_size )
+      version     = texture.version
+
+    method init( texture, bounds )
+      shader      = Shader.TEXTURE
+      render_mode = RenderMode.IMAGE_DEFAULT
+      uv1         = bounds.top_left / texture.texture_size
+      uv2         = bounds.bottom_right / texture.texture_size
+      is_subset   = true
+      version     = texture.version
 
     method create_subset( subset:Box )->ImageData
-      local result = TextureImageData( texture )
-      result.size = subset.size
-      result.uv1 = subset.top_left / texture.texture_size
-      result.uv2 = subset.bottom_right / texture.texture_size
-      return result
+      return TextureImageData( texture, subset )
 
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
-      local uv21 = XY(uv2.x,uv1.y)
-      local uv12 = XY(uv1.x,uv2.y)
-
       Graphics.draw_textured_quad( texture, shader, render_mode,
-          pt1, pt2, pt3, pt4, uv1, uv21, uv2, uv12 )
+          pt1, pt2, pt3, pt4, uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) )
 
     method is_ready->Logical
-      return texture.is_ready
+      return texture.is_ready and version == texture.version
 
     method prepare->ImageData
       # The graphics context changed or a backing bitmap was updated;
       # find or load the texture in the current context
       texture = texture.reload
-      size = texture.image_size
+      version = texture.version
+      if (not is_subset)
+        # Adjust the bounds to match the new texture size
+        bounds = Box( 0, 0, texture.image_size )
+      endIf
+
+      # Recalculate the UV
+      uv1  = bounds.top_left / texture.texture_size
+      uv2  = bounds.bottom_right / texture.texture_size
 
       return this
 
@@ -143,18 +161,10 @@ class ImageManager [singleton]
     method load( name:String )->ImageData
       if (not Graphics.is_ready) return UnresolvedImageData( name )
       local texture = Graphics.acquire_texture( name )
-      local image_data = TextureImageData( texture )
-      image_data.size = texture.image_size
-      image_data.uv1  = XY(0,0)
-      image_data.uv2  = texture.uv_size
-      return image_data
+      return TextureImageData( texture )
 
     method load( bitmap:Bitmap )->ImageData
       local texture = Graphics.acquire_texture( bitmap )
-      local image_data = TextureImageData( texture )
-      image_data.size = texture.image_size
-      image_data.uv1  = XY(0,0)
-      image_data.uv2  = texture.uv_size
-      return image_data
+      return TextureImageData( texture )
 endClass
 
