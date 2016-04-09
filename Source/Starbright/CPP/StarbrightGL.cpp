@@ -276,12 +276,12 @@ int  GLRenderer::define_shader( const char* vertex_src, const char* pixel_src )
   return shaders.add( shader );
 }
 
-int  GLRenderer::define_texture( void* pixels, int width, int height, int options )
+int  GLRenderer::define_texture( int mip_level, void* pixels, int width, int height, int options )
 {
   GLTexture* texture = new GLTexture();
   glGenTextures( 1, &texture->gl_id );
   texture->texture_id = textures.add( texture );
-  update_texture( texture->texture_id, pixels, width, height, options );
+  update_texture( texture->texture_id, mip_level, pixels, width, height, options );
   return texture->texture_id;
 }
 
@@ -535,7 +535,7 @@ void GLRenderer::render()
   memset( vertices, 0, sizeof(Vertex) * Renderer::VERTEX_BUFFER_COUNT );
 }
 
-void GLRenderer::update_texture( int texture_id, void* pixels, int width, int height, int options )
+void GLRenderer::update_texture( int texture_id, int mip_level, void* pixels, int width, int height, int options )
 {
   GLTexture* texture = (GLTexture*) textures.get( texture_id );
   if ( !texture ) return;
@@ -551,7 +551,7 @@ void GLRenderer::update_texture( int texture_id, void* pixels, int width, int he
   switch (bpp)
   {
     case 32:
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
+      glTexImage2D( GL_TEXTURE_2D, mip_level, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
       break;
 
     case 16:
@@ -569,7 +569,7 @@ void GLRenderer::update_texture( int texture_id, void* pixels, int width, int he
                   | ((pixel>>12)&15) );
         }
       }
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
+      glTexImage2D( GL_TEXTURE_2D, mip_level, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, pixels );
       break;
   }
 }
