@@ -21,8 +21,11 @@ class Box( position:XY, size:XY ) [compound]
       return Box( top_left, bottom_right - top_left )
 
   METHODS
-    method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
-      return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
+    method at( proportional_position:XY )->XY
+      return position + proportional_position * size
+
+    method at( anchor:Anchor )->XY
+      return position + anchor.position * size
 
     method bottom_left->XY
       return (position + XY(0,size.y))
@@ -38,6 +41,9 @@ class Box( position:XY, size:XY ) [compound]
 
     method height->Real64 [macro]
       this.size.y
+
+    method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
+      return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
     method to->String
       return "[@$,$ $x$]" (x,y,width,height)

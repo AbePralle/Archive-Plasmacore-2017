@@ -62,11 +62,7 @@ class LaunchWindowViewLogic : ViewLogic
       #img.draw( Graphics.center, img.size, Anchor.CENTER, Rotation.degrees(0,yangle,zangle) )
       #img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
       #font.data.image.draw( Graphics.center, font.data.image.size, Anchor.CENTER )
-      local ch = font['W']
-      if (ch)
-        ch.image.draw( Graphics.center, ch.image.size*2, Anchor.CENTER )
-      endIf
-
+      font.draw( "Hello World!", Graphics.center )
 
     method update
       zangle += delta

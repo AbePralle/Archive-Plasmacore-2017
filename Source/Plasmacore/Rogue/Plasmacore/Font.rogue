@@ -1,12 +1,48 @@
 module Plasmacore
 
 class Font
+  GLOBAL PROPERTIES
+    work_buffer = StringBuilder()
+
   PROPERTIES
     name   : String
     height : Int32
     data   : FontData
+    anchor = Anchor.TOP_LEFT : Anchor
 
   METHODS
+    method draw( text:String, position:XY )
+      local cursor = position
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info)
+          local img = info.image
+          img.draw( cursor, info.size, Anchor.TOP_LEFT )
+          cursor.x += info.size.x
+        endIf
+      endForEach
+
+    method text_size( text:String )->XY
+      local result = XY(0,0)
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info) result += info.size
+      endForEach
+      return result
+
+    method text_size( text:StringBuilder )->XY
+      local result = XY(0,0)
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info) result += info.size
+      endForEach
+      return result
+
+    method text_size( ch:Character )->XY
+      local info = this[ ch ]
+      if (not info) return XY(0,0)
+      return info.size
+
     method get( ch:Character )->FontCharacter
       return data[ ch ]
 endClass
@@ -31,6 +67,7 @@ class BitmapFont : Font
       if (src.error) return
 
       data = FontData( height )
+      FontManager.font_data[ name ] = data
 
       local src_w = src.width / width
       local src_h = src.height / height
@@ -57,7 +94,7 @@ class FontData
     bitmap      : Bitmap
     image       : Image
     height      : Int32
-    cursor_x=1  : Int32
+    cursor_x=1  : Int32  # For writing new characters into the font bitmap
     cursor_y=1  : Int32
     ascii       = FontCharacter[]( 128, null )
     lookup      : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
