@@ -8,7 +8,7 @@ class Window
     name               : String
     id                 : Int32
     views              = StringTable<<View>>()
-    default_view_logic : Class
+    default_view_logic : TypeInfo
 
     current_view       : View
     current_view_name  = ""
