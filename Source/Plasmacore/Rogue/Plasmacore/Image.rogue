@@ -14,6 +14,9 @@ class Image
     method init( existing:Image, subset:Box )
       data = existing.data.create_subset( subset )
 
+    method adjust_subset( new_subset:Box )
+      data.adjust_subset( new_subset )
+
     method draw( position:XY, _size:XY, anchor:Anchor )
       if (not is_ready) return
 
@@ -82,6 +85,9 @@ class ImageData
     # Used to keep this images in sync with textures
 
   METHODS
+    method adjust_subset( new_subset:Box )
+      noAction
+
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
 
     method create_subset( subset:Box )->ImageData
@@ -127,6 +133,10 @@ class TextureImageData : ImageData
       uv2         = bounds.bottom_right / texture.texture_size
       is_subset   = true
       version     = texture.version
+
+    method adjust_subset( new_subset:Box )
+      uv1 = new_subset.position / texture.texture_size
+      uv2 = new_subset.bottom_right / texture.texture_size
 
     method create_subset( subset:Box )->ImageData
       return TextureImageData( texture, subset )

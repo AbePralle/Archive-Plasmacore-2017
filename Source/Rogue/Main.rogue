@@ -20,7 +20,7 @@ TextureManager.loaders[ "red_box" ] =
   endFunction
   }#
 
-local window = Window( "LaunchWindow", LaunchWindowViewLogic() )
+local window = Window( "LaunchWindow", @LaunchWindowViewLogic )
 window.show
 
 #local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )

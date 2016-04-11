@@ -88,7 +88,7 @@ class FontData
       data.blit( bitmap, XY(cursor_x,cursor_y) )
       bitmap.extend_edges( Box(cursor_x,cursor_y,w,height) )
 
-      local info = FontCharacter( ch, image, XY(cursor_x,cursor_y), XY(w,height) )
+      local info = FontCharacter( this, ch, XY(cursor_x,cursor_y), XY(w,height) )
       if (ch <= 127)
         ascii[ ch ] = info
       else
@@ -121,17 +121,28 @@ endClass
 
 
 class FontCharacter
+  GLOBAL PROPERTIES
+    shared_image : Image
+
   PROPERTIES
-    unicode  : Character
-    top_left : XY
-    size     : XY
-    offset_x : Int32
-    offset_y : Int32
-    image    : Image
+    font_data : FontData
+    unicode   : Character
+    top_left  : XY
+    size      : XY
+    offset_x  : Int32
+    offset_y  : Int32
 
   METHODS
-    method init( unicode, src_image:Image, top_left, size )
-      image = Image( src_image, Box(top_left,size) )
+    method init( font_data, unicode, top_left, size )
+
+    method image->Image
+      if (shared_image)
+        shared_image.adjust_subset( Box(top_left,size) )
+      else
+        shared_image = Image( font_data.image, Box(top_left,size) )
+      endIf
+      return shared_image
+
 endClass
 
 
