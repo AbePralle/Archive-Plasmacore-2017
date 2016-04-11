@@ -2,15 +2,14 @@ module Plasmacore
 
 class ViewLogic
   # View controller logic
-  GLOBAL PROPERTIES
-    default_logic = ViewLogic()
-
   PROPERTIES
     view             : View
     is_active        : Logical
     pointer_position : XY
 
   METHODS
+    method init
+
     method activate
 
     method handle( e:PointerEvent )
