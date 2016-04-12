@@ -69,6 +69,18 @@ class Image
       if (not data.is_ready) data = data.prepare
       return data.is_ready
 
+    method set_color( new_color:Int32 )->this
+      data.color = new_color
+      return this
+
+    method set_render_mode( new_render_mode:RenderMode )->this
+      data.render_mode = new_render_mode
+      return this
+
+    method set_shader( new_shader:Shader )->this
+      data.shader = new_shader
+      return this
+
     method size->XY
       return data.bounds.size
 
@@ -79,10 +91,12 @@ endClass
 class ImageData
   PROPERTIES
     bounds      : Box
-    shader      : Shader
-    render_mode : RenderMode
     version     : Int32
     # Used to keep this images in sync with textures
+
+    shader      : Shader
+    render_mode : RenderMode
+    color       = 0xFFFFFFFF
 
   METHODS
     method adjust_subset( new_subset:Box )
@@ -143,7 +157,8 @@ class TextureImageData : ImageData
 
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
       Graphics.draw_textured_quad( texture, shader, render_mode,
-          pt1, pt2, pt3, pt4, uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) )
+          pt1, pt2, pt3, pt4, uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y),
+          color, color, color, color )
 
     method is_ready->Logical
       return texture.is_ready and version == texture.version

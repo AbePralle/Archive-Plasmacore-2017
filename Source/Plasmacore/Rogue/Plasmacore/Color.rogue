@@ -20,6 +20,10 @@ class Color
     method rgba( r:Int32, g:Int32, b:Int32, a=255:Int32 )->Int32
       return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
 
+endClass
+
+class RealColor
+  GLOBAL METHODS
     method rgba( r:Real64, g:Real64, b:Real64, a=1:Real64 )->Int32
       return (((a.clamped(0,1)*255)->Int32:<<:24) | ((r.clamped(0,1)*255)->Int32:<<:16) |
              ((g.clamped(0,1)*255)->Int32:<<:8) | (b.clamped(0,1)*255)->Int32 )

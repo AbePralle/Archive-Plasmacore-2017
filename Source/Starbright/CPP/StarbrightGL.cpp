@@ -90,12 +90,12 @@ GLRenderer::GLRenderer()
     SB_GLSL_VERSION
     SB_PRECISION_MEDIUMP_FLOAT
     "uniform              sampler2D texture_0;                       \n"
-    "varying              vec2      vertex_uv;                     \n"
-    "varying" SB_LOWP "vec4 vertex_color;                       \n"
-    "void main()                                                   \n"
-    "{                                                             \n"
+    "varying              vec2      vertex_uv;                       \n"
+    "varying" SB_LOWP "vec4 vertex_color;                            \n"
+    "void main()                                                     \n"
+    "{                                                               \n"
     "  gl_FragColor = texture2D(texture_0,vertex_uv) * vertex_color; \n"
-    "}                                                             \n"
+    "}                                                               \n"
   );
 
   premultiplied_texture_shader_with_color_add = define_shader(
@@ -482,7 +482,7 @@ void GLRenderer::render()
     int r = (((color >> 16) & 255) * a) / 255;
     int g = (((color >> 8) & 255) * a) / 255;
     int b = ((color & 255) * a) / 255;
-    *(++dest_color) = (a << 16) | (b << 16) | (g << 8) | r;
+    *(++dest_color) = (a << 24) | (b << 16) | (g << 8) | r;
   }
 
   // Swap red and blue without premultiplying vertex color

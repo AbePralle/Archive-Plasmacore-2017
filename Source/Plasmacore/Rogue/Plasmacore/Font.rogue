@@ -5,30 +5,47 @@ class Font
     work_buffer = StringBuilder()
 
   PROPERTIES
-    name   : String
-    height : Int32
-    data   : FontData
-    anchor = Anchor.TOP_LEFT : Anchor
+    name    : String
+    height  : Int32
+    data    : FontData
+    anchor  = Anchor.TOP_LEFT : Anchor
+    scale   = XY(1,1)
+    spacing = 0  # Added to each character's width to position the next character
+    color   = 0xFFFFFFFF
 
   METHODS
     method draw( text:String, position:XY )
-      local cursor = position
+      if (color == 0xFFFFFFFF)
+        FontCharacter.shared_image.shader = Shader.TEXTURE
+      else
+        FontCharacter.shared_image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
+      endIf
+      FontCharacter.shared_image.color = color
+
+      local cursor = position - Box(text_size(text)).at( anchor ).floor
       forEach (ch in text)
         local info = this[ ch ]
         if (info)
           local img = info.image
           img.draw( cursor, info.size, Anchor.TOP_LEFT )
-          cursor.x += info.size.x
+          cursor.x += info.size.x + spacing
         endIf
       endForEach
 
+    method set_options( options:PropertyTable )->this
+      if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
+      if (options.contains("snug")) spacing = -1
+      if (options.contains("spacing")) spacing = options.get_int32( "spacing" )
+      if (options.contains("scale")) scale = XY( options["scale"] )
+      return this
+
     method text_size( text:String )->XY
-      local result = XY(0,0)
+      local w = 0.0
       forEach (ch in text)
         local info = this[ ch ]
-        if (info) result += info.size
+        if (info) w += info.size.x
       endForEach
-      return result
+      return XY( w, height )
 
     method text_size( text:StringBuilder )->XY
       local result = XY(0,0)
@@ -52,7 +69,7 @@ class BitmapFont : Font
     width  : Int32
 
   METHODS
-    method init( name, width, height, characters=' '..'~':Range<<Character>> )
+    method init( name, width, height, characters=' '..'~':Range<<Character>>, &options:PropertyTable )
       data = FontManager.font_data[ name ]
 
       if (data) return
@@ -81,6 +98,8 @@ class BitmapFont : Font
         endForEach
       endForEach
 
+      if (options) set_options( options )
+
       prepare
 
     method prepare
@@ -104,6 +123,7 @@ class FontData
     method init( height )
       bitmap = Bitmap( 1024, height+2 )
       image = Image( bitmap )
+      FontCharacter.shared_image = Image( image, Box(0,0,1,1) )
 
     method define( ch:Character, data:Bitmap )
       is_modified = true
@@ -173,11 +193,7 @@ class FontCharacter
     method init( font_data, unicode, top_left, size )
 
     method image->Image
-      if (shared_image)
-        shared_image.adjust_subset( Box(top_left,size) )
-      else
-        shared_image = Image( font_data.image, Box(top_left,size) )
-      endIf
+      shared_image.adjust_subset( Box(top_left,size) )
       return shared_image
 
 endClass
