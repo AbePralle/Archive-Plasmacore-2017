@@ -99,10 +99,11 @@ class Graphics [singleton]
       return this
 
     method define_texture( texture:Texture, bitmap:Bitmap )
-      println ''Failed to define texture from $x$ bitmap.'' (bitmap.width,bitmap.height)
+      noAction
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
+        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY,
+        c1=-1:Int32, c2=-1:Int32, c3=-1:Int32, c4=-1:Int32 )
 
         #{
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
@@ -124,7 +125,7 @@ class Graphics [singleton]
       return false
 
     method load_texture( texture:Texture, file:File )
-      println ''Failed to load texture "$" from file "$".'' (texture.name,file)
+      noAction
 
     method pop->Graphics
       if (stack.count) Graphics = stack.remove_last

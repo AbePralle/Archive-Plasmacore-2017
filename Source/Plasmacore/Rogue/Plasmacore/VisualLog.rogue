@@ -1,0 +1,45 @@
+module Plasmacore
+
+class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite singleton]
+  PROPERTIES
+    lines = String[]
+    font  = BitmapFont( "FontSystem17.png", 9, 17, &options=@{snug} )
+    timer = Timer(6)  # time until lines removed
+    output_buffer = StringBuilder()
+
+  METHODS
+    method init
+      Global.standard_output = this
+
+    method clear->this
+      lines.clear
+      return this
+
+    method draw
+      local max_lines = Graphics.height / font.height
+      while (lines.count > max_lines) lines.remove_first
+
+      local t = timer.remaining
+      if (t >= 0 and t <= 1.0)
+        font.color = Color.rgba( 255, 255, 255, 255*t )
+      else
+        font.color = Color.WHITE
+      endIf
+
+      forEach (line at j in lines)
+        font.draw( line, XY(0,j*font.height) )
+      endForEach
+
+    method update
+      if (timer.is_expired) lines.clear
+
+    method write( buffer:StringBuilder )->this
+      timer.restart
+      Console.write( buffer )  # echo the message to the console
+      if (buffer.contains('\n'))
+        forEach (line in LineReader(buffer->String)) lines.add( line )
+      else
+        lines.add( buffer->String )
+      endIf
+      return this
+endClass

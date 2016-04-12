@@ -11,6 +11,20 @@ class XY( x:Real64, y:Real64 ) [compound]
     method create( m:Real64, angle:Degrees )->XY
       return XY( m * angle.cos, m * angle.sin )
 
+    method create( value:PropertyValue )->XY
+      if (not value) return XY(0,0)
+
+      if (value.is_list)
+        return XY( value.get_real64(0), value.get_real64(1) )
+      elseIf (value.is_table)
+        return XY( value.get_real64("x"), value.get_real64("y") )
+      elseIf (value.is_number)
+        local n = value->Real64
+        return XY( n, n )
+      endIf
+
+      return XY(0,0)
+
   METHODS
     method abs->XY
       return XY( select{x>=0:x||-x}, select{y>=0:y||-y} )

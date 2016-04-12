@@ -43,7 +43,8 @@ class StarbrightGraphics : Graphics
       texture.uv_size      = texture.image_size / texture.texture_size
 
     method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY )
+        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY,
+        c1=-1:Int32, c2=-1:Int32, c3=-1:Int32, c4=-1:Int32 )
 
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
@@ -88,6 +89,19 @@ class StarbrightGraphics : Graphics
               |v[4].v = $uv3.y;
               |v[5].u = $uv4.x;
               |v[5].v = $uv4.y;
+              |
+              |v[0].color = $c1;
+              |v[0].color = $c1;
+              |v[1].color = $c2;
+              |v[1].color = $c2;
+              |v[2].color = $c3;
+              |v[2].color = $c3;
+              |v[3].color = $c1;
+              |v[3].color = $c1;
+              |v[4].color = $c3;
+              |v[4].color = $c3;
+              |v[5].color = $c4;
+              |v[5].color = $c4;
 
 
               #{
