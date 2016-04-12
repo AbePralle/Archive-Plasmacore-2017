@@ -3,7 +3,7 @@ module Plasmacore
 class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite singleton]
   PROPERTIES
     lines = String[]
-    font  = BitmapFont( "FontSystem17.png", 9, 17, &options=@{snug} )
+    font  = Font( "FontSystem17.png", 17, &options=@{snug} )
     timer = Timer(6)  # time until lines removed
     output_buffer = StringBuilder()
 
