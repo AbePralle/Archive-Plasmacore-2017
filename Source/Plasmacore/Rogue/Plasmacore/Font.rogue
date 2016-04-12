@@ -1,9 +1,6 @@
 module Plasmacore
 
 class Font
-  GLOBAL PROPERTIES
-    work_buffer = StringBuilder()
-
   PROPERTIES
     name    : String
     height  : Int32
@@ -12,8 +9,52 @@ class Font
     scale   = XY(1,1)
     spacing = 0  # Added to each character's width to position the next character
     color   = 0xFFFFFFFF
+    options : PropertyTable
 
   METHODS
+    method init( name, height, options=PropertyTable() )
+      data = FontManager.font_data[ name ]
+      if (not data) load_bitmap_font
+
+      set_options( options )
+
+    method load_bitmap_font
+      local characters : String
+      if (options.contains("characters")) characters = options.get_string( "characters" )
+      else characters = String( (' '..'~')->Character[] )
+
+      local filepath = Plasmacore.find_asset( name )
+      if (not filepath)
+        println "ERROR loading BitmapFont - no such file $." (name)
+        return
+      endIf
+
+      local src = Bitmap( File(filepath) )
+      if (src.error) return
+
+      data = FontData( height )
+      FontManager.font_data[ name ] = data
+
+      local width : Int32
+      if (options.contains("width")) width = options.get_int32("width")
+      else                           width = src.width / characters.count
+
+      local src_w = src.width / width
+      local src_h = src.height / height
+
+      local ch_index = 0
+      forEach (j in 0..<src_h)
+        forEach (i in 0..<src_w)
+          local x = i * width
+          local y = j * height
+          local ch_data = Bitmap( src, Box(x,y,width,height) )
+          data.define( characters[ch_index], ch_data )
+          ++ch_index
+        endForEach
+      endForEach
+
+      prepare
+
     method draw( text:String, position:XY )
       if (color == 0xFFFFFFFF)
         FontCharacter.shared_image.shader = Shader.TEXTURE
@@ -32,11 +73,15 @@ class Font
         endIf
       endForEach
 
-    method set_options( options:PropertyTable )->this
+    method get( ch:Character )->FontCharacter
+      return data[ ch ]
+
+    method set_options( @options )->this
       if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
       if (options.contains("snug")) spacing = -1
       if (options.contains("spacing")) spacing = options.get_int32( "spacing" )
       if (options.contains("scale")) scale = XY( options["scale"] )
+
       return this
 
     method text_size( text:String )->XY
@@ -59,48 +104,6 @@ class Font
       local info = this[ ch ]
       if (not info) return XY(0,0)
       return info.size
-
-    method get( ch:Character )->FontCharacter
-      return data[ ch ]
-endClass
-
-class BitmapFont : Font
-  PROPERTIES
-    width  : Int32
-
-  METHODS
-    method init( name, width, height, characters=' '..'~':Range<<Character>>, &options:PropertyTable )
-      data = FontManager.font_data[ name ]
-
-      if (data) return
-
-      local filepath = Plasmacore.find_asset( name )
-      if (not filepath)
-        println "ERROR loading BitmapFont - no such file $." (name)
-        return
-      endIf
-
-      local src = Bitmap( File(filepath) )
-      if (src.error) return
-
-      data = FontData( height )
-      FontManager.font_data[ name ] = data
-
-      local src_w = src.width / width
-      local src_h = src.height / height
-
-      forEach (j in 0..<src_h)
-        forEach (i in 0..<src_w)
-          local x = i * width
-          local y = j * height
-          local ch_data = Bitmap( src, Box(x,y,width,height) )
-          data.define( characters.read, ch_data )
-        endForEach
-      endForEach
-
-      if (options) set_options( options )
-
-      prepare
 
     method prepare
       if (data) data.prepare

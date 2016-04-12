@@ -36,11 +36,11 @@ class LaunchWindowViewLogic : ViewLogic
     yangle = 0.0
     zangle  = -25 : Real64
     delta  = 0.2
-    font : BitmapFont #( "FontSystem17.png", 9, 17 )
+    font : Font #( "FontSystem17.png", 9, 17 )
 
   METHODS
     method activate
-      font = BitmapFont( "FontSystem17.png", 9, 17, &options=@{snug,anchor:"CENTER"} )
+      font = Font( "FontSystem17.png", 17, &options=@{snug,anchor:"CENTER"} )
       #Graphics.load_texture( Texture("Test"), File("test") )
 
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
