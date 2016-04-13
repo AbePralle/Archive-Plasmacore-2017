@@ -919,6 +919,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					HAVE_FREETYPE,
@@ -943,6 +944,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				EXECUTABLE_PREFIX = lib;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
 					HB_NO_MT,
@@ -1116,6 +1118,7 @@
 				3018104E1CBDEFFC00D431BA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		308B60011C960D1300F0E1DF /* Build configuration list for PBXProject "PlasmacoreStudio" */ = {
 			isa = XCConfigurationList;

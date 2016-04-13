@@ -84,6 +84,14 @@ class XY( x:Real64, y:Real64 ) [compound]
     method min->Real64
       return select{ x<=y:x || y }
 
+    method max( other:XY )->XY
+      # Returns an XY containing the max X and the max Y of 'this' and 'other'.
+      return XY( Math.max(x,other.x), Math.max(y,other.y) )
+
+    method min( other:XY )->XY
+      # Returns an XY containing the min X and the min Y of 'this' and 'other'.
+      return XY( Math.min(x,other.x), Math.min(y,other.y) )
+
     method normal->XY
       # Returns the normal of the this vector.
       return XY( -y, x )

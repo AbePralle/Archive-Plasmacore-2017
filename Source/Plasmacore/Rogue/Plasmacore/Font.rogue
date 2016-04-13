@@ -78,8 +78,8 @@ class FontData
         local info = this[ ch ]
         if (info)
           image.adjust_subset( info.bounds )
-          image.draw( cursor, info.size, Anchor.TOP_LEFT )
-          cursor.x += info.size.x + font.spacing
+          image.draw( cursor+info.offset, info.size, Anchor.TOP_LEFT )
+          cursor += info.advance + font.spacing
         endIf
       endForEach
 
@@ -171,6 +171,35 @@ class DynamicallyLoadedFontData : FontData
 
       if (not is_modified) return
       is_modified = false
+
+      # Adjust all of the offsets to be non-negative, meaning the "pen position" is in
+      # the top-left corner.  This means that when a font character is first used
+      # that is higher than any other, all text being drawn in that font will appear
+      # to shift down a few pixels on screen.  The font being prepare()d with all ASCII
+      # letters *should* make this rare.
+      local max_negative_offset = XY(0,0)
+      forEach (info in ascii)
+        if (info) max_negative_offset = max_negative_offset.min( info.offset )
+      endForEach
+      if (unicode_lookup)
+        forEach (key in unicode_lookup.keys)
+          local info = unicode_lookup[ key ]
+          max_negative_offset = max_negative_offset.min( info.offset )
+        endForEach
+      endIf
+
+      if (max_negative_offset.x < 0 or max_negative_offset.y < 0)
+        local normalizing_offset = -max_negative_offset
+        forEach (info in ascii)
+          if (info) info.offset += normalizing_offset
+        endForEach
+        if (unicode_lookup)
+          forEach (key in unicode_lookup.keys)
+            local info = unicode_lookup[ key ]
+            info.offset += normalizing_offset
+          endForEach
+        endIf
+      endIf
 
       if (image)
         # Changing the bitmap version will automatically update the texture
@@ -306,15 +335,11 @@ class TrueTypeFontLoader : FontLoader [requisite]
 
   METHODS
     method init( name, options )
-@trace
       if (options and options.contains("characters"))
-@trace
         default_characters = options.get_string( "characters" )
       else
-@trace
         default_characters = String( (' '..'~')->Character[] )
       endIf
-@trace default_characters
 
       local filepath = Plasmacore.find_asset( name )
       if (not filepath)
@@ -337,41 +362,30 @@ class TrueTypeFontLoader : FontLoader [requisite]
         throw Error( "Error loading $." (name) )
         return
       endIf
-trace default_characters
-trace this.default_characters
-local default_chars = this.default_characters
-println default_chars
 
     method create_font_data( height:Int32 )->FontData
-@trace
       return DynamicallyLoadedFontData( this, height )
 
     method load( info:FontCharacter )->Bitmap
-@trace info.unicode
       local w = info.size.x
       local h = info.size.y
       native "FT_Set_Pixel_Sizes( $this->ft_face, $w, $h );"
       if (native("FT_Load_Char( $this->ft_face, $info->unicode, FT_LOAD_RENDER )")->Int32) return null
 
-@trace
       info.exists = true
       w = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
       h = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
       info.size = XY( w, h )
-@trace info.size
 
       local offset_x = native( "(RogueInt32) $this->ft_face->glyph->bitmap_left" )->Int32
       local offset_y = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
       info.offset = XY( offset_x, offset_y )
-@trace info.offset
 
       local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32
       local advance_y = native( "(RogueInt32)$this->ft_face->glyph->advance.y" )->Int32
-      info.advance = XY( advance_x, advance_y )
-@trace info.advance
+      info.advance = XY( Real64(advance_x)/64.0, Real64(advance_y)/64.0 )
 
       local pitch = native( "(RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
-@trace pitch
       native "RogueByte* src = (RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
       local bmp = Bitmap( w, h )
       local src_i = 0
@@ -379,8 +393,8 @@ println default_chars
       local column_skip = pitch - bmp.width
       forEach (j in 1..h)
         forEach (i in 1..w)
-          local a = native( "(RogueInt32)src[$src_i++]" )->Int32
-          bmp.pixels[i] = Color.rgba(255,255,255,a)
+          local a = native( "(RogueInt32)(src[$src_i++])" )->Int32
+          bmp.pixels[dest_i] = Color.rgba(255,255,255,a)
           ++dest_i
         endForEach
         src_i += column_skip
@@ -415,14 +429,11 @@ class FontManager [singleton]
 
       local loader = get_loader( name )
       if (not loader) return null
-@trace loader.default_characters
       local result = loader.create_font_data( height.value )
       by_height[ height.value ] = result
 
       # Preload the default characters - usually the 95 ASCII characters
-@trace loader.default_characters
       result.prepare( loader.default_characters )
-@trace
 
       return result
 
@@ -431,22 +442,17 @@ class FontManager [singleton]
       local loader = loader_lookup[ name ]
       if (loader) return loader
 
-@trace name
       local lc_name = name.to_lowercase
       if (lc_name.ends_with(".png") or lc_name.ends_with(".jpg"))
         loader = BitmapFontLoader( name, options )
       elseIf (lc_name.ends_with(".ttf") or lc_name.ends_with(".otf"))
-@trace
         loader = TrueTypeFontLoader( name, options )
-local default_chars = loader.default_characters
-println default_chars
       endIf
 
       if (not loader or loader.error)
         println ''ERROR loading font "$" - unsupported file type.'' (name)
         return null
       endIf
-@trace loader.default_characters
 
       loader_lookup[ name ] = loader
       return loader
