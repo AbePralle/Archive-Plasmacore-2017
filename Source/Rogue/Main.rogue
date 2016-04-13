@@ -44,6 +44,17 @@ class LaunchWindowViewLogic : ViewLogic
       font = Font( "arial.ttf", 17 )
       #Graphics.load_texture( Texture("Test"), File("test") )
 
+      local info = font['A']
+      if (info)
+        trace
+        trace info.size
+        trace info.offset
+        trace info.advance
+        trace
+      else
+        @trace "info is null"
+      endIf
+
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
       bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
       #{
