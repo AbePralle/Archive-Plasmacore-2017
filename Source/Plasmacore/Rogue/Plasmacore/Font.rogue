@@ -40,13 +40,13 @@ class Font
       return this
 
     method text_size( text:String )->XY
-      return select{ data:data.text_size( text ) || XY(0,0) }
+      return select{ data:data.text_size( text ) * scale || XY(0,0) }
 
     method text_size( text:StringBuilder )->XY
-      return select{ data:data.text_size( text ) || XY(0,0) }
+      return select{ data:data.text_size( text ) * scale || XY(0,0) }
 
     method text_size( ch:Character )->XY
-      return select{ data:data.text_size( ch ) || XY(0,0) }
+      return select{ data:data.text_size( ch ) * scale || XY(0,0) }
 
     method prepare( text=null:String )
       if (data) data.prepare( text )
@@ -73,13 +73,13 @@ class FontData
       endIf
       image.color = font.color
 
-      local cursor = position - Box(text_size(text)).at( font.anchor ).floor
+      local cursor = position - Box(text_size(text)*font.scale).at( font.anchor ).floor
       forEach (ch in text)
         local info = this[ ch ]
         if (info)
           image.adjust_subset( info.bounds )
-          image.draw( cursor+info.offset, info.size, Anchor.TOP_LEFT )
-          cursor += info.advance + font.spacing
+          image.draw( cursor+info.offset * font.scale, info.size * font.scale, Anchor.TOP_LEFT )
+          cursor += info.advance * font.scale + XY(font.spacing,0) * font.scale
         endIf
       endForEach
 
@@ -98,22 +98,22 @@ class FontData
       local w = 0.0
       forEach (ch in text)
         local info = this[ ch ]
-        if (info) w += info.size.x
+        if (info) w += info.advance.x
       endForEach
       return XY( w, height )
 
     method text_size( text:StringBuilder )->XY
-      local result = XY(0,0)
+      local w = 0.0
       forEach (ch in text)
         local info = this[ ch ]
-        if (info) result += info.size
+        if (info) w += info.advance.x
       endForEach
-      return result
+      return XY( w, height )
 
     method text_size( ch:Character )->XY
       local info = this[ ch ]
       if (not info) return XY(0,0)
-      return info.size
+      return info.advance
 endClass
 
 
