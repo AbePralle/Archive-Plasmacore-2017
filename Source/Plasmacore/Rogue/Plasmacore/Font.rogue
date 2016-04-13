@@ -293,6 +293,92 @@ class BitmapFontLoader : FontLoader
 endClass
 
 
+class TrueTypeFontLoader : FontLoader [requisite]
+  CLASS
+    nativeHeader
+      #include "ft2build.h"
+      #include FT_FREETYPE_H
+    endNativeHeader
+
+    nativeCode
+      FT_Library Plasmacore_freetype_library;
+    endNativeCode
+
+  PROPERTIES
+    native "FT_Face ft_face;"
+
+  METHODS
+    method init( name, options )
+      if (options and options.contains("characters"))
+        default_characters = options.get_string( "characters" )
+      else
+        default_characters = String( (' '..'~')->Character[] )
+      endIf
+
+      local filepath = Plasmacore.find_asset( name )
+      if (not filepath)
+        error = true
+        println ''ERROR loading TrueType font "$" - no such file.'' (name)
+        return
+      endIf
+
+      if (not native("Plasmacore_freetype_library")->Logical)
+        # Initialize FreeType library
+        if (native("FT_Init_FreeType(&Plasmacore_freetype_library)")->Int32)
+          error = true
+          throw Error( "FreeType library failed to initialize." )
+        endIf
+        on_exit( function native "FT_Done_FreeType( Plasmacore_freetype_library );" )
+      endIf
+
+      if (native("FT_New_Face( Plasmacore_freetype_library, (char*)$filepath->utf8, 0, &$this->ft_face )")->Int32)
+        error = true
+        throw Error( "Error loading $." (name) )
+        return
+      endIf
+
+    method create_font_data( height:Int32 )->FontData
+      return DynamicallyLoadedFontData( this, height )
+
+    method load( info:FontCharacter )->Bitmap
+      local w = info.size.x
+      local h = info.size.y
+      native "FT_Set_Pixel_Sizes( $this->ft_face, $w, $h );"
+      if (native("FT_Load_Char( $this->ft_face, $info->unicode, FT_LOAD_RENDER )")->Int32) return null
+
+      info.exists = true
+      w = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
+      h = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+      info.size = XY( w, h )
+
+      local offset_x = native( "(RogueInt32) $this->ft_face->glyph->bitmap_left" )->Int32
+      local offset_y = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+      info.offset = XY( offset_x, offset_y )
+
+      local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32
+      local advance_y = native( "(RogueInt32)$this->ft_face->glyph->advance.y" )->Int32
+      info.advance = XY( advance_x, advance_y )
+
+      local pitch = native( "(RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
+      native "RogueByte* src = (RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
+      local bmp = Bitmap( w, h )
+      local src_i = 0
+      local dest_i = 0
+      local column_skip = pitch - bmp.width
+      forEach (j in 1..h)
+        forEach (i in 1..w)
+          local a = native( "(RogueInt32)src[$src_i++]" )->Int32
+          bmp.pixels[i] = Color.rgba(255,255,255,a)
+          ++dest_i
+        endForEach
+        src_i += column_skip
+      endForEach
+
+      return bmp
+
+endClass
+
+
 class FontManager [singleton]
   PROPERTIES
     loader_lookup    = Table<<String,FontLoader>>()
@@ -316,6 +402,7 @@ class FontManager [singleton]
       endIf
 
       local loader = get_loader( name )
+      if (not loader) return null
       local result = loader.create_font_data( height.value )
       by_height[ height.value ] = result
 
@@ -329,6 +416,8 @@ class FontManager [singleton]
       local lc_name = name.to_lowercase
       if (lc_name.ends_with(".png") or lc_name.ends_with(".jpg"))
         face = BitmapFontLoader( name, options )
+      elseIf (lc_name.ends_with(".ttf") or lc_name.ends_with(".otf"))
+        face = TrueTypeFontLoader( name, options )
       endIf
 
       if (not face or face.error)
