@@ -2,87 +2,97 @@ module Plasmacore
 
 class Font
   PROPERTIES
-    name    : String
-    height  : Int32
-    data    : FontData
-    anchor  = Anchor.TOP_LEFT : Anchor
-    scale   = XY(1,1)
-    spacing = 0  # Added to each character's width to position the next character
-    color   = 0xFFFFFFFF
-    options : PropertyTable
+    data           : FontData
+    options        : PropertyTable
+
+    anchor         = Anchor.TOP_LEFT : Anchor
+    scale          = XY(1,1)
+    spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
+    color          = 0xFFFFFFFF
 
   METHODS
-    method init( name, height, options=PropertyTable() )
-      data = FontManager.font_data[ name ]
-      if (not data) load_bitmap_font
-
+    method init( name:String, options=null )
+      data = FontManager.get_font_data( name, null, options )
       set_options( options )
 
-    method load_bitmap_font
-      local characters : String
-      if (options.contains("characters")) characters = options.get_string( "characters" )
-      else characters = String( (' '..'~')->Character[] )
-
-      local filepath = Plasmacore.find_asset( name )
-      if (not filepath)
-        println "ERROR loading BitmapFont - no such file $." (name)
-        return
-      endIf
-
-      local src = Bitmap( File(filepath) )
-      if (src.error) return
-
-      data = FontData( height )
-      FontManager.font_data[ name ] = data
-
-      local width : Int32
-      if (options.contains("width")) width = options.get_int32("width")
-      else                           width = src.width / characters.count
-
-      local src_w = src.width / width
-      local src_h = src.height / height
-
-      local ch_index = 0
-      forEach (j in 0..<src_h)
-        forEach (i in 0..<src_w)
-          local x = i * width
-          local y = j * height
-          local ch_data = Bitmap( src, Box(x,y,width,height) )
-          data.define( characters[ch_index], ch_data )
-          ++ch_index
-        endForEach
-      endForEach
-
-      prepare
+    method init( name:String, height:Int32, options=null )
+      data = FontManager.get_font_data( name, height, options )
+      set_options( options )
 
     method draw( text:String, position:XY )
-      if (color == 0xFFFFFFFF)
-        FontCharacter.shared_image.shader = Shader.TEXTURE
-      else
-        FontCharacter.shared_image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
-      endIf
-      FontCharacter.shared_image.color = color
-
-      local cursor = position - Box(text_size(text)).at( anchor ).floor
-      forEach (ch in text)
-        local info = this[ ch ]
-        if (info)
-          local img = info.image
-          img.draw( cursor, info.size, Anchor.TOP_LEFT )
-          cursor.x += info.size.x + spacing
-        endIf
-      endForEach
+      if (data) data.draw( this, text, position )
 
     method get( ch:Character )->FontCharacter
-      return data[ ch ]
+      return select{ data:data[ ch ] || null }
+
+    method height->Real64
+      if (data) return data.height * scale.y
+      else      return 0
 
     method set_options( @options )->this
+      if (not options) return this
+
       if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
       if (options.contains("snug")) spacing = -1
       if (options.contains("spacing")) spacing = options.get_int32( "spacing" )
       if (options.contains("scale")) scale = XY( options["scale"] )
 
       return this
+
+    method text_size( text:String )->XY
+      return select{ data:data.text_size( text ) || XY(0,0) }
+
+    method text_size( text:StringBuilder )->XY
+      return select{ data:data.text_size( text ) || XY(0,0) }
+
+    method text_size( ch:Character )->XY
+      return select{ data:data.text_size( ch ) || XY(0,0) }
+
+    method prepare
+      if (data) data.prepare
+
+endClass
+
+
+class FontData
+  PROPERTIES
+    loader         : FontLoader
+    image          : Image  # Shared between all characters
+    height         : Int32
+    ascii          = FontCharacter[]( 128, null )
+    unicode_lookup : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
+
+  METHODS
+    method draw( font:Font, text:String, position:XY  )
+      prepare( text )
+
+      if (font.color == 0xFFFFFFFF)
+        image.shader = Shader.TEXTURE
+      else
+        image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
+      endIf
+      image.color = font.color
+
+      local cursor = position - Box(text_size(text)).at( font.anchor ).floor
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info)
+          image.adjust_subset( info.bounds )
+          image.draw( cursor, info.size, Anchor.TOP_LEFT )
+          cursor.x += info.size.x + font.spacing
+        endIf
+      endForEach
+
+    method get( ch:Character )->FontCharacter
+      if (ch <= 127)      return ascii[ ch ]
+      if (unicode_lookup) return unicode_lookup[ ch ]
+      return null
+
+    method load( ch:Character )
+      noAction
+
+    method prepare( characters=null:String )
+      noAction
 
     method text_size( text:String )->XY
       local w = 0.0
@@ -104,32 +114,31 @@ class Font
       local info = this[ ch ]
       if (not info) return XY(0,0)
       return info.size
-
-    method prepare
-      if (data) data.prepare
-
 endClass
 
 
-class FontData
+class DynamicallyLoadedFontData : FontData
   PROPERTIES
-    bitmap      : Bitmap
-    image       : Image
-    height      : Int32
-    cursor_x=1  : Int32  # For writing new characters into the font bitmap
-    cursor_y=1  : Int32
-    ascii       = FontCharacter[]( 128, null )
-    lookup      : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
-    is_modified : Logical
+    bitmap         : Bitmap
+    cursor_x=1     : Int32  # For writing new characters into the font bitmap
+    cursor_y=1     : Int32
+    is_modified    : Logical
 
   METHODS
-    method init( height )
+    method init( loader, height )
       bitmap = Bitmap( 1024, height+2 )
-      image = Image( bitmap )
-      FontCharacter.shared_image = Image( image, Box(0,0,1,1) )
 
-    method define( ch:Character, data:Bitmap )
+      # Preload the default characters - usually the 95 ASCII characters
+      prepare( loader.default_characters )
+
+    method load( ch:Character )
+      local info = this[ ch ]
+      if (info) return
+
       is_modified = true
+      info = FontCharacter( this, ch )
+      info.size = XY(0,height)
+      local data = loader.load( info )
       local w = data.width
 
       if (cursor_x + w+1 > bitmap.width)
@@ -148,22 +157,21 @@ class FontData
       data.blit( bitmap, XY(cursor_x,cursor_y) )
       bitmap.extend_edges( Box(cursor_x,cursor_y,w,height) )
 
-      local info = FontCharacter( this, ch, XY(cursor_x,cursor_y), XY(w,height) )
+      info.top_left = XY( cursor_x, cursor_y )
       if (ch <= 127)
         ascii[ ch ] = info
       else
-        if (not lookup) lookup = Table<<Character,FontCharacter>>()
-        lookup[ ch ] = info
+        if (not unicode_lookup) unicode_lookup = Table<<Character,FontCharacter>>()
+        unicode_lookup[ ch ] = info
       endIf
 
       cursor_x += w + 2
 
-    method get( ch:Character )->FontCharacter
-      if (ch <= 127) return ascii[ ch ]
-      if (lookup)    return lookup[ ch ]
-      return null
+    method prepare( characters=null:String )
+      if (characters)
+        forEach (ch in characters) load( ch )
+      endIf
 
-    method prepare
       if (not is_modified) return
       is_modified = false
 
@@ -181,28 +189,156 @@ endClass
 
 
 class FontCharacter
-  GLOBAL PROPERTIES
-    shared_image : Image
-
   PROPERTIES
     font_data : FontData
     unicode   : Character
+
+    exists    : Logical
     top_left  : XY
     size      : XY
-    offset_x  : Int32
-    offset_y  : Int32
+
+    offset    : XY
+    advance   : XY
 
   METHODS
-    method init( font_data, unicode, top_left, size )
+    method init( font_data, unicode )
 
-    method image->Image
-      shared_image.adjust_subset( Box(top_left,size) )
-      return shared_image
+    method bounds->Box
+      return Box( top_left, size )
 
+    method height->Int32 [macro]
+      Int32(size.y)
+
+    method width->Int32 [macro]
+      Int32(size.x)
+endClass
+
+
+class FontLoader
+  PROPERTIES
+    name               : String
+    options            : PropertyTable
+    error              : Logical
+    default_characters : String
+
+  METHODS
+    method create_font_data( height:Int32 )->FontData
+      throw UnsupportedOperationError( "FontLoader.create_font_data(Int32)" )
+
+    method load( info:FontCharacter )->Bitmap
+      return null
+
+    method nominal_height->Int32
+      return 16
+endClass
+
+
+class BitmapFontLoader : FontLoader
+  PROPERTIES
+    bitmap           : Bitmap
+    character_width  : Int32
+    character_height : Int32
+
+  METHODS
+    method init( name, options )
+      local filepath = Plasmacore.find_asset( name )
+      if (not filepath)
+        error = true
+        println ''ERROR loading bitmap font "$" - no such file.'' (name)
+        return
+      endIf
+
+      bitmap = Bitmap( File(filepath) )
+      if (bitmap.error)
+        error = true
+        println ''ERROR loading bitmap font "$" - failed to decode.'' (name)
+        return
+      endIf
+
+      if (options and options.contains("characters"))
+        default_characters = options.get_string( "characters" )
+      else
+        default_characters = String( (' '..'~')->Character[] )
+      endIf
+
+      character_width  = bitmap.width / default_characters.count
+      character_height = bitmap.height
+
+    method create_font_data( height:Int32 )->FontData
+      return DynamicallyLoadedFontData( this, height )
+
+    method load( info:FontCharacter )->Bitmap
+      local i = default_characters.locate( info.unicode )
+      if (not i.exists) return null
+
+      local pos  = XY( i.value * character_width, 0 )
+      local size = XY( character_width, character_height )
+
+      local bmp = Bitmap( bitmap, Box(pos,size) )
+
+      if (info.height and info.height != bmp.height)
+        # Resize the resulting bitmap to match the requested height
+        local scale = info.height / Real64(bmp.height)
+        bmp.resize( XY(scale*bmp.width,info.height) )
+      endIf
+
+      info.exists  = true
+      info.size    = bmp.size
+      info.advance = bmp.size.xv
+
+      return bmp
+
+    method nominal_height->Int32
+      return character_height
 endClass
 
 
 class FontManager [singleton]
   PROPERTIES
-    font_data = Table<<String,FontData>>()
+    loader_lookup    = Table<<String,FontLoader>>()
+    font_data_lookup = Table<<String,Table<<Int32,FontData>>>>()
+
+  METHODS
+    method get_font_data( name:String, height=null:Int32?, options=null:PropertyTable )->FontData
+      if (not height.exists)
+        local loader = get_loader( name )
+        if (not loader) return null
+        height = loader.nominal_height
+      endIf
+
+      local by_height = font_data_lookup[ name ]
+      if (by_height)
+        local result = by_height[ height.value ]
+        if (result) return result
+      else
+        by_height = Table<<Int32,FontData>>()
+        font_data_lookup[ name ] = by_height
+      endIf
+
+      local loader = get_loader( name )
+      local result = loader.create_font_data( height.value )
+      by_height[ height.value ] = result
+
+      return result
+
+    method get_loader( name:String, options=null:PropertyTable )->FontLoader
+      # low_ch and high_ch are used for bitmap fonts only.
+      local face = loader_lookup[ name ]
+      if (face) return face
+
+      local lc_name = name.to_lowercase
+      if (lc_name.ends_with(".png") or lc_name.ends_with(".jpg"))
+        face = BitmapFontLoader( name, options )
+      endIf
+
+      if (not face or face.error)
+        println ''ERROR loading font "$" - unsupported file type.'' (name)
+        return null
+      endIf
+
+      loader_lookup[ name ] = face
+      return face
+
 endClass
+
+

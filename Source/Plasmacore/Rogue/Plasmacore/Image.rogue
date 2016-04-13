@@ -151,6 +151,7 @@ class TextureImageData : ImageData
     method adjust_subset( new_subset:Box )
       uv1 = new_subset.position / texture.texture_size
       uv2 = new_subset.bottom_right / texture.texture_size
+      is_subset = true
 
     method create_subset( subset:Box )->ImageData
       return TextureImageData( texture, subset )
