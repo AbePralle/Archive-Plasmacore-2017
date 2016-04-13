@@ -40,7 +40,8 @@ class LaunchWindowViewLogic : ViewLogic
 
   METHODS
     method activate
-      font = Font( "FontSystem17.png", 17, &options=@{snug,anchor:"CENTER"} )
+      #font = Font( "FontSystem17.png", 17, &options=@{snug,anchor:"CENTER"} )
+      font = Font( "arial.ttf", 17 )
       #Graphics.load_texture( Texture("Test"), File("test") )
 
       println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
@@ -62,7 +63,8 @@ class LaunchWindowViewLogic : ViewLogic
       #img.draw( Graphics.center, img.size, Anchor.CENTER, Rotation.degrees(0,yangle,zangle) )
       #img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
       #font.data.image.draw( Graphics.center, font.data.image.size, Anchor.CENTER )
-      font.draw( "Hello World!", Graphics.center )
+      #font.draw( "Hello World!", Graphics.center )
+      font.draw( "A", Graphics.center )
 
     method update
       zangle += delta
