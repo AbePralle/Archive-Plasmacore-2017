@@ -3,9 +3,10 @@ module Plasmacore
 class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite singleton]
   PROPERTIES
     lines = String[]
-    font  = Font( "FontSystem17.png", 17, &options=@{snug} )
+    font  = Font( "FontSystem17.png", &options=@{snug} )
     timer = Timer(6)  # time until lines removed
     output_buffer = StringBuilder()
+    max_lines = 10 : Int32?
 
   METHODS
     method init
@@ -16,8 +17,9 @@ class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite single
       return this
 
     method draw
-      local max_lines = Graphics.height / font.height
-      while (lines.count > max_lines) lines.remove_first
+      local max = Graphics.height / font.height
+      if (max_lines.exists and max_lines.value < max) max = max_lines.value
+      while (lines.count > max) lines.remove_first
 
       local t = timer.remaining
       if (t >= 0 and t <= 1.0)
