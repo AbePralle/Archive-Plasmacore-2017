@@ -3,8 +3,8 @@ module Plasmacore
 class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite singleton]
   PROPERTIES
     lines = String[]
-    font  = Font( "FontSystem17.png", &options=@{snug} )
-    #font  = Font( "arial.ttf", 17 )
+    #font  = Font( "FontSystem17.png", &options=@{snug} )
+    font  = Font( "arial.ttf", 17 )
     timer = Timer(6)  # time until lines removed
     output_buffer = StringBuilder()
     max_lines = 10 : Int32?
