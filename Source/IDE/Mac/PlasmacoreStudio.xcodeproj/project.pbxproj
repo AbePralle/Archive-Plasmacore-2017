@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3015E14E1CC03AF40018CF4E /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3015E1491CC03AF40018CF4E /* Plasmacore.swift */; };
+		3015E14F1CC03AF40018CF4E /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3015E14A1CC03AF40018CF4E /* PlasmacoreMessage.swift */; };
+		3015E1501CC03AF40018CF4E /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3015E14B1CC03AF40018CF4E /* PlasmacoreView.swift */; };
+		3015E1511CC03AF40018CF4E /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3015E14D1CC03AF40018CF4E /* RogueInterface.mm */; };
 		301810421CBDE9EB00D431BA /* libbz2.1.0.5.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 301810411CBDE9EB00D431BA /* libbz2.1.0.5.tbd */; };
 		301810B21CBE97BF00D431BA /* hb-blob.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810971CBE97BF00D431BA /* hb-blob.cc */; };
 		301810B31CBE97BF00D431BA /* hb-buffer-serialize.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810981CBE97BF00D431BA /* hb-buffer-serialize.cc */; };
@@ -43,7 +47,6 @@
 		301810D71CBE9B9C00D431BA /* hb-ft.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810D61CBE9B9C00D431BA /* hb-ft.cc */; };
 		301810D91CBE9BB700D431BA /* ucdn.c in Sources */ = {isa = PBXBuildFile; fileRef = 301810D81CBE9BB700D431BA /* ucdn.c */; };
 		301810DB1CBE9BFB00D431BA /* hb-ot-shape-complex-use-table.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810DA1CBE9BFB00D431BA /* hb-ot-shape-complex-use-table.cc */; };
-		30736A131CA8398500E90A21 /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30736A121CA8398500E90A21 /* PlasmacoreView.swift */; };
 		30736A181CB1FB1700E90A21 /* StarbrightGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30736A161CB1FB1700E90A21 /* StarbrightGL.cpp */; };
 		30736A1D1CB364C500E90A21 /* GGBitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30736A1B1CB364C500E90A21 /* GGBitmap.cpp */; };
 		308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308B60091C960D1300F0E1DF /* AppDelegate.swift */; };
@@ -124,9 +127,6 @@
 		30CB06541C9A188600A767FC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB06531C9A188600A767FC /* libz.tbd */; };
 		30CB06551C9A18BC00A767FC /* libLibJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB058A1C9A150800A767FC /* libLibJPEG.a */; };
 		30CB06561C9A18BC00A767FC /* libLibPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB05921C9A151C00A767FC /* libLibPNG.a */; };
-		30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201A1C961732007347E0 /* Plasmacore.swift */; };
-		30DB201F1C961C00007347E0 /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30DB201D1C961C00007347E0 /* RogueInterface.mm */; };
-		30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */; };
 		30DB20241C9B08FE007347E0 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30DB20231C9B08FE007347E0 /* Assets */; };
 /* End PBXBuildFile section */
 
@@ -148,6 +148,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3015E1491CC03AF40018CF4E /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Plasmacore.swift; path = ../../Plasmacore/Swift/Plasmacore.swift; sourceTree = "<group>"; };
+		3015E14A1CC03AF40018CF4E /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreMessage.swift; path = ../../Plasmacore/Swift/PlasmacoreMessage.swift; sourceTree = "<group>"; };
+		3015E14B1CC03AF40018CF4E /* PlasmacoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreView.swift; path = ../../Plasmacore/Swift/PlasmacoreView.swift; sourceTree = "<group>"; };
+		3015E14C1CC03AF40018CF4E /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueInterface.h; path = ../../Plasmacore/Swift/RogueInterface.h; sourceTree = "<group>"; };
+		3015E14D1CC03AF40018CF4E /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = ../../Plasmacore/Swift/RogueInterface.mm; sourceTree = "<group>"; };
 		301810411CBDE9EB00D431BA /* libbz2.1.0.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.1.0.5.tbd; path = usr/lib/libbz2.1.0.5.tbd; sourceTree = SDKROOT; };
 		3018104B1CBDEFFC00D431BA /* libLibHarfBuzz.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLibHarfBuzz.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		301810971CBE97BF00D431BA /* hb-blob.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-blob.cc"; path = "../../harfbuzz-1.2.6/src/hb-blob.cc"; sourceTree = "<group>"; };
@@ -184,7 +189,6 @@
 		301810D61CBE9B9C00D431BA /* hb-ft.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-ft.cc"; path = "../../harfbuzz-1.2.6/src/hb-ft.cc"; sourceTree = "<group>"; };
 		301810D81CBE9BB700D431BA /* ucdn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ucdn.c; path = "../../harfbuzz-1.2.6/src/hb-ucdn/ucdn.c"; sourceTree = "<group>"; };
 		301810DA1CBE9BFB00D431BA /* hb-ot-shape-complex-use-table.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-ot-shape-complex-use-table.cc"; path = "../../harfbuzz-1.2.6/src/hb-ot-shape-complex-use-table.cc"; sourceTree = "<group>"; };
-		30736A121CA8398500E90A21 /* PlasmacoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreView.swift; path = PlasmacoreStudio/PlasmacoreView.swift; sourceTree = "<group>"; };
 		30736A161CB1FB1700E90A21 /* StarbrightGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StarbrightGL.cpp; path = ../../Starbright/CPP/StarbrightGL.cpp; sourceTree = "<group>"; };
 		30736A171CB1FB1700E90A21 /* StarbrightGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGL.h; path = ../../Starbright/CPP/StarbrightGL.h; sourceTree = "<group>"; };
 		30736A1B1CB364C500E90A21 /* GGBitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GGBitmap.cpp; path = ../../GGBitmap/GGBitmap.cpp; sourceTree = "<group>"; };
@@ -283,11 +287,7 @@
 		30CB05E31C9A16AD00A767FC /* jutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jutils.c; path = "../../jpeg-9b/jutils.c"; sourceTree = "<group>"; };
 		30CB06531C9A188600A767FC /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		30CB06571C9A18BC00A767FC /* PlasmacoreStudio.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PlasmacoreStudio.xcodeproj; sourceTree = "<group>"; };
-		30DB201A1C961732007347E0 /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Plasmacore.swift; path = PlasmacoreStudio/Plasmacore.swift; sourceTree = "<group>"; };
 		30DB201C1C961C00007347E0 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		30DB201D1C961C00007347E0 /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = PlasmacoreStudio/RogueInterface.mm; sourceTree = "<group>"; };
-		30DB201E1C961C00007347E0 /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueInterface.h; path = PlasmacoreStudio/RogueInterface.h; sourceTree = "<group>"; };
-		30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreMessage.swift; path = PlasmacoreStudio/PlasmacoreMessage.swift; sourceTree = "<group>"; };
 		30DB20231C9B08FE007347E0 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../Assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -373,11 +373,11 @@
 		302E60CE1CA73DA2002E141E /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
-				30DB201A1C961732007347E0 /* Plasmacore.swift */,
-				30DB201D1C961C00007347E0 /* RogueInterface.mm */,
-				30DB201E1C961C00007347E0 /* RogueInterface.h */,
-				30DB20201C962DAF007347E0 /* PlasmacoreMessage.swift */,
-				30736A121CA8398500E90A21 /* PlasmacoreView.swift */,
+				3015E1491CC03AF40018CF4E /* Plasmacore.swift */,
+				3015E14A1CC03AF40018CF4E /* PlasmacoreMessage.swift */,
+				3015E14B1CC03AF40018CF4E /* PlasmacoreView.swift */,
+				3015E14C1CC03AF40018CF4E /* RogueInterface.h */,
+				3015E14D1CC03AF40018CF4E /* RogueInterface.mm */,
 			);
 			name = Plasmacore;
 			sourceTree = "<group>";
@@ -794,19 +794,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				30736A131CA8398500E90A21 /* PlasmacoreView.swift in Sources */,
+				3015E1501CC03AF40018CF4E /* PlasmacoreView.swift in Sources */,
+				3015E14F1CC03AF40018CF4E /* PlasmacoreMessage.swift in Sources */,
 				30CB05801C9A135800A767FC /* SuperCPPDataReader.cpp in Sources */,
-				30DB201B1C961732007347E0 /* Plasmacore.swift in Sources */,
+				3015E14E1CC03AF40018CF4E /* Plasmacore.swift in Sources */,
 				30CB056B1C9A133D00A767FC /* Starbright.cpp in Sources */,
 				30C712B91CB2E722001DC9F6 /* LaunchWindow.swift in Sources */,
 				30CB05851C9A14DA00A767FC /* ImageIO.cpp in Sources */,
-				30DB201F1C961C00007347E0 /* RogueInterface.mm in Sources */,
-				30DB20211C962DAF007347E0 /* PlasmacoreMessage.swift in Sources */,
 				30736A1D1CB364C500E90A21 /* GGBitmap.cpp in Sources */,
 				30CB057E1C9A135800A767FC /* SuperCPPCString.cpp in Sources */,
 				30CB057F1C9A135800A767FC /* SuperCPPDataBuilder.cpp in Sources */,
 				308B600A1C960D1300F0E1DF /* AppDelegate.swift in Sources */,
 				30CB05651C9A130600A767FC /* RogueProgram.cpp in Sources */,
+				3015E1511CC03AF40018CF4E /* RogueInterface.mm in Sources */,
 				30CB05811C9A135800A767FC /* SuperCPPStringBuilder.cpp in Sources */,
 				30736A181CB1FB1700E90A21 /* StarbrightGL.cpp in Sources */,
 				30CB057D1C9A135800A767FC /* SuperCPP.cpp in Sources */,
