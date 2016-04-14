@@ -66,6 +66,10 @@ class LaunchWindowViewLogic : ViewLogic
       #font.draw( "Hello World!", Graphics.center )
       font.draw( "Hello World!", Graphics.center )
 
+    method on( e:KeyEvent )
+      trace e.syscode, Int32(e.unicode), e.keycode
+      trace e
+
     method update
       zangle += delta
       if (zangle >=  25) delta = -0.2
@@ -124,9 +128,7 @@ class GreenBlue : ViewLogic
       }#
 
     method on( e:KeyEvent )
-      #if (e.is_repeat)      println "'$' repeated" (e.character)
-      #elseIf (e.is_press)   println "'$' pressed" (e.character)
-      #elseIf (e.is_release) println "'$' released" (e.character)
+      trace e
 
     method on( e:PointerEvent )
       if (e.is_scroll)
