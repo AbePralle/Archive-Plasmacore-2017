@@ -151,7 +151,10 @@ class PlasmacoreView: NSOpenGLView
     let keycode = syscodeToKeycode[ syscode ]
     guard let characters = event.characters else { return }
     guard characters.characters.count == 1 else { return }
-    let unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
+    var unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
+
+    // "Fix" Unicode for ENTER and DELETE.
+    if (keycode == 8 || keycode == 10 || keycode == 127) { unicode = keycode; }
 
     let m = PlasmacoreMessage( type:"View.key_event" )
     m.setInt32( "window_id", value:windowID ).setString( "view_name", value:name )
@@ -170,7 +173,10 @@ class PlasmacoreView: NSOpenGLView
     let keycode = syscodeToKeycode[ syscode ]
     guard let characters = event.characters else { return }
     guard characters.characters.count == 1 else { return }
-    let unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
+    var unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
+
+    // "Fix" Unicode for ENTER and DELETE.
+    if (keycode == 8 || keycode == 10 || keycode == 127) { unicode = keycode; }
 
     let m = PlasmacoreMessage( type:"View.key_event" )
     m.setInt32( "window_id", value:windowID ).setString( "view_name", value:name )

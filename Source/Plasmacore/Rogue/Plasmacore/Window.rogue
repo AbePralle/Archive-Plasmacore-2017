@@ -70,6 +70,12 @@ class WindowManager [requisite singleton]
     current_window    : Window
     current_window_id = 0
 
+    key_event = KeyEvent( 0, 0, 0, false, false )
+    # Recycled KeyEvent
+
+    pointer_event = PointerEvent( 0, XY(0,0), XY(0,0), 0, 0 )
+    # Recycled PointerEvent
+
   METHODS
     method init
       MessageManager.add_handler( "View.key_event",
@@ -84,7 +90,10 @@ class WindowManager [requisite singleton]
           if (not is_repeat) Keyboard.key_pressed[ keycode & 255 ] = is_press
 
           local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_key_event( view_name, KeyEvent(keycode, unicode, syscode, is_press, is_repeat) )
+          if (window)
+            WindowManager.key_event.init( keycode, unicode, syscode, is_press, is_repeat )
+            window.handle_key_event( view_name, WindowManager.key_event )
+          endIf
         endFunction
       )
 
@@ -101,7 +110,10 @@ class WindowManager [requisite singleton]
           local id        = m.get_int32( "id" )
 
           local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_pointer_event( view_name, PointerEvent(type, XY(x,y), XY(dx,dy), button, id) )
+          if (window)
+            WindowManager.pointer_event.init( type, XY(x,y), XY(dx,dy), button, id )
+            window.handle_pointer_event( view_name, WindowManager.pointer_event )
+          endIf
         endFunction
       )
 

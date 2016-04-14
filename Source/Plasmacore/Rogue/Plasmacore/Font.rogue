@@ -136,6 +136,8 @@ class DynamicallyLoadedFontData : FontData
       info = FontCharacter( this, ch )
       info.size = XY(0,height)
       local data = loader.load( info )
+      if (not data) return
+
       local w = data.width
 
       if (cursor_x + w+1 > bitmap.width)

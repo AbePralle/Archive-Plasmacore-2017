@@ -1,9 +1,24 @@
 module Plasmacore
 
-class KeyEvent( keycode:Int32, unicode:Int32, syscode:Int32, &is_press, &is_repeat )  [compound]
+
+class KeyEvent
+  PROPERTIES
+    keycode     : Int32
+    unicode     : Character
+    syscode     : Int32
+    is_press    : Logical
+    is_repeat   : Logical
+    is_consumed : Logical
+
   METHODS
+    method init( keycode, unicode, syscode, is_press=false, is_repeat=false )
+      is_consumed = false  # Need to be explicit because KeyEvent is recycled.
+
     method character->Character [macro]
       this.unicode->Character
+
+    method consume [macro]
+      this.is_consumed = true
 
     method is_character( ch:Character )->Logical [macro]
       (this.unicode == ch)
@@ -20,16 +35,53 @@ class KeyEvent( keycode:Int32, unicode:Int32, syscode:Int32, &is_press, &is_repe
     method is_release( ch:Character )->Logical
       return unicode == ch and not is_press
 
+    method to->String
+      local buffer = StringBuilder()
+       which (unicode)
+         case    8: buffer.print( "[Backspace] " )
+         case '\t': buffer.print( "[Tab] " )
+         case '\n': buffer.print( "[Enter] " )
+         case   32: buffer.print( "[Space] " )
+         case  127: buffer.print( "[Delete] " )
+         others
+           buffer.print( "'" ).print( unicode ).print( "' " )
+           if (unicode > 128) buffer.print( "(Unicode " ).print( Int32(unicode) ).print( ") " )
+       endWhich
+
+       if (is_press)
+         if (is_repeat) buffer.print( "repeating" )
+         else           buffer.print( "pressed" )
+       else
+         buffer.print( "released" )
+       endIf
+
+       return buffer->String
+
 endClass
 
-class PointerEvent( type:Int32, position:XY, delta:XY, button:Int32, id:Int32 )  [compound]
+
+class PointerEvent
   ENUMERATE
     MOVEMENT = 0
     PRESS    = 1
     RELEASE  = 2
     SCROLL   = 3
 
+  PROPERTIES
+    type        : Int32
+    position    : XY
+    delta       : XY
+    button      : Int32
+    id          : Int32
+    is_consumed : Logical
+
   METHODS
+    method init( type, position, delta, button, id )
+      is_consumed = false  # Need to be explicit because PointerEvent is recycled.
+
+    method consume [macro]
+      this.is_consumed = true
+
     method is_movement->Logical [macro]
       (this.type == PointerEvent.MOVEMENT)
 
