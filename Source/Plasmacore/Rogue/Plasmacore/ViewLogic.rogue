@@ -12,13 +12,27 @@ class ViewLogic
 
     method activate
 
+    method handle( e:KeyEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
     method handle( e:PointerEvent )
       pointer_position = e.position
+
       on( e )
+      if (e.is_consumed) return
+
+      on_end( e )
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
+
+    method on_end( e:KeyEvent )
+
+    method on_end( e:PointerEvent )
 
     method draw
 

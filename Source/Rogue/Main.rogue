@@ -30,7 +30,7 @@ window.show
 
 class LaunchWindowViewLogic : ViewLogic
   PROPERTIES
-    img : Image
+    img  : Image
     img2 : Image
     bitmap : Bitmap
     yangle = 0.0
@@ -67,8 +67,10 @@ class LaunchWindowViewLogic : ViewLogic
       font.draw( "Hello World!", Graphics.center )
 
     method on( e:KeyEvent )
-      trace e.syscode, Int32(e.unicode), e.keycode
-      trace e
+      println e
+
+    method on( e:PointerEvent )
+      println e
 
     method update
       zangle += delta
