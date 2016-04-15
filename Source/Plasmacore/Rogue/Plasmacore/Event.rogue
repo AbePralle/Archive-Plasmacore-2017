@@ -38,14 +38,21 @@ class KeyEvent
     method to->String
       local buffer = StringBuilder()
        which (unicode)
+         case    1: buffer.print( "[LeftArrow] " )
+         case    2: buffer.print( "[UpArrow] " )
+         case    3: buffer.print( "[RightArrow] " )
+         case    4: buffer.print( "[DownArrow] " )
          case    8: buffer.print( "[Backspace] " )
          case '\t': buffer.print( "[Tab] " )
          case '\n': buffer.print( "[Enter] " )
+         case   27: buffer.print( "[Escape] " )
          case   32: buffer.print( "[Space] " )
          case  127: buffer.print( "[Delete] " )
          others
-           buffer.print( "'" ).print( unicode ).print( "' " )
-           if (unicode > 128) buffer.print( "(Unicode " ).print( Int32(unicode) ).print( ") " )
+           if (unicode >= 32 and unicode != 127)
+             buffer.print( "'" ).print( unicode ).print( "' " )
+           endIf
+           if (unicode < 32 or unicode == 127) buffer.print( "(Unicode " ).print( Int32(unicode) ).print( ") " )
        endWhich
 
        if (is_press)
