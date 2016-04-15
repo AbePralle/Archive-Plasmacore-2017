@@ -18,10 +18,10 @@ class View : Canvas
 
     method draw
       logic.draw
-      VisualLog.draw
+      OverlayLog.draw
 
     method handle( e:KeyEvent )
-      logic.on( e )
+      logic.handle( e )
 
     method handle( e:PointerEvent )
       if (pointer_exists)
@@ -39,7 +39,7 @@ class View : Canvas
 
     method update
       logic.update
-      VisualLog.update
+      OverlayLog.update
 
     method update_and_draw
       Graphics = this.graphics

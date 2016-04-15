@@ -164,7 +164,16 @@ class XY( x:Real64, y:Real64 ) [compound]
       return (this + 0.5).floor
 
     method to->String
-      return "[$,$]" (x,y)
+      local n = 0
+      if (x != Math.floor(x) or y != Math.floor(y))
+        ++n
+        local p10 = 10 ^ n
+        while (n < 9 and Math.floor(Math.abs(x*p10))%10 == 0 and Math.abs(Math.floor(y*p10)%10) == 0)
+          ++n
+        endWhile
+        if (n == 9) n = 0
+      endIf
+      return StringBuilder().print( "[" ).print( x, n ).print( "," ).print( y, n ).print( "]" )->String
 
     method xv->XY
       return XY(x,0)

@@ -1,6 +1,6 @@
 module Plasmacore
 
-class VisualLog : PrintWriterAspect<<VisualLog,output_buffer>> [requisite singleton]
+class OverlayLog : PrintWriterAspect<<OverlayLog,output_buffer>> [requisite singleton]
   PROPERTIES
     lines = String[]
     font  = Font( "FontSystem17.png", &options=@{snug} )

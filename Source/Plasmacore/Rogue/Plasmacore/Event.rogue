@@ -49,11 +49,13 @@ class KeyEvent
        endWhich
 
        if (is_press)
-         if (is_repeat) buffer.print( "repeating" )
+         if (is_repeat) buffer.print( "pressed (repeating)" )
          else           buffer.print( "pressed" )
        else
          buffer.print( "released" )
        endIf
+
+        if (is_consumed) buffer.print( " (consumed)" )
 
        return buffer->String
 
@@ -99,5 +101,19 @@ class PointerEvent
 
     method is_scroll->Logical [macro]
       (this.type == PointerEvent.SCROLL)
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.print( "Pointer " ).print( id ).print( " " )
+      which (type)
+        case MOVEMENT: buffer.print( "movement" )
+        case PRESS:    buffer.print( "press button " ).print( button )
+        case RELEASE:  buffer.print( "release" )
+        case SCROLL:   buffer.print( "scroll " ).print( delta )
+      endWhich
+      buffer.print( " at " ).print( position )
+      if (is_consumed) buffer.print( " (consumed)" )
+
+      return buffer->String
 endClass
 
