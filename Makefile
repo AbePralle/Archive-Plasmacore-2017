@@ -39,10 +39,12 @@ status:
 
 #------------------------------------------------------------------------------
 # Sample Local.mk file - do not commit to repo
-
+#
 #ABES_LIBS = ..
 #
 #status:
+#	@printf "Rogue      - "
+#	@cd $(ABES_LIBS)/../Rogue && git status | grep "\(Your branch is\)\|\(Changes not staged\|Untracked files\)"
 #	@printf "SuperCPP   - "
 #	@cd $(ABES_LIBS)/SuperCPP && git status | grep "\(Your branch is\)\|\(Changes not staged\|Untracked files\)"
 #	@printf "ImageIO    - "
@@ -50,15 +52,21 @@ status:
 #	@printf "Starbright - "
 #	@cd $(ABES_LIBS)/Starbright && git status | grep "\(Your branch is\)\|\(Changes not staged\|Untracked files\)"
 #	@printf "Plasmacore - "
+#	@cd $(ABES_LIBS)/GGBitmap && git status | grep "\(Your branch is\)\|\(Changes not staged\|Untracked files\)"
+#	@printf "GGBitmap   - "
 #	@git status | grep "\(Your branch is\)\|\(Changes not staged\|Untracked files\)"
 #
 #pull:
-# cd $(ABES_LIBS)/SuperCPP && git pull
-# cd $(ABES_LIBS)/ImageIO && git pull
-# cd $(ABES_LIBS)/Starbright && git pull
+#	git pull
+#	cd $(ABES_LIBS)/../Rogue && git pull && make
+#	cd $(ABES_LIBS)/SuperCPP && git pull
+#	cd $(ABES_LIBS)/ImageIO && git pull
+#	cd $(ABES_LIBS)/Starbright && git pull
+#	cd $(ABES_LIBS)/GGBitmap && git pull
 #
 #update:
-# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
-# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
-# @rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
-
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/SuperCPP/Source/SuperCPP Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/ImageIO/Source/ImageIO Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/Starbright/Source/Starbright Source
+#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ABES_LIBS)/GGBitmap/Source/GGBitmap Source
+#
