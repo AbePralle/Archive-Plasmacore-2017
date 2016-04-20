@@ -101,9 +101,16 @@ class Graphics [singleton]
     method define_texture( texture:Texture, bitmap:Bitmap )
       noAction
 
-    method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY,
-        c1=-1:Int32, c2=-1:Int32, c3=-1:Int32, c4=-1:Int32 )
+    method draw_solid_quad( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
+                            c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+                            render_mode:RenderMode, shader:Shader )
+      noAction
+
+    method draw_textured_quad( texture:Texture,
+        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
+        c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+        uv1:XY, uv2:XY, uv3:XY, uv4:XY,
+        shader:Shader, render_mode:RenderMode )
 
         #{
     method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
@@ -115,6 +122,29 @@ class Graphics [singleton]
 
     method height->Int32 [macro]
       this.size.y->Int32
+
+    method fill( box:Box, color=Color.WHITE:Int32 )
+      if ((color & 0xFF000000) == 0xFF000000) fill( box, color, RenderMode.OPAQUE_SHAPE )
+      else                                    fill( box, color, RenderMode.ALPHA_SHAPE )
+
+    method fill( box:Box, color:Int32, render_mode:RenderMode, shader=Shader.COLOR:Shader )
+      fill( box, color, color, color, color, render_mode, shader )
+
+    method fill( box:Box, c1:Int32, c2:Int32, c3:Int32, c4:Int32 )
+      if ((c1 & c2 & c3 & c4 & 0xFF000000) == 0xFF000000)
+        fill( box, c1, c2, c3, c4, RenderMode.OPAQUE_SHAPE )
+      else
+        fill( box, c1, c2, c3, c4, RenderMode.ALPHA_SHAPE )
+      endIf
+
+    method fill( box:Box, c1:Int32, c2:Int32, c3:Int32, c4:Int32, render_mode:RenderMode, shader=Shader.COLOR:Shader )
+      local xform = transform
+      local z     = -unit_z
+      local pt1   = xform * XYZ( box.position,             z )
+      local pt2   = xform * XYZ( box.position+box.size.xv, z )
+      local pt3   = xform * XYZ( box.position+box.size,    z )
+      local pt4   = xform * XYZ( box.position+box.size.yv, z )
+      draw_solid_quad( pt1, pt2, pt3, pt4, c1, c2, c3, c4, render_mode, shader )
 
     method flush
       render

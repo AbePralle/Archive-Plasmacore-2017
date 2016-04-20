@@ -134,7 +134,7 @@ class TextureImageData : ImageData
   METHODS
     method init( texture )
       shader      = Shader.TEXTURE
-      render_mode = RenderMode.IMAGE_DEFAULT
+      render_mode = RenderMode.ALPHA_IMAGE
       uv1         = XY(0,0)
       uv2         = texture.image_size / texture.texture_size
       bounds      = Box( 0, 0, texture.image_size )
@@ -142,7 +142,7 @@ class TextureImageData : ImageData
 
     method init( texture, bounds )
       shader      = Shader.TEXTURE
-      render_mode = RenderMode.IMAGE_DEFAULT
+      render_mode = RenderMode.ALPHA_IMAGE
       uv1         = bounds.top_left / texture.texture_size
       uv2         = bounds.bottom_right / texture.texture_size
       is_subset   = true
@@ -157,9 +157,8 @@ class TextureImageData : ImageData
       return TextureImageData( texture, subset )
 
     method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
-      Graphics.draw_textured_quad( texture, shader, render_mode,
-          pt1, pt2, pt3, pt4, uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y),
-          color, color, color, color )
+      Graphics.draw_textured_quad( texture, pt1, pt2, pt3, pt4, color, color, color, color,
+          uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y), shader, render_mode )
 
     method is_ready->Logical
       return texture.is_ready and version == texture.version
