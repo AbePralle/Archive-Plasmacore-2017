@@ -1,0 +1,13 @@
+module Plasmacore
+
+class Component
+  # Base class of all UI elements.
+  PROPERTIES
+    bounds : Box
+
+  METHODS
+    method update_layout( parent_bounds:Box )
+      bounds = parent_bounds
+endClass
+
+

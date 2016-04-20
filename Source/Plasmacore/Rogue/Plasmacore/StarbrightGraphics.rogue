@@ -1,10 +1,5 @@
 module Plasmacore
 
-nativeCode
-double rotation_degrees = 0.0;
-endNativeCode
-
-
 class StarbrightGraphics : Graphics
   CLASS
     nativeHeader #include "Starbright.h"
@@ -42,9 +37,11 @@ class StarbrightGraphics : Graphics
       texture.texture_size = XY( texture_w, texture_h )
       texture.uv_size      = texture.image_size / texture.texture_size
 
-    method draw_textured_quad( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW, uv1:XY, uv2:XY, uv3:XY, uv4:XY,
-        c1=-1:Int32, c2=-1:Int32, c3=-1:Int32, c4=-1:Int32 )
+    method draw_textured_quad( texture:Texture,
+        pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
+        c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+        uv1:XY, uv2:XY, uv3:XY, uv4:XY,
+        shader:Shader, render_mode:RenderMode )
 
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
@@ -104,30 +101,51 @@ class StarbrightGraphics : Graphics
               |v[5].color = $c4;
 
 
-              #{
-    method draw_textured_triangle( texture:Texture, shader:Shader, render_mode:RenderMode,
-        pt1:XY, pt2:XY, pt3:XY, uv1:XY, uv2:XY, uv3:XY )
-
-      update_transform
-
-      native @|Starbright::renderer->set_texture( 0, $texture->id );
-              |Starbright::renderer->set_shader( $shader.id );
+    method draw_solid_quad( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
+                            c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+                            render_mode:RenderMode, shader:Shader )
+      native @|Starbright::renderer->set_shader( $shader.id );
               |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
               |Starbright::renderer->set_render_mode( $render_mode.value );
-              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 3 );
+              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
+              |
               |v[0].x = $pt1.x;
               |v[0].y = $pt1.y;
-              |v[0].u = $uv1.x;
-              |v[0].v = $uv1.y;
+              |v[0].z = $pt1.z;
+              |v[0].w = $pt1.w;
               |v[1].x = $pt2.x;
               |v[1].y = $pt2.y;
-              |v[1].u = $uv2.x;
-              |v[1].v = $uv2.y;
+              |v[1].z = $pt2.z;
+              |v[1].w = $pt2.w;
               |v[2].x = $pt3.x;
               |v[2].y = $pt3.y;
-              |v[2].u = $uv3.x;
-              |v[2].v = $uv3.y;
-              }#
+              |v[2].z = $pt3.z;
+              |v[2].w = $pt3.w;
+              |v[3].x = $pt1.x;
+              |v[3].y = $pt1.y;
+              |v[3].z = $pt1.z;
+              |v[3].w = $pt1.w;
+              |v[4].x = $pt3.x;
+              |v[4].y = $pt3.y;
+              |v[4].z = $pt3.z;
+              |v[4].w = $pt3.w;
+              |v[5].x = $pt4.x;
+              |v[5].y = $pt4.y;
+              |v[5].z = $pt4.z;
+              |v[5].w = $pt4.w;
+              |
+              |v[0].color = $c1;
+              |v[0].color = $c1;
+              |v[1].color = $c2;
+              |v[1].color = $c2;
+              |v[2].color = $c3;
+              |v[2].color = $c3;
+              |v[3].color = $c1;
+              |v[3].color = $c1;
+              |v[4].color = $c3;
+              |v[4].color = $c3;
+              |v[5].color = $c4;
+              |v[5].color = $c4;
 
     method flush
       native @|Starbright::renderer->flush();

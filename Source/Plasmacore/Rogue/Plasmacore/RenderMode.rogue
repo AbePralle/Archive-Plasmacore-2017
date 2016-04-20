@@ -22,8 +22,11 @@ class RenderMode( value=0:Int32 ) [compound]
 
     RENDER_OPTION_MASK             = 0x00FFF000
 
-    IMAGE_DEFAULT = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|ENABLE_BLEND|ENABLE_TEXTURES)
-    SHAPE_DEFAULT = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_SOURCE_ALPHA:<<:24)|ENABLE_BLEND)
+    OPAQUE_IMAGE  = RenderMode((BLEND_ZERO:<<:28)|(BLEND_ONE:<<:24)|ENABLE_TEXTURES)
+    ALPHA_IMAGE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|ENABLE_BLEND|ENABLE_TEXTURES)
+
+    OPAQUE_SHAPE  = RenderMode((BLEND_ZERO:<<:28)|(BLEND_ONE:<<:24))
+    ALPHA_SHAPE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|ENABLE_BLEND)
 
   GLOBAL METHODS
     method create( src_blend:Int32, dest_blend:Int32, options=0:Int32 )->RenderMode
@@ -83,7 +86,7 @@ class RenderMode( value=0:Int32 ) [compound]
         if (vertical)
           # Both horizontal & vertical specified so both must be true
           return ((value & ENABLE_TEXTURE_WRAP) == ENABLE_TEXTURE_WRAP)
-        else 
+        else
           # Just checking horizontal
           return (value & ENABLE_TEXTURE_WRAP_H)
         endIf
@@ -91,7 +94,7 @@ class RenderMode( value=0:Int32 ) [compound]
         if (vertical)
           # Just checking vertical
           return (value & ENABLE_TEXTURE_WRAP_V)
-        else 
+        else
           # Neither horizontal nort vertical specified so either can be true
           return (value & ENABLE_TEXTURE_WRAP)
         endIf
