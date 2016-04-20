@@ -1,0 +1,5 @@
+module Plasmacore
+
+class Corners<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
+endClass
+

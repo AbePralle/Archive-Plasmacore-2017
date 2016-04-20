@@ -63,7 +63,7 @@ class LaunchWindowViewLogic : ViewLogic
       #img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
       #font.data.image.draw( Graphics.center, font.data.image.size, Anchor.CENTER )
       #font.draw( "Hello World!", Graphics.center )
-      Graphics.fill( Graphics.bounds, Color(0xFFffFFff), Color(0xFFFFFFFF), Color(0xFF0000FF), Color(0xFF0080FF) )
+      Graphics.fill( Graphics.bounds, Colors(0xFFffFFff,0xFFFFFFFF,0xFF0000FF,0xFF0080FF) )
       font.draw( "Hello World!", Graphics.center )
 
     method on( e:KeyEvent )

@@ -29,7 +29,7 @@ class Image
       local pt3  = transform * XYZ( position+_size,    z )
       local pt4  = transform * XYZ( position+_size.yv, z )
 
-      data.draw( pt1, pt2, pt3, pt4 )
+      data.draw( Corners<<XYZW>>(pt1,pt2,pt3,pt4) )
 
     method draw( position:XY, _size:XY, anchor:Anchor, rotation:Rotation )
       draw( position, _size, anchor, Quaternion(rotation) )
@@ -51,13 +51,13 @@ class Image
       local pt3  = transform * XYZ( position+_size,    z )
       local pt4  = transform * XYZ( position+_size.yv, z )
 
-      data.draw( pt1, pt2, pt3, pt4 )
+      data.draw( Corners<<XYZW>>(pt1,pt2,pt3,pt4) )
 
       Graphics.pop_object_transform
 
 
-    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
-      if (prepare) data.draw( pt1, pt2, pt3, pt4 )
+    method draw( corners:Corners<<XYZW>> )
+      if (prepare) data.draw( corners )
 
     method height->Real64
       return data.bounds.size.y
@@ -102,7 +102,7 @@ class ImageData
     method adjust_subset( new_subset:Box )
       noAction
 
-    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
+    method draw( corners:Corners<<XYZW>> )
 
     method create_subset( subset:Box )->ImageData
       return ImageData()
@@ -156,8 +156,8 @@ class TextureImageData : ImageData
     method create_subset( subset:Box )->ImageData
       return TextureImageData( texture, subset )
 
-    method draw( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW )
-      Graphics.draw_textured_quad( texture, pt1, pt2, pt3, pt4, color, color, color, color,
+    method draw( corners:Corners<<XYZW>> )
+      Graphics.draw_textured_quad( texture, corners, Colors(color),
           uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y), shader, render_mode )
 
     method is_ready->Logical
