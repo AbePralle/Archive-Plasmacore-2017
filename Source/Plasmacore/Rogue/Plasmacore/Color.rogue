@@ -19,11 +19,56 @@ class Color( argb:Int32 ) [compound]
   GLOBAL METHODS
     method create( r:Int32, g:Int32, b:Int32, a=255:Int32 )->Color
       return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
+
+  METHODS
+    method is_opaque->Logical
+      return ((argb & 0xFF000000) == 0xFF000000)
 endClass
 
-class RealColor
-  GLOBAL METHODS
-    method rgba( r:Real64, g:Real64, b:Real64, a=1:Real64 )->Int32
+
+class RealColor( r=0:Real64, g=0:Real64, b=0:Real64, a=1:Real64 )
+  METHODS
+    method to->Color
       return (((a.clamped(0,1)*255)->Int32:<<:24) | ((r.clamped(0,1)*255)->Int32:<<:16) |
              ((g.clamped(0,1)*255)->Int32:<<:8) | (b.clamped(0,1)*255)->Int32 )
 endClass
+
+
+class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
+  GLOBAL METHODS
+    method create( color:Color )->Colors
+      return Colors( color, color, color, color, 4 )
+
+    method create( a:Color, b:Color )->Colors
+      return Colors( a, b, Color(0), Color(0), 2 )
+
+    method create( a:Color, b:Color, c:Color )->Colors
+      return Colors( a, b, c, Color(0), 3 )
+
+    method create( a:Color, b:Color, c:Color, d:Color )->Colors
+      return Colors( a, b, c, d, 4 )
+
+    method create( color:Int32 )->Colors
+      return Colors( Color(color), Color(color), Color(color), Color(color), 4 )
+
+    method create( a:Int32, b:Int32 )->Colors
+      return Colors( Color(a), Color(b), Color(0), Color(0), 2 )
+
+    method create( a:Int32, b:Int32, c:Int32 )->Colors
+      return Colors( Color(a), Color(b), Color(c), Color(0), 3 )
+
+    method create( a:Int32, b:Int32, c:Int32, d:Int32 )->Colors
+      return Colors( Color(a), Color(b), Color(c), Color(d), 4 )
+
+  METHODS
+    method is_opaque->Logical
+      which (count)
+        case 4: return ((a.argb & b.argb & c.argb & d.argb & 0xFF000000) == 0xFF000000)
+        case 3: return ((a.argb & b.argb & c.argb & 0xFF000000) == 0xFF000000)
+        case 2: return ((a.argb & b.argb & 0xFF000000) == 0xFF000000)
+        case 1: return ((a.argb & 0xFF000000) == 0xFF000000)
+        case 0: return true
+        others: return false
+      endWhich
+endClass
+
