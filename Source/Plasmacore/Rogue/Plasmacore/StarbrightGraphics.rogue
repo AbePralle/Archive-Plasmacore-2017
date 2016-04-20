@@ -9,7 +9,7 @@ class StarbrightGraphics : Graphics
       @trace
 
     method clear->this
-      native @|Starbright::renderer->clear_color = $this->background_color;
+      native @|Starbright::renderer->clear_color = $this->background_color.argb;
               |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
       return this
 
@@ -39,7 +39,7 @@ class StarbrightGraphics : Graphics
 
     method draw_textured_quad( texture:Texture,
         pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
-        c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+        c1:Color, c2:Color, c3:Color, c4:Color,
         uv1:XY, uv2:XY, uv3:XY, uv4:XY,
         shader:Shader, render_mode:RenderMode )
 
@@ -87,22 +87,22 @@ class StarbrightGraphics : Graphics
               |v[5].u = $uv4.x;
               |v[5].v = $uv4.y;
               |
-              |v[0].color = $c1;
-              |v[0].color = $c1;
-              |v[1].color = $c2;
-              |v[1].color = $c2;
-              |v[2].color = $c3;
-              |v[2].color = $c3;
-              |v[3].color = $c1;
-              |v[3].color = $c1;
-              |v[4].color = $c3;
-              |v[4].color = $c3;
-              |v[5].color = $c4;
-              |v[5].color = $c4;
+              |v[0].color = $c1.argb;
+              |v[0].color = $c1.argb;
+              |v[1].color = $c2.argb;
+              |v[1].color = $c2.argb;
+              |v[2].color = $c3.argb;
+              |v[2].color = $c3.argb;
+              |v[3].color = $c1.argb;
+              |v[3].color = $c1.argb;
+              |v[4].color = $c3.argb;
+              |v[4].color = $c3.argb;
+              |v[5].color = $c4.argb;
+              |v[5].color = $c4.argb;
 
 
     method draw_solid_quad( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
-                            c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+                            c1:Color, c2:Color, c3:Color, c4:Color,
                             render_mode:RenderMode, shader:Shader )
       native @|Starbright::renderer->set_shader( $shader.id );
               |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
@@ -134,18 +134,18 @@ class StarbrightGraphics : Graphics
               |v[5].z = $pt4.z;
               |v[5].w = $pt4.w;
               |
-              |v[0].color = $c1;
-              |v[0].color = $c1;
-              |v[1].color = $c2;
-              |v[1].color = $c2;
-              |v[2].color = $c3;
-              |v[2].color = $c3;
-              |v[3].color = $c1;
-              |v[3].color = $c1;
-              |v[4].color = $c3;
-              |v[4].color = $c3;
-              |v[5].color = $c4;
-              |v[5].color = $c4;
+              |v[0].color = $c1.argb;
+              |v[0].color = $c1.argb;
+              |v[1].color = $c2.argb;
+              |v[1].color = $c2.argb;
+              |v[2].color = $c3.argb;
+              |v[2].color = $c3.argb;
+              |v[3].color = $c1.argb;
+              |v[3].color = $c1.argb;
+              |v[4].color = $c3.argb;
+              |v[4].color = $c3.argb;
+              |v[5].color = $c4.argb;
+              |v[5].color = $c4.argb;
 
     method flush
       native @|Starbright::renderer->flush();

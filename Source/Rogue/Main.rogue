@@ -51,7 +51,7 @@ class LaunchWindowViewLogic : ViewLogic
         if (not (bitmap.pixels[i] & 0xFF000000)) bitmap.pixels[i] = Color.RED
       endForEach
       }#
-      bitmap.pixels.modify( function(color) = select{ (color&0xff000000):color || Color.RED } )
+      bitmap.pixels.modify( function(color) = select{ (color.argb&0xff000000):color || Color.RED } )
       println bitmap.size
       img = Image( bitmap )
       img2 = Image( img, Box(9,0,8,16) )
@@ -63,7 +63,7 @@ class LaunchWindowViewLogic : ViewLogic
       #img2.draw( XY(1,19), img2.size, Anchor.TOP_LEFT )
       #font.data.image.draw( Graphics.center, font.data.image.size, Anchor.CENTER )
       #font.draw( "Hello World!", Graphics.center )
-      Graphics.fill( Graphics.bounds, 0xFFffFFff, 0xFFFFFFFF, 0xFF0000FF, 0xFF0080FF )
+      Graphics.fill( Graphics.bounds, Color(0xFFffFFff), Color(0xFFFFFFFF), Color(0xFF0000FF), Color(0xFF0080FF) )
       font.draw( "Hello World!", Graphics.center )
 
     method on( e:KeyEvent )
@@ -81,7 +81,7 @@ endClass
 
 class SweetWindowViewLogic : ViewLogic
   GLOBAL PROPERTIES
-    clear_color = Color.YELLOW : Int32
+    clear_color = Color.YELLOW : Color
 
   METHODS
     method draw

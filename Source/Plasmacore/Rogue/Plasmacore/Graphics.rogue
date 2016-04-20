@@ -11,7 +11,7 @@ class Graphics [singleton]
 
     size              : XY
     true_size         : XY
-    background_color  : Int32
+    background_color  : Color
 
     projection_transform : Matrix
 
@@ -102,13 +102,13 @@ class Graphics [singleton]
       noAction
 
     method draw_solid_quad( pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
-                            c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+                            c1:Color, c2:Color, c3:Color, c4:Color,
                             render_mode:RenderMode, shader:Shader )
       noAction
 
     method draw_textured_quad( texture:Texture,
         pt1:XYZW, pt2:XYZW, pt3:XYZW, pt4:XYZW,
-        c1:Int32, c2:Int32, c3:Int32, c4:Int32,
+        c1:Color, c2:Color, c3:Color, c4:Color,
         uv1:XY, uv2:XY, uv3:XY, uv4:XY,
         shader:Shader, render_mode:RenderMode )
 
@@ -123,21 +123,21 @@ class Graphics [singleton]
     method height->Int32 [macro]
       this.size.y->Int32
 
-    method fill( box:Box, color=Color.WHITE:Int32 )
-      if ((color & 0xFF000000) == 0xFF000000) fill( box, color, RenderMode.OPAQUE_SHAPE )
-      else                                    fill( box, color, RenderMode.ALPHA_SHAPE )
+    method fill( box:Box, color=Color.WHITE:Color )
+      if ((color.argb & 0xFF000000) == 0xFF000000) fill( box, color, RenderMode.OPAQUE_SHAPE )
+      else                                         fill( box, color, RenderMode.ALPHA_SHAPE )
 
-    method fill( box:Box, color:Int32, render_mode:RenderMode, shader=Shader.COLOR:Shader )
+    method fill( box:Box, color:Color, render_mode:RenderMode, shader=Shader.COLOR:Shader )
       fill( box, color, color, color, color, render_mode, shader )
 
-    method fill( box:Box, c1:Int32, c2:Int32, c3:Int32, c4:Int32 )
-      if ((c1 & c2 & c3 & c4 & 0xFF000000) == 0xFF000000)
+    method fill( box:Box, c1:Color, c2:Color, c3:Color, c4:Color )
+      if ((c1.argb & c2.argb & c3.argb & c4.argb & 0xFF000000) == 0xFF000000)
         fill( box, c1, c2, c3, c4, RenderMode.OPAQUE_SHAPE )
       else
         fill( box, c1, c2, c3, c4, RenderMode.ALPHA_SHAPE )
       endIf
 
-    method fill( box:Box, c1:Int32, c2:Int32, c3:Int32, c4:Int32, render_mode:RenderMode, shader=Shader.COLOR:Shader )
+    method fill( box:Box, c1:Color, c2:Color, c3:Color, c4:Color, render_mode:RenderMode, shader=Shader.COLOR:Shader )
       local xform = transform
       local z     = -unit_z
       local pt1   = xform * XYZ( box.position,             z )
