@@ -8,7 +8,7 @@ class Font
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
     spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
-    color          = 0xFFFFFFFF
+    color          = Color(0xFFFFFFFF)
 
   METHODS
     method init( name:String, options=null )
@@ -66,7 +66,7 @@ class FontData
     method draw( font:Font, text:String, position:XY  )
       prepare( text )
 
-      if (font.color == 0xFFFFFFFF)
+      if (font.color.argb == 0xFFFFFFFF)
         image.shader = Shader.TEXTURE
       else
         image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
@@ -396,7 +396,7 @@ class TrueTypeFontLoader : FontLoader [requisite]
       forEach (j in 1..h)
         forEach (i in 1..w)
           local a = native( "(RogueInt32)(src[$src_i++])" )->Int32
-          bmp.pixels[dest_i] = Color.rgba(255,255,255,a)
+          bmp.pixels[dest_i] = Color(255,255,255,a)
           ++dest_i
         endForEach
         src_i += column_skip

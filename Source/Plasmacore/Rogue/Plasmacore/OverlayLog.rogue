@@ -23,7 +23,7 @@ class OverlayLog : PrintWriterAspect<<OverlayLog,output_buffer>> [requisite sing
 
       local t = timer.remaining
       if (t >= 0 and t <= 1.0)
-        font.color = Color.rgba( 255, 255, 255, 255*t )
+        font.color = Color( 255, 255, 255, 255*t )
       else
         font.color = Color.WHITE
       endIf

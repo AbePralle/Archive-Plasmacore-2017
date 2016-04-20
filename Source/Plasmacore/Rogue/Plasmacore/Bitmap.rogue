@@ -10,15 +10,15 @@ class Bitmap
 
   PROPERTIES
     size    : XY
-    pixels  : Int32[]
+    pixels  : Color[]
     error   : Logical
     version : Int32  # A counter that is sometimes used to sync textures with this bitmap
 
   METHODS
-    method init( size, color=Color.BLACK:Int32 ) [requisite]
-      init( size, Int32[]( width*height, color ) )
+    method init( size, color=Color.BLACK:Color ) [requisite]
+      init( size, Color[]( width*height, color ) )
 
-    method init( x:Int32, y:Int32, color=Color.BLACK:Int32 ) [requisite]
+    method init( x:Int32, y:Int32, color=Color.BLACK:Color ) [requisite]
       init( XY(x,y), color )
 
     method init( file:File )
@@ -55,7 +55,7 @@ class Bitmap
       result.error = this.error
       return result
 
-    method add_rows( rows:Int32, color=0:Int32 )->this
+    method add_rows( rows:Int32, color=0:Color )->this
       pixels.reserve( width*rows )
       forEach (1..width*rows) pixels.add( color )
       size += XY( 0, rows )
@@ -70,7 +70,7 @@ class Bitmap
               |src.blit_area( $bounds.position.x, $bounds.position.y, $bounds.size.x, $bounds.size.y,
               |               &dest, $dest_position.x, $dest_position.y );
 
-    method clear( color=Color.BLACK:Int32 )
+    method clear( color=Color.BLACK:Color )
       forEach (i of pixels) pixels[i] = color
 
     method extend_edges( bounds:Box )
@@ -85,7 +85,7 @@ class Bitmap
       blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
       blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
-    method fill( box:Box, color:Int32 )
+    method fill( box:Box, color:Color )
       local x = box.position.x
       local y = box.position.y
       local w = box.size.x
@@ -98,13 +98,13 @@ class Bitmap
               |if ( !decoder.open($bytes->data->bytes, $bytes->count) ) return 0;
 
       size = XY( native("decoder.width")->Int32, native("decoder.height")->Int32 )
-      pixels = Int32[]( width * height )
+      pixels = Color[]( width * height )
       pixels.count = width * height
 
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
 
-    method get( x:Int32, y:Int32 )->Int32
+    method get( x:Int32, y:Int32 )->Color
       return pixels[ y*width + x ]
 
     method height->Int32 [macro]
@@ -150,7 +150,7 @@ class Bitmap
     method save_as_jpeg( file:File, quality=75:Int32 )->Logical
       return file.save( to_jpeg_bytes(quality) )
 
-    method set( x:Int32, y:Int32, color:Int32 )->this
+    method set( x:Int32, y:Int32, color:Color )->this
       pixels[ y*width + x ] = color
       return this
 

@@ -69,7 +69,7 @@ class Image
       if (not data.is_ready) data = data.prepare
       return data.is_ready
 
-    method set_color( new_color:Int32 )->this
+    method set_color( new_color:Color )->this
       data.color = new_color
       return this
 
@@ -96,7 +96,7 @@ class ImageData
 
     shader      : Shader
     render_mode : RenderMode
-    color       = 0xFFFFFFFF
+    color       = Color(0xFFFFFFFF)
 
   METHODS
     method adjust_subset( new_subset:Box )
