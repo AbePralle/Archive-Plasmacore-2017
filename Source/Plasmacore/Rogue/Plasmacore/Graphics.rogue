@@ -101,6 +101,14 @@ class Graphics [singleton]
     method define_texture( texture:Texture, bitmap:Bitmap )
       noAction
 
+    method draw( box:Box, color=Color.WHITE:Color )
+      fill( Box(box.top_left,1,box.height) )
+      fill( Box(box.top_left+XY(box.width-1,0),1,box.height) )
+      if (box.width > 2)
+        fill( Box(box.top_left+XY(1,0),box.width-2,1) )
+        fill( Box(box.top_left+XY(1,box.height-1),box.width-2,1) )
+      endIf
+
     method draw_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       noAction
 
