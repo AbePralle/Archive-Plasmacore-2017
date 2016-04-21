@@ -102,6 +102,8 @@ class MessageManager [requisite singleton]
       io_writer.write( message_builder.buffer )
       message_builder.clear
 
+      TaskManager.update
+
       return io_buffer
 endClass
 
