@@ -1,0 +1,8 @@
+module Plasmacore
+
+class Assets [requisite]
+  PROPERTIES
+
+  METHODS
+    method init
+endClass

@@ -49,7 +49,7 @@ class Box( position:XY, size:XY ) [compound]
       return "[@$,$ $x$]" (x,y,width,height)
 
     method top_left->XY [macro]
-      position
+      this.position
 
     method top_right->XY
       return (position + XY(size.x,0))
