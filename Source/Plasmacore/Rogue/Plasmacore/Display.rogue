@@ -1,6 +1,6 @@
 module Plasmacore
 
-class View
+class Display
   PROPERTIES
     window           : Window
     name             : String
@@ -14,7 +14,7 @@ class View
 
   METHODS
     method init( window, name, logic )
-      logic.view = this
+      logic.display = this
       graphics = StarbrightGraphics( this )
 
     method draw

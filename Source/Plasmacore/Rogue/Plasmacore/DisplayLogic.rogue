@@ -2,7 +2,7 @@ module Plasmacore
 
 class DisplayLogic
   PROPERTIES
-    view             : View
+    display          : Display
     is_active        : Logical
     pointer_position : XY
 

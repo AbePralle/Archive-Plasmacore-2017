@@ -5,7 +5,7 @@ class Graphics [singleton]
     stack = Graphics[]
 
   PROPERTIES
-    view              : View
+    display           : Display
     named_textures    = Table<<String,Texture>>()  # textures created from a filename
     bitmap_textures   = Table<<Bitmap,Texture>>()  # textures created from Bitmaps
 
@@ -29,8 +29,8 @@ class Graphics [singleton]
 
 
   METHODS
-    method init( view )
-      size = view.size
+    method init( display )
+      size = display.size
       true_size = size
       background_color = Color.BLACK
 
@@ -71,9 +71,9 @@ class Graphics [singleton]
 
       return texture
 
-    method begin_draw( view )->this
+    method begin_draw( display )->this
       clear_transforms
-      size = view.size
+      size = display.size
       mode = mode.configure( size )
       mode.activate
       return this
