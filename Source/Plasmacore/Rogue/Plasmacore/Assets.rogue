@@ -2,7 +2,8 @@ module Plasmacore
 
 class Assets [requisite]
   PROPERTIES
+    graphics : Graphics
 
   METHODS
-    method init
 endClass
+

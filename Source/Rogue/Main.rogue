@@ -7,7 +7,7 @@ MessageManager.add_handler( "Ping", function(m:Message) println System.time; Mes
 MessageManager.add_handler( "some_button_clicked",
   function(m:Message)
     local n = Random.next_int32(3)
-    SweetWindowViewLogic.clear_color = select(n){ 0:Color.RED || 1:Color.GREEN || Color.BLUE }
+    SweetWindowDisplayLogic.clear_color = select(n){ 0:Color.RED || 1:Color.GREEN || Color.BLUE }
     Message("add_result").set_string( "color",
       select(n){ 0:"Red" || 1:"Green" || "Blue" } ).send
   endFunction
@@ -20,23 +20,25 @@ TextureManager.loaders[ "red_box" ] =
   endFunction
   }#
 
-local window = Window( "LaunchWindow", @LaunchWindowViewLogic )
+local window = Window( "LaunchWindow", @LaunchWindowDisplayLogic )
 window.show
 
-#local sweet_window = Window( "SweetWindow", SweetWindowViewLogic() )
+#local sweet_window = Window( "SweetWindow", SweetWindowDisplayLogic() )
 #sweet_window.show
 
+class LaunchWindowAssets : Assets
+endClass
 
 
-class LaunchWindowViewLogic : ViewLogic
+class LaunchWindowDisplayLogic : DisplayLogic
   PROPERTIES
     img  : Image
-    img2 : Image
     bitmap : Bitmap
     yangle = 0.0
     zangle  = -25 : Real64
     delta  = 0.2
     font : Font #( "FontSystem17.png", 9, 17 )
+    assets = LaunchWindowAssets()
 
   METHODS
     method activate
@@ -44,17 +46,11 @@ class LaunchWindowViewLogic : ViewLogic
       font = Font( "arial.ttf", 64, @{anchor:"CENTER"} )
       #Graphics.load_texture( Texture("Test"), File("test") )
 
-      println "path for resource: " + Plasmacore.find_asset( "FontSystem17.png" )
-      bitmap = Bitmap( File(Plasmacore.find_asset("FontSystem17.png")) )
       #{
       forEach (i of bitmap.pixels)
         if (not (bitmap.pixels[i] & 0xFF000000)) bitmap.pixels[i] = Color.RED
       endForEach
       }#
-      bitmap.pixels.modify( function(color) = select{ (color.argb&0xff000000):color || Color.RED } )
-      println bitmap.size
-      img = Image( bitmap )
-      img2 = Image( img, Box(9,0,8,16) )
       #img = Image( "King.png" )
 
     method draw
@@ -79,7 +75,7 @@ class LaunchWindowViewLogic : ViewLogic
       yangle += 0.2
 endClass
 
-class SweetWindowViewLogic : ViewLogic
+class SweetWindowDisplayLogic : DisplayLogic
   GLOBAL PROPERTIES
     clear_color = Color.YELLOW : Color
 
@@ -88,7 +84,7 @@ class SweetWindowViewLogic : ViewLogic
       Graphics.clear( clear_color )
 endClass
 
-class GreenBlue : ViewLogic
+class GreenBlue : DisplayLogic
   PROPERTIES
     image = Image( "King.png" )
     #image  = Image( "U5Tiles.png" )

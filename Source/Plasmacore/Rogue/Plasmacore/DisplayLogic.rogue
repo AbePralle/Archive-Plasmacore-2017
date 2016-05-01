@@ -1,7 +1,6 @@
 module Plasmacore
 
-class ViewLogic
-  # View controller logic
+class DisplayLogic
   PROPERTIES
     view             : View
     is_active        : Logical
