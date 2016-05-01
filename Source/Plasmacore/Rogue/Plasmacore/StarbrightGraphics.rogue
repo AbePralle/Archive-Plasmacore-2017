@@ -5,7 +5,7 @@ class StarbrightGraphics : Graphics
     nativeHeader #include "Starbright.h"
 
   METHODS
-    method init( view )
+    method init( display )
       @trace
 
     method clear->this

@@ -7,11 +7,11 @@ class Window
   PROPERTIES
     name                  : String
     id                    : Int32
-    views                 = StringTable<<View>>()
+    displays              = StringTable<<Display>>()
     default_display_logic : TypeInfo
 
-    current_view       : View
-    current_view_name  = ""
+    current_display       : Display
+    current_display_name  = ""
 
   METHODS
     method init( name, default_display_logic=@DisplayLogic )
@@ -29,32 +29,32 @@ class Window
       WindowManager.windows_by_id.remove( id )
       Message( "Window.close" ).set_int32("id",id).send
 
-    method find_view( view_name_buffer:StringBuilder )->View
-      if (view_name_buffer == current_view_name) return current_view
+    method find_display( display_name_buffer:StringBuilder )->Display
+      if (display_name_buffer == current_display_name) return current_display
 
-      local view = views[ view_name_buffer ]
-      if (view)
-        current_view_name = view.name
-        current_view = view
+      local display = displays[ display_name_buffer ]
+      if (display)
+        current_display_name = display.name
+        current_display = display
       endIf
 
-      local view_name = view_name_buffer->String
-      view = View( this, view_name, (default_display_logic.create_object as DisplayLogic).init )
-      views[ view_name ] = view
-      current_view_name = view.name
-      current_view = view
-      return view
+      local display_name = display_name_buffer->String
+      display = Display( this, display_name, (default_display_logic.create_object as DisplayLogic).init )
+      displays[ display_name ] = display
+      current_display_name = display.name
+      current_display = display
+      return display
 
-    method handle_key_event( view_name_buffer:StringBuilder, e:KeyEvent )
-      find_view( view_name_buffer ).handle( e )
+    method handle_key_event( display_name_buffer:StringBuilder, e:KeyEvent )
+      find_display( display_name_buffer ).handle( e )
 
-    method handle_pointer_event( view_name_buffer:StringBuilder, e:PointerEvent )
-      find_view( view_name_buffer ).handle( e )
+    method handle_pointer_event( display_name_buffer:StringBuilder, e:PointerEvent )
+      find_display( display_name_buffer ).handle( e )
 
-    method handle_update_and_draw( view_name_buffer:StringBuilder, w:Int32, h:Int32 )
-      local view = find_view( view_name_buffer )
-      view.size = XY( w, h )
-      view.update_and_draw
+    method handle_update_and_draw( display_name_buffer:StringBuilder, w:Int32, h:Int32 )
+      local display = find_display( display_name_buffer )
+      display.size = XY( w, h )
+      display.update_and_draw
 
     method show
       Message( "Window.show" ).set_int32("id",id).send
@@ -78,10 +78,10 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
-      MessageManager.add_handler( "View.key_event",
+      MessageManager.add_handler( "Display.key_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
-          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local display_name = m.get_string( "display_name", WindowManager.string_buffer.clear )
           local keycode   = m.get_int32( "keycode" )
           local unicode   = m.get_int32( "unicode" )
           local syscode   = m.get_int32( "syscode" )
@@ -92,15 +92,15 @@ class WindowManager [requisite singleton]
           local window    = WindowManager.find_window( window_id )
           if (window)
             WindowManager.key_event.init( keycode, unicode, syscode, is_press, is_repeat )
-            window.handle_key_event( view_name, WindowManager.key_event )
+            window.handle_key_event( display_name, WindowManager.key_event )
           endIf
         endFunction
       )
 
-      MessageManager.add_handler( "View.pointer_event",
+      MessageManager.add_handler( "Display.pointer_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
-          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local display_name = m.get_string( "display_name", WindowManager.string_buffer.clear )
           local type      = m.get_int32( "type" )
           local x         = m.get_int32( "x" )
           local y         = m.get_int32( "y" )
@@ -112,19 +112,19 @@ class WindowManager [requisite singleton]
           local window    = WindowManager.find_window( window_id )
           if (window)
             WindowManager.pointer_event.init( type, XY(x,y), XY(dx,dy), button, id )
-            window.handle_pointer_event( view_name, WindowManager.pointer_event )
+            window.handle_pointer_event( display_name, WindowManager.pointer_event )
           endIf
         endFunction
       )
 
-      MessageManager.add_handler( "View.update_and_draw",
+      MessageManager.add_handler( "Display.update_and_draw",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
-          local view_name = m.get_string( "view_name", WindowManager.string_buffer.clear )
+          local display_name = m.get_string( "display_name", WindowManager.string_buffer.clear )
           local width     = m.get_int32( "width" )
           local height    = m.get_int32( "height" )
           local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_update_and_draw( view_name, width, height )
+          if (window) window.handle_update_and_draw( display_name, width, height )
         endFunction
       )
 
