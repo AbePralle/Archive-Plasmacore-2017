@@ -1,15 +1,16 @@
 module Plasmacore
 
-class View : Canvas
+class View
   PROPERTIES
     window           : Window
     name             : String
     graphics         : Graphics
-    logic            : ViewLogic
+    logic            : DisplayLogic
     pointer_position : XY
     pointer_exists   : Logical
     time_debt        : Real64
     last_update_time : Real64
+    size             : XY
 
   METHODS
     method init( window, name, logic )
@@ -36,6 +37,9 @@ class View : Canvas
         pointer_position = e.position
       endIf
       logic.handle( e )
+
+    method height->Int32 [macro]
+      this.size.y->Int32
 
     method update
       logic.update
@@ -66,5 +70,9 @@ class View : Canvas
       draw
 
       Graphics.end_draw
+
+    method width->Int32 [macro]
+      this.size.x->Int32
+
 endClass
 

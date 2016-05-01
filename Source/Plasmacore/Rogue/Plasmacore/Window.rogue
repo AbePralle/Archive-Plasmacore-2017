@@ -5,16 +5,16 @@ module Plasmacore
 
 class Window
   PROPERTIES
-    name               : String
-    id                 : Int32
-    views              = StringTable<<View>>()
-    default_view_logic : TypeInfo
+    name                  : String
+    id                    : Int32
+    views                 = StringTable<<View>>()
+    default_display_logic : TypeInfo
 
     current_view       : View
     current_view_name  = ""
 
   METHODS
-    method init( name, default_view_logic=@ViewLogic )
+    method init( name, default_display_logic=@DisplayLogic )
       id = Plasmacore.create_resource_id
       WindowManager.windows_by_id[ id ] = this
       Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
@@ -39,7 +39,7 @@ class Window
       endIf
 
       local view_name = view_name_buffer->String
-      view = View( this, view_name, (default_view_logic.create_object as ViewLogic).init )
+      view = View( this, view_name, (default_display_logic.create_object as DisplayLogic).init )
       views[ view_name ] = view
       current_view_name = view.name
       current_view = view
