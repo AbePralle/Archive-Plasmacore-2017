@@ -20,6 +20,14 @@ class AppDelegate: NSObject, NSApplicationDelegate
     Plasmacore.singleton.start()
   }
 
+  func applicationShouldHandleReopen( sender:NSApplication, hasVisibleWindows:Bool )->Bool
+  {
+    if (hasVisibleWindows) { return true; }
+
+    Plasmacore.singleton.relaunch();
+    return false;
+  }
+
   func applicationWillTerminate( notification:NSNotification)
   {
     Plasmacore.singleton.stop()

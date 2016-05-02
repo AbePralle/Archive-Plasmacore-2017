@@ -1,23 +1,56 @@
 module Plasmacore
 
-#{
-class Display
+class Display [singleton]
+  CLASS
+    nativeHeader #include "Starbright.h"
+
   PROPERTIES
-    window           : Window
     name             : String
-    graphics         : Graphics
-    logic            : DisplayLogic
+    window           : Window
+    state            : State
+
+    update_timer     = UpdateTimer()
+
     pointer_position : XY
     pointer_exists   : Logical
-    time_debt        : Real64
-    last_update_time : Real64
+
     size             : XY
 
-  METHODS
-    method init( window, name, logic )
-      logic.display = this
-      graphics = StarbrightGraphics( this )
+    background_color = Color.BLACK : Color
 
+    projection_transform : Matrix
+
+    transform            : Matrix
+    view_transform       = Matrix.identity : Matrix
+    object_transform     = Matrix.identity : Matrix
+    view_transforms      = Matrix[]
+    object_transforms    = Matrix[]
+
+    view_transform_modified       : Logical
+    object_transform_modified     : Logical
+
+    projection_mode   = ProjectionMode()
+    unit_z            : Real64
+
+  METHODS
+    method init( name )
+      state = Plasmacore.get_initial_state( name )
+
+    method clear->this
+      native @|Starbright::renderer->clear_color = $this->background_color.argb;
+              |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+      return this
+
+    method clear( background_color )->this
+      return clear
+
+    method clear_transforms
+      object_transforms.clear
+      view_transforms.clear
+      view_transform_modified = true
+      object_transform_modified = true
+
+#{
     method draw
       logic.draw
       OverlayLog.draw
@@ -45,36 +78,24 @@ class Display
     method update
       logic.update
       OverlayLog.update
+      }#
 
-    method update_and_draw
-      Graphics = this.graphics
-      Graphics.begin_draw( this )
+    method update_and_draw( size )
+      Display = this  # set the singleton reference to be this display
 
-      local current_time = System.time
-      time_debt += current_time - last_update_time
-      last_update_time = current_time
+      clear_transforms
+      projection_mode = projection_mode.configure( size )
+      projection_mode.activate
 
-      if (time_debt < 0 or time_debt > 1.0/10.0)
-        # If there was more than a 1/10th second delay, assume some multitask or
-        # I/O hangup caused the delay and don't worry about trying to make the
-        # time up - just update a single frame's worth and draw.
-        time_debt = 1.0 / 60.0
+      update_timer.update
+
+      if (state)
+        while (update_timer.tick) state.handle_update
+        state.handle_draw
       endIf
-
-      if (not logic.is_active) logic.is_active = true; logic.activate
-
-      while (time_debt >= 1.0/60.0)
-        time_debt -= 1.0/60.0
-        update
-      endWhile
-
-      draw
-
-      Graphics.end_draw
 
     method width->Int32 [macro]
       this.size.x->Int32
 
 endClass
 
-}#
