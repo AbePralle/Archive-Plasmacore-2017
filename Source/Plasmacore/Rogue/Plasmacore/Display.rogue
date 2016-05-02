@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class Display
   PROPERTIES
     window           : Window
@@ -76,3 +77,4 @@ class Display
 
 endClass
 
+}#

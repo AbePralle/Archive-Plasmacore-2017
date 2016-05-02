@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class Image
   PROPERTIES
     data   : ImageData
@@ -197,3 +198,4 @@ class ImageManager [singleton]
       return TextureImageData( texture )
 endClass
 
+}#

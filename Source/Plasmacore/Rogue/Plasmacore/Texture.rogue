@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class Texture
   PROPERTIES
     name          : String   # Optional name
@@ -47,28 +48,4 @@ class Texture
 endClass
 
 
-#{
-class TextureManager [singleton]
-  PROPERTIES
-    loaders = Table<<String,Function(Texture)>>()
-      # Texture loader by texure name
-
-  METHODS
-    method load( texture:Texture )
-      local loader = loaders[ texture.name ]
-      if (loader)
-        loader( texture )
-        return
-      endIf
-
-      # Default load
-      local filepath = Plasmacore.find_asset( texture.name )
-      if (not filepath)
-        println "No such texture: " + texture.name
-        return
-      endIf
-
-      Graphics.load_texture( texture, File(filepath) )
-
-endClass
 }#

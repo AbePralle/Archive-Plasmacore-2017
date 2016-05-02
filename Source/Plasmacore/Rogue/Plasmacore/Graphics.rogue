@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class Graphics [singleton]
   GLOBAL PROPERTIES
     stack = Graphics[]
@@ -249,3 +250,4 @@ class Graphics [singleton]
       this.size.x->Int32
 endClass
 
+}#

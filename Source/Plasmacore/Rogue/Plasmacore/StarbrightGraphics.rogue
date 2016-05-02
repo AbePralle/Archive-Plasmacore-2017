@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class StarbrightGraphics : Graphics
   CLASS
     nativeHeader #include "Starbright.h"
@@ -211,3 +212,4 @@ class StarbrightGraphics : Graphics
 
 endClass
 
+}#

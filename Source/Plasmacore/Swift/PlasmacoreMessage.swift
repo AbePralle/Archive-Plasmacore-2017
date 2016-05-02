@@ -233,7 +233,7 @@ class PlasmacoreMessage
     Plasmacore.singleton.send_rsvp( self, callback:callback );
   }
 
-  func setBytes( name:String, value:[UInt8] )->PlasmacoreMessage
+  func set( name:String, value:[UInt8] )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )
@@ -247,7 +247,7 @@ class PlasmacoreMessage
     return self
   }
 
-  func setInt64( name:String, value:Int64 )->PlasmacoreMessage
+  func set( name:String, value:Int64 )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )
@@ -258,7 +258,7 @@ class PlasmacoreMessage
     return self
   }
 
-  func setInt32( name:String, value:Int )->PlasmacoreMessage
+  func set( name:String, value:Int )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )
@@ -268,7 +268,7 @@ class PlasmacoreMessage
     return self
   }
 
-  func setLogical( name:String, value:Bool )->PlasmacoreMessage
+  func set( name:String, value:Bool )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )
@@ -278,7 +278,7 @@ class PlasmacoreMessage
     return self
   }
 
-  func setReal64( name:String, value:Double )->PlasmacoreMessage
+  func set( name:String, value:Double )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )
@@ -288,7 +288,7 @@ class PlasmacoreMessage
     return self
   }
 
-  func setString( name:String, value:String )->PlasmacoreMessage
+  func set( name:String, value:String )->PlasmacoreMessage
   {
     position = data.count
     writeString( name )

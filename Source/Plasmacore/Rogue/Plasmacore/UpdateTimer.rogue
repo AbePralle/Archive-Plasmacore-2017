@@ -1,0 +1,22 @@
+module Plasmacore
+
+class UpdateTimer
+  PROPERTIES
+    previous_update_time = System.time : Real64
+    time_debt            : Real64
+
+  METHODS
+    method tick->Logical
+      if (time_debt < 1.0/60.0) return false
+
+      time_debt -= 1.0/60.0
+      return true
+
+    method update
+      local cur_time = System.time
+      local elapsed_time = cur_time - previous_update_time
+      if (elapsed_time > 6.0/60.0) elapsed_time = 6.0/60.0
+      time_debt += elapsed_time
+      previous_update_time = cur_time
+endClass
+

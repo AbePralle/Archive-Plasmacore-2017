@@ -1,0 +1,6 @@
+module Plasmacore
+
+class LaunchOptions
+  PROPERTIES
+    is_window_based : Logical
+endClass

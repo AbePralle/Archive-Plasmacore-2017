@@ -7,28 +7,29 @@ class Window
   PROPERTIES
     name                  : String
     id                    : Int32
-    displays              = StringTable<<Display>>()
-    default_display_logic : TypeInfo
+    #displays              = StringTable<<Display>>()
+    #default_display_logic : TypeInfo
 
-    current_display       : Display
-    current_display_name  = ""
+    #current_display       : Display
+    #current_display_name  = ""
 
   METHODS
-    method init( name, default_display_logic=@DisplayLogic )
+    method init( name ) #, default_display_logic=@DisplayLogic )
       id = Plasmacore.create_resource_id
       WindowManager.windows_by_id[ id ] = this
-      Message( "Window.create" ).set_int32("id",id).set_string("name",name).send
+      Message( "Window.create" ).set("id",id).set("name",name).send
 
     method call( method_name:String )
-      Message( "Window.call" ).set_int32("id",id).set_string("method_name",method_name).send
+      Message( "Window.call" ).set("id",id).set("method_name",method_name).send
 
     method clean_up
       close
 
     method close
       WindowManager.windows_by_id.remove( id )
-      Message( "Window.close" ).set_int32("id",id).send
+      Message( "Window.close" ).set("id",id).send
 
+      #{
     method find_display( display_name_buffer:StringBuilder )->Display
       if (display_name_buffer == current_display_name) return current_display
 
@@ -55,9 +56,10 @@ class Window
       local display = find_display( display_name_buffer )
       display.size = XY( w, h )
       display.update_and_draw
+      }#
 
     method show
-      Message( "Window.show" ).set_int32("id",id).send
+      Message( "Window.show" ).set("id",id).send
 
 endClass
 
@@ -67,8 +69,7 @@ class WindowManager [requisite singleton]
     windows_by_id = Table<<Int32,Window>>()
     string_buffer = StringBuilder()
 
-    current_window    : Window
-    current_window_id = 0
+    current_window : Window
 
     key_event = KeyEvent( 0, 0, 0, false, false )
     # Recycled KeyEvent
@@ -78,6 +79,7 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
+      #{
       MessageManager.add_handler( "Display.key_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
@@ -127,11 +129,11 @@ class WindowManager [requisite singleton]
           if (window) window.handle_update_and_draw( display_name, width, height )
         endFunction
       )
+}#
 
     method find_window( window_id:Int32 )->Window
-      if (window_id == current_window_id) return current_window
+      if (current_window and window_id == current_window.id) return current_window
       current_window = windows_by_id[ window_id ]
-      current_window_id = window_id
       return current_window
 endClass
 $endIf

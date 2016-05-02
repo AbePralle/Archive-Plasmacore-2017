@@ -1,5 +1,6 @@
 module Plasmacore
 
+#{
 class Font
   PROPERTIES
     data           : FontData
@@ -462,3 +463,4 @@ class FontManager [singleton]
 endClass
 
 
+}#
