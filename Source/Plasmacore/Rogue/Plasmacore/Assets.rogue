@@ -2,7 +2,7 @@ module Plasmacore
 
 class Assets [requisite]
   PROPERTIES
-    graphics : Graphics
+    #graphics : Graphics
 
   METHODS
 endClass

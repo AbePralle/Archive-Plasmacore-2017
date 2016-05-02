@@ -51,8 +51,8 @@ class PlasmacoreView: NSOpenGLView
     if ( !super.becomeFirstResponder() ) { return false }
     configure()
     let m = PlasmacoreMessage( type:"Display.focus_gained" )
-    m.setInt32( "window_id", value:windowID )
-    m.setString( "display_name", value:name )
+    m.set( "window_id", value:windowID )
+    m.set( "display_name", value:name )
     m.send()
     return true
   }
@@ -94,9 +94,9 @@ class PlasmacoreView: NSOpenGLView
     Starbright_begin_draw( renderer_id, Int32(display_width), Int32(display_height) )
 
     let m = PlasmacoreMessage( type:"Display.update_and_draw" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "width",  value:display_width )
-    m.setInt32( "height", value:display_height )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "width",  value:display_width )
+    m.set( "height", value:display_height )
     m.send()
 
     Starbright_end_draw( renderer_id )
@@ -137,9 +137,9 @@ class PlasmacoreView: NSOpenGLView
     if ((modified & mask) == mask)
     {
       let m = PlasmacoreMessage( type:"Display.key_event" )
-      m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-      m.setLogical( "is_press", value:(keyModifierFlags & mask) == 0 )
-      m.setInt32( "keycode", value:keycode )
+      m.set( "window_id", value:windowID ).set( "display_name", value:name )
+      m.set( "is_press", value:(keyModifierFlags & mask) == 0 )
+      m.set( "keycode", value:keycode )
       m.send()
     }
   }
@@ -157,12 +157,12 @@ class PlasmacoreView: NSOpenGLView
     if (keycode < 32 || keycode == 127) { unicode = keycode; }
 
     let m = PlasmacoreMessage( type:"Display.key_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setLogical( "is_press", value:true )
-    m.setInt32( "unicode", value:unicode )
-    m.setInt32( "keycode", value:keycode )
-    m.setInt32( "syscode", value:syscode )
-    m.setLogical( "is_repeat", value:event.ARepeat )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "is_press", value:true )
+    m.set( "unicode", value:unicode )
+    m.set( "keycode", value:keycode )
+    m.set( "syscode", value:syscode )
+    m.set( "is_repeat", value:event.ARepeat )
     m.send()
   }
 
@@ -179,11 +179,11 @@ class PlasmacoreView: NSOpenGLView
     if (keycode < 32 || keycode == 127) { unicode = keycode; }
 
     let m = PlasmacoreMessage( type:"Display.key_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setLogical( "is_press", value:false )
-    m.setInt32( "unicode", value:unicode )
-    m.setInt32( "keycode", value:keycode )
-    m.setInt32( "syscode", value:syscode )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "is_press", value:false )
+    m.set( "unicode", value:unicode )
+    m.set( "keycode", value:keycode )
+    m.set( "syscode", value:syscode )
     m.send()
   }
 
@@ -193,11 +193,11 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:1 )  // 1=press
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
-    m.setInt32( "button", value:0 )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:1 )  // 1=press
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "button", value:0 )
     m.send()
   }
 
@@ -207,10 +207,10 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:0 )  // 0=move
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:0 )  // 0=move
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
@@ -220,10 +220,10 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:0 )  // 0=move
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:0 )  // 0=move
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
@@ -233,11 +233,11 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:2 )  // 2=release
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
-    m.setInt32( "button", value:0 )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:2 )  // 2=release
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "button", value:0 )
     m.send()
   }
 
@@ -291,11 +291,11 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:1 )  // 1=press
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
-    m.setInt32( "button", value:1 )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:1 )  // 1=press
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "button", value:1 )
     m.send()
   }
 
@@ -305,10 +305,10 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:0 )  // 0=move
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:0 )  // 0=move
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
@@ -318,11 +318,11 @@ class PlasmacoreView: NSOpenGLView
     let point = convertPoint( event.locationInWindow, fromView: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-    m.setInt32( "type", value:2 )  // 2=release
-    m.setReal64( "x", value:Double(point.x) )
-    m.setReal64( "y", value:Double(bounds.size.height - point.y) )
-    m.setInt32( "button", value:1 )
+    m.set( "window_id", value:windowID ).set( "display_name", value:name )
+    m.set( "type", value:2 )  // 2=release
+    m.set( "x", value:Double(point.x) )
+    m.set( "y", value:Double(bounds.size.height - point.y) )
+    m.set( "button", value:1 )
     m.send()
   }
 
@@ -335,10 +335,10 @@ class PlasmacoreView: NSOpenGLView
     if (dx >= 0.0001 || dx <= -0.0001 || dy >= 0.0001 || dy <= -0.0001)
     {
       let m = PlasmacoreMessage( type:"Display.pointer_event" )
-      m.setInt32( "window_id", value:windowID ).setString( "display_name", value:name )
-      m.setInt32( "type", value:3 )  // 3=scroll
-      m.setReal64( "dx", value:Double(dx) )
-      m.setReal64( "dy", value:Double(dy) )
+      m.set( "window_id", value:windowID ).set( "display_name", value:name )
+      m.set( "type", value:3 )  // 3=scroll
+      m.set( "dx", value:Double(dx) )
+      m.set( "dy", value:Double(dy) )
       m.send()
     }
   }

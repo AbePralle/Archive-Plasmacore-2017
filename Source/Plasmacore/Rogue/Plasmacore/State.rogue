@@ -1,8 +1,8 @@
 module Plasmacore
 
-class DisplayLogic
+class State
   PROPERTIES
-    display          : Display
+    #display          : Display
     is_active        : Logical
     pointer_position : XY
 
@@ -24,6 +24,14 @@ class DisplayLogic
       if (e.is_consumed) return
 
       on_end( e )
+
+    method handle_update
+      if (not is_active)
+        is_active = true
+        activate
+      endIf
+
+      update
 
     method on( e:KeyEvent )
 

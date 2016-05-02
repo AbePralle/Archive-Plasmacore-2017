@@ -95,6 +95,8 @@ class MessageManager [requisite singleton]
         endIf
       endWhile
 
+      Plasmacore.global_update
+
       # Finalize the outgoing message data.
       io_writer.clear
 
@@ -286,32 +288,32 @@ class Message
 
       return bytes
 
-    method set_string( name:String, value:String )->this
+    method set( name:String, value:String )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
       return this
 
-    method set_real64( name:String, value:Real64 )->this
+    method set( name:String, value:Real64 )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
       return this
 
-    method set_int64( name:String, value:Int64 )->this
+    method set( name:String, value:Int64 )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
       return this
 
-    method set_int32( name:String, value:Int32 )->this
+    method set( name:String, value:Int32 )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
       return this
 
-    method set_logical( name:String, value:Logical )->this
+    method set( name:String, value:Logical )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
       return this
 
-    method set_bytes( name:String, bytes:Byte[] )->this
+    method set( name:String, bytes:Byte[] )->this
       writer.write_string( name )
       writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
       forEach (b in bytes) writer.write_byte( b )
