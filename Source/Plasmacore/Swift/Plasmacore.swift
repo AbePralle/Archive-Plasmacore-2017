@@ -144,6 +144,12 @@ class Plasmacore
     return nil
   }
 
+  func relaunch()->Plasmacore
+  {
+    PlasmacoreMessage( type:"Application.launch" ).set( "is_window_based", value:true ).send()
+    return self
+  }
+
   func removeMessageHandler( handlerID:Int )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)

@@ -7,16 +7,16 @@ class Window
   PROPERTIES
     name                  : String
     id                    : Int32
-    #displays              = StringTable<<Display>>()
-    #default_display_logic : TypeInfo
 
-    #current_display       : Display
-    #current_display_name  = ""
+    displays              = StringTable<<Display>>()
+    current_display       : Display
+    current_display_name  = ""
 
   METHODS
     method init( name ) #, default_display_logic=@DisplayLogic )
       id = Plasmacore.create_resource_id
       WindowManager.windows_by_id[ id ] = this
+      WindowManager.window_list.add( this )
       Message( "Window.create" ).set("id",id).set("name",name).send
 
     method call( method_name:String )
@@ -27,9 +27,9 @@ class Window
 
     method close
       WindowManager.windows_by_id.remove( id )
+      WindowManager.window_list.remove( this )
       Message( "Window.close" ).set("id",id).send
 
-      #{
     method find_display( display_name_buffer:StringBuilder )->Display
       if (display_name_buffer == current_display_name) return current_display
 
@@ -37,26 +37,30 @@ class Window
       if (display)
         current_display_name = display.name
         current_display = display
+        return display
+
+      else
+        local display_name = display_name_buffer->String
+        display = Display( display_name )
+        display.window = this
+        displays[ display_name ] = display
+        current_display_name = display.name
+        current_display = display
+        return display
+
       endIf
 
-      local display_name = display_name_buffer->String
-      display = Display( this, display_name, (default_display_logic.create_object as DisplayLogic).init )
-      displays[ display_name ] = display
-      current_display_name = display.name
-      current_display = display
-      return display
-
+      #{
     method handle_key_event( display_name_buffer:StringBuilder, e:KeyEvent )
       find_display( display_name_buffer ).handle( e )
 
     method handle_pointer_event( display_name_buffer:StringBuilder, e:PointerEvent )
       find_display( display_name_buffer ).handle( e )
-
-    method handle_update_and_draw( display_name_buffer:StringBuilder, w:Int32, h:Int32 )
-      local display = find_display( display_name_buffer )
-      display.size = XY( w, h )
-      display.update_and_draw
       }#
+
+    method handle_update_and_draw( display_name_buffer:StringBuilder, display_size:XY )
+      local display = find_display( display_name_buffer )
+      display.update_and_draw( display_size )
 
     method show
       Message( "Window.show" ).set("id",id).send
@@ -67,6 +71,7 @@ $if not "Console"
 class WindowManager [requisite singleton]
   PROPERTIES
     windows_by_id = Table<<Int32,Window>>()
+    window_list   = Window[]
     string_buffer = StringBuilder()
 
     current_window : Window
@@ -118,22 +123,33 @@ class WindowManager [requisite singleton]
           endIf
         endFunction
       )
+}#
 
       MessageManager.add_handler( "Display.update_and_draw",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
           local display_name = m.get_string( "display_name", WindowManager.string_buffer.clear )
-          local width     = m.get_int32( "width" )
-          local height    = m.get_int32( "height" )
+          local display_size = XY( m.get_int32("width"), m.get_int32("height") )
           local window    = WindowManager.find_window( window_id )
-          if (window) window.handle_update_and_draw( display_name, width, height )
+          if (window)
+            window.handle_update_and_draw( display_name, display_size )
+          endIf
         endFunction
       )
-}#
 
     method find_window( window_id:Int32 )->Window
       if (current_window and window_id == current_window.id) return current_window
       current_window = windows_by_id[ window_id ]
       return current_window
+
+    method set_state( display_name:String, state:State )
+      forEach (window in window_list)
+        forEach (key in window.displays.keys)
+          local display = window.displays[ key ]
+          if (display.name == display_name)
+            display.state = state
+          endIf
+        endForEach
+      endForEach
 endClass
 $endIf

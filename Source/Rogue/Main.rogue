@@ -2,13 +2,10 @@ using Plasmacore
 
 println "Rogue Launched!"
 
+Plasmacore.launch_window_name = "LaunchWindow"
 Plasmacore.set_state( "global", @GlobalState )
+Plasmacore.set_state( "launch_window", @YellowState )
 
-Plasmacore.on_launch(
-  function(options:LaunchOptions)
-  #Window( "LaunchWindow" ).show
-  endFunction
-)
 
 class GlobalState : State
   METHODS
@@ -16,7 +13,13 @@ class GlobalState : State
       trace
 
     method update
-      trace
+endClass
+
+class YellowState : State
+  METHODS
+    method activate
+      Display.background_color = Color.YELLOW
+
 endClass
 
 #{

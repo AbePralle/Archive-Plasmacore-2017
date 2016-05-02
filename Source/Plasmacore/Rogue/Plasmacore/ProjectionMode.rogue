@@ -29,10 +29,10 @@ class GraphicsMode2DX : ProjectionMode
 
     method activate
       local k = (unit_z + 1) * 2
-      Graphics.unit_z = unit_z
+      Display.unit_z = unit_z
       local tx = width / 2.0
       local ty = height / 2.0
-      Graphics.projection_transform = Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 ) ...
+      Display.projection_transform = Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 ) ...
           * Matrix.translate( XYZ(-tx,-ty,0) )
 
     method configure( display_size:XY )->this

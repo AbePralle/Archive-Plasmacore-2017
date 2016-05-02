@@ -14,7 +14,6 @@ $include "Font.rogue"
 $include "Graphics.rogue"
 $include "Image.rogue"
 $include "Keyboard.rogue"
-$include "LaunchOptions.rogue"
 $include "Matrix.rogue"
 $include "Messaging.rogue"
 $include "OverlayLog.rogue"
@@ -37,11 +36,11 @@ module Plasmacore
 
 class Plasmacore [requisite singleton]
   PROPERTIES
-    next_resource_id = 1
-    launch_handler : Function(LaunchOptions)
-    display_state_types = Table<<String,TypeInfo>>()
-    display_states = Table<<String,State>>()
+    next_resource_id    = 1
+    display_state_types = StringTable<<TypeInfo>>()
+    global_state        : State
     global_update_timer = UpdateTimer()
+    launch_window_name  : String
 
   METHODS
     method init
@@ -49,14 +48,16 @@ class Plasmacore [requisite singleton]
 
       MessageManager.add_handler( "Application.launch",
         function(m:Message)
-          if (Plasmacore.launch_handler)
-            local options = LaunchOptions()
-            options.is_window_based = m.get_logical( "is_window_based" )
-            Plasmacore.launch_handler( options )
-          else
-            Console.println "No Plasmacore.on_launch() handler is defined."
+          if (m.get_logical("is_window_based"))
+            if (Plasmacore.launch_window_name)
+              Window( Plasmacore.launch_window_name ).show
+            else
+              Console.println "Launch note: Plasmacore.launch_window_name not set for a window-based application."
+            endIf
           endIf
         endFunction )
+
+        set_state( "default", @State )
 
     method create_resource_id->Int32
       ++next_resource_id
@@ -69,35 +70,33 @@ class Plasmacore [requisite singleton]
       name = "Assets/" + name
       return native( "Plasmacore_find_asset( $name )" )->String
 
-    method get_state( display_name:String )->State
-      local result = display_states[ display_name ]
-      if (result) return result
-
+    method get_initial_state( display_name:String )->State
       local type = display_state_types[ display_name ]
+      if (not type) type = display_state_types[ "default" ]
       if (not type) return null
 
-      result = type.create_object<<State>>.init
-      display_states[ display_name ] = result
-
-      return result
+      return type.create_object<<State>>.init
 
     method global_update
       global_update_timer.update
-      local state = get_state( "global" )
-      if (not state) return
+      if (not global_state) global_state = get_initial_state( "global" )
+      if (not global_state) return
 
       while (global_update_timer.tick)
-        state.handle_update
+        global_state.handle_update
       endWhile
 
-    method on_launch( handler:Function(LaunchOptions) )
-      launch_handler = handler
-
     method set_state( display_name:String, state_type:TypeInfo )
+      # Sets the initial state type
       display_state_types[ display_name ] = state_type
 
     method set_state( display_name:String, state:State )
-      display_states[ display_name ] = state
+      # Sets the active state of any existing displays matching the display name
+      if (display_name == "global")
+        global_state = state
+      else
+        WindowManager.set_state( display_name, state )
+      endIf
 endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );

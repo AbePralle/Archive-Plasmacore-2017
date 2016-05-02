@@ -4,7 +4,6 @@ class State
   PROPERTIES
     #display          : Display
     is_active        : Logical
-    pointer_position : XY
 
   METHODS
     method init
@@ -18,12 +17,18 @@ class State
       on_end( e )
 
     method handle( e:PointerEvent )
-      pointer_position = e.position
-
       on( e )
       if (e.is_consumed) return
 
       on_end( e )
+
+    method handle_draw
+      if (not is_active)
+        is_active = true
+        activate
+      endIf
+
+      draw
 
     method handle_update
       if (not is_active)
@@ -42,6 +47,7 @@ class State
     method on_end( e:PointerEvent )
 
     method draw
+      Display.clear
 
     method update
 endClass
