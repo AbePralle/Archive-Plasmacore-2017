@@ -24,9 +24,10 @@ $include "Rotation.rogue"
 $include "Shader.rogue"
 $include "Sprite.rogue"
 $include "StarbrightGraphics.rogue"
-$include "State.rogue"
 $include "Texture.rogue"
 $include "UpdateTimer.rogue"
+$include "View.rogue"
+$include "ViewState.rogue"
 $include "Window.rogue"
 $include "XY.rogue"
 $include "XYZ.rogue"
@@ -36,11 +37,11 @@ module Plasmacore
 
 class Plasmacore [requisite singleton]
   PROPERTIES
-    next_resource_id    = 1
-    display_state_types = StringTable<<TypeInfo>>()
-    global_state        : State
-    global_update_timer = UpdateTimer()
-    launch_window_name  : String
+    next_resource_id       = 1
+    display_view_types     = StringTable<<TypeInfo>>()
+    global_update_callback : Function()
+    global_update_timer    = UpdateTimer()
+    launch_window_name     : String
 
   METHODS
     method init
@@ -57,7 +58,7 @@ class Plasmacore [requisite singleton]
           endIf
         endFunction )
 
-        set_state( "default", @State )
+        set_display_view( "default", @View )
 
     method create_resource_id->Int32
       ++next_resource_id
@@ -70,33 +71,29 @@ class Plasmacore [requisite singleton]
       name = "Assets/" + name
       return native( "Plasmacore_find_asset( $name )" )->String
 
-    method get_initial_state( display_name:String )->State
-      local type = display_state_types[ display_name ]
-      if (not type) type = display_state_types[ "default" ]
+    method create_view( display:Display )->View
+      local type = display_view_types[ display.name ]
+      if (not type) type = display_view_types[ "default" ]
       if (not type) return null
 
-      return type.create_object<<State>>.init
+      return type.create_object<<View>>.init( display )
 
     method global_update
       global_update_timer.update
-      if (not global_state) global_state = get_initial_state( "global" )
-      if (not global_state) return
-
       while (global_update_timer.tick)
-        global_state.handle_update
+        if (global_update_callback) global_update_callback()
       endWhile
 
-    method set_state( display_name:String, state_type:TypeInfo )
-      # Sets the initial state type
-      display_state_types[ display_name ] = state_type
+    method on_global_update( global_update_callback )
+      noAction
 
-    method set_state( display_name:String, state:State )
-      # Sets the active state of any existing displays matching the display name
-      if (display_name == "global")
-        global_state = state
-      else
-        WindowManager.set_state( display_name, state )
-      endIf
+    method set_display_view( display_name:String, view_type:TypeInfo )
+      # Sets the initial view type
+      display_view_types[ display_name ] = view_type
+
+    method set_display_view( display_name:String, view:View )
+      # Sets the active view of any existing displays matching the display name
+      WindowManager.set_display_view( display_name, view )
 endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );

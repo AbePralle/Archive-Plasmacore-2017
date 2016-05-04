@@ -142,14 +142,15 @@ class WindowManager [requisite singleton]
       current_window = windows_by_id[ window_id ]
       return current_window
 
-    method set_state( display_name:String, state:State )
+    method set_display_view( display_name:String, view:View )
       forEach (window in window_list)
         forEach (key in window.displays.keys)
           local display = window.displays[ key ]
           if (display.name == display_name)
-            display.state = state
+            display.view = view
           endIf
         endForEach
       endForEach
 endClass
 $endIf
+
