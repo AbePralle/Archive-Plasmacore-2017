@@ -1,6 +1,5 @@
 module Plasmacore
 
-#{
 class Font
   PROPERTIES
     data           : FontData
@@ -9,7 +8,7 @@ class Font
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
     spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
-    color          = Color(0xFFFFFFFF)
+    color          = Color.WHITE : Color
 
   METHODS
     method init( name:String, options=null )
@@ -78,8 +77,11 @@ class FontData
       forEach (ch in text)
         local info = this[ ch ]
         if (info)
+          image.anchor = Anchor.TOP_LEFT
           image.adjust_subset( info.bounds )
-          image.draw( cursor+info.offset * font.scale, info.size * font.scale, Anchor.TOP_LEFT )
+          image.size = info.size * font.scale
+          image.position = cursor+info.offset * font.scale
+          image.draw
           cursor += info.advance * font.scale + XY(font.spacing,0) * font.scale
         endIf
       endForEach
@@ -205,11 +207,7 @@ class DynamicallyLoadedFontData : FontData
       endIf
 
       if (image)
-        # Changing the bitmap version will automatically update the texture
-        # when the image is prepare()d.  Other images based on the texture
-        # (such as character images) will automatically update as well.
-        ++bitmap.version
-        image.prepare
+        image.set( bitmap )
       else
         image = Image( bitmap )
       endIf
@@ -462,5 +460,3 @@ class FontManager [singleton]
 
 endClass
 
-
-}#

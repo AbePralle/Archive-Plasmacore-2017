@@ -20,13 +20,29 @@ class Image
       render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
       size = texture.image_size
 
+    method init( bitmap:Bitmap )
+      init( Texture(bitmap) )
+
+    method adjust_subset( subset:Box )
+      data.adjust_subset( subset )
+
     method draw
       data.draw( this )
+
+    method set( bitmap:Bitmap )
+      data = data.set( bitmap )
+      size = bitmap.size
 endClass
 
 class ImageData
   METHODS
+    method adjust_subset( subset:Box )
+      noAction
+
     method draw( image:Image )
+
+    method set( bitmap:Bitmap )->ImageData
+      return TextureImageData( Texture(bitmap) )
 endClass
 
 class TextureImageData : ImageData
@@ -38,6 +54,10 @@ class TextureImageData : ImageData
   METHODS
     method init( texture )
       uv2 = texture.uv_size
+
+    method adjust_subset( subset:Box )
+      uv1 = subset.top_left / texture.texture_size
+      uv2 = subset.bottom_right / texture.texture_size
 
     method draw( image:Image )
       local size = image.size * image.scale
@@ -67,6 +87,10 @@ class TextureImageData : ImageData
       if (has_rotation)
         Display.pop_object_transform
       endIf
+
+    method set( bitmap:Bitmap )->this
+      texture.set( bitmap )
+      return this
 endClass
 
 #{
