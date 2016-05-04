@@ -3,3 +3,8 @@ module Plasmacore
 class Corners<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
 endClass
 
+augment Corners<<XY>>
+  GLOBAL METHODS
+    method create( bounds:Box )->Corners<<XY>>
+      return Corners<<XY>>( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
+endAugment

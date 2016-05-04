@@ -1,38 +1,93 @@
 module Plasmacore
 
-#{
 class Texture
-  PROPERTIES
-    name          : String   # Optional name
-    bitmap        : Bitmap   # Optional backing bitmap
+  CLASS
+    nativeHeader #include "Starbright.h"
 
-    id            : Int32    # id in loading Graphics context
+  PROPERTIES
+    id            : Int32    # id in loading display context
     image_size    : XY       # In pixels
     texture_size  : XY       # In pixels
     uv_size       : XY       # (1,1) in most cases
-    version       : Int32    # Used to keep this texture in sync with the bitmap
-    graphics      = Graphics : Graphics
-      # The graphics context this texture was created in; used by images
-      # to reload the texture if drawn in a new context.
-
 
   METHODS
-    method init( name )
+    method init( filepath:String )
+      nativeCode
+        #include "ImageIO.h"
+        using namespace ImageIO;
+        #include "GGBitmap.h"
+      endNativeCode
 
-    method init( bitmap )
+      local image_w : Int32
+      local image_h : Int32
+      local texture_w : Int32
+      local texture_h : Int32
+
+      native @|FILE* fp = fopen( (const char*)$filepath->utf8, "rb" );
+              |if (fp)
+              |{
+              |  fseek( fp, 0, SEEK_END );
+              |  int file_size = (int) ftell( fp );
+              |  fseek( fp, 0, SEEK_SET );
+              |  char* file_bytes = new char[ file_size ];
+              |  fread( file_bytes, 1, file_size, fp );
+              |
+              |  Decoder decoder;
+              |  if (decoder.open((Byte*)file_bytes,file_size))
+              |  {
+              |    $image_w = decoder.width;
+              |    $image_h = decoder.height;
+              |
+              |    GG::Bitmap bitmap( 0, $image_w, $image_h, 32 );
+              |    if (decoder.decode_argb32( (ARGB32*)bitmap.data ))
+              |    {
+              |      bitmap.filter( GG::FilterFn_premultiply_alpha );
+              |      bitmap.expand_to_power_of_two();
+              |      $texture_w = bitmap.width;
+              |      $texture_h = bitmap.height;
+              |      $id = Starbright::renderer->define_texture($id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32);
+              |    }
+              |  }
+              |
+              |  delete[] file_bytes;
+              |  fclose( fp );
+              |}
+
+      if (id)
+        image_size   = XY( image_w, image_h )
+        texture_size = XY( texture_w, texture_h )
+        uv_size      = image_size / texture_size
+      endIf
+
+    method init( bitmap:Bitmap )
+      nativeCode
+        #include "ImageIO.h"
+        using namespace ImageIO;
+        #include "GGBitmap.h"
+      endNativeCode
+
+      local image_w = bitmap.width
+      local image_h = bitmap.height
+      local texture_w, texture_h : Int32
+      local bpp = 32
+
+      native @|GG::Bitmap bitmap( $bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
+              |bitmap.filter( GG::FilterFn_premultiply_alpha );
+              |bitmap.expand_to_power_of_two();
+              |$texture_w = bitmap.width;
+              |$texture_h = bitmap.height;
+              |$id = Starbright::renderer->define_texture( $id,
+              |    (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+
+      image_size   = XY( image_w, image_h )
+      texture_size = XY( texture_w, texture_h )
+      uv_size      = image_size / texture_size
 
     method image_height->Int32 [macro]
       this.image_size.y
 
     method image_width->Int32 [macro]
       this.image_size.x
-
-    method is_ready->Logical
-      return (graphics is Graphics) and (not bitmap or bitmap.version == version)
-
-    method reload->Texture
-      if (name) return Graphics.acquire_texture( name )
-      else      return Graphics.acquire_texture( bitmap )
 
     method texture_height->Int32 [macro]
       this.texture_size.y
@@ -47,5 +102,3 @@ class Texture
       this.uv_size.x
 endClass
 
-
-}#

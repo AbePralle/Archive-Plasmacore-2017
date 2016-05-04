@@ -42,6 +42,9 @@ class Box( position:XY, size:XY ) [compound]
     method height->Real64 [macro]
       this.size.y
 
+    method operator+( offset:XY )->Box
+      return Box( position+offset, size )
+
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
