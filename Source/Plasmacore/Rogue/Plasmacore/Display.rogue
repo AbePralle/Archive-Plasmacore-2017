@@ -33,6 +33,9 @@ class Display [singleton]
     projection_mode   = ProjectionMode()
     unit_z            : Real64
 
+    textures_by_name  = StringTable<<Texture>>()
+    texture_list      = Texture[]
+
   METHODS
     method init( name )
       view = Plasmacore.create_view( this )
@@ -58,7 +61,89 @@ class Display [singleton]
     method draw
       logic.draw
       OverlayLog.draw
+      }#
 
+    method draw_textured_quad( texture:Texture,
+        corners:Corners<<XYZW>>,
+        colors:Colors,
+        uv:Corners<<XY>>,
+        shader:Shader, render_mode:RenderMode )
+
+      native @|Starbright::renderer->set_texture( 0, $texture->id );
+              |Starbright::renderer->set_shader( $shader.id );
+              |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
+              |Starbright::renderer->set_render_mode( $render_mode.value );
+              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
+              |
+              |v[0].x = $corners.a.x;
+              |v[0].y = $corners.a.y;
+              |v[0].z = $corners.a.z;
+              |v[0].w = $corners.a.w;
+              |v[1].x = $corners.b.x;
+              |v[1].y = $corners.b.y;
+              |v[1].z = $corners.b.z;
+              |v[1].w = $corners.b.w;
+              |v[2].x = $corners.c.x;
+              |v[2].y = $corners.c.y;
+              |v[2].z = $corners.c.z;
+              |v[2].w = $corners.c.w;
+              |v[3].x = $corners.a.x;
+              |v[3].y = $corners.a.y;
+              |v[3].z = $corners.a.z;
+              |v[3].w = $corners.a.w;
+              |v[4].x = $corners.c.x;
+              |v[4].y = $corners.c.y;
+              |v[4].z = $corners.c.z;
+              |v[4].w = $corners.c.w;
+              |v[5].x = $corners.d.x;
+              |v[5].y = $corners.d.y;
+              |v[5].z = $corners.d.z;
+              |v[5].w = $corners.d.w;
+              |
+              |v[0].u = $uv.a.x;
+              |v[0].v = $uv.a.y;
+              |v[1].u = $uv.b.x;
+              |v[1].v = $uv.b.y;
+              |v[2].u = $uv.c.x;
+              |v[2].v = $uv.c.y;
+              |v[3].u = $uv.a.x;
+              |v[3].v = $uv.a.y;
+              |v[4].u = $uv.c.x;
+              |v[4].v = $uv.c.y;
+              |v[5].u = $uv.d.x;
+              |v[5].v = $uv.d.y;
+              |
+              |v[0].color = $colors.a.argb;
+              |v[0].color = $colors.a.argb;
+              |v[1].color = $colors.b.argb;
+              |v[1].color = $colors.b.argb;
+              |v[2].color = $colors.c.argb;
+              |v[2].color = $colors.c.argb;
+              |v[3].color = $colors.a.argb;
+              |v[3].color = $colors.a.argb;
+              |v[4].color = $colors.c.argb;
+              |v[4].color = $colors.c.argb;
+              |v[5].color = $colors.d.argb;
+              |v[5].color = $colors.d.argb;
+
+    method load_texture( texture_name:String )->Texture
+      local texture = textures_by_name[ texture_name ]
+      if (texture) return texture
+
+      local filepath = Plasmacore.find_asset( texture_name )
+      if (filepath)
+        texture = Texture( filepath )
+      else
+        println "File not found: " + texture_name
+        texture = Texture( Bitmap(1,1,Color.WHITE) )
+      endIf
+
+      textures_by_name[ texture_name ] = texture
+      texture_list.add( texture )
+
+      return texture
+
+      #{
     method handle( e:KeyEvent )
       logic.handle( e )
 
@@ -84,6 +169,10 @@ class Display [singleton]
       OverlayLog.update
       }#
 
+    method transform->Matrix
+      update_transform
+      return @transform
+
     method update_and_draw( size )
       Display = this  # set the singleton reference to be this display
 
@@ -97,6 +186,45 @@ class Display [singleton]
         view.state.handle( UpdateEvent.init )
       endWhile
       view.state.handle( DrawEvent.init )
+
+    method update_transform
+      if (not (view_transform_modified or object_transform_modified)) return
+
+      if (view_transform_modified)
+        view_transform_modified = false
+        if (view_transforms.count)
+          view_transform = view_transforms.first
+          forEach (i in 1..view_transforms.count-1)
+            view_transform = view_transform * view_transforms[i]
+          endForEach
+        endIf
+      endIf
+
+      if (object_transform_modified)
+        object_transform_modified = false
+        if (object_transforms.count)
+          object_transform = object_transforms.last
+          forEach (i in object_transforms.count-2 downTo 0)
+            object_transform = object_transform * object_transforms[i]
+          endForEach
+        endIf
+      endIf
+
+      if (view_transforms.count)
+        if (object_transforms.count)
+          transform = view_transform * object_transform
+        else
+          transform = view_transform
+        endIf
+      else
+        if (object_transforms.count)
+          transform = object_transform
+        else
+          transform = Matrix.identity
+        endIf
+      endIf
+
+      native "Starbright::renderer->set_transform( &$this->projection_transform.r1c1 );"
 
     method width->Int32 [macro]
       this.size.x->Int32
