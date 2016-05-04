@@ -13,7 +13,7 @@ class ProjectionMode
       local h = display_size.y
       return configure_2dx( w, h )
 
-    method configure_2dx( width:Real64, height:Real64, unit_z=384:Real64, max_z=16:Real64 )->ProjectionMode
+    method configure_2dx( width:Real64, height:Real64, unit_z=512:Real64, max_z=16:Real64 )->ProjectionMode
       return GraphicsMode2DX( width, height, unit_z, max_z )
 endClass
 

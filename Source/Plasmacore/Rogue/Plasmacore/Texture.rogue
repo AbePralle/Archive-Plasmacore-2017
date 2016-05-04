@@ -9,9 +9,26 @@ class Texture
     image_size    : XY       # In pixels
     texture_size  : XY       # In pixels
     uv_size       : XY       # (1,1) in most cases
+    is_opaque     : Logical
+
+  GLOBAL METHODS
+    method create( name:String )->Texture
+      local texture = Display.textures_by_name[ name ]
+      if (texture) return texture
+
+      local filepath = Plasmacore.find_asset( name )
+      if (filepath)
+        texture = Texture( File(filepath) )
+      else
+        println "File not found: " + name
+        texture = Texture( Bitmap(1,1,Color.WHITE) )
+      endIf
+
+      Display.textures_by_name[ name ] = texture
+      return texture
 
   METHODS
-    method init( filepath:String )
+    method init( file:File )->Texture
       nativeCode
         #include "ImageIO.h"
         using namespace ImageIO;
@@ -23,7 +40,7 @@ class Texture
       local texture_w : Int32
       local texture_h : Int32
 
-      native @|FILE* fp = fopen( (const char*)$filepath->utf8, "rb" );
+      native @|FILE* fp = fopen( (const char*)$file->filepath->utf8, "rb" );
               |if (fp)
               |{
               |  fseek( fp, 0, SEEK_END );
@@ -41,6 +58,16 @@ class Texture
               |    GG::Bitmap bitmap( 0, $image_w, $image_h, 32 );
               |    if (decoder.decode_argb32( (ARGB32*)bitmap.data ))
               |    {
+              |      $is_opaque = true;
+              |      ARGB32* data = (ARGB32*) bitmap.data;
+              |      for (int i=$image_w*$image_h; --i>=0; )
+              |      {
+              |        if ((data[i] & 0xFF000000) != 0xFF000000)
+              |        {
+              |          $is_opaque = false;
+              |          break;
+              |        }
+              |      }
               |      bitmap.filter( GG::FilterFn_premultiply_alpha );
               |      bitmap.expand_to_power_of_two();
               |      $texture_w = bitmap.width;
@@ -59,12 +86,16 @@ class Texture
         uv_size      = image_size / texture_size
       endIf
 
+      Display.texture_list.add( this )
+
     method init( bitmap:Bitmap )
       nativeCode
         #include "ImageIO.h"
         using namespace ImageIO;
         #include "GGBitmap.h"
       endNativeCode
+
+      is_opaque = bitmap.is_opaque
 
       local image_w = bitmap.width
       local image_h = bitmap.height
@@ -82,6 +113,8 @@ class Texture
       image_size   = XY( image_w, image_h )
       texture_size = XY( texture_w, texture_h )
       uv_size      = image_size / texture_size
+
+      Display.texture_list.add( this )
 
     method image_height->Int32 [macro]
       this.image_size.y
