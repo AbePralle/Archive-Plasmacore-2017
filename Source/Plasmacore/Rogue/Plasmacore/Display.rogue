@@ -43,6 +43,9 @@ class Display [singleton]
     method bounds->Box
       return Box(size)
 
+    method center->XY
+      return (size/2).floor
+
     method clear->this
       native @|Starbright::renderer->clear_color = $this->background_color.argb;
               |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
@@ -126,23 +129,6 @@ class Display [singleton]
               |v[5].color = $colors.d.argb;
               |v[5].color = $colors.d.argb;
 
-    method load_texture( texture_name:String )->Texture
-      local texture = textures_by_name[ texture_name ]
-      if (texture) return texture
-
-      local filepath = Plasmacore.find_asset( texture_name )
-      if (filepath)
-        texture = Texture( filepath )
-      else
-        println "File not found: " + texture_name
-        texture = Texture( Bitmap(1,1,Color.WHITE) )
-      endIf
-
-      textures_by_name[ texture_name ] = texture
-      texture_list.add( texture )
-
-      return texture
-
       #{
     method handle( e:KeyEvent )
       logic.handle( e )
@@ -168,6 +154,34 @@ class Display [singleton]
       logic.update
       OverlayLog.update
       }#
+
+    method pop_object_transform( n=1:Int32 )->this
+      forEach (1..n)
+        if (object_transforms.count)
+          object_transforms.remove_last
+          object_transform_modified = true
+        endIf
+      endForEach
+      return this
+
+    method pop_view_transform( n=1:Int32 )->this
+      forEach (1..n)
+        if (view_transforms.count)
+          view_transforms.remove_last
+          view_transform_modified = true
+        endIf
+      endForEach
+      return this
+
+    method push_object_transform( m:Matrix )->this
+      object_transforms.add( m )
+      object_transform_modified = true
+      return this
+
+    method push_view_transform( m:Matrix )->this
+      view_transforms.add( m )
+      view_transform_modified = true
+      return this
 
     method transform->Matrix
       update_transform

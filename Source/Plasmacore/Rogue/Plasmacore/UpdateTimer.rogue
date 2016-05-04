@@ -4,6 +4,7 @@ class UpdateTimer
   PROPERTIES
     previous_update_time = System.time : Real64
     time_debt            : Real64
+    first_update         = true
 
   METHODS
     method tick->Logical
@@ -13,10 +14,18 @@ class UpdateTimer
       return true
 
     method update
-      local cur_time = System.time
-      local elapsed_time = cur_time - previous_update_time
-      if (elapsed_time > 1.0/10.0) elapsed_time = 1.0/10.0
-      time_debt += elapsed_time
-      previous_update_time = cur_time
+      if (first_update)
+        # Ensure we get at least one tick() the first time so that a View or ViewState
+        # gets its update() called before its first draw().
+        first_update = false
+        previous_update_time = System.time
+        time_debt = 1.0/60.0
+      else
+        local cur_time = System.time
+        local elapsed_time = cur_time - previous_update_time
+        if (elapsed_time > 1.0/10.0) elapsed_time = 1.0/10.0
+        time_debt += elapsed_time
+        previous_update_time = cur_time
+      endIf
 endClass
 

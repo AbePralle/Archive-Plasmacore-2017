@@ -1,5 +1,74 @@
 module Plasmacore
 
+class Image
+  PROPERTIES
+    data        : ImageData
+    position    : XY
+    z           = 1.0
+    size        : XY
+    scale       = XY(1,1)
+    rotation    : Rotation
+    shader      : Shader
+    anchor      = Anchor.CENTER : Anchor
+    render_mode : RenderMode
+    color       = Color.WHITE : Color
+
+  METHODS
+    method init( texture:Texture )
+      data = TextureImageData( texture )
+      shader = Shader.TEXTURE
+      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+      size = texture.image_size
+
+    method draw
+      data.draw( this )
+endClass
+
+class ImageData
+  METHODS
+    method draw( image:Image )
+endClass
+
+class TextureImageData : ImageData
+  PROPERTIES
+    texture : Texture
+    uv1     : XY
+    uv2     : XY
+
+  METHODS
+    method init( texture )
+      uv2 = texture.uv_size
+
+    method draw( image:Image )
+      local size = image.size * image.scale
+      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local z = -Display.unit_z * image.z
+
+      local pos = image.position
+      local has_rotation = not image.rotation.is_zero
+      if (has_rotation)
+        Display.push_object_transform( Quaternion(image.rotation).to_matrix(XYZ(pos,z)+handle,handle) )
+      else
+        pos -= handle.xy
+      endIf
+
+      local transform = Display.transform
+
+      local corners = Corners<<XYZW>>(
+        transform * XYZ( pos,         z ),
+        transform * XYZ( pos+size.xv, z ),
+        transform * XYZ( pos+size,    z ),
+        transform * XYZ( pos+size.yv, z ) )
+
+      Display.draw_textured_quad( texture, corners, Colors(image.color),
+        Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
+        image.shader, image.render_mode )
+
+      if (has_rotation)
+        Display.pop_object_transform
+      endIf
+endClass
+
 #{
 class Image
   PROPERTIES
@@ -93,7 +162,7 @@ class ImageData
   PROPERTIES
     bounds      : Box
     version     : Int32
-    # Used to keep this images in sync with textures
+    # Used to keep this image in sync with textures
 
     shader      : Shader
     render_mode : RenderMode

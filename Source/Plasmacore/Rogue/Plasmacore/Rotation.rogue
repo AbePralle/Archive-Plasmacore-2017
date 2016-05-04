@@ -9,6 +9,9 @@ endClass
 class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
   # Represents a Euler angle rotation.
   GLOBAL METHODS
+    method create->Rotation
+      return degrees( 0, 0, 0 )
+
     method degrees( x:Real64, y:Real64, z:Real64 )->Rotation [macro]
       Rotation( Degrees(x), Degrees(y), Degrees(z) )
 
@@ -35,7 +38,10 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
 
   METHODS
     method is_zero->Logical
-      return not (x or y or z)
+      return not (x.value or y.value or z.value)
+
+    method rotated_x( degrees:Degrees )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.x(degrees)))->Rotation
 
     method to_degrees->XYZ
       return XYZ( x.value, y.value, z.value )

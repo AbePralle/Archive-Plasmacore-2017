@@ -9,32 +9,19 @@ class TestState : ViewState
   PROPERTIES
     colors = Color[][ Color.RED, Color.GREEN, Color.YELLOW ]
     timer = Timer(1.0)
+
+    img : Image
     texture : Texture
 
   METHODS
     method activate
-      texture = Display.load_texture( "King.png" )
+      img = Image( Texture("King.png") )
+      img.scale = XY(0.5,0.5)
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
 
-      local transform = Display.transform
-      local z    = -Display.unit_z
-
-      local bounds = Box( Display.size/4, Display.size/2 )
-      local pt1  = transform * XYZ( bounds.top_left, z )
-      local pt2  = transform * XYZ( bounds.top_right, z )
-      local pt3  = transform * XYZ( bounds.bottom_right, z )
-      local pt4  = transform * XYZ( bounds.bottom_left, z )
-
-      local corners = Corners<<XYZW>>( pt1, pt2, pt3, pt4 )
-
-      Display.draw_textured_quad(
-        texture,
-        corners,
-        Colors(Color.WHITE),
-        Corners<<XY>>( Box(texture.uv_size) ),
-        Shader.TEXTURE, RenderMode.OPAQUE_IMAGE )
+      img.draw
 
     method on( e:UpdateEvent )
       if (timer.is_expired)
@@ -42,7 +29,8 @@ class TestState : ViewState
         timer.restart
       endIf
 
-
+      img.position = Display.center
+      img.rotation = img.rotation.rotated_x( Degrees(1) )
 
 endClass
 

@@ -110,6 +110,12 @@ class Bitmap
     method height->Int32 [macro]
       this.size.y->Int32
 
+    method is_opaque->Logical
+      forEach (pixel in pixels)
+        if ((pixel.argb & 0xFF000000) != 0xFF000000) return false
+      endForEach
+      return true
+
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )
       if (width == new_width and height == new_height) return
 
