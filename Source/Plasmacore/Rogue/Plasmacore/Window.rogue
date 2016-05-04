@@ -76,12 +76,6 @@ class WindowManager [requisite singleton]
 
     current_window : Window
 
-    key_event = KeyEvent( 0, 0, 0, false, false )
-    # Recycled KeyEvent
-
-    pointer_event = PointerEvent( 0, XY(0,0), XY(0,0), 0, 0 )
-    # Recycled PointerEvent
-
   METHODS
     method init
       #{

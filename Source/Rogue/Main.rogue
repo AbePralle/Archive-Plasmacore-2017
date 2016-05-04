@@ -5,10 +5,28 @@ println "Rogue Launched!"
 Plasmacore.launch_window_name = "LaunchWindow"
 Plasmacore.set_display_view( "launch_window", @TestView )
 
+class TestState : ViewState
+  PROPERTIES
+    colors = Color[][ Color.RED, Color.GREEN, Color.YELLOW ]
+    timer = Timer(1.0)
+
+  METHODS
+    method on( e:DrawEvent )
+      Display.clear( colors.first )
+
+      if (timer.is_expired)
+        colors.add( colors.remove_first )
+        timer.restart
+      endIf
+
+endClass
+
 class TestView : View
   METHODS
-    method draw
-      display.clear( Color.RED )
+    method activate
+      change_state( TestState() )
+
+    method on( e:DrawEvent )
 endClass
 
 #{
