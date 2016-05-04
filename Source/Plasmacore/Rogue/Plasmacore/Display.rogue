@@ -94,9 +94,9 @@ class Display [singleton]
       update_timer.update
 
       while (update_timer.tick)
-        if (view) view.handle_update
+        view.state.handle( UpdateEvent.init )
       endWhile
-      if (view) view.handle_draw
+      view.state.handle( DrawEvent.init )
 
     method width->Int32 [macro]
       this.size.x->Int32

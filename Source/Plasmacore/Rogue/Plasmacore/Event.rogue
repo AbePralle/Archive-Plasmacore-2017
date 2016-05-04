@@ -1,14 +1,33 @@
 module Plasmacore
 
+class Event
+  PROPERTIES
+    is_consumed : Logical
 
-class KeyEvent
+  METHODS
+    method consume
+      this.is_consumed = true
+endClass
+
+class DrawEvent : Event [singleton]
+  METHODS
+    method init
+      is_consumed = false
+endClass
+
+class UpdateEvent : Event [singleton]
+  METHODS
+    method init
+      is_consumed = false
+endClass
+
+class KeyEvent : Event [singleton]
   PROPERTIES
     keycode     : Int32
     unicode     : Character
     syscode     : Int32
     is_press    : Logical
     is_repeat   : Logical
-    is_consumed : Logical
 
   METHODS
     method init( keycode, unicode, syscode, is_press=false, is_repeat=false )
@@ -16,9 +35,6 @@ class KeyEvent
 
     method character->Character [macro]
       this.unicode->Character
-
-    method consume [macro]
-      this.is_consumed = true
 
     method is_character( ch:Character )->Logical [macro]
       (this.unicode == ch)
@@ -69,7 +85,7 @@ class KeyEvent
 endClass
 
 
-class PointerEvent
+class PointerEvent : Event [singleton]
   ENUMERATE
     MOVEMENT = 0
     PRESS    = 1
@@ -82,14 +98,10 @@ class PointerEvent
     delta       : XY
     button      : Int32
     id          : Int32
-    is_consumed : Logical
 
   METHODS
     method init( type, position, delta, button, id )
       is_consumed = false  # Need to be explicit because PointerEvent is recycled.
-
-    method consume [macro]
-      this.is_consumed = true
 
     method is_movement->Logical [macro]
       (this.type == PointerEvent.MOVEMENT)

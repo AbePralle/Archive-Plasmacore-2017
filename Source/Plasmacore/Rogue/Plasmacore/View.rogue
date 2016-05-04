@@ -2,6 +2,8 @@ module Plasmacore
 
 class View
   PROPERTIES
+    state     = ViewState(this)
+
     display   : Display
     is_active : Logical
 
@@ -10,45 +12,57 @@ class View
 
     method activate
 
-    method handle( e:KeyEvent )
+    method change_state( new_state:ViewState )
+      state = new_state
+      state.view = this
+
+    method handle( e:DrawEvent )
+      if (not is_active) is_active = true; activate
+
       on( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      after( e )
+
+    method handle( e:KeyEvent )
+      if (not is_active) is_active = true; activate
+
+      on( e )
+      if (e.is_consumed) return
+
+      after( e )
 
     method handle( e:PointerEvent )
+      if (not is_active) is_active = true; activate
+
       on( e )
       if (e.is_consumed) return
 
-      on_end( e )
+      after( e )
 
-    method handle_draw
-      if (not is_active)
-        is_active = true
-        activate
-      endIf
+    method handle( e:UpdateEvent )
+      if (not is_active) is_active = true; activate
 
-      draw
+      on( e )
+      if (e.is_consumed) return
 
-    method handle_update
-      if (not is_active)
-        is_active = true
-        activate
-      endIf
+      after( e )
 
-      update
+    method on( e:DrawEvent )
+      display.clear( Color.BLUE )
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
-    method on_end( e:KeyEvent )
+    method on( e:UpdateEvent )
 
-    method on_end( e:PointerEvent )
+    method after( e:DrawEvent )
 
-    method draw
-      display.clear( Color.BLUE )
+    method after( e:KeyEvent )
 
-    method update
+    method after( e:PointerEvent )
+
+    method after( e:UpdateEvent )
 endClass
 
