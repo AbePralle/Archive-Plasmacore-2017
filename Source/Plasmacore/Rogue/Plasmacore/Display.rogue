@@ -6,8 +6,9 @@ class Display [singleton]
 
   PROPERTIES
     name             : String
+    view             : View
+
     window           : Window
-    state            : State
 
     update_timer     = UpdateTimer()
 
@@ -34,7 +35,10 @@ class Display [singleton]
 
   METHODS
     method init( name )
-      state = Plasmacore.get_initial_state( name )
+      view = Plasmacore.create_view( this )
+
+    method bounds->Box
+      return Box(size)
 
     method clear->this
       native @|Starbright::renderer->clear_color = $this->background_color.argb;
@@ -89,10 +93,10 @@ class Display [singleton]
 
       update_timer.update
 
-      if (state)
-        while (update_timer.tick) state.handle_update
-        state.handle_draw
-      endIf
+      while (update_timer.tick)
+        if (view) view.handle_update
+      endWhile
+      if (view) view.handle_draw
 
     method width->Int32 [macro]
       this.size.x->Int32

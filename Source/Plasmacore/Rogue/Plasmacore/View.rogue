@@ -1,0 +1,54 @@
+module Plasmacore
+
+class View
+  PROPERTIES
+    display   : Display
+    is_active : Logical
+
+  METHODS
+    method init( display=Display )
+
+    method activate
+
+    method handle( e:KeyEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method handle( e:PointerEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      on_end( e )
+
+    method handle_draw
+      if (not is_active)
+        is_active = true
+        activate
+      endIf
+
+      draw
+
+    method handle_update
+      if (not is_active)
+        is_active = true
+        activate
+      endIf
+
+      update
+
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method on_end( e:KeyEvent )
+
+    method on_end( e:PointerEvent )
+
+    method draw
+      display.clear( Color.BLUE )
+
+    method update
+endClass
+

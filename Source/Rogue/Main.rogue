@@ -3,23 +3,12 @@ using Plasmacore
 println "Rogue Launched!"
 
 Plasmacore.launch_window_name = "LaunchWindow"
-Plasmacore.set_state( "global", @GlobalState )
-Plasmacore.set_state( "launch_window", @YellowState )
+Plasmacore.set_display_view( "launch_window", @TestView )
 
-
-class GlobalState : State
+class TestView : View
   METHODS
-    method init
-      trace
-
-    method update
-endClass
-
-class YellowState : State
-  METHODS
-    method activate
-      Display.background_color = Color.YELLOW
-
+    method draw
+      display.clear( Color.RED )
 endClass
 
 #{

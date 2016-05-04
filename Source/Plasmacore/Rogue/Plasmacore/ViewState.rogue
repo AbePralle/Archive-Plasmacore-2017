@@ -1,6 +1,6 @@
 module Plasmacore
 
-class State
+class ViewState
   PROPERTIES
     #display          : Display
     is_active        : Logical
