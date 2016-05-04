@@ -89,6 +89,15 @@ class Texture
       Display.texture_list.add( this )
 
     method init( bitmap:Bitmap )
+      set( bitmap )
+
+    method image_height->Int32 [macro]
+      this.image_size.y
+
+    method image_width->Int32 [macro]
+      this.image_size.x
+
+    method set( bitmap:Bitmap )
       nativeCode
         #include "ImageIO.h"
         using namespace ImageIO;
@@ -102,6 +111,12 @@ class Texture
       local texture_w, texture_h : Int32
       local bpp = 32
 
+      if (not id)
+        # First time being defined - otherwise this same texture is being redefined
+        # from an updated bitmap.
+        Display.texture_list.add( this )
+      endIf
+
       native @|GG::Bitmap bitmap( $bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
               |bitmap.filter( GG::FilterFn_premultiply_alpha );
               |bitmap.expand_to_power_of_two();
@@ -113,14 +128,6 @@ class Texture
       image_size   = XY( image_w, image_h )
       texture_size = XY( texture_w, texture_h )
       uv_size      = image_size / texture_size
-
-      Display.texture_list.add( this )
-
-    method image_height->Int32 [macro]
-      this.image_size.y
-
-    method image_width->Int32 [macro]
-      this.image_size.x
 
     method texture_height->Int32 [macro]
       this.texture_size.y

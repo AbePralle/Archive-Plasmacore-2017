@@ -36,9 +36,12 @@ class Display [singleton]
     textures_by_name  = StringTable<<Texture>>()
     texture_list      = Texture[]
 
+    system_font : Font
+
   METHODS
     method init( name )
       view = Plasmacore.create_view( this )
+      system_font = Font( "FontSystem17.png", &options=@{snug} )
 
     method bounds->Box
       return Box(size)
@@ -146,14 +149,10 @@ class Display [singleton]
         pointer_position = e.position
       endIf
       logic.handle( e )
+      }#
 
     method height->Int32 [macro]
       this.size.y->Int32
-
-    method update
-      logic.update
-      OverlayLog.update
-      }#
 
     method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)
@@ -200,6 +199,9 @@ class Display [singleton]
         view.state.handle( UpdateEvent.init )
       endWhile
       view.state.handle( DrawEvent.init )
+
+      OverlayLog.update
+      OverlayLog.draw
 
     method update_transform
       if (not (view_transform_modified or object_transform_modified)) return

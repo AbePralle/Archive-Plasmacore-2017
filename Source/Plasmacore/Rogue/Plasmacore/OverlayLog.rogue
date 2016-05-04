@@ -1,10 +1,8 @@
 module Plasmacore
 
-#{
 class OverlayLog : PrintWriterAspect<<OverlayLog,output_buffer>> [requisite singleton]
   PROPERTIES
     lines = String[]
-    font  = Font( "FontSystem17.png", &options=@{snug} )
     timer = Timer(6)  # time until lines removed
     output_buffer = StringBuilder()
     max_lines = 10 : Int32?
@@ -18,7 +16,8 @@ class OverlayLog : PrintWriterAspect<<OverlayLog,output_buffer>> [requisite sing
       return this
 
     method draw
-      local max = Graphics.height / font.height
+      local font = Display.system_font
+      local max = Display.height / font.height
       if (max_lines.exists and max_lines.value < max) max = max_lines.value
       while (lines.count > max) lines.remove_first
 
@@ -46,4 +45,4 @@ class OverlayLog : PrintWriterAspect<<OverlayLog,output_buffer>> [requisite sing
       endIf
       return this
 endClass
-}#
+
