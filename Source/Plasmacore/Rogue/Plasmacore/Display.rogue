@@ -4,6 +4,9 @@ class Display [singleton]
   CLASS
     nativeHeader #include "Starbright.h"
 
+  CLASS PROPERTIES
+    default_unit_z = 512.0
+
   PROPERTIES
     name             : String
     view             : View
@@ -69,11 +72,56 @@ class Display [singleton]
       OverlayLog.draw
       }#
 
+    method draw_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
+      native @|Starbright::renderer->set_shader( $shader.id );
+              |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
+              |Starbright::renderer->set_render_mode( $render_mode.value );
+              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
+              |
+              |v[0].x = $corners.a.x;
+              |v[0].y = $corners.a.y;
+              |v[0].z = $corners.a.z;
+              |v[0].w = $corners.a.w;
+              |v[1].x = $corners.b.x;
+              |v[1].y = $corners.b.y;
+              |v[1].z = $corners.b.z;
+              |v[1].w = $corners.b.w;
+              |v[2].x = $corners.c.x;
+              |v[2].y = $corners.c.y;
+              |v[2].z = $corners.c.z;
+              |v[2].w = $corners.c.w;
+              |v[3].x = $corners.a.x;
+              |v[3].y = $corners.a.y;
+              |v[3].z = $corners.a.z;
+              |v[3].w = $corners.a.w;
+              |v[4].x = $corners.c.x;
+              |v[4].y = $corners.c.y;
+              |v[4].z = $corners.c.z;
+              |v[4].w = $corners.c.w;
+              |v[5].x = $corners.d.x;
+              |v[5].y = $corners.d.y;
+              |v[5].z = $corners.d.z;
+              |v[5].w = $corners.d.w;
+              |
+              |v[0].color = $colors.a.argb;
+              |v[0].color = $colors.a.argb;
+              |v[1].color = $colors.b.argb;
+              |v[1].color = $colors.b.argb;
+              |v[2].color = $colors.c.argb;
+              |v[2].color = $colors.c.argb;
+              |v[3].color = $colors.a.argb;
+              |v[3].color = $colors.a.argb;
+              |v[4].color = $colors.c.argb;
+              |v[4].color = $colors.c.argb;
+              |v[5].color = $colors.d.argb;
+              |v[5].color = $colors.d.argb;
+
     method draw_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
         colors:Colors,
         uv:Corners<<XY>>,
-        shader:Shader, render_mode:RenderMode )
+        render_mode:RenderMode,
+        shader:Shader )
 
       native @|Starbright::renderer->set_texture( 0, $texture->id );
               |Starbright::renderer->set_shader( $shader.id );
@@ -206,22 +254,22 @@ class Display [singleton]
     method update_transform
       if (not (view_transform_modified or object_transform_modified)) return
 
-      if (view_transform_modified)
-        view_transform_modified = false
-        if (view_transforms.count)
-          view_transform = view_transforms.first
-          forEach (i in 1..view_transforms.count-1)
-            view_transform = view_transform * view_transforms[i]
+      if (object_transform_modified)
+        object_transform_modified = false
+        if (object_transforms.count)
+          object_transform = object_transforms.first
+          forEach (i in 1..object_transforms.count-1)
+            object_transform = object_transform * object_transforms[i]
           endForEach
         endIf
       endIf
 
-      if (object_transform_modified)
-        object_transform_modified = false
-        if (object_transforms.count)
-          object_transform = object_transforms.last
-          forEach (i in object_transforms.count-2 downTo 0)
-            object_transform = object_transform * object_transforms[i]
+      if (view_transform_modified)
+        view_transform_modified = false
+        if (view_transforms.count)
+          view_transform = view_transforms.last
+          forEach (i in view_transforms.count-2 downTo 0)
+            view_transform = view_transform * view_transforms[i]
           endForEach
         endIf
       endIf

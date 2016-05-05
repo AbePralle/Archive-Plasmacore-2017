@@ -14,28 +14,111 @@ class Image
     color       = Color.WHITE : Color
 
   METHODS
+    method init( size )
+      data = CompositeImageData()
+
     method init( texture:Texture )
       data = TextureImageData( texture )
       shader = Shader.TEXTURE
       render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
       size = texture.image_size
 
+    method init( color, size=Displays.size )
+      data = SolidColorImageData( Colors(color) )
+      shader = Shader.COLOR
+      render_mode = select{ color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+
+    method init( colors:Colors, size=Display.size )
+      data = SolidColorImageData( colors )
+      shader = Shader.COLOR
+      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+
+    method init( other:Image )
+      data        = other.data
+      position    = other.position
+      z           = other.z
+      size        = other.size
+      scale       = other.scale
+      rotation    = other.rotation
+      shader      = other.shader
+      anchor      = other.anchor
+      render_mode = other.render_mode
+      color       = other.color
+
     method init( bitmap:Bitmap )
       init( Texture(bitmap) )
+
+    method add( child:Image )->this
+      data.add( child )
+      return this
 
     method adjust_subset( subset:Box )
       data.adjust_subset( subset )
 
+    method clone->Image
+      return Image( this )
+
     method draw
+      data.draw( this )
+
+    method draw( position )
       data.draw( this )
 
     method set( bitmap:Bitmap )
       data = data.set( bitmap )
       size = bitmap.size
+
+    method set_anchor( @anchor )->this
+      return this
+
+    method set_color( @color )->this
+      return this
+
+    method set_position( @position )->this
+      return this
+
+    method set_position( x:Real64, y:Real64 )->this
+      @position = XY(x,y)
+      return this
+
+    method set_position( xyz:XYZ )->this
+      @position = xyz->XY
+      @z = xyz.z
+      return this
+
+    method set_position( x:Real64, y:Real64, _z:Real64 )->this
+      @position = XY(x,y)
+      @z = _z
+      return this
+
+    method set_render_mode( @render_mode )->this
+      return this
+
+    method set_rotation( @rotation )->this
+      return this
+
+    method set_scale( @scale )->this
+      return this
+
+    method set_scale( s:Real64 )->this
+      @scale = XY(s,s)
+      return this
+
+    method set_shader( @shader )->this
+      return this
+
+    method set_size( @size )->this
+      return this
+
+    method set_z( @z )->this
+      return this
 endClass
 
 class ImageData
   METHODS
+    method add( child:Image )
+      println "Illegal operation $.add(Image)." (type_name)
+
     method adjust_subset( subset:Box )
       noAction
 
@@ -43,6 +126,83 @@ class ImageData
 
     method set( bitmap:Bitmap )->ImageData
       return TextureImageData( Texture(bitmap) )
+
+endClass
+
+class CompositeImageData : ImageData
+  PROPERTIES
+    images = Image[]
+
+  METHODS
+    method add( child:Image )
+      images.add( child )
+
+    method draw( image:Image )
+      local size = image.size * image.scale
+      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local z = -Display.unit_z * image.z
+
+      local pos = image.position
+      local has_rotation = not image.rotation.is_zero
+      if (has_rotation)
+        Display.push_view_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
+      else
+        Display.push_view_transform( Matrix.translate(XYZ(pos,z)-handle) )
+      endIf
+
+      forEach (img in images) img.draw
+
+      #{
+      local transform = Display.transform
+      local w = size.x
+      local h = size.y
+      local corners = Corners<<XYZW>>(
+        transform * XYZ( 0, 0, 0 ),
+        transform * XYZ( w, 0, 0 ),
+        transform * XYZ( w, h, 0 ),
+        transform * XYZ( 0, h, 0 ) )
+      Display.draw_solid_quad( corners,
+        Colors(Color.WHITE), RenderMode.OPAQUE_SHAPE, Shader.COLOR )
+      }#
+
+      Display.pop_view_transform
+
+endClass
+
+class SolidColorImageData : ImageData
+  PROPERTIES
+    colors : Colors
+
+  METHODS
+    method init( colors )
+
+    method draw( image:Image )
+      local size = image.size * image.scale
+      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local z = -Display.unit_z * image.z
+
+      local pos = image.position
+      local has_rotation = not image.rotation.is_zero
+      if (has_rotation)
+        Display.push_object_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
+      else
+        Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
+      endIf
+
+      local transform = Display.transform
+
+      local w = size.x
+      local h = size.y
+      local corners = Corners<<XYZW>>(
+        transform * XYZ( 0, 0, 0 ),
+        transform * XYZ( w, 0, 0 ),
+        transform * XYZ( w, h, 0 ),
+        transform * XYZ( 0, h, 0 ) )
+
+      Display.draw_solid_quad( corners, colors, image.render_mode, image.shader )
+
+      Display.pop_object_transform
+
 endClass
 
 class TextureImageData : ImageData
@@ -67,228 +227,29 @@ class TextureImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_object_transform( Quaternion(image.rotation).to_matrix(XYZ(pos,z)+handle,handle) )
+        Display.push_object_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
       else
-        pos -= handle.xy
+        Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
 
       local transform = Display.transform
 
+      local w = size.x
+      local h = size.y
       local corners = Corners<<XYZW>>(
-        transform * XYZ( pos,         z ),
-        transform * XYZ( pos+size.xv, z ),
-        transform * XYZ( pos+size,    z ),
-        transform * XYZ( pos+size.yv, z ) )
+        transform * XYZ( 0, 0, 0 ),
+        transform * XYZ( w, 0, 0 ),
+        transform * XYZ( w, h, 0 ),
+        transform * XYZ( 0, h, 0 ) )
 
       Display.draw_textured_quad( texture, corners, Colors(image.color),
         Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-        image.shader, image.render_mode )
+        image.render_mode, image.shader )
 
-      if (has_rotation)
-        Display.pop_object_transform
-      endIf
+      Display.pop_object_transform
 
     method set( bitmap:Bitmap )->this
       texture.set( bitmap )
       return this
 endClass
 
-#{
-class Image
-  PROPERTIES
-    data   : ImageData
-
-  METHODS
-    method init( name:String )
-      data = ImageManager.load( name )
-
-    method init( bitmap:Bitmap )
-      data = ImageManager.load( bitmap )
-
-    method init( existing:Image, subset:Box )
-      data = existing.data.create_subset( subset )
-
-    method adjust_subset( new_subset:Box )
-      data.adjust_subset( new_subset )
-
-    method draw( position:XY, _size:XY, anchor:Anchor )
-      if (not is_ready) return
-
-      local transform = Graphics.transform
-      position  -= (anchor.position * _size).floor
-      local z    = -Graphics.unit_z
-
-      local pt1  = transform * XYZ( position,          z )
-      local pt2  = transform * XYZ( position+_size.xv, z )
-      local pt3  = transform * XYZ( position+_size,    z )
-      local pt4  = transform * XYZ( position+_size.yv, z )
-
-      data.draw( Corners<<XYZW>>(pt1,pt2,pt3,pt4) )
-
-    method draw( position:XY, _size:XY, anchor:Anchor, rotation:Rotation )
-      draw( position, _size, anchor, Quaternion(rotation) )
-
-    method draw( position:XY, _size:XY, anchor:Anchor, rotation:Quaternion )
-      if (not is_ready) return
-
-      local handle = XYZ( (anchor.position * _size).floor, 0 )
-      local z      = -Graphics.unit_z
-      local origin = XYZ( position, z ) + handle
-
-      Graphics.push_object_transform( rotation.to_matrix(origin,handle) )
-      #Graphics.push_object_transform( Matrix.identity )
-
-      local transform = Graphics.transform
-
-      local pt1  = transform * XYZ( position,          z )
-      local pt2  = transform * XYZ( position+_size.xv, z )
-      local pt3  = transform * XYZ( position+_size,    z )
-      local pt4  = transform * XYZ( position+_size.yv, z )
-
-      data.draw( Corners<<XYZW>>(pt1,pt2,pt3,pt4) )
-
-      Graphics.pop_object_transform
-
-
-    method draw( corners:Corners<<XYZW>> )
-      if (prepare) data.draw( corners )
-
-    method height->Real64
-      return data.bounds.size.y
-
-    method is_ready->Logical
-      return prepare
-
-    method prepare->Logical
-      if (not data.is_ready) data = data.prepare
-      return data.is_ready
-
-    method set_color( new_color:Color )->this
-      data.color = new_color
-      return this
-
-    method set_render_mode( new_render_mode:RenderMode )->this
-      data.render_mode = new_render_mode
-      return this
-
-    method set_shader( new_shader:Shader )->this
-      data.shader = new_shader
-      return this
-
-    method size->XY
-      return data.bounds.size
-
-    method width->Real64
-      return data.bounds.size.x
-endClass
-
-class ImageData
-  PROPERTIES
-    bounds      : Box
-    version     : Int32
-    # Used to keep this image in sync with textures
-
-    shader      : Shader
-    render_mode : RenderMode
-    color       = Color(0xFFFFFFFF)
-
-  METHODS
-    method adjust_subset( new_subset:Box )
-      noAction
-
-    method draw( corners:Corners<<XYZW>> )
-
-    method create_subset( subset:Box )->ImageData
-      return ImageData()
-
-    method is_ready->Logical
-      return false
-
-    method prepare->ImageData
-      return this
-endClass
-
-class UnresolvedImageData( name:String ) : ImageData
-  METHODS
-    method prepare->ImageData
-      if (Graphics.is_ready and ImageManager.is_ready)
-        return ImageManager.load( name )
-      else
-        return this
-      endIf
-endClass
-
-class TextureImageData : ImageData
-  PROPERTIES
-    texture     : Texture
-    is_subset   : Logical
-    uv1         : XY
-    uv2         : XY
-
-  METHODS
-    method init( texture )
-      shader      = Shader.TEXTURE
-      render_mode = RenderMode.ALPHA_IMAGE
-      uv1         = XY(0,0)
-      uv2         = texture.image_size / texture.texture_size
-      bounds      = Box( 0, 0, texture.image_size )
-      version     = texture.version
-
-    method init( texture, bounds )
-      shader      = Shader.TEXTURE
-      render_mode = RenderMode.ALPHA_IMAGE
-      uv1         = bounds.top_left / texture.texture_size
-      uv2         = bounds.bottom_right / texture.texture_size
-      is_subset   = true
-      version     = texture.version
-
-    method adjust_subset( new_subset:Box )
-      uv1 = new_subset.position / texture.texture_size
-      uv2 = new_subset.bottom_right / texture.texture_size
-      is_subset = true
-
-    method create_subset( subset:Box )->ImageData
-      return TextureImageData( texture, subset )
-
-    method draw( corners:Corners<<XYZW>> )
-      Graphics.draw_textured_quad( texture, corners, Colors(color),
-          uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y), shader, render_mode )
-
-    method is_ready->Logical
-      return texture.is_ready and version == texture.version
-
-    method prepare->ImageData
-      # The graphics context changed or a backing bitmap was updated;
-      # find or load the texture in the current context
-      texture = texture.reload
-      version = texture.version
-      if (not is_subset)
-        # Adjust the bounds to match the new texture size
-        bounds = Box( 0, 0, texture.image_size )
-      endIf
-
-      # Recalculate the UV
-      uv1  = bounds.top_left / texture.texture_size
-      uv2  = bounds.bottom_right / texture.texture_size
-
-      return this
-
-endClass
-
-
-class ImageManager [singleton]
-  METHODS
-    method is_ready->Logical
-      return true
-
-    method load( name:String )->ImageData
-      if (not Graphics.is_ready) return UnresolvedImageData( name )
-      local texture = Graphics.acquire_texture( name )
-      return TextureImageData( texture )
-
-    method load( bitmap:Bitmap )->ImageData
-      local texture = Graphics.acquire_texture( bitmap )
-      return TextureImageData( texture )
-endClass
-
-}#
