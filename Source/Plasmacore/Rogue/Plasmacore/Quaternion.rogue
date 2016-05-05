@@ -133,8 +133,8 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
     method operator/( n:Real64 )->Quaternion
       return Quaternion( x/n, y/n, z/n, w/n )
 
-    method to_matrix( origin:XYZ, handle:XYZ )->Matrix
-      local m = Matrix(
+    method to->Matrix
+      return Matrix(
           1     - 2*y*y - 2*z*z,
           2*x*y + 2*z*w,
           2*x*z - 2*y*w,
@@ -156,9 +156,11 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           1
       )
 
-      m[12] = -m[0]*origin.x - m[4]*origin.y - m[8]*origin.z  + (origin.x - handle.x)
-      m[13] = -m[1]*origin.x - m[5]*origin.y - m[9]*origin.z  + (origin.y - handle.y)
-      m[14] = -m[2]*origin.x - m[6]*origin.y - m[10]*origin.z + (origin.z - handle.z)
+    method to_matrix( handle:XYZ, post_translate:XYZ )->Matrix
+      local m = this->Matrix
+      m[12] = -m[0]*handle.x - m[4]*handle.y - m[8]*handle.z  + post_translate.x
+      m[13] = -m[1]*handle.x - m[5]*handle.y - m[9]*handle.z  + post_translate.y
+      m[14] = -m[2]*handle.x - m[6]*handle.y - m[10]*handle.z + post_translate.z
 
       return m
 

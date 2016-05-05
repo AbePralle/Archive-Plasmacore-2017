@@ -12,11 +12,19 @@ class TestState : ViewState
 
     img : Image
     texture : Texture
+    fill = Image( Colors(0,0,0xFF000000,0xFF000000) )
 
   METHODS
     method activate
-      img = Image( Texture("King.png") )
-      img.scale = XY(0.5,0.5)
+      #img = Image( Texture("King.png") ).set_scale(0.5)
+
+      img = Image( XY(200,278) )
+
+      img.add( Image(Texture("King.png")).set_scale(XY(0.5)).set_anchor(Anchor.TOP_LEFT).set_position(0,0,0) )
+
+      local img2 = Image( XY(200,278) ).set_anchor(Anchor.TOP_LEFT).set_z(0)
+      img2.add( Image(Colors(0,0,0xFF000000,0xFF000000),img.size).set_anchor(Anchor.TOP_LEFT).set_z(0) )
+      img.add(img2)
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
@@ -31,7 +39,6 @@ class TestState : ViewState
 
       img.position = Display.center
       img.rotation = img.rotation.rotated_x( Degrees(1) )
-
 endClass
 
 class TestView : View

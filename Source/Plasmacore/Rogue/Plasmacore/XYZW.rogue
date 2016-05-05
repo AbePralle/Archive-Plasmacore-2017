@@ -15,10 +15,10 @@ class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
     method to->String
       return "[$,$,$,$]" (x,y,z,w)
 
-    method xy->XY
+    method to->XY
       return XY(x,y)
 
-    method xyz->XYZ
+    method to->XYZ
       return XYZ(x,y,z)
 endClass
 
