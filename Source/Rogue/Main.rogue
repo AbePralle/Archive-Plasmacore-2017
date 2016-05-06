@@ -12,19 +12,13 @@ class TestState : ViewState
 
     img : Image
     texture : Texture
-    fill = Image( Colors(0,0,0xFF000000,0xFF000000) )
+    fill = ColorFillImage( Colors(0,0,0xFF000000,0xFF000000) )
 
   METHODS
     method activate
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
-      img = Image( XY(200,278) )
-
-      img.add( Image(Texture("King.png")).set_scale(XY(0.5)).set_anchor(Anchor.TOP_LEFT).set_position(0,0,0) )
-
-      local img2 = Image( XY(200,278) ).set_anchor(Anchor.TOP_LEFT).set_z(0)
-      img2.add( Image(Colors(0,0,0xFF000000,0xFF000000),img.size).set_anchor(Anchor.TOP_LEFT).set_z(0) )
-      img.add(img2)
+      img = TextureImage(Texture("King.png")).set_scale(XY(0.5)).set_colors(Colors(0x80FFFFFF,0x80000000,0x80000000,0x80000000)).set_shader(Shader.TEXTURE_WITH_COLOR_FILL)
 
     method on( e:DrawEvent )
       Display.clear( colors.first )

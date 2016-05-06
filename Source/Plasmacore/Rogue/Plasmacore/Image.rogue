@@ -11,28 +11,9 @@ class Image
     shader      : Shader
     anchor      = Anchor.CENTER : Anchor
     render_mode : RenderMode
-    color       = Color.WHITE : Color
+    colors      = Colors(Color.WHITE) : Colors
 
   METHODS
-    method init( size )
-      data = CompositeImageData()
-
-    method init( texture:Texture )
-      data = TextureImageData( texture )
-      shader = Shader.TEXTURE
-      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-      size = texture.image_size
-
-    method init( color, size=Displays.size )
-      data = SolidColorImageData( Colors(color) )
-      shader = Shader.COLOR
-      render_mode = select{ color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
-
-    method init( colors:Colors, size=Display.size )
-      data = SolidColorImageData( colors )
-      shader = Shader.COLOR
-      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
-
     method init( other:Image )
       data        = other.data
       position    = other.position
@@ -43,10 +24,7 @@ class Image
       shader      = other.shader
       anchor      = other.anchor
       render_mode = other.render_mode
-      color       = other.color
-
-    method init( bitmap:Bitmap )
-      init( Texture(bitmap) )
+      colors      = other.colors
 
     method add( child:Image )->this
       data.add( child )
@@ -71,7 +49,11 @@ class Image
     method set_anchor( @anchor )->this
       return this
 
-    method set_color( @color )->this
+    method set_color( color:Color )->this
+      colors = Colors( color )
+      return this
+
+    method set_colors( @colors )->this
       return this
 
     method set_position( @position )->this
@@ -114,6 +96,42 @@ class Image
       return this
 endClass
 
+class CompositeImage : Image
+  METHODS
+    method init( size )
+      data = CompositeImageData()
+
+    method init( w:Int32, h:Int32 )
+      init( XY(w,h) )
+endClass
+
+class ColorFillImage : Image
+  METHODS
+    method init( color:Color, size=Displays.size )
+      colors = Colors( color )
+      data = ColorFillImageData()
+      shader = Shader.COLOR
+      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+
+    method init( colors, size=Display.size )
+      data = ColorFillImageData()
+      shader = Shader.COLOR
+      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+endClass
+
+class TextureImage : Image
+  METHODS
+    method init( texture:Texture )
+      data = TextureImageData( texture )
+      shader = Shader.TEXTURE
+      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+      size = texture.image_size
+
+    method init( bitmap:Bitmap )
+      init( Texture(bitmap) )
+
+endClass
+
 class ImageData
   METHODS
     method add( child:Image )
@@ -152,30 +170,12 @@ class CompositeImageData : ImageData
 
       forEach (img in images) img.draw
 
-      #{
-      local transform = Display.transform
-      local w = size.x
-      local h = size.y
-      local corners = Corners<<XYZW>>(
-        transform * XYZ( 0, 0, 0 ),
-        transform * XYZ( w, 0, 0 ),
-        transform * XYZ( w, h, 0 ),
-        transform * XYZ( 0, h, 0 ) )
-      Display.draw_solid_quad( corners,
-        Colors(Color.WHITE), RenderMode.OPAQUE_SHAPE, Shader.COLOR )
-      }#
-
       Display.pop_view_transform
 
 endClass
 
-class SolidColorImageData : ImageData
-  PROPERTIES
-    colors : Colors
-
+class ColorFillImageData : ImageData
   METHODS
-    method init( colors )
-
     method draw( image:Image )
       local size = image.size * image.scale
       local handle = XYZ( (image.anchor.position * size).floor, 0 )
@@ -199,7 +199,7 @@ class SolidColorImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.draw_solid_quad( corners, colors, image.render_mode, image.shader )
+      Display.draw_solid_quad( corners, image.colors, image.render_mode, image.shader )
 
       Display.pop_object_transform
 
@@ -242,7 +242,7 @@ class TextureImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.draw_textured_quad( texture, corners, Colors(image.color),
+      Display.draw_textured_quad( texture, corners, image.colors,
         Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
         image.render_mode, image.shader )
 
