@@ -12,11 +12,11 @@ class Font
 
   METHODS
     method init( name:String, options=null )
-      data = FontManager.get_font_data( name, null, options )
+      data = Display.get_font_data( name, null, options )
       set_options( options )
 
     method init( name:String, height:Int32, options=null )
-      data = FontManager.get_font_data( name, height, options )
+      data = Display.get_font_data( name, height, options )
       set_options( options )
 
     method draw( text:String, position:XY )
@@ -406,57 +406,57 @@ class TrueTypeFontLoader : FontLoader [requisite]
 endClass
 
 
-class FontManager [singleton]
+augment Display
   PROPERTIES
     loader_lookup    = Table<<String,FontLoader>>()
     font_data_lookup = Table<<String,Table<<Int32,FontData>>>>()
 
   METHODS
-    method get_font_data( name:String, height=null:Int32?, options=null:PropertyTable )->FontData
-      if (not height.exists)
-        local loader = get_loader( name )
+    method get_font_data( font_name:String, font_height=null:Int32?, options=null:PropertyTable )->FontData
+      if (not font_height.exists)
+        local loader = get_font_loader( font_name )
         if (not loader) return null
-        height = loader.nominal_height
+        font_height = loader.nominal_height
       endIf
 
-      local by_height = font_data_lookup[ name ]
+      local by_height = font_data_lookup[ font_name ]
       if (by_height)
-        local result = by_height[ height.value ]
+        local result = by_height[ font_height.value ]
         if (result) return result
       else
         by_height = Table<<Int32,FontData>>()
-        font_data_lookup[ name ] = by_height
+        font_data_lookup[ font_name ] = by_height
       endIf
 
-      local loader = get_loader( name )
+      local loader = get_font_loader( font_name )
       if (not loader) return null
-      local result = loader.create_font_data( height.value )
-      by_height[ height.value ] = result
+      local result = loader.create_font_data( font_height.value )
+      by_height[ font_height.value ] = result
 
       # Preload the default characters - usually the 95 ASCII characters
       result.prepare( loader.default_characters )
 
       return result
 
-    method get_loader( name:String, options=null:PropertyTable )->FontLoader
+    method get_font_loader( font_name:String, options=null:PropertyTable )->FontLoader
       # low_ch and high_ch are used for bitmap fonts only.
-      local loader = loader_lookup[ name ]
+      local loader = loader_lookup[ font_name ]
       if (loader) return loader
 
-      local lc_name = name.to_lowercase
+      local lc_name = font_name.to_lowercase
       if (lc_name.ends_with(".png") or lc_name.ends_with(".jpg"))
-        loader = BitmapFontLoader( name, options )
+        loader = BitmapFontLoader( font_name, options )
       elseIf (lc_name.ends_with(".ttf") or lc_name.ends_with(".otf"))
-        loader = TrueTypeFontLoader( name, options )
+        loader = TrueTypeFontLoader( font_name, options )
       endIf
 
       if (not loader or loader.error)
-        println ''ERROR loading font "$" - unsupported file type.'' (name)
+        println ''ERROR loading font "$" - unsupported file type.'' (font_name)
         return null
       endIf
 
-      loader_lookup[ name ] = loader
+      loader_lookup[ font_name ] = loader
       return loader
 
-endClass
+endAugment
 

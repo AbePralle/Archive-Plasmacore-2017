@@ -13,7 +13,7 @@ class Window
     current_display_name  = ""
 
   METHODS
-    method init( name ) #, default_display_logic=@DisplayLogic )
+    method init( name )
       id = Plasmacore.create_resource_id
       WindowManager.windows_by_id[ id ] = this
       WindowManager.window_list.add( this )
@@ -50,13 +50,11 @@ class Window
 
       endIf
 
-      #{
     method handle_key_event( display_name_buffer:StringBuilder, e:KeyEvent )
       find_display( display_name_buffer ).handle( e )
 
     method handle_pointer_event( display_name_buffer:StringBuilder, e:PointerEvent )
       find_display( display_name_buffer ).handle( e )
-      }#
 
     method handle_update_and_draw( display_name_buffer:StringBuilder, display_size:XY )
       local display = find_display( display_name_buffer )
@@ -78,7 +76,6 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
-      #{
       MessageManager.add_handler( "Display.key_event",
         function (m:Message)
           local window_id = m.get_int32( "window_id" )
@@ -92,8 +89,8 @@ class WindowManager [requisite singleton]
 
           local window    = WindowManager.find_window( window_id )
           if (window)
-            WindowManager.key_event.init( keycode, unicode, syscode, is_press, is_repeat )
-            window.handle_key_event( display_name, WindowManager.key_event )
+            KeyEvent.init( keycode, unicode, syscode, is_press, is_repeat )
+            window.handle_key_event( display_name, KeyEvent )
           endIf
         endFunction
       )
@@ -112,12 +109,11 @@ class WindowManager [requisite singleton]
 
           local window    = WindowManager.find_window( window_id )
           if (window)
-            WindowManager.pointer_event.init( type, XY(x,y), XY(dx,dy), button, id )
-            window.handle_pointer_event( display_name, WindowManager.pointer_event )
+            PointerEvent.init( type, XY(x,y), XY(dx,dy), button, id )
+            window.handle_pointer_event( display_name, PointerEvent )
           endIf
         endFunction
       )
-}#
 
       MessageManager.add_handler( "Display.update_and_draw",
         function (m:Message)
