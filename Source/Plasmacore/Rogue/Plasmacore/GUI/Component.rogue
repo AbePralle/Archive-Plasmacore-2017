@@ -1,0 +1,137 @@
+module Plasmacore
+
+class Component
+  # Base class of all GUI elements.
+  PROPERTIES
+    position : XY
+    size     : XY
+    anchor   : Anchor?
+
+    parent   : Component
+    children : Component[]
+
+    needs_layout = true
+
+  METHODS
+    method init
+      bounds = Display.bounds
+
+    method init( _bounds:Box )
+      position = _bounds.position
+      size = _bounds.size
+
+    method add( child:Component )->this
+      ensure children
+      children.add( child )
+      child.parent = this
+      return this
+
+    method after( e:DrawEvent )
+
+    method after( e:KeyEvent )
+
+    method after( e:PointerEvent )
+
+    method after( e:UpdateEvent )
+
+    method bounds->Box
+      return Box( position, size )
+
+    method check_layout->Logical
+      # check_layout() only checks the top-level component on which its called but
+      # once it calls update_layout() then all children update their layout.
+      #
+      # Returns `true` if layout was updated.
+      if (needs_layout or bounds != parent_bounds)
+        needs_layout = false
+        update_layout
+        return true
+      else
+        return false
+      endIf
+
+    method dispatch( e:DrawEvent )
+      if (children)
+        forEach (child in children) child.handle( e )
+      endIf
+
+    method dispatch( e:KeyEvent )
+      if (children)
+        forEach (child in children) child.handle( e )
+      endIf
+
+    method dispatch( e:PointerEvent )
+      if (children)
+        forEach (child in children) child.handle( e )
+      endIf
+
+    method dispatch( e:UpdateEvent )
+      if (children)
+        forEach (child in children) child.handle( e )
+      endIf
+
+    method handle( e:DrawEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:KeyEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:UpdateEvent )
+      check_layout
+
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method on( e:DrawEvent )
+      Display.outline( bounds, Color.WHITE )
+
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method on( e:UpdateEvent )
+
+    method parent_bounds->Box
+      return select{ parent:parent.bounds || Display.bounds }
+
+    method set_bounds( box:Box )->this
+      position = box.position
+      size = box.size
+      return this
+
+    method update_layout
+      local box = parent_bounds
+      position = box.position
+      size = box.size
+
+      if (children)
+        forEach (child in children) child.update_layout
+      endIf
+endClass
+

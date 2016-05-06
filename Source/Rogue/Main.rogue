@@ -19,13 +19,12 @@ class TestState : ViewState
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
       img = TextureImage(Texture("U5Tiles.png")).set_anchor(Anchor.TOP_LEFT)
+      view.gui.add( Button(Box(Display.center,32,16)) )
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
 
       img.draw
-      Display.draw( Box(Display.size/4,Display.size/2), 0x80000000 )
-      Display.outline( Box(Display.size/4,Display.size/2), Color.WHITE )
 
     method on( e:PointerEvent )
       trace e
