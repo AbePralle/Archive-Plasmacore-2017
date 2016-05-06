@@ -2,11 +2,11 @@ module Plasmacore
 
 class Shader( id:Int32 ) [compound]
   GLOBAL PROPERTIES
-    COLOR                                 = Shader(1)
-    TEXTURE                               = Shader(2)
-    TEXTURE_WITH_COLOR_MULTIPLY           = Shader(3)
-    PREMULTIPLIED_TEXTURE_WITH_COLOR_ADD  = Shader(4)
-    PREMULTIPLIED_TEXTURE_WITH_COLOR_FILL = Shader(5)
+    COLOR                       = Shader(1)
+    TEXTURE                     = Shader(2)
+    TEXTURE_WITH_COLOR_MULTIPLY = Shader(3)
+    TEXTURE_WITH_COLOR_ADD      = Shader(4)
+    TEXTURE_WITH_COLOR_FILL     = Shader(5)
 
   METHODS
 endClass

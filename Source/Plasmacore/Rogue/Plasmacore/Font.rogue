@@ -209,7 +209,7 @@ class DynamicallyLoadedFontData : FontData
       if (image)
         image.set( bitmap )
       else
-        image = Image( bitmap )
+        image = TextureImage( bitmap )
       endIf
 
 endClass

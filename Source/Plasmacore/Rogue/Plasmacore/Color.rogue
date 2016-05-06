@@ -70,5 +70,15 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
         case 0: return true
         others: return false
       endWhich
+
+    method is_opaque_white->Logical
+      which (count)
+        case 4: return ((a.argb & b.argb & c.argb & d.argb) == 0xFFFFFFFF)
+        case 3: return ((a.argb & b.argb & c.argb) == 0xFFFFFFFF)
+        case 2: return ((a.argb & b.argb) == 0xFFFFFFFF)
+        case 1: return ((a.argb) == 0xFFFFFFFF)
+        case 0: return true
+        others: return false
+      endWhich
 endClass
 
