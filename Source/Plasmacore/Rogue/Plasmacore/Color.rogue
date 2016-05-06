@@ -23,6 +23,9 @@ class Color( argb:Int32 ) [compound]
   METHODS
     method is_opaque->Logical
       return ((argb & 0xFF000000) == 0xFF000000)
+
+    method with_alpha( a:Int32 )->Color
+      return Color( (a :<<: 24) | (this.argb & 0xFFffFF) )
 endClass
 
 

@@ -53,6 +53,10 @@ class Image
       colors = Colors( color )
       return this
 
+    method set_color( color:Int32 )->this
+      colors = Colors( color )
+      return this
+
     method set_colors( @colors )->this
       return this
 
@@ -93,6 +97,22 @@ class Image
       return this
 
     method set_z( @z )->this
+      return this
+
+    method tint( t:Real64 )->this
+      # t=0.0: shader set to TEXTURE
+      # t>0.0: shader set to TEXTURE_WITH_COLOR_FILL, color alpha set to t*255
+      if (t == 0)
+        shader = Shader.TEXTURE
+      else
+        local a = Int32( t * 255 )
+        colors.a = colors.a.with_alpha( a )
+        colors.b = colors.b.with_alpha( a )
+        colors.c = colors.c.with_alpha( a )
+        colors.d = colors.d.with_alpha( a )
+        shader = Shader.TEXTURE_WITH_COLOR_FILL
+      endIf
+
       return this
 endClass
 
