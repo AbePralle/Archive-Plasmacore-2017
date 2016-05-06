@@ -18,13 +18,17 @@ class TestState : ViewState
     method activate
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
-      img = TextureImage(Texture("King.png")).set_scale(XY(0.5)).set_color(Color.BLUE)
+      img = TextureImage(Texture("U5Tiles.png")).set_anchor(Anchor.TOP_LEFT)
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
 
-      img.tint( Math.abs((System.time % 2)-1) )
       img.draw
+      Display.draw( Box(Display.size/4,Display.size/2), 0x80000000 )
+      Display.outline( Box(Display.size/4,Display.size/2), Color.WHITE )
+
+    method on( e:PointerEvent )
+      trace e
 
     method on( e:UpdateEvent )
       if (timer.is_expired)
@@ -32,8 +36,8 @@ class TestState : ViewState
         timer.restart
       endIf
 
-      img.position = Display.center
-      img.rotation = img.rotation.rotated_x( Degrees(1) )
+      img.position = Display.pointer_position
+      #img.rotation = img.rotation.rotated_x( Degrees(1) )
 endClass
 
 class TestView : View

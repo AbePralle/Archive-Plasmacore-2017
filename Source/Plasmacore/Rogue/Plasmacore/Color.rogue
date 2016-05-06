@@ -26,6 +26,9 @@ class Color( argb:Int32 ) [compound]
 
     method with_alpha( a:Int32 )->Color
       return Color( (a :<<: 24) | (this.argb & 0xFFffFF) )
+
+    method to->String
+      return argb.to_hex_string
 endClass
 
 

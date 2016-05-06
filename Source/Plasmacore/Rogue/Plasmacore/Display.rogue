@@ -66,11 +66,15 @@ class Display [singleton]
       view_transform_modified = true
       object_transform_modified = true
 
-#{
-    method draw
-      logic.draw
-      OverlayLog.draw
-      }#
+    method draw( box:Box, color:Color )
+      draw( box, Colors(color) )
+
+    method draw( box:Box, color:Int32 )
+      draw( box, Colors(color) )
+
+    method draw( box:Box, colors:Colors )
+      draw_solid_quad( transform(Corners<<XY>>(box)), colors,
+        select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, Shader.COLOR )
 
     method draw_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       native @|Starbright::renderer->set_shader( $shader.id );
@@ -180,9 +184,8 @@ class Display [singleton]
               |v[5].color = $colors.d.argb;
               |v[5].color = $colors.d.argb;
 
-      #{
     method handle( e:KeyEvent )
-      logic.handle( e )
+      view.state.handle( e )
 
     method handle( e:PointerEvent )
       if (pointer_exists)
@@ -196,11 +199,21 @@ class Display [singleton]
         pointer_exists = true
         pointer_position = e.position
       endIf
-      logic.handle( e )
-      }#
+      view.state.handle( e )
 
     method height->Int32 [macro]
       this.size.y->Int32
+
+    method outline( box:Box, color:Int32 )
+      outline( box, Color(color) )
+
+    method outline( box:Box, color:Color )
+      draw( Box(box.top_left,1,box.height), color )
+      draw( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
+      if (box.width > 2)
+        draw( Box(box.top_left+XY(1,0),box.width-2,1), color )
+        draw( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
+      endIf
 
     method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)
@@ -233,6 +246,16 @@ class Display [singleton]
     method transform->Matrix
       update_transform
       return @transform
+
+    method transform( corners:Corners<<XY>> )->Corners<<XYZW>>
+      local t = transform
+      local z = -unit_z
+      return Corners<<XYZW>>( t*XYZ(corners.a,z), t*XYZ(corners.b,z), t*XYZ(corners.c,z), t*XYZ(corners.d,z) )
+
+    method transform( corners:Corners<<XYZ>> )->Corners<<XYZW>>
+      local t = transform
+      local z = -unit_z
+      return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
 
     method update_and_draw( size )
       Display = this  # set the singleton reference to be this display
@@ -288,7 +311,9 @@ class Display [singleton]
         endIf
       endIf
 
+    method set_projection_transform( @projection_transform )->this
       native "Starbright::renderer->set_transform( &$this->projection_transform.r1c1 );"
+      return this
 
     method width->Int32 [macro]
       this.size.x->Int32

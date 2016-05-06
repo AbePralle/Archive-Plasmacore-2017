@@ -1,6 +1,9 @@
 module Plasmacore
 
 class Corners<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
+  METHODS
+    method to->String
+      return "[$ $ $ $]" (a,b,c,d)
 endClass
 
 augment Corners<<XY>>
