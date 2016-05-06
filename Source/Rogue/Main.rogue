@@ -18,11 +18,12 @@ class TestState : ViewState
     method activate
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
-      img = TextureImage(Texture("King.png")).set_scale(XY(0.5)).set_colors(Colors(0x80FFFFFF,0x80000000,0x80000000,0x80000000)).set_shader(Shader.TEXTURE_WITH_COLOR_FILL)
+      img = TextureImage(Texture("King.png")).set_scale(XY(0.5)).set_color(Color.BLUE)
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
 
+      img.tint( Math.abs((System.time % 2)-1) )
       img.draw
 
     method on( e:UpdateEvent )
