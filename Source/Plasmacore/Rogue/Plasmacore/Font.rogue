@@ -405,41 +405,12 @@ class TrueTypeFontLoader : FontLoader [requisite]
 
 endClass
 
-
-augment Display
+class FontManager [singleton]
   PROPERTIES
     loader_lookup    = Table<<String,FontLoader>>()
-    font_data_lookup = Table<<String,Table<<Int32,FontData>>>>()
 
   METHODS
-    method get_font_data( font_name:String, font_height=null:Int32?, options=null:PropertyTable )->FontData
-      if (not font_height.exists)
-        local loader = get_font_loader( font_name )
-        if (not loader) return null
-        font_height = loader.nominal_height
-      endIf
-
-      local by_height = font_data_lookup[ font_name ]
-      if (by_height)
-        local result = by_height[ font_height.value ]
-        if (result) return result
-      else
-        by_height = Table<<Int32,FontData>>()
-        font_data_lookup[ font_name ] = by_height
-      endIf
-
-      local loader = get_font_loader( font_name )
-      if (not loader) return null
-      local result = loader.create_font_data( font_height.value )
-      by_height[ font_height.value ] = result
-
-      # Preload the default characters - usually the 95 ASCII characters
-      result.prepare( loader.default_characters )
-
-      return result
-
     method get_font_loader( font_name:String, options=null:PropertyTable )->FontLoader
-      # low_ch and high_ch are used for bitmap fonts only.
       local loader = loader_lookup[ font_name ]
       if (loader) return loader
 
@@ -457,6 +428,39 @@ augment Display
 
       loader_lookup[ font_name ] = loader
       return loader
+
+endClass
+
+augment Display
+  PROPERTIES
+    font_data_lookup = Table<<String,Table<<Int32,FontData>>>>()
+
+  METHODS
+    method get_font_data( font_name:String, font_height=null:Int32?, options=null:PropertyTable )->FontData
+      if (not font_height.exists)
+        local loader = FontManager.get_font_loader( font_name )
+        if (not loader) return null
+        font_height = loader.nominal_height
+      endIf
+
+      local by_height = font_data_lookup[ font_name ]
+      if (by_height)
+        local result = by_height[ font_height.value ]
+        if (result) return result
+      else
+        by_height = Table<<Int32,FontData>>()
+        font_data_lookup[ font_name ] = by_height
+      endIf
+
+      local loader = FontManager.get_font_loader( font_name )
+      if (not loader) return null
+      local result = loader.create_font_data( font_height.value )
+      by_height[ font_height.value ] = result
+
+      # Preload the default characters - usually the 95 ASCII characters
+      result.prepare( loader.default_characters )
+
+      return result
 
 endAugment
 

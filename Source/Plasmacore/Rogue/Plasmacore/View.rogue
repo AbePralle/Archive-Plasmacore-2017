@@ -7,6 +7,8 @@ class View
     display   : Display
     is_active : Logical
 
+    gui       = Component()
+
   METHODS
     method init( display=Display )
 
@@ -22,12 +24,18 @@ class View
       on( e )
       if (e.is_consumed) return
 
+      gui.handle( e )
+      if (e.is_consumed) return
+
       after( e )
 
     method handle( e:KeyEvent )
       if (not is_active) is_active = true; activate
 
       on( e )
+      if (e.is_consumed) return
+
+      gui.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -38,12 +46,18 @@ class View
       on( e )
       if (e.is_consumed) return
 
+      gui.handle( e )
+      if (e.is_consumed) return
+
       after( e )
 
     method handle( e:UpdateEvent )
       if (not is_active) is_active = true; activate
 
       on( e )
+      if (e.is_consumed) return
+
+      gui.handle( e )
       if (e.is_consumed) return
 
       after( e )
