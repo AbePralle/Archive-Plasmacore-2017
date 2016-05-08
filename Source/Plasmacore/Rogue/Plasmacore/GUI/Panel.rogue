@@ -1,0 +1,39 @@
+module Plasmacore
+
+class Panel : Component
+  PROPERTIES
+    needs_layout = true
+
+  METHODS
+    method check_layout->Logical
+      # Returns `true` if layout was updated.
+      if (needs_layout or bounds != parent_bounds)
+        needs_layout = false
+        update_layout
+        return true
+      else
+        return false
+      endIf
+
+    method handle( e:UpdateEvent )
+      check_layout
+
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method request_layout
+      if (parent) parent.request_layout
+      needs_layout = true
+
+    method update_layout
+      local box = parent_bounds
+      position = box.position
+      size = box.size
+
+      prior.update_layout
+endClass
