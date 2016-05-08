@@ -7,7 +7,7 @@ class View
     display   : Display
     is_active : Logical
 
-    gui       = Component()
+    gui       = Panel()
 
   METHODS
     method init( display=Display )
