@@ -61,7 +61,9 @@ class HorizontalLayoutGrid : Panel
 
       return min_w
 
-    method perform_layout( bounds )
+    method perform_layout( display_bounds:Box )
+      update_bounds( display_bounds )
+
       if (not children) return
 
       local min = 0.0 # sum of child min widths
@@ -72,7 +74,7 @@ class HorizontalLayoutGrid : Panel
         local cur_min  = cur.minimum_width
         min += cur_min
 
-        cur.update_bounds( Box(cur.bounds.position,cur_min,0), null )
+        cur.size = XY( cur_min, 0 )
 
         local cur_max = cur.maximum_width
         max += cur_max
@@ -83,14 +85,14 @@ class HorizontalLayoutGrid : Panel
 
       # If we have room to fill, first distribute extra space to limited-width
       # children up to their max width.
-      local available = bounds.size.x - min
+      local available = size.x - min
       if (available > 0 and max > min)
         local total_diff = max - min
         forEach (cur in children)
           local diff = cur.maximum_width - cur.minimum_width
           if (diff > 0)
             local extra = Math.floor( (diff / total_diff) * available )
-            cur.update_bounds( Box(cur.bounds.position,cur.bounds.size.x+extra,0), null )
+            cur.size += XY( extra, 0 )
             available -= extra
             min += extra
           endIf
@@ -99,13 +101,13 @@ class HorizontalLayoutGrid : Panel
 
       # If we still have room to fill, finally distribute extra space to
       # unlimited-width children.
-      available = bounds.size.x - min
+      available = size.x - min
       if (available > 0 and unlimited_count?)
         forEach (cur in children)
           if (cur.maximum_width == 0)
             local extra = Math.floor( available / unlimited_count )
             --unlimited_count
-            cur.update_bounds( Box(cur.bounds.position,cur.bounds.size.x+extra,0), null )
+            cur.size += XY( extra, 0 )
             available -= extra
             min += extra
           endIf
@@ -113,12 +115,12 @@ class HorizontalLayoutGrid : Panel
       endIf
 
       # Lay out each child
-      local x = bounds.position.x
+      local x = position.x
       if (available > 0) x += Math.floor( available / 2 )
-      local y = bounds.position.y
-      local h = bounds.size.y
+      local y = position.y
+      local h = size.y
       forEach (cur in children)
-        local w = cur.bounds.size.x
+        local w = cur.size.x
         cur.update_bounds( Box(x,y,w,h), content_anchor )
         x += w
       endForEach
