@@ -3,7 +3,8 @@ module Plasmacore
 class Component
   # Base class of all GUI elements.
   PROPERTIES
-    bounds     : Box
+    position   : XY
+    size       : XY
 
     fixed_size : XY   # A `0` in any dimension indicates no fixed size in that dimension.
 
@@ -11,10 +12,12 @@ class Component
     children   : Component[]
 
   METHODS
-    method init( bounds )
+    method init( _bounds:Box )
+      position = _bounds.position
+      size = _bounds.size
 
     method init( fixed_size )
-      bounds = Box( fixed_size )
+      size = fixed_size
 
     method add( child:Component, options=null:PropertyTable )->this
       ensure children
@@ -30,6 +33,9 @@ class Component
     method after( e:PointerEvent )
 
     method after( e:UpdateEvent )
+
+    method bounds->Box
+      return Box( position, size )
 
     method dispatch( e:DrawEvent )
       if (children)
@@ -154,8 +160,9 @@ class Component
         endIf
       endIf
 
-      bounds = Box( display_bounds.position, w, h )
-      if (anchor) bounds = bounds.positioned_within( display_bounds, anchor.value ).floor
+      size = XY( w, h )
+      if (anchor) position = bounds.positioned_within( display_bounds, anchor.value ).position.floor
+      else        position = display_bounds.position
 
       return this
 
@@ -164,7 +171,7 @@ class Component
 
     method update_layout( new_bounds:Box )
       if (new_bounds != bounds)
-        bounds = new_bounds
+        update_bounds( new_bounds )
         request_layout
       endIf
       update_layout
