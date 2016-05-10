@@ -260,6 +260,8 @@ class Display [singleton]
     method update_and_draw( size )
       Display = this  # set the singleton reference to be this display
 
+      view.gui.update_layout( Box(size) )
+
       clear_transforms
       projection_mode = projection_mode.configure( size )
       projection_mode.activate

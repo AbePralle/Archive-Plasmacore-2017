@@ -3,27 +3,24 @@ module Plasmacore
 class Component
   # Base class of all GUI elements.
   PROPERTIES
-    position : XY
-    size     : XY
-    anchor   : Anchor?
+    bounds     : Box
 
-    parent   : Component
-    children : Component[]
+    fixed_size : XY   # A `0` in any dimension indicates no fixed size in that dimension.
 
-    needs_layout = true
+    parent     : Component
+    children   : Component[]
 
   METHODS
-    method init
-      bounds = Display.bounds
+    method init( bounds )
 
-    method init( _bounds:Box )
-      position = _bounds.position
-      size = _bounds.size
+    method init( fixed_size )
+      bounds = Box( fixed_size )
 
-    method add( child:Component )->this
+    method add( child:Component, options=null:PropertyTable )->this
       ensure children
       children.add( child )
       child.parent = this
+      request_layout
       return this
 
     method after( e:DrawEvent )
@@ -33,9 +30,6 @@ class Component
     method after( e:PointerEvent )
 
     method after( e:UpdateEvent )
-
-    method bounds->Box
-      return Box( position, size )
 
     method dispatch( e:DrawEvent )
       if (children)
@@ -103,20 +97,34 @@ class Component
 
     method on( e:UpdateEvent )
 
-    method parent_bounds->Box
-      return select{ parent:parent.bounds || Display.bounds }
+    method perform_layout( bounds )
+      if (children)
+        forEach (child in children) child.perform_layout( child.bounds )
+      endIf
+
+    method remove( child:Component )->Component
+      if (children) return children.remove( child )
+      else          return child
 
     method request_layout
       if (parent) parent.request_layout
 
-    method set_bounds( box:Box )->this
-      position = box.position
-      size = box.size
+    method set_fixed_size( new_size:XY )->this
+      if (new_size != fixed_size)
+        @fixed_size = new_size
+        request_layout
+      endIf
       return this
 
     method update_layout
-      if (children)
-        forEach (child in children) child.update_layout
+      if (parent) parent.update_layout
+
+    method update_layout( new_bounds:Box )
+      if (new_bounds != bounds)
+        bounds = new_bounds
+        request_layout
       endIf
+      update_layout
+
 endClass
 
