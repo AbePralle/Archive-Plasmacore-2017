@@ -28,7 +28,7 @@ class Panel : Component
         # Handle each child individually.
         if (children)
           forEach (child in children)
-            child.update_bounds( bounds, content_anchor )
+            child.adjust_bounds( bounds, content_anchor )
           endForEach
         endIf
       else
@@ -43,7 +43,8 @@ class Panel : Component
         needs_layout = true
       endIf
 
-    method set_content_anchor( @content_anchor )
+    method set_content_anchor( @content_anchor )->this
+      return this
 
     method update_layout
       if (parent)

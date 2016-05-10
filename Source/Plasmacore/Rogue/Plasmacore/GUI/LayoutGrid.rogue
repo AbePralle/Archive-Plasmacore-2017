@@ -62,7 +62,7 @@ class HorizontalLayoutGrid : Panel
       return min_w
 
     method perform_layout( display_bounds:Box )
-      update_bounds( display_bounds )
+      adjust_bounds( display_bounds )
 
       if (not children) return
 
@@ -121,7 +121,7 @@ class HorizontalLayoutGrid : Panel
       local h = size.y
       forEach (cur in children)
         local w = cur.size.x
-        cur.update_bounds( Box(x,y,w,h), content_anchor )
+        cur.adjust_bounds( Box(x,y,w,h), content_anchor )
         x += w
       endForEach
 endClass

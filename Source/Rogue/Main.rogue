@@ -19,8 +19,8 @@ class TestState : ViewState
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
       img = TextureImage(Texture("U5Tiles.png")).set_anchor(Anchor.TOP_LEFT)
-      view.gui.content_anchor = Anchor.BOTTOM_LEFT
-      view.gui.add( HorizontalLayoutGrid().add( Button(XY(32,32)) ).add( Button(XY(64,64)) ) )
+      local grid = HorizontalLayoutGrid().set_content_anchor( Anchor.TOP )
+      view.gui.add( grid.add( Button(XY(32,32)) ).add( Button(XY(64,64)) ) )
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
