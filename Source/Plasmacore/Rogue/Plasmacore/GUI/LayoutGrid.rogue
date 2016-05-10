@@ -1,0 +1,126 @@
+module Plasmacore
+
+class HorizontalLayoutGrid : Panel
+  PROPERTIES
+  METHODS
+    method maximum_height->Real64
+      # Returns either the fixed height, the max of all child max heights, or
+      # 0 (unlimited) if any child is unlimited height.
+      local max_h = fixed_size.y
+      if (max_h) return max_h
+
+      if (children)
+        forEach (child in children)
+          local h = child.maximum_height
+          if (h) max_h = Math.max( h, max_h )
+          else   return 0
+        endForEach
+      endIf
+
+      return max_h
+
+    method maximum_width->Real64
+      # Returns either the fixed width, the sum of all child max widths, or
+      # 0 (unlimited) if any child max widths are 0.
+      local max_w = fixed_size.x
+      if (max_w) return max_w
+
+      if (children)
+        forEach (child in children)
+          local w = child.maximum_width
+          if (w) max_w += w
+          else   return 0
+        endForEach
+      endIf
+
+      return max_w
+
+    method minimum_height->Real64
+      # Returns either the fixed height or the max of all child min heights.
+      local min_h = fixed_size.y
+      if (min_h) return min_h
+
+      if (children)
+        forEach (child in children)
+          min_h = Math.max( min_h, child.minimum_height )
+        endForEach
+      endIf
+
+      return min_h
+
+    method minimum_width->Real64
+      # Returns either the fixed width or the sum of all child min widths.
+      local min_w = fixed_size.x
+      if (min_w) return min_w
+
+      if (children)
+        forEach (child in children)
+          min_w += child.minimum_width
+        endForEach
+      endIf
+
+      return min_w
+
+    method perform_layout( bounds )
+      if (not children) return
+
+      local min = 0.0 # sum of child min widths
+      local max = 0.0 # sum of child max widths
+      local unlimited_count = 0
+
+      forEach (cur in children)
+        local cur_min  = cur.minimum_width
+        min += cur_min
+
+        cur.update_bounds( Box(cur.bounds.position,cur_min,0), null )
+
+        local cur_max = cur.maximum_width
+        max += cur_max
+        if (cur_max == 0) ++unlimited_count
+
+      endForEach
+
+
+      # If we have room to fill, first distribute extra space to limited-width
+      # children up to their max width.
+      local available = bounds.size.x - min
+      if (available > 0 and max > min)
+        local total_diff = max - min
+        forEach (cur in children)
+          local diff = cur.maximum_width - cur.minimum_width
+          if (diff > 0)
+            local extra = Math.floor( (diff / total_diff) * available )
+            cur.update_bounds( Box(cur.bounds.position,cur.bounds.size.x+extra,0), null )
+            available -= extra
+            min += extra
+          endIf
+        endForEach
+      endIf
+
+      # If we still have room to fill, finally distribute extra space to
+      # unlimited-width children.
+      available = bounds.size.x - min
+      if (available > 0 and unlimited_count?)
+        forEach (cur in children)
+          if (cur.maximum_width == 0)
+            local extra = Math.floor( available / unlimited_count )
+            --unlimited_count
+            cur.update_bounds( Box(cur.bounds.position,cur.bounds.size.x+extra,0), null )
+            available -= extra
+            min += extra
+          endIf
+        endForEach
+      endIf
+
+      # Lay out each child
+      local x = bounds.position.x
+      if (available > 0) x += Math.floor( available / 2 )
+      local y = bounds.position.y
+      local h = bounds.size.y
+      forEach (cur in children)
+        local w = cur.bounds.size.x
+        cur.update_bounds( Box(x,y,w,h), content_anchor )
+        x += w
+      endForEach
+endClass
+
