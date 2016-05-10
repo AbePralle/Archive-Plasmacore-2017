@@ -88,6 +88,18 @@ class Component
 
       after( e )
 
+    method maximum_height->Real64
+      return fixed_size.y
+
+    method maximum_width->Real64
+      return fixed_size.x
+
+    method minimum_height->Real64
+      return fixed_size.y
+
+    method minimum_width->Real64
+      return fixed_size.x
+
     method on( e:DrawEvent )
       Display.outline( bounds, Color.WHITE )
 
@@ -97,7 +109,8 @@ class Component
 
     method on( e:UpdateEvent )
 
-    method perform_layout( bounds )
+    method perform_layout( new_bounds:Box )
+      update_bounds( new_bounds )
       if (children)
         forEach (child in children) child.perform_layout( child.bounds )
       endIf
@@ -109,11 +122,41 @@ class Component
     method request_layout
       if (parent) parent.request_layout
 
+    method set_content_anchor( new_content_anchor:Anchor? ) [fallback]
+      throw UnsupportedOperationError( type_name + ".set_content_anchor()" )
+
     method set_fixed_size( new_size:XY )->this
       if (new_size != fixed_size)
         @fixed_size = new_size
         request_layout
       endIf
+      return this
+
+    method update_bounds( display_bounds:Box, anchor=null:Anchor? )->this
+      local w = fixed_size.x
+      local h = fixed_size.y
+
+      if (w == 0)
+        w = maximum_width
+        if (w == 0 or w > display_bounds.size.x)
+          w = display_bounds.size.x
+          local min_w = minimum_width
+          if (w < min_w) w = min_w
+        endIf
+      endIf
+
+      if (h == 0)
+        h = maximum_height
+        if (h == 0 or h > display_bounds.size.y)
+          h = display_bounds.size.y
+          local min_h = minimum_height
+          if (h < min_h) h = min_h
+        endIf
+      endIf
+
+      bounds = Box( display_bounds.position, w, h )
+      if (anchor) bounds = bounds.positioned_within( display_bounds, anchor.value ).floor
+
       return this
 
     method update_layout
@@ -125,6 +168,5 @@ class Component
         request_layout
       endIf
       update_layout
-
 endClass
 

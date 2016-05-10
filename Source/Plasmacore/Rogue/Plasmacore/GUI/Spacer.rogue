@@ -1,0 +1,4 @@
+module Plasmacore
+
+class Spacer : Component
+endClass

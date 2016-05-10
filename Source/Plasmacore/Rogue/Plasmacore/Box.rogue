@@ -39,6 +39,9 @@ class Box( position:XY, size:XY ) [compound]
     method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
+    method floor->Box
+      return Box( position.floor, size.floor )
+
     method height->Real64 [macro]
       this.size.y
 

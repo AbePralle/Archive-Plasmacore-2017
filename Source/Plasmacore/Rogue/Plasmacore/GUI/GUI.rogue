@@ -2,4 +2,6 @@ module Plasmacore
 
 $include "Button.rogue"
 $include "Component.rogue"
+$include "LayoutGrid.rogue"
 $include "Panel.rogue"
+$include "Spacer.rogue"

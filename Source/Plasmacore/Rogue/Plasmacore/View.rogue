@@ -7,7 +7,7 @@ class View
     display   : Display
     is_active : Logical
 
-    gui       = Panel( Display.bounds ) : Component
+    gui       = Panel() : Component
 
   METHODS
     method init( display=Display )
