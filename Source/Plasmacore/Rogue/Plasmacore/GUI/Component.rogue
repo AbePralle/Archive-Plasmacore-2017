@@ -26,6 +26,34 @@ class Component
       request_layout
       return this
 
+    method adjust_bounds( display_bounds:Box, anchor=null:Anchor? )->this
+      local w = fixed_size.x
+      local h = fixed_size.y
+
+      if (w == 0)
+        w = maximum_width
+        if (w == 0 or w > display_bounds.size.x)
+          w = display_bounds.size.x
+          local min_w = minimum_width
+          if (w < min_w) w = min_w
+        endIf
+      endIf
+
+      if (h == 0)
+        h = maximum_height
+        if (h == 0 or h > display_bounds.size.y)
+          h = display_bounds.size.y
+          local min_h = minimum_height
+          if (h < min_h) h = min_h
+        endIf
+      endIf
+
+      size = XY( w, h )
+      if (anchor) position = bounds.positioned_within( display_bounds, anchor.value ).position.floor
+      else        position = display_bounds.position
+
+      return this
+
     method after( e:DrawEvent )
 
     method after( e:KeyEvent )
@@ -116,7 +144,7 @@ class Component
     method on( e:UpdateEvent )
 
     method perform_layout( new_bounds:Box )
-      update_bounds( new_bounds )
+      adjust_bounds( new_bounds )
       if (children)
         forEach (child in children) child.perform_layout( child.bounds )
       endIf
@@ -128,7 +156,7 @@ class Component
     method request_layout
       if (parent) parent.request_layout
 
-    method set_content_anchor( new_content_anchor:Anchor? ) [fallback]
+    method set_content_anchor( new_content_anchor:Anchor? )->this
       throw UnsupportedOperationError( type_name + ".set_content_anchor()" )
 
     method set_fixed_size( new_size:XY )->this
@@ -138,40 +166,12 @@ class Component
       endIf
       return this
 
-    method update_bounds( display_bounds:Box, anchor=null:Anchor? )->this
-      local w = fixed_size.x
-      local h = fixed_size.y
-
-      if (w == 0)
-        w = maximum_width
-        if (w == 0 or w > display_bounds.size.x)
-          w = display_bounds.size.x
-          local min_w = minimum_width
-          if (w < min_w) w = min_w
-        endIf
-      endIf
-
-      if (h == 0)
-        h = maximum_height
-        if (h == 0 or h > display_bounds.size.y)
-          h = display_bounds.size.y
-          local min_h = minimum_height
-          if (h < min_h) h = min_h
-        endIf
-      endIf
-
-      size = XY( w, h )
-      if (anchor) position = bounds.positioned_within( display_bounds, anchor.value ).position.floor
-      else        position = display_bounds.position
-
-      return this
-
     method update_layout
       if (parent) parent.update_layout
 
     method update_layout( new_bounds:Box )
       if (new_bounds != bounds)
-        update_bounds( new_bounds )
+        adjust_bounds( new_bounds )
         request_layout
       endIf
       update_layout
