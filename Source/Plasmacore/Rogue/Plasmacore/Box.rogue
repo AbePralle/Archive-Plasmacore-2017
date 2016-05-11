@@ -39,6 +39,14 @@ class Box( position:XY, size:XY ) [compound]
     method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
+    method draw( color:Int32 )->this
+      Display.draw( this, color )
+      return this
+
+    method draw( color:Color )->this
+      Display.draw( this, color )
+      return this
+
     method floor->Box
       return Box( position.floor, size.floor )
 
@@ -47,6 +55,14 @@ class Box( position:XY, size:XY ) [compound]
 
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
+
+    method outline( color:Int32 )->this
+      Display.outline( this, color )
+      return this
+
+    method outline( color:Color )->this
+      Display.outline( this, color )
+      return this
 
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       return Box( enclosing.position + anchor.position * (enclosing.size-size), size )

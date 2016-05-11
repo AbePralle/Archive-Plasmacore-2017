@@ -40,6 +40,7 @@ class Display [singleton]
     texture_list      = Texture[]
 
     system_font : Font
+    gui_theme   = GUITheme()  # Default theme
 
   METHODS
     method init( name )
