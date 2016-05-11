@@ -143,6 +143,12 @@ class Component
 
     method on( e:UpdateEvent )
 
+    method operator+( other:Component )->Component
+      return HorizontalLayoutGrid().add( this ).add( other )
+
+    method operator/( other:Component )->Component
+      return VerticalLayoutGrid().add( this ).add( other )
+
     method perform_layout( new_bounds:Box )
       adjust_bounds( new_bounds )
       if (children)

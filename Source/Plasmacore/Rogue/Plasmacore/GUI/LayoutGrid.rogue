@@ -1,7 +1,6 @@
 module Plasmacore
 
 class HorizontalLayoutGrid : Panel
-  PROPERTIES
   METHODS
     method maximum_height->Real64
       # Returns either the fixed height, the max of all child max heights, or
@@ -124,5 +123,137 @@ class HorizontalLayoutGrid : Panel
         cur.adjust_bounds( Box(x,y,w,h), content_anchor )
         x += w
       endForEach
+
+    method operator+( other:Component )->Component
+      return add( other )
+endClass
+
+
+class VerticalLayoutGrid : Panel
+  METHODS
+    method maximum_height->Real64
+      # Returns either the fixed height, the sum of all child max heights, or
+      # 0 (unlimited) if any child max heights are 0.
+      local max_h = fixed_size.y
+      if (max_h) return max_h
+
+      if (children)
+        forEach (child in children)
+          local h = child.maximum_height
+          if (h) max_h += h
+          else   return 0
+        endForEach
+      endIf
+
+      return max_h
+
+    method maximum_width->Real64
+      # Returns either the fixed width, the max of all child max widths, or
+      # 0 (unlimited) if any child is unlimited width.
+      local max_w = fixed_size.x
+      if (max_w) return max_w
+
+      if (children)
+        forEach (child in children)
+          local w = child.maximum_width
+          if (w) max_w = Math.max( w, max_w )
+          else   return 0
+        endForEach
+      endIf
+
+      return max_w
+
+    method minimum_height->Real64
+      # Returns either the fixed height or the sum of all child min heights.
+      local min_h = fixed_size.y
+      if (min_h) return min_h
+
+      if (children)
+        forEach (child in children)
+          min_h += child.minimum_height
+        endForEach
+      endIf
+
+      return min_h
+
+    method minimum_width->Real64
+      # Returns either the fixed width or the max of all child min widths.
+      local min_w = fixed_size.x
+      if (min_w) return min_w
+
+      if (children)
+        forEach (child in children)
+          min_w = Math.max( min_w, child.minimum_width )
+        endForEach
+      endIf
+
+      return min_w
+
+    method perform_layout( display_bounds:Box )
+      adjust_bounds( display_bounds )
+
+      if (not children) return
+
+      local min = 0.0 # sum of child min heights
+      local max = 0.0 # sum of child max heights
+      local unlimited_count = 0
+
+      forEach (cur in children)
+        local cur_min  = cur.minimum_height
+        min += cur_min
+
+        cur.size = XY( 0, cur_min )
+
+        local cur_max = cur.maximum_height
+        max += cur_max
+        if (cur_max == 0) ++unlimited_count
+
+      endForEach
+
+
+      # If we have room to fill, first distribute extra space to limited-height
+      # children up to their max height.
+      local available = size.y - min
+      if (available > 0 and max > min)
+        local total_diff = max - min
+        forEach (cur in children)
+          local diff = cur.maximum_height - cur.minimum_height
+          if (diff > 0)
+            local extra = Math.floor( (diff / total_diff) * available )
+            cur.size += XY( 0, extra )
+            available -= extra
+            min += extra
+          endIf
+        endForEach
+      endIf
+
+      # If we still have room to fill, finally distribute extra space to
+      # unlimited-height children.
+      available = size.y - min
+      if (available > 0 and unlimited_count?)
+        forEach (cur in children)
+          if (cur.maximum_height == 0)
+            local extra = Math.floor( available / unlimited_count )
+            --unlimited_count
+            cur.size += XY( 0, extra )
+            available -= extra
+            min += extra
+          endIf
+        endForEach
+      endIf
+
+      # Lay out each child
+      local y = position.y
+      if (available > 0) y += Math.floor( available / 2 )
+      local x = position.x
+      local w = size.x
+      forEach (cur in children)
+        local h = cur.size.y
+        cur.adjust_bounds( Box(x,y,w,h), content_anchor )
+        y += h
+      endForEach
+
+    method operator/( other:Component )->Component
+      return add( other )
 endClass
 
