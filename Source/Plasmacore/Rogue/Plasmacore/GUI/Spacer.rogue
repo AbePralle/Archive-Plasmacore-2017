@@ -1,4 +1,21 @@
 module Plasmacore
 
 class Spacer : Component
+  GLOBAL METHODS
+    method horizontal( height=1:Real64 )->Spacer
+      return Spacer( 0, height )
+
+    method vertical( width=1:Real64 )->Spacer
+      return Spacer( width, 0 )
+
+  METHODS
+    method init
+
+    method init( _fixed_size:Real64 )
+      fixed_size = XY( _fixed_size, _fixed_size )
+
+    method init( w:Real64, h:Real64 )
+      fixed_size = XY( w, h )
+
+    method init( fixed_size )
 endClass
