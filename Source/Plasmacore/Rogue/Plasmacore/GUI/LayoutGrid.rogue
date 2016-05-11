@@ -1,6 +1,6 @@
 module Plasmacore
 
-class HorizontalLayoutGrid : Panel
+class HorizontalLayoutGrid : Layout
   METHODS
     method maximum_height->Real64
       # Returns either the fixed height, the max of all child max heights, or
@@ -129,7 +129,7 @@ class HorizontalLayoutGrid : Panel
 endClass
 
 
-class VerticalLayoutGrid : Panel
+class VerticalLayoutGrid : Layout
   METHODS
     method maximum_height->Real64
       # Returns either the fixed height, the sum of all child max heights, or

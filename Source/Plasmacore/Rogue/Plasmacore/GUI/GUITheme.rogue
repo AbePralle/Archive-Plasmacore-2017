@@ -1,0 +1,23 @@
+module Plasmacore
+
+class SupportsGUITheme<<$Theme>> [aspect]
+  METHODS
+    method themed_draw [propagated]
+      theme.draw( this )
+endClass
+
+class GUITheme
+  METHODS
+    method draw( component:Component )
+      #component.bounds.outline( Color.WHITE )
+
+    method draw( button:Button )
+      button.bounds.draw( Color.BLUE )
+
+    method draw( layout:Layout )
+      noAction
+
+    method draw( panel:Panel )
+      panel.bounds.draw( Color.WHITE )
+endClass
+

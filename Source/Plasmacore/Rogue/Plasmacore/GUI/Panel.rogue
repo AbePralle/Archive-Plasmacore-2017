@@ -1,6 +1,8 @@
 module Plasmacore
 
-class Panel : Component
+class Panel : Layout;
+
+class Layout : Component
   PROPERTIES
     needs_layout   = true
     content_anchor = Anchor.CENTER : Anchor?

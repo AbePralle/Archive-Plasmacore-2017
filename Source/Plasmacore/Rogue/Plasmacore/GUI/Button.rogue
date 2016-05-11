@@ -2,7 +2,4 @@ module Plasmacore
 
 class Button : Component
   METHODS
-    method on( e:DrawEvent )
-      Display.draw( bounds, Color.YELLOW ) #0x80000000 )
-      Display.outline( bounds, Color.WHITE )
 endClass
