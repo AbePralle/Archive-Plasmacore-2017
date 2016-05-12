@@ -42,7 +42,7 @@
 		301810D01CBE9AB000D431BA /* hb-ot-shape-complex-hangul.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810CD1CBE9AB000D431BA /* hb-ot-shape-complex-hangul.cc */; };
 		301810D11CBE9AB000D431BA /* hb-ot-shape-complex-hebrew.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810CE1CBE9AB000D431BA /* hb-ot-shape-complex-hebrew.cc */; };
 		301810D21CBE9AB000D431BA /* hb-ot-shape-complex-tibetan.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810CF1CBE9AB000D431BA /* hb-ot-shape-complex-tibetan.cc */; };
-		301810D31CBE9AD000D431BA /* libLibHarfBuzz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3018104B1CBDEFFC00D431BA /* libLibHarfBuzz.a */; };
+		301810D31CBE9AD000D431BA /* libHarfBuzz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3018104B1CBDEFFC00D431BA /* libHarfBuzz.a */; };
 		301810D51CBE9B2200D431BA /* hb-ot-shape-complex-use.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810D41CBE9B2200D431BA /* hb-ot-shape-complex-use.cc */; };
 		301810D71CBE9B9C00D431BA /* hb-ft.cc in Sources */ = {isa = PBXBuildFile; fileRef = 301810D61CBE9B9C00D431BA /* hb-ft.cc */; };
 		301810D91CBE9BB700D431BA /* ucdn.c in Sources */ = {isa = PBXBuildFile; fileRef = 301810D81CBE9BB700D431BA /* ucdn.c */; };
@@ -125,12 +125,19 @@
 		30CB064D1C9A177A00A767FC /* jquant2.c in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05E21C9A16AD00A767FC /* jquant2.c */; };
 		30CB064E1C9A177A00A767FC /* jutils.c in Sources */ = {isa = PBXBuildFile; fileRef = 30CB05E31C9A16AD00A767FC /* jutils.c */; };
 		30CB06541C9A188600A767FC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB06531C9A188600A767FC /* libz.tbd */; };
-		30CB06551C9A18BC00A767FC /* libLibJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB058A1C9A150800A767FC /* libLibJPEG.a */; };
-		30CB06561C9A18BC00A767FC /* libLibPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB05921C9A151C00A767FC /* libLibPNG.a */; };
+		30CB06551C9A18BC00A767FC /* libJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB058A1C9A150800A767FC /* libJPEG.a */; };
+		30CB06561C9A18BC00A767FC /* libPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CB05921C9A151C00A767FC /* libPNG.a */; };
 		30DB20241C9B08FE007347E0 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30DB20231C9B08FE007347E0 /* Assets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		303A68EF1CE50A3600757E3E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 308B5FFE1C960D1300F0E1DF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3018104A1CBDEFFC00D431BA;
+			remoteInfo = HarfBuzz;
+		};
 		30CB064F1C9A17D500A767FC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 308B5FFE1C960D1300F0E1DF /* Project object */;
@@ -154,7 +161,7 @@
 		3015E14C1CC03AF40018CF4E /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueInterface.h; path = ../../Plasmacore/Swift/RogueInterface.h; sourceTree = "<group>"; };
 		3015E14D1CC03AF40018CF4E /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = ../../Plasmacore/Swift/RogueInterface.mm; sourceTree = "<group>"; };
 		301810411CBDE9EB00D431BA /* libbz2.1.0.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.1.0.5.tbd; path = usr/lib/libbz2.1.0.5.tbd; sourceTree = SDKROOT; };
-		3018104B1CBDEFFC00D431BA /* libLibHarfBuzz.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLibHarfBuzz.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3018104B1CBDEFFC00D431BA /* libHarfBuzz.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHarfBuzz.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		301810971CBE97BF00D431BA /* hb-blob.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-blob.cc"; path = "../../harfbuzz-1.2.6/src/hb-blob.cc"; sourceTree = "<group>"; };
 		301810981CBE97BF00D431BA /* hb-buffer-serialize.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-buffer-serialize.cc"; path = "../../harfbuzz-1.2.6/src/hb-buffer-serialize.cc"; sourceTree = "<group>"; };
 		301810991CBE97BF00D431BA /* hb-buffer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-buffer.cc"; path = "../../harfbuzz-1.2.6/src/hb-buffer.cc"; sourceTree = "<group>"; };
@@ -222,8 +229,8 @@
 		30CB057C1C9A135800A767FC /* SuperCPPStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringTable.h; path = ../../SuperCPP/SuperCPPStringTable.h; sourceTree = "<group>"; };
 		30CB05831C9A14DA00A767FC /* ImageIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageIO.cpp; path = ../../ImageIO/ImageIO.cpp; sourceTree = "<group>"; };
 		30CB05841C9A14DA00A767FC /* ImageIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageIO.h; path = ../../ImageIO/ImageIO.h; sourceTree = "<group>"; };
-		30CB058A1C9A150800A767FC /* libLibJPEG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLibJPEG.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		30CB05921C9A151C00A767FC /* libLibPNG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLibPNG.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		30CB058A1C9A150800A767FC /* libJPEG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJPEG.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		30CB05921C9A151C00A767FC /* libPNG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPNG.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		30CB05971C9A162800A767FC /* png.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = png.c; path = ../../lpng1621/png.c; sourceTree = "<group>"; };
 		30CB05981C9A162800A767FC /* pngerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngerror.c; path = ../../lpng1621/pngerror.c; sourceTree = "<group>"; };
 		30CB05991C9A162800A767FC /* pngget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngget.c; path = ../../lpng1621/pngget.c; sourceTree = "<group>"; };
@@ -303,12 +310,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				301810D31CBE9AD000D431BA /* libLibHarfBuzz.a in Frameworks */,
+				301810D31CBE9AD000D431BA /* libHarfBuzz.a in Frameworks */,
 				301810421CBDE9EB00D431BA /* libbz2.1.0.5.tbd in Frameworks */,
 				30C712BD1CB318B9001DC9F6 /* libfreetype.a in Frameworks */,
 				30CB06541C9A188600A767FC /* libz.tbd in Frameworks */,
-				30CB06551C9A18BC00A767FC /* libLibJPEG.a in Frameworks */,
-				30CB06561C9A18BC00A767FC /* libLibPNG.a in Frameworks */,
+				30CB06551C9A18BC00A767FC /* libJPEG.a in Frameworks */,
+				30CB06561C9A18BC00A767FC /* libPNG.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,9 +424,9 @@
 			isa = PBXGroup;
 			children = (
 				308B60061C960D1300F0E1DF /* PlasmacoreStudio.app */,
-				30CB058A1C9A150800A767FC /* libLibJPEG.a */,
-				30CB05921C9A151C00A767FC /* libLibPNG.a */,
-				3018104B1CBDEFFC00D431BA /* libLibHarfBuzz.a */,
+				30CB058A1C9A150800A767FC /* libJPEG.a */,
+				30CB05921C9A151C00A767FC /* libPNG.a */,
+				3018104B1CBDEFFC00D431BA /* libHarfBuzz.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -596,9 +603,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		3018104A1CBDEFFC00D431BA /* LibHarfBuzz */ = {
+		3018104A1CBDEFFC00D431BA /* HarfBuzz */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 3018104C1CBDEFFC00D431BA /* Build configuration list for PBXNativeTarget "LibHarfBuzz" */;
+			buildConfigurationList = 3018104C1CBDEFFC00D431BA /* Build configuration list for PBXNativeTarget "HarfBuzz" */;
 			buildPhases = (
 				301810471CBDEFFC00D431BA /* Sources */,
 				301810481CBDEFFC00D431BA /* Frameworks */,
@@ -608,9 +615,9 @@
 			);
 			dependencies = (
 			);
-			name = LibHarfBuzz;
+			name = HarfBuzz;
 			productName = LibHarfBuzz;
-			productReference = 3018104B1CBDEFFC00D431BA /* libLibHarfBuzz.a */;
+			productReference = 3018104B1CBDEFFC00D431BA /* libHarfBuzz.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		308B60051C960D1300F0E1DF /* PlasmacoreStudio */ = {
@@ -626,6 +633,7 @@
 			);
 			dependencies = (
 				30CB06501C9A17D500A767FC /* PBXTargetDependency */,
+				303A68F01CE50A3600757E3E /* PBXTargetDependency */,
 				30CB06521C9A17D600A767FC /* PBXTargetDependency */,
 			);
 			name = PlasmacoreStudio;
@@ -633,9 +641,9 @@
 			productReference = 308B60061C960D1300F0E1DF /* PlasmacoreStudio.app */;
 			productType = "com.apple.product-type.application";
 		};
-		30CB05891C9A150800A767FC /* LibJPEG */ = {
+		30CB05891C9A150800A767FC /* JPEG */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 30CB058B1C9A150800A767FC /* Build configuration list for PBXNativeTarget "LibJPEG" */;
+			buildConfigurationList = 30CB058B1C9A150800A767FC /* Build configuration list for PBXNativeTarget "JPEG" */;
 			buildPhases = (
 				30CB05861C9A150800A767FC /* Sources */,
 				30CB05871C9A150800A767FC /* Frameworks */,
@@ -645,14 +653,14 @@
 			);
 			dependencies = (
 			);
-			name = LibJPEG;
+			name = JPEG;
 			productName = LibJPEG;
-			productReference = 30CB058A1C9A150800A767FC /* libLibJPEG.a */;
+			productReference = 30CB058A1C9A150800A767FC /* libJPEG.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		30CB05911C9A151C00A767FC /* LibPNG */ = {
+		30CB05911C9A151C00A767FC /* PNG */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 30CB05931C9A151C00A767FC /* Build configuration list for PBXNativeTarget "LibPNG" */;
+			buildConfigurationList = 30CB05931C9A151C00A767FC /* Build configuration list for PBXNativeTarget "PNG" */;
 			buildPhases = (
 				30CB058E1C9A151C00A767FC /* Sources */,
 				30CB058F1C9A151C00A767FC /* Frameworks */,
@@ -662,9 +670,9 @@
 			);
 			dependencies = (
 			);
-			name = LibPNG;
+			name = PNG;
 			productName = LibPNG;
-			productReference = 30CB05921C9A151C00A767FC /* libLibPNG.a */;
+			productReference = 30CB05921C9A151C00A767FC /* libPNG.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -711,9 +719,9 @@
 			projectRoot = "";
 			targets = (
 				308B60051C960D1300F0E1DF /* PlasmacoreStudio */,
-				30CB05891C9A150800A767FC /* LibJPEG */,
-				30CB05911C9A151C00A767FC /* LibPNG */,
-				3018104A1CBDEFFC00D431BA /* LibHarfBuzz */,
+				30CB05891C9A150800A767FC /* JPEG */,
+				30CB05911C9A151C00A767FC /* PNG */,
+				3018104A1CBDEFFC00D431BA /* HarfBuzz */,
 			);
 		};
 /* End PBXProject section */
@@ -891,14 +899,19 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		303A68F01CE50A3600757E3E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3018104A1CBDEFFC00D431BA /* HarfBuzz */;
+			targetProxy = 303A68EF1CE50A3600757E3E /* PBXContainerItemProxy */;
+		};
 		30CB06501C9A17D500A767FC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 30CB05891C9A150800A767FC /* LibJPEG */;
+			target = 30CB05891C9A150800A767FC /* JPEG */;
 			targetProxy = 30CB064F1C9A17D500A767FC /* PBXContainerItemProxy */;
 		};
 		30CB06521C9A17D600A767FC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 30CB05911C9A151C00A767FC /* LibPNG */;
+			target = 30CB05911C9A151C00A767FC /* PNG */;
 			targetProxy = 30CB06511C9A17D600A767FC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1111,7 +1124,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3018104C1CBDEFFC00D431BA /* Build configuration list for PBXNativeTarget "LibHarfBuzz" */ = {
+		3018104C1CBDEFFC00D431BA /* Build configuration list for PBXNativeTarget "HarfBuzz" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3018104D1CBDEFFC00D431BA /* Debug */,
@@ -1138,7 +1151,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		30CB058B1C9A150800A767FC /* Build configuration list for PBXNativeTarget "LibJPEG" */ = {
+		30CB058B1C9A150800A767FC /* Build configuration list for PBXNativeTarget "JPEG" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				30CB058C1C9A150800A767FC /* Debug */,
@@ -1147,7 +1160,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		30CB05931C9A151C00A767FC /* Build configuration list for PBXNativeTarget "LibPNG" */ = {
+		30CB05931C9A151C00A767FC /* Build configuration list for PBXNativeTarget "PNG" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				30CB05941C9A151C00A767FC /* Debug */,
