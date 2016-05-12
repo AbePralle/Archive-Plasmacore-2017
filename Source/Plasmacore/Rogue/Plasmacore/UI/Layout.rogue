@@ -1,0 +1,57 @@
+module Plasmacore::UI
+
+class Layout : Component
+  PROPERTIES
+    needs_layout   = true
+    content_anchor = Anchor.CENTER : Anchor?
+
+  METHODS
+    method init( content_anchor=Anchor.CENTER )
+
+    method handle( e:UpdateEvent )
+      if (needs_layout)
+        needs_layout = false
+        perform_layout( bounds )
+      endIf
+
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method perform_layout( bounds:Box )
+      if (content_anchor.exists)
+        # Layered content aligned as specified by content_anchor.
+        # Handle each child individually.
+        if (children)
+          forEach (child in children)
+            child.adjust_bounds( bounds, content_anchor )
+          endForEach
+        endIf
+      else
+        # Absolute layout
+        prior.perform_layout( bounds )
+      endIf
+
+    method request_layout
+      if (parent)
+        parent.request_layout
+      else
+        needs_layout = true
+      endIf
+
+    method set_content_anchor( @content_anchor )->this
+      return this
+
+    method update_layout
+      if (parent)
+        parent.update_layout
+      elseIf (needs_layout)
+        needs_layout = false
+        perform_layout( bounds )
+      endIf
+
+endClass

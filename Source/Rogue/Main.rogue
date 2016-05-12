@@ -19,7 +19,7 @@ class TestState : ViewState
       #img = Image( Texture("King.png") ).set_scale(0.5)
 
       img = TextureImage(Texture("U5Tiles.png")).set_anchor(Anchor.TOP_LEFT)
-      view.gui.add( (UI::Button(XY(32,32)) + UI::Spacer.horizontal + UI::Button(XY(64,64))) / UI::Spacer(96) )
+      view.add( (UI::Button(XY(32,32)) + UI::Spacer.horizontal + UI::Button(XY(64,64))) / UI::Spacer(96) )
 
     method on( e:DrawEvent )
       Display.clear( colors.first )
