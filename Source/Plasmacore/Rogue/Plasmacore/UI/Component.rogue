@@ -11,7 +11,7 @@ class Component : SupportsTheme<<Theme>>
     parent     : Component
     children   : Component[]
 
-    theme      = Display.gui_theme : Theme
+    theme      = Display.ui_theme : Theme
 
   METHODS
     method init( _bounds:Box )

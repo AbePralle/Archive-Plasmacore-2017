@@ -8,12 +8,16 @@ class View
     display   : Display
     is_active : Logical
 
-    gui       = Layout() : Component
+    ui        = Layout() : Component
 
   METHODS
     method init( display=Display )
 
     method activate
+
+    method add( child:Component, options=null:PropertyTable )->this
+      ui.add( child, options )
+      return this
 
     method change_state( new_state:ViewState )
       state = new_state
@@ -25,7 +29,7 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      gui.handle( e )
+      ui.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -36,7 +40,7 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      gui.handle( e )
+      ui.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -47,7 +51,7 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      gui.handle( e )
+      ui.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -58,7 +62,7 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      gui.handle( e )
+      ui.handle( e )
       if (e.is_consumed) return
 
       after( e )

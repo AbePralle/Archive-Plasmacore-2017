@@ -41,7 +41,7 @@ class Display [singleton]
     texture_list      = Texture[]
 
     system_font : Font
-    gui_theme   = Theme() # Default theme
+    ui_theme    = Theme() # Default theme
 
   METHODS
     method init( name )
@@ -262,7 +262,7 @@ class Display [singleton]
     method update_and_draw( size )
       Display = this  # set the singleton reference to be this display
 
-      view.gui.update_layout( Box(size) )
+      view.ui.update_layout( Box(size) )
 
       clear_transforms
       projection_mode = projection_mode.configure( size )
