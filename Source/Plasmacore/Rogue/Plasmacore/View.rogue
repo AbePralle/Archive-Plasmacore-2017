@@ -1,4 +1,5 @@
 module Plasmacore
+using  Plasmacore::GUI
 
 class View
   PROPERTIES

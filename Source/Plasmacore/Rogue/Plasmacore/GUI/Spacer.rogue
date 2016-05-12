@@ -1,4 +1,4 @@
-module Plasmacore
+module Plasmacore::GUI
 
 class Spacer : Component
   GLOBAL METHODS

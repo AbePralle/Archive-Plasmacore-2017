@@ -1,13 +1,16 @@
-module Plasmacore
+module Plasmacore::GUI
 
-class SupportsGUITheme<<$Theme>> [aspect]
+class SupportsTheme<<$Theme>> [aspect]
   METHODS
-    method themed_draw [propagated]
-      theme.draw( this )
+    method dispatch_theme_draw( _theme:$Theme ) [propagated]
+      _theme.draw( this )
 endClass
 
-class GUITheme
+class Theme
   METHODS
+    method invoke_draw( component:Component ) [propagated]
+      component.dispatch_theme_draw( this )
+
     method draw( component:Component )
       #component.bounds.outline( Color.WHITE )
 
