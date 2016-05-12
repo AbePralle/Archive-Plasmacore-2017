@@ -1,8 +1,8 @@
-module Plasmacore
+module Plasmacore::GUI
 
 $include "Button.rogue"
 $include "Component.rogue"
 $include "LayoutGrid.rogue"
 $include "Panel.rogue"
 $include "Spacer.rogue"
-$include "GUITheme.rogue"
+$include "Theme.rogue"

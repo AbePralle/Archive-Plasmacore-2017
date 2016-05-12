@@ -1,6 +1,6 @@
-module Plasmacore
+module Plasmacore::GUI
 
-class Component : SupportsGUITheme<<GUITheme>>
+class Component : SupportsTheme<<Theme>>
   # Base class of all GUI elements.
   PROPERTIES
     position   : XY
@@ -11,7 +11,7 @@ class Component : SupportsGUITheme<<GUITheme>>
     parent     : Component
     children   : Component[]
 
-    theme      = Display.gui_theme : GUITheme
+    theme      = Display.gui_theme : Theme
 
   METHODS
     method init( _bounds:Box )
@@ -137,7 +137,7 @@ class Component : SupportsGUITheme<<GUITheme>>
       return fixed_size.x
 
     method on( e:DrawEvent )
-      themed_draw
+      theme.invoke_draw( this )
 
     method on( e:KeyEvent )
 

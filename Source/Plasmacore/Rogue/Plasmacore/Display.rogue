@@ -1,4 +1,5 @@
 module Plasmacore
+using  Plasmacore::GUI
 
 class Display [singleton]
   CLASS
@@ -40,7 +41,7 @@ class Display [singleton]
     texture_list      = Texture[]
 
     system_font : Font
-    gui_theme   = GUITheme()  # Default theme
+    gui_theme   = Theme() # Default theme
 
   METHODS
     method init( name )
