@@ -1,5 +1,5 @@
 module Plasmacore
-using  Plasmacore::GUI
+using  Plasmacore::UI
 
 class Display [singleton]
   CLASS
