@@ -1,4 +1,4 @@
-module Plasmacore::GUI
+module Plasmacore::UI
 
 $include "Button.rogue"
 $include "Component.rogue"

@@ -1,4 +1,4 @@
-module Plasmacore::GUI
+module Plasmacore::UI
 
 class Button : Component
   METHODS

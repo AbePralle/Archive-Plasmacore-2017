@@ -1,7 +1,7 @@
-module Plasmacore::GUI
+module Plasmacore::UI
 
 class Component : SupportsTheme<<Theme>>
-  # Base class of all GUI elements.
+  # Base class of all UI elements.
   PROPERTIES
     position   : XY
     size       : XY
