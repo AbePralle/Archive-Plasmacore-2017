@@ -51,8 +51,6 @@
 		303A68DF1CE5085200757E3E /* hb-unicode.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BD1CE5085200757E3E /* hb-unicode.cc */; };
 		303A68E01CE5085200757E3E /* hb-warning.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BE1CE5085200757E3E /* hb-warning.cc */; };
 		303A68E11CE5089200757E3E /* libHarfBuzz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A683F1CE505BC00757E3E /* libHarfBuzz.a */; };
-		303A68E91CE508E400757E3E /* LibJPEG.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 303A68E81CE508E400757E3E /* LibJPEG.h */; };
-		303A68EB1CE508E400757E3E /* LibJPEG.m in Sources */ = {isa = PBXBuildFile; fileRef = 303A68EA1CE508E400757E3E /* LibJPEG.m */; };
 		303A68F51CE50A6000757E3E /* libJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A68E61CE508E400757E3E /* libJPEG.a */; };
 		303A69251CE50AC100757E3E /* jaricom.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A68F71CE50AC100757E3E /* jaricom.c */; };
 		303A69261CE50AC100757E3E /* jcapimin.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A68F81CE50AC100757E3E /* jcapimin.c */; };
@@ -100,8 +98,6 @@
 		303A69501CE50AC100757E3E /* jquant1.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69221CE50AC100757E3E /* jquant1.c */; };
 		303A69511CE50AC100757E3E /* jquant2.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69231CE50AC100757E3E /* jquant2.c */; };
 		303A69521CE50AC100757E3E /* jutils.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69241CE50AC100757E3E /* jutils.c */; };
-		303A695B1CE50E2D00757E3E /* PNG.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 303A695A1CE50E2D00757E3E /* PNG.h */; };
-		303A695D1CE50E2D00757E3E /* PNG.m in Sources */ = {isa = PBXBuildFile; fileRef = 303A695C1CE50E2D00757E3E /* PNG.m */; };
 		303A69701CE50E7200757E3E /* png.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69611CE50E7200757E3E /* png.c */; };
 		303A69711CE50E7200757E3E /* pngerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69621CE50E7200757E3E /* pngerror.c */; };
 		303A69721CE50E7200757E3E /* pngget.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A69631CE50E7200757E3E /* pngget.c */; };
@@ -119,6 +115,17 @@
 		303A697E1CE50E7200757E3E /* pngwutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A696F1CE50E7200757E3E /* pngwutil.c */; };
 		303A69811CE50EAF00757E3E /* libPNG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69581CE50E2D00757E3E /* libPNG.a */; };
 		303A69831CE50F2700757E3E /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69821CE50F2700757E3E /* libfreetype.a */; };
+		303A69881CE51B4D00757E3E /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 303A69861CE51B1200757E3E /* RogueInterface.mm */; };
+		303A698B1CE51B7F00757E3E /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69891CE51B7F00757E3E /* RogueProgram.cpp */; };
+		303A69921CE6327900757E3E /* GGBitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69901CE6327900757E3E /* GGBitmap.cpp */; };
+		303A69951CE6328400757E3E /* ImageIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69931CE6328400757E3E /* ImageIO.cpp */; };
+		303A69A51CE6328E00757E3E /* SuperCPP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69961CE6328E00757E3E /* SuperCPP.cpp */; };
+		303A69A61CE6328E00757E3E /* SuperCPPCString.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69991CE6328E00757E3E /* SuperCPPCString.cpp */; };
+		303A69A71CE6328E00757E3E /* SuperCPPDataBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A699B1CE6328E00757E3E /* SuperCPPDataBuilder.cpp */; };
+		303A69A81CE6328E00757E3E /* SuperCPPDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A699D1CE6328E00757E3E /* SuperCPPDataReader.cpp */; };
+		303A69A91CE6328E00757E3E /* SuperCPPStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69A21CE6328E00757E3E /* SuperCPPStringBuilder.cpp */; };
+		303A69AE1CE6329800757E3E /* StarbrightGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69AA1CE6329800757E3E /* StarbrightGL.cpp */; };
+		303A69AF1CE6329800757E3E /* Starbright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 303A69AC1CE6329800757E3E /* Starbright.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,8 +159,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				303A695B1CE50E2D00757E3E /* PNG.h in CopyFiles */,
-				303A68E91CE508E400757E3E /* LibJPEG.h in CopyFiles */,
 				303A68421CE505BC00757E3E /* LibHarfBuzz.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -226,8 +231,6 @@
 		303A68BD1CE5085200757E3E /* hb-unicode.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-unicode.cc"; path = "../../harfbuzz-1.2.6/src/hb-unicode.cc"; sourceTree = "<group>"; };
 		303A68BE1CE5085200757E3E /* hb-warning.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-warning.cc"; path = "../../harfbuzz-1.2.6/src/hb-warning.cc"; sourceTree = "<group>"; };
 		303A68E61CE508E400757E3E /* libJPEG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJPEG.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		303A68E81CE508E400757E3E /* LibJPEG.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibJPEG.h; sourceTree = "<group>"; };
-		303A68EA1CE508E400757E3E /* LibJPEG.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LibJPEG.m; sourceTree = "<group>"; };
 		303A68F71CE50AC100757E3E /* jaricom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jaricom.c; path = "../../jpeg-9b/jaricom.c"; sourceTree = "<group>"; };
 		303A68F81CE50AC100757E3E /* jcapimin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jcapimin.c; path = "../../jpeg-9b/jcapimin.c"; sourceTree = "<group>"; };
 		303A68F91CE50AC100757E3E /* jcapistd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jcapistd.c; path = "../../jpeg-9b/jcapistd.c"; sourceTree = "<group>"; };
@@ -275,8 +278,6 @@
 		303A69231CE50AC100757E3E /* jquant2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jquant2.c; path = "../../jpeg-9b/jquant2.c"; sourceTree = "<group>"; };
 		303A69241CE50AC100757E3E /* jutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jutils.c; path = "../../jpeg-9b/jutils.c"; sourceTree = "<group>"; };
 		303A69581CE50E2D00757E3E /* libPNG.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPNG.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		303A695A1CE50E2D00757E3E /* PNG.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PNG.h; sourceTree = "<group>"; };
-		303A695C1CE50E2D00757E3E /* PNG.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PNG.m; sourceTree = "<group>"; };
 		303A69611CE50E7200757E3E /* png.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = png.c; path = ../../lpng1621/png.c; sourceTree = "<group>"; };
 		303A69621CE50E7200757E3E /* pngerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngerror.c; path = ../../lpng1621/pngerror.c; sourceTree = "<group>"; };
 		303A69631CE50E7200757E3E /* pngget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngget.c; path = ../../lpng1621/pngget.c; sourceTree = "<group>"; };
@@ -293,6 +294,34 @@
 		303A696E1CE50E7200757E3E /* pngwtran.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngwtran.c; path = ../../lpng1621/pngwtran.c; sourceTree = "<group>"; };
 		303A696F1CE50E7200757E3E /* pngwutil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pngwutil.c; path = ../../lpng1621/pngwutil.c; sourceTree = "<group>"; };
 		303A69821CE50F2700757E3E /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../FreeType/Mac/libfreetype.a; sourceTree = "<group>"; };
+		303A69851CE51B1200757E3E /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueInterface.h; path = ../../Plasmacore/Swift/RogueInterface.h; sourceTree = "<group>"; };
+		303A69861CE51B1200757E3E /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = ../../Plasmacore/Swift/RogueInterface.mm; sourceTree = "<group>"; };
+		303A69891CE51B7F00757E3E /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../../Rogue/Build/RogueProgram.cpp; sourceTree = "<group>"; };
+		303A698A1CE51B7F00757E3E /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../../Rogue/Build/RogueProgram.h; sourceTree = "<group>"; };
+		303A69901CE6327900757E3E /* GGBitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GGBitmap.cpp; path = ../../GGBitmap/GGBitmap.cpp; sourceTree = "<group>"; };
+		303A69911CE6327900757E3E /* GGBitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GGBitmap.h; path = ../../GGBitmap/GGBitmap.h; sourceTree = "<group>"; };
+		303A69931CE6328400757E3E /* ImageIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageIO.cpp; path = ../../ImageIO/ImageIO.cpp; sourceTree = "<group>"; };
+		303A69941CE6328400757E3E /* ImageIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageIO.h; path = ../../ImageIO/ImageIO.h; sourceTree = "<group>"; };
+		303A69961CE6328E00757E3E /* SuperCPP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPP.cpp; path = ../../SuperCPP/SuperCPP.cpp; sourceTree = "<group>"; };
+		303A69971CE6328E00757E3E /* SuperCPP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPP.h; path = ../../SuperCPP/SuperCPP.h; sourceTree = "<group>"; };
+		303A69981CE6328E00757E3E /* SuperCPPBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPBuilder.h; path = ../../SuperCPP/SuperCPPBuilder.h; sourceTree = "<group>"; };
+		303A69991CE6328E00757E3E /* SuperCPPCString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPCString.cpp; path = ../../SuperCPP/SuperCPPCString.cpp; sourceTree = "<group>"; };
+		303A699A1CE6328E00757E3E /* SuperCPPCString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPCString.h; path = ../../SuperCPP/SuperCPPCString.h; sourceTree = "<group>"; };
+		303A699B1CE6328E00757E3E /* SuperCPPDataBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPDataBuilder.cpp; path = ../../SuperCPP/SuperCPPDataBuilder.cpp; sourceTree = "<group>"; };
+		303A699C1CE6328E00757E3E /* SuperCPPDataBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPDataBuilder.h; path = ../../SuperCPP/SuperCPPDataBuilder.h; sourceTree = "<group>"; };
+		303A699D1CE6328E00757E3E /* SuperCPPDataReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPDataReader.cpp; path = ../../SuperCPP/SuperCPPDataReader.cpp; sourceTree = "<group>"; };
+		303A699E1CE6328E00757E3E /* SuperCPPDataReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPDataReader.h; path = ../../SuperCPP/SuperCPPDataReader.h; sourceTree = "<group>"; };
+		303A699F1CE6328E00757E3E /* SuperCPPIntTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPIntTable.h; path = ../../SuperCPP/SuperCPPIntTable.h; sourceTree = "<group>"; };
+		303A69A01CE6328E00757E3E /* SuperCPPList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPList.h; path = ../../SuperCPP/SuperCPPList.h; sourceTree = "<group>"; };
+		303A69A11CE6328E00757E3E /* SuperCPPResourceBank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPResourceBank.h; path = ../../SuperCPP/SuperCPPResourceBank.h; sourceTree = "<group>"; };
+		303A69A21CE6328E00757E3E /* SuperCPPStringBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SuperCPPStringBuilder.cpp; path = ../../SuperCPP/SuperCPPStringBuilder.cpp; sourceTree = "<group>"; };
+		303A69A31CE6328E00757E3E /* SuperCPPStringBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringBuilder.h; path = ../../SuperCPP/SuperCPPStringBuilder.h; sourceTree = "<group>"; };
+		303A69A41CE6328E00757E3E /* SuperCPPStringTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperCPPStringTable.h; path = ../../SuperCPP/SuperCPPStringTable.h; sourceTree = "<group>"; };
+		303A69AA1CE6329800757E3E /* StarbrightGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StarbrightGL.cpp; path = ../../Starbright/CPP/StarbrightGL.cpp; sourceTree = "<group>"; };
+		303A69AB1CE6329800757E3E /* StarbrightGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarbrightGL.h; path = ../../Starbright/CPP/StarbrightGL.h; sourceTree = "<group>"; };
+		303A69AC1CE6329800757E3E /* Starbright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Starbright.cpp; path = ../../Starbright/CPP/Starbright.cpp; sourceTree = "<group>"; };
+		303A69AD1CE6329800757E3E /* Starbright.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Starbright.h; path = ../../Starbright/CPP/Starbright.h; sourceTree = "<group>"; };
+		303A69B01CE6332100757E3E /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -334,14 +363,18 @@
 		303A68181CE420AB00757E3E = {
 			isa = PBXGroup;
 			children = (
+				303A69B01CE6332100757E3E /* GLKit.framework */,
+				303A698F1CE6323F00757E3E /* Starbright */,
+				303A698E1CE6323800757E3E /* SuperCPP */,
+				303A698D1CE6322C00757E3E /* ImageIO */,
+				303A698C1CE6322600757E3E /* GGBitmap */,
+				303A69841CE51ADF00757E3E /* Plasmacore */,
 				303A69821CE50F2700757E3E /* libfreetype.a */,
-				303A69531CE50ACE00757E3E /* LibPNG */,
-				303A68F61CE50AAA00757E3E /* LibJPEG */,
-				303A68581CE507DE00757E3E /* LibHarfBuzz */,
+				303A69531CE50ACE00757E3E /* PNG */,
+				303A68F61CE50AAA00757E3E /* JPEG */,
+				303A68581CE507DE00757E3E /* HarfBuzz */,
 				303A68231CE420AB00757E3E /* iOS-Plasmacore */,
-				303A68401CE505BC00757E3E /* LibHarfBuzz */,
-				303A68E71CE508E400757E3E /* LibJPEG */,
-				303A69591CE50E2D00757E3E /* PNG */,
+				303A68401CE505BC00757E3E /* HarfBuzz */,
 				303A68221CE420AB00757E3E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -360,6 +393,8 @@
 		303A68231CE420AB00757E3E /* iOS-Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
+				303A69891CE51B7F00757E3E /* RogueProgram.cpp */,
+				303A698A1CE51B7F00757E3E /* RogueProgram.h */,
 				303A68241CE420AB00757E3E /* AppDelegate.swift */,
 				303A68261CE420AB00757E3E /* Shader.fsh */,
 				303A68281CE420AB00757E3E /* Shader.vsh */,
@@ -372,16 +407,17 @@
 			path = "iOS-Plasmacore";
 			sourceTree = "<group>";
 		};
-		303A68401CE505BC00757E3E /* LibHarfBuzz */ = {
+		303A68401CE505BC00757E3E /* HarfBuzz */ = {
 			isa = PBXGroup;
 			children = (
 				303A68411CE505BC00757E3E /* LibHarfBuzz.h */,
 				303A68431CE505BC00757E3E /* LibHarfBuzz.m */,
 			);
+			name = HarfBuzz;
 			path = LibHarfBuzz;
 			sourceTree = "<group>";
 		};
-		303A68581CE507DE00757E3E /* LibHarfBuzz */ = {
+		303A68581CE507DE00757E3E /* HarfBuzz */ = {
 			isa = PBXGroup;
 			children = (
 				303A689D1CE5085200757E3E /* hb-ot-shape-complex-use-table.cc */,
@@ -419,19 +455,10 @@
 				303A68BD1CE5085200757E3E /* hb-unicode.cc */,
 				303A68BE1CE5085200757E3E /* hb-warning.cc */,
 			);
-			name = LibHarfBuzz;
+			name = HarfBuzz;
 			sourceTree = "<group>";
 		};
-		303A68E71CE508E400757E3E /* LibJPEG */ = {
-			isa = PBXGroup;
-			children = (
-				303A68E81CE508E400757E3E /* LibJPEG.h */,
-				303A68EA1CE508E400757E3E /* LibJPEG.m */,
-			);
-			path = LibJPEG;
-			sourceTree = "<group>";
-		};
-		303A68F61CE50AAA00757E3E /* LibJPEG */ = {
+		303A68F61CE50AAA00757E3E /* JPEG */ = {
 			isa = PBXGroup;
 			children = (
 				303A68F71CE50AC100757E3E /* jaricom.c */,
@@ -481,10 +508,10 @@
 				303A69231CE50AC100757E3E /* jquant2.c */,
 				303A69241CE50AC100757E3E /* jutils.c */,
 			);
-			name = LibJPEG;
+			name = JPEG;
 			sourceTree = "<group>";
 		};
-		303A69531CE50ACE00757E3E /* LibPNG */ = {
+		303A69531CE50ACE00757E3E /* PNG */ = {
 			isa = PBXGroup;
 			children = (
 				303A69611CE50E7200757E3E /* png.c */,
@@ -503,16 +530,67 @@
 				303A696E1CE50E7200757E3E /* pngwtran.c */,
 				303A696F1CE50E7200757E3E /* pngwutil.c */,
 			);
-			name = LibPNG;
+			name = PNG;
 			sourceTree = "<group>";
 		};
-		303A69591CE50E2D00757E3E /* PNG */ = {
+		303A69841CE51ADF00757E3E /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
-				303A695A1CE50E2D00757E3E /* PNG.h */,
-				303A695C1CE50E2D00757E3E /* PNG.m */,
+				303A69851CE51B1200757E3E /* RogueInterface.h */,
+				303A69861CE51B1200757E3E /* RogueInterface.mm */,
 			);
-			path = PNG;
+			name = Plasmacore;
+			sourceTree = "<group>";
+		};
+		303A698C1CE6322600757E3E /* GGBitmap */ = {
+			isa = PBXGroup;
+			children = (
+				303A69901CE6327900757E3E /* GGBitmap.cpp */,
+				303A69911CE6327900757E3E /* GGBitmap.h */,
+			);
+			name = GGBitmap;
+			sourceTree = "<group>";
+		};
+		303A698D1CE6322C00757E3E /* ImageIO */ = {
+			isa = PBXGroup;
+			children = (
+				303A69931CE6328400757E3E /* ImageIO.cpp */,
+				303A69941CE6328400757E3E /* ImageIO.h */,
+			);
+			name = ImageIO;
+			sourceTree = "<group>";
+		};
+		303A698E1CE6323800757E3E /* SuperCPP */ = {
+			isa = PBXGroup;
+			children = (
+				303A69961CE6328E00757E3E /* SuperCPP.cpp */,
+				303A69971CE6328E00757E3E /* SuperCPP.h */,
+				303A69981CE6328E00757E3E /* SuperCPPBuilder.h */,
+				303A69991CE6328E00757E3E /* SuperCPPCString.cpp */,
+				303A699A1CE6328E00757E3E /* SuperCPPCString.h */,
+				303A699B1CE6328E00757E3E /* SuperCPPDataBuilder.cpp */,
+				303A699C1CE6328E00757E3E /* SuperCPPDataBuilder.h */,
+				303A699D1CE6328E00757E3E /* SuperCPPDataReader.cpp */,
+				303A699E1CE6328E00757E3E /* SuperCPPDataReader.h */,
+				303A699F1CE6328E00757E3E /* SuperCPPIntTable.h */,
+				303A69A01CE6328E00757E3E /* SuperCPPList.h */,
+				303A69A11CE6328E00757E3E /* SuperCPPResourceBank.h */,
+				303A69A21CE6328E00757E3E /* SuperCPPStringBuilder.cpp */,
+				303A69A31CE6328E00757E3E /* SuperCPPStringBuilder.h */,
+				303A69A41CE6328E00757E3E /* SuperCPPStringTable.h */,
+			);
+			name = SuperCPP;
+			sourceTree = "<group>";
+		};
+		303A698F1CE6323F00757E3E /* Starbright */ = {
+			isa = PBXGroup;
+			children = (
+				303A69AA1CE6329800757E3E /* StarbrightGL.cpp */,
+				303A69AB1CE6329800757E3E /* StarbrightGL.h */,
+				303A69AC1CE6329800757E3E /* Starbright.cpp */,
+				303A69AD1CE6329800757E3E /* Starbright.h */,
+			);
+			name = Starbright;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -654,8 +732,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				303A69A91CE6328E00757E3E /* SuperCPPStringBuilder.cpp in Sources */,
+				303A69A61CE6328E00757E3E /* SuperCPPCString.cpp in Sources */,
+				303A69921CE6327900757E3E /* GGBitmap.cpp in Sources */,
+				303A69A51CE6328E00757E3E /* SuperCPP.cpp in Sources */,
+				303A69951CE6328400757E3E /* ImageIO.cpp in Sources */,
+				303A69A71CE6328E00757E3E /* SuperCPPDataBuilder.cpp in Sources */,
 				303A682B1CE420AB00757E3E /* GameViewController.swift in Sources */,
 				303A68251CE420AB00757E3E /* AppDelegate.swift in Sources */,
+				303A69881CE51B4D00757E3E /* RogueInterface.mm in Sources */,
+				303A69A81CE6328E00757E3E /* SuperCPPDataReader.cpp in Sources */,
+				303A69AF1CE6329800757E3E /* Starbright.cpp in Sources */,
+				303A69AE1CE6329800757E3E /* StarbrightGL.cpp in Sources */,
+				303A698B1CE51B7F00757E3E /* RogueProgram.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -705,7 +794,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				303A68EB1CE508E400757E3E /* LibJPEG.m in Sources */,
 				303A692B1CE50AC100757E3E /* jcdctmgr.c in Sources */,
 				303A693D1CE50AC100757E3E /* jddctmgr.c in Sources */,
 				303A69411CE50AC100757E3E /* jdmarker.c in Sources */,
@@ -765,7 +853,6 @@
 				303A697C1CE50E7200757E3E /* pngwrite.c in Sources */,
 				303A69791CE50E7200757E3E /* pngset.c in Sources */,
 				303A697E1CE50E7200757E3E /* pngwutil.c in Sources */,
-				303A695D1CE50E2D00757E3E /* PNG.m in Sources */,
 				303A697B1CE50E7200757E3E /* pngwio.c in Sources */,
 				303A69721CE50E7200757E3E /* pngget.c in Sources */,
 				303A69771CE50E7200757E3E /* pngrtran.c in Sources */,
@@ -913,6 +1000,7 @@
 				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Debug;
 		};
@@ -926,6 +1014,7 @@
 				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Release;
 		};

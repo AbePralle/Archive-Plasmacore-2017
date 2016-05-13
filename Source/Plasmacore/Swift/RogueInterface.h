@@ -1,7 +1,22 @@
 #ifndef ROGUE_INTERFACE_H
 #define ROGUE_INTERFACE_H
 
-#import <Cocoa/Cocoa.h>
+#include "TargetConditionals.h"
+#if TARGET_IPHONE_SIMULATOR
+  #define PLASMACORE_PLATFORM_IOS           1
+  #define PLASMACORE_PLATFORM_IOS_SIMULATOR 1
+#elif TARGET_OS_IPHONE
+  #define PLASMACORE_PLATFORM_IOS           1
+  #define PLASMACORE_PLATFORM_IOS_DEVICE    1
+#else
+  #define PLASMACORE_PLATFORM_MAC           1
+#endif
+
+#ifdef PLASMACORE_PLATFORM_MAC
+  #import <Cocoa/Cocoa.h>
+#else
+  #import <Foundation/Foundation.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
