@@ -1,9 +1,18 @@
-IOS_SDK = iPhoneOS9.3.sdk
-MIN_OS = 7.0
+IOS_SIMULATOR_SDK = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator9.3.sdk
+IOS_SDK = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.3.sdk
+MIN_OS = -mios-simulator-version-min=9.3
 FREETYPE_FOLDER = ../freetype-2.6.3
 BUILD_FOLDER = ../iOS/Build
 OUTPUT_FOLDER = ../iOS
+CC = clang
 AR_EXE = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar
+
+test:
+	cd $(FREETYPE_FOLDER) && ./configure --without-zlib --without-png --without-bzip2 '--enable-static=yes' '--enable-shared=no' 'CFLAGS=-arch x86_64 -pipe -std=c99 -Wno-trigraphs -fpascal-strings -O2 -Wreturn-type -Wunused-variable -fmessage-length=0 -fvisibility=hidden $(MIN_OS) -I$(IOS_SIMULATOR_SDK)/usr/include/libxml2/ -isysroot $(IOS_SIMULATOR_SDK)/' 'AR=$(AR_EXE)' 'LDFLAGS=-arch x86_64 -isysroot $(IOS_SIMULATOR_SDK)/ $(MIN_OS)' 'CC=$(CC)'
+	#cd $(FREETYPE_FOLDER) && ./configure CFLAGS="-arch x86_64" --without-png --without-bzip2 '--prefix=/usr/local/iPhone'
+	cd $(FREETYPE_FOLDER) && make clean
+	cd $(FREETYPE_FOLDER) && make
+	cd $(FREETYPE_FOLDER) && cp objs/.libs/libfreetype.a $(BUILD_FOLDER)/libfreetype-x86_64.a
 
 all:
 	mkdir -p $(BUILD_FOLDER)

@@ -14,42 +14,6 @@
 		303A682E1CE420AB00757E3E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 303A682C1CE420AB00757E3E /* Main.storyboard */; };
 		303A68301CE420AB00757E3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 303A682F1CE420AB00757E3E /* Assets.xcassets */; };
 		303A68331CE420AB00757E3E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 303A68311CE420AB00757E3E /* LaunchScreen.storyboard */; };
-		303A68421CE505BC00757E3E /* LibHarfBuzz.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 303A68411CE505BC00757E3E /* LibHarfBuzz.h */; };
-		303A68441CE505BC00757E3E /* LibHarfBuzz.m in Sources */ = {isa = PBXBuildFile; fileRef = 303A68431CE505BC00757E3E /* LibHarfBuzz.m */; };
-		303A68BF1CE5085200757E3E /* hb-ot-shape-complex-use-table.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A689D1CE5085200757E3E /* hb-ot-shape-complex-use-table.cc */; };
-		303A68C01CE5085200757E3E /* ucdn.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A689E1CE5085200757E3E /* ucdn.c */; };
-		303A68C11CE5085200757E3E /* hb-ft.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A689F1CE5085200757E3E /* hb-ft.cc */; };
-		303A68C21CE5085200757E3E /* hb-ot-shape-complex-use.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A01CE5085200757E3E /* hb-ot-shape-complex-use.cc */; };
-		303A68C31CE5085200757E3E /* hb-ot-shape-complex-hangul.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A11CE5085200757E3E /* hb-ot-shape-complex-hangul.cc */; };
-		303A68C41CE5085200757E3E /* hb-ot-shape-complex-hebrew.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A21CE5085200757E3E /* hb-ot-shape-complex-hebrew.cc */; };
-		303A68C51CE5085200757E3E /* hb-ot-shape-complex-tibetan.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A31CE5085200757E3E /* hb-ot-shape-complex-tibetan.cc */; };
-		303A68C61CE5085200757E3E /* hb-blob.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A41CE5085200757E3E /* hb-blob.cc */; };
-		303A68C71CE5085200757E3E /* hb-buffer-serialize.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A51CE5085200757E3E /* hb-buffer-serialize.cc */; };
-		303A68C81CE5085200757E3E /* hb-buffer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A61CE5085200757E3E /* hb-buffer.cc */; };
-		303A68C91CE5085200757E3E /* hb-common.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A71CE5085200757E3E /* hb-common.cc */; };
-		303A68CA1CE5085200757E3E /* hb-face.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A81CE5085200757E3E /* hb-face.cc */; };
-		303A68CB1CE5085200757E3E /* hb-fallback-shape.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68A91CE5085200757E3E /* hb-fallback-shape.cc */; };
-		303A68CC1CE5085200757E3E /* hb-font.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AA1CE5085200757E3E /* hb-font.cc */; };
-		303A68CD1CE5085200757E3E /* hb-ot-font.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AB1CE5085200757E3E /* hb-ot-font.cc */; };
-		303A68CE1CE5085200757E3E /* hb-ot-layout.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AC1CE5085200757E3E /* hb-ot-layout.cc */; };
-		303A68CF1CE5085200757E3E /* hb-ot-map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AD1CE5085200757E3E /* hb-ot-map.cc */; };
-		303A68D01CE5085200757E3E /* hb-ot-shape-complex-arabic.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AE1CE5085200757E3E /* hb-ot-shape-complex-arabic.cc */; };
-		303A68D11CE5085200757E3E /* hb-ot-shape-complex-default.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68AF1CE5085200757E3E /* hb-ot-shape-complex-default.cc */; };
-		303A68D21CE5085200757E3E /* hb-ot-shape-complex-indic-table.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B01CE5085200757E3E /* hb-ot-shape-complex-indic-table.cc */; };
-		303A68D31CE5085200757E3E /* hb-ot-shape-complex-indic.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B11CE5085200757E3E /* hb-ot-shape-complex-indic.cc */; };
-		303A68D41CE5085200757E3E /* hb-ot-shape-complex-myanmar.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B21CE5085200757E3E /* hb-ot-shape-complex-myanmar.cc */; };
-		303A68D51CE5085200757E3E /* hb-ot-shape-complex-thai.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B31CE5085200757E3E /* hb-ot-shape-complex-thai.cc */; };
-		303A68D61CE5085200757E3E /* hb-ot-shape-fallback.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B41CE5085200757E3E /* hb-ot-shape-fallback.cc */; };
-		303A68D71CE5085200757E3E /* hb-ot-shape-normalize.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B51CE5085200757E3E /* hb-ot-shape-normalize.cc */; };
-		303A68D81CE5085200757E3E /* hb-ot-shape.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B61CE5085200757E3E /* hb-ot-shape.cc */; };
-		303A68D91CE5085200757E3E /* hb-ot-tag.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B71CE5085200757E3E /* hb-ot-tag.cc */; };
-		303A68DA1CE5085200757E3E /* hb-set.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B81CE5085200757E3E /* hb-set.cc */; };
-		303A68DB1CE5085200757E3E /* hb-shape-plan.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68B91CE5085200757E3E /* hb-shape-plan.cc */; };
-		303A68DC1CE5085200757E3E /* hb-shape.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BA1CE5085200757E3E /* hb-shape.cc */; };
-		303A68DD1CE5085200757E3E /* hb-shaper.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BB1CE5085200757E3E /* hb-shaper.cc */; };
-		303A68DE1CE5085200757E3E /* hb-ucdn.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BC1CE5085200757E3E /* hb-ucdn.cc */; };
-		303A68DF1CE5085200757E3E /* hb-unicode.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BD1CE5085200757E3E /* hb-unicode.cc */; };
-		303A68E01CE5085200757E3E /* hb-warning.cc in Sources */ = {isa = PBXBuildFile; fileRef = 303A68BE1CE5085200757E3E /* hb-warning.cc */; };
 		303A68F51CE50A6000757E3E /* libJPEG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A68E61CE508E400757E3E /* libJPEG.a */; };
 		303A69251CE50AC100757E3E /* jaricom.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A68F71CE50AC100757E3E /* jaricom.c */; };
 		303A69261CE50AC100757E3E /* jcapimin.c in Sources */ = {isa = PBXBuildFile; fileRef = 303A68F81CE50AC100757E3E /* jcapimin.c */; };
@@ -127,20 +91,12 @@
 		303A69B31CE69CD800757E3E /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69B21CE69CD800757E3E /* libfreetype.a */; };
 		303A69B61CE69D5200757E3E /* libbz2.1.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69B41CE69CFB00757E3E /* libbz2.1.0.tbd */; };
 		303A69B81CE69D6500757E3E /* libz.1.2.5.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69B71CE69D6500757E3E /* libz.1.2.5.tbd */; };
-		303A69B91CE69D9800757E3E /* libHarfBuzz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A683F1CE505BC00757E3E /* libHarfBuzz.a */; };
 		303A69BD1CE69E2D00757E3E /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BA1CE69E2D00757E3E /* Plasmacore.swift */; };
 		303A69BE1CE69E2D00757E3E /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BB1CE69E2D00757E3E /* PlasmacoreMessage.swift */; };
 		303A69BF1CE69E2D00757E3E /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BC1CE69E2D00757E3E /* PlasmacoreView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		303A68F11CE50A5500757E3E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 303A68191CE420AB00757E3E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 303A683E1CE505BC00757E3E;
-			remoteInfo = HarfBuzz;
-		};
 		303A68F31CE50A5700757E3E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 303A68191CE420AB00757E3E /* Project object */;
@@ -158,16 +114,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		303A683D1CE505BC00757E3E /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "include/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
-			files = (
-				303A68421CE505BC00757E3E /* LibHarfBuzz.h in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		303A68E41CE508E400757E3E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -199,7 +145,6 @@
 		303A682F1CE420AB00757E3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		303A68321CE420AB00757E3E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		303A68341CE420AB00757E3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		303A683F1CE505BC00757E3E /* libHarfBuzz.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHarfBuzz.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		303A68411CE505BC00757E3E /* LibHarfBuzz.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibHarfBuzz.h; sourceTree = "<group>"; };
 		303A68431CE505BC00757E3E /* LibHarfBuzz.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LibHarfBuzz.m; sourceTree = "<group>"; };
 		303A689D1CE5085200757E3E /* hb-ot-shape-complex-use-table.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "hb-ot-shape-complex-use-table.cc"; path = "../../harfbuzz-1.2.6/src/hb-ot-shape-complex-use-table.cc"; sourceTree = "<group>"; };
@@ -340,19 +285,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				303A69B91CE69D9800757E3E /* libHarfBuzz.a in Frameworks */,
 				303A69B81CE69D6500757E3E /* libz.1.2.5.tbd in Frameworks */,
 				303A69B61CE69D5200757E3E /* libbz2.1.0.tbd in Frameworks */,
 				303A69B31CE69CD800757E3E /* libfreetype.a in Frameworks */,
 				303A68F51CE50A6000757E3E /* libJPEG.a in Frameworks */,
 				303A69811CE50EAF00757E3E /* libPNG.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		303A683C1CE505BC00757E3E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,7 +335,6 @@
 			isa = PBXGroup;
 			children = (
 				303A68211CE420AB00757E3E /* iOS-Plasmacore.app */,
-				303A683F1CE505BC00757E3E /* libHarfBuzz.a */,
 				303A68E61CE508E400757E3E /* libJPEG.a */,
 				303A69581CE50E2D00757E3E /* libPNG.a */,
 			);
@@ -626,7 +562,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				303A68F21CE50A5500757E3E /* PBXTargetDependency */,
 				303A68F41CE50A5700757E3E /* PBXTargetDependency */,
 				303A69801CE50EAA00757E3E /* PBXTargetDependency */,
 			);
@@ -634,23 +569,6 @@
 			productName = "iOS-Plasmacore";
 			productReference = 303A68211CE420AB00757E3E /* iOS-Plasmacore.app */;
 			productType = "com.apple.product-type.application";
-		};
-		303A683E1CE505BC00757E3E /* HarfBuzz */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 303A68471CE505BC00757E3E /* Build configuration list for PBXNativeTarget "HarfBuzz" */;
-			buildPhases = (
-				303A683B1CE505BC00757E3E /* Sources */,
-				303A683C1CE505BC00757E3E /* Frameworks */,
-				303A683D1CE505BC00757E3E /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = HarfBuzz;
-			productName = LibHarfBuzz;
-			productReference = 303A683F1CE505BC00757E3E /* libHarfBuzz.a */;
-			productType = "com.apple.product-type.library.static";
 		};
 		303A68E51CE508E400757E3E /* JPEG */ = {
 			isa = PBXNativeTarget;
@@ -699,9 +617,6 @@
 					303A68201CE420AB00757E3E = {
 						CreatedOnToolsVersion = 7.3.1;
 					};
-					303A683E1CE505BC00757E3E = {
-						CreatedOnToolsVersion = 7.3.1;
-					};
 					303A68E51CE508E400757E3E = {
 						CreatedOnToolsVersion = 7.3.1;
 					};
@@ -724,7 +639,6 @@
 			projectRoot = "";
 			targets = (
 				303A68201CE420AB00757E3E /* iOS-Plasmacore */,
-				303A683E1CE505BC00757E3E /* HarfBuzz */,
 				303A68E51CE508E400757E3E /* JPEG */,
 				303A69571CE50E2D00757E3E /* PNG */,
 			);
@@ -767,48 +681,6 @@
 				303A69AE1CE6329800757E3E /* StarbrightGL.cpp in Sources */,
 				303A69BE1CE69E2D00757E3E /* PlasmacoreMessage.swift in Sources */,
 				303A698B1CE51B7F00757E3E /* RogueProgram.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		303A683B1CE505BC00757E3E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				303A68D41CE5085200757E3E /* hb-ot-shape-complex-myanmar.cc in Sources */,
-				303A68CC1CE5085200757E3E /* hb-font.cc in Sources */,
-				303A68D11CE5085200757E3E /* hb-ot-shape-complex-default.cc in Sources */,
-				303A68D91CE5085200757E3E /* hb-ot-tag.cc in Sources */,
-				303A68DC1CE5085200757E3E /* hb-shape.cc in Sources */,
-				303A68C81CE5085200757E3E /* hb-buffer.cc in Sources */,
-				303A68D81CE5085200757E3E /* hb-ot-shape.cc in Sources */,
-				303A68C71CE5085200757E3E /* hb-buffer-serialize.cc in Sources */,
-				303A68C31CE5085200757E3E /* hb-ot-shape-complex-hangul.cc in Sources */,
-				303A68CB1CE5085200757E3E /* hb-fallback-shape.cc in Sources */,
-				303A68CF1CE5085200757E3E /* hb-ot-map.cc in Sources */,
-				303A68D71CE5085200757E3E /* hb-ot-shape-normalize.cc in Sources */,
-				303A68C01CE5085200757E3E /* ucdn.c in Sources */,
-				303A68C91CE5085200757E3E /* hb-common.cc in Sources */,
-				303A68C21CE5085200757E3E /* hb-ot-shape-complex-use.cc in Sources */,
-				303A68C51CE5085200757E3E /* hb-ot-shape-complex-tibetan.cc in Sources */,
-				303A68DE1CE5085200757E3E /* hb-ucdn.cc in Sources */,
-				303A68D21CE5085200757E3E /* hb-ot-shape-complex-indic-table.cc in Sources */,
-				303A68D01CE5085200757E3E /* hb-ot-shape-complex-arabic.cc in Sources */,
-				303A68CE1CE5085200757E3E /* hb-ot-layout.cc in Sources */,
-				303A68D51CE5085200757E3E /* hb-ot-shape-complex-thai.cc in Sources */,
-				303A68DA1CE5085200757E3E /* hb-set.cc in Sources */,
-				303A68C11CE5085200757E3E /* hb-ft.cc in Sources */,
-				303A68C61CE5085200757E3E /* hb-blob.cc in Sources */,
-				303A68BF1CE5085200757E3E /* hb-ot-shape-complex-use-table.cc in Sources */,
-				303A68C41CE5085200757E3E /* hb-ot-shape-complex-hebrew.cc in Sources */,
-				303A68CA1CE5085200757E3E /* hb-face.cc in Sources */,
-				303A68DF1CE5085200757E3E /* hb-unicode.cc in Sources */,
-				303A68DD1CE5085200757E3E /* hb-shaper.cc in Sources */,
-				303A68E01CE5085200757E3E /* hb-warning.cc in Sources */,
-				303A68D61CE5085200757E3E /* hb-ot-shape-fallback.cc in Sources */,
-				303A68DB1CE5085200757E3E /* hb-shape-plan.cc in Sources */,
-				303A68441CE505BC00757E3E /* LibHarfBuzz.m in Sources */,
-				303A68CD1CE5085200757E3E /* hb-ot-font.cc in Sources */,
-				303A68D31CE5085200757E3E /* hb-ot-shape-complex-indic.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -890,11 +762,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		303A68F21CE50A5500757E3E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 303A683E1CE505BC00757E3E /* HarfBuzz */;
-			targetProxy = 303A68F11CE50A5500757E3E /* PBXContainerItemProxy */;
-		};
 		303A68F41CE50A5700757E3E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 303A68E51CE508E400757E3E /* JPEG */;
@@ -1019,7 +886,7 @@
 				HEADER_SEARCH_PATHS = ../../FreeType/Mac/Include;
 				INFOPLIST_FILE = "iOS-Plasmacore/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
+				LIBRARY_SEARCH_PATHS = ../../FreeType/iOS;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS-Plasmacore/Bridging-Header.h";
@@ -1034,52 +901,11 @@
 				HEADER_SEARCH_PATHS = ../../FreeType/Mac/Include;
 				INFOPLIST_FILE = "iOS-Plasmacore/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
+				LIBRARY_SEARCH_PATHS = ../../FreeType/iOS;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS-Plasmacore/Bridging-Header.h";
 				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
-			};
-			name = Release;
-		};
-		303A68451CE505BC00757E3E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					HB_NO_MT,
-					HAVE_OT,
-					HAVE_UCDN,
-					HAVE_FREETYPE,
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					../../FreeType/Mac/include,
-					"../../harfbuzz-1.2.6/src/hb-ucdn",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		303A68461CE505BC00757E3E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					HAVE_OT,
-					HAVE_UCDN,
-					HAVE_FREETYPE,
-					HB_NO_MT,
-				);
-				HEADER_SEARCH_PATHS = (
-					../../FreeType/Mac/include,
-					"../../harfbuzz-1.2.6/src/hb-ucdn",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -1138,15 +964,6 @@
 			buildConfigurations = (
 				303A68381CE420AB00757E3E /* Debug */,
 				303A68391CE420AB00757E3E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		303A68471CE505BC00757E3E /* Build configuration list for PBXNativeTarget "HarfBuzz" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				303A68451CE505BC00757E3E /* Debug */,
-				303A68461CE505BC00757E3E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
