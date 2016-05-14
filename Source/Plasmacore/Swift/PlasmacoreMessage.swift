@@ -1,4 +1,6 @@
-import Cocoa
+#if os(OSX)
+  import Cocoa
+#endif
 
 class PlasmacoreMessage
 {

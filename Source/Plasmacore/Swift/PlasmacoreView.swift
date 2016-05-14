@@ -6,9 +6,11 @@
 //  Copyright © 2016 Abe Pralle. All rights reserved.
 //
 
+#if os(OSX)
 import Cocoa
-import GLKit
 import AppKit
+
+import GLKit
 
 class PlasmacoreView: NSOpenGLView
 {
@@ -623,3 +625,5 @@ class PlasmacoreView: NSOpenGLView
   ]
 }
 
+#endif
+// os(OSX)

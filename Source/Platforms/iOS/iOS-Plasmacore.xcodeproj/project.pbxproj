@@ -10,7 +10,7 @@
 		303A68251CE420AB00757E3E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A68241CE420AB00757E3E /* AppDelegate.swift */; };
 		303A68271CE420AB00757E3E /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 303A68261CE420AB00757E3E /* Shader.fsh */; };
 		303A68291CE420AB00757E3E /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 303A68281CE420AB00757E3E /* Shader.vsh */; };
-		303A682B1CE420AB00757E3E /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A682A1CE420AB00757E3E /* GameViewController.swift */; };
+		303A682B1CE420AB00757E3E /* PlasmacoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A682A1CE420AB00757E3E /* PlasmacoreViewController.swift */; };
 		303A682E1CE420AB00757E3E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 303A682C1CE420AB00757E3E /* Main.storyboard */; };
 		303A68301CE420AB00757E3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 303A682F1CE420AB00757E3E /* Assets.xcassets */; };
 		303A68331CE420AB00757E3E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 303A68311CE420AB00757E3E /* LaunchScreen.storyboard */; };
@@ -128,6 +128,9 @@
 		303A69B61CE69D5200757E3E /* libbz2.1.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69B41CE69CFB00757E3E /* libbz2.1.0.tbd */; };
 		303A69B81CE69D6500757E3E /* libz.1.2.5.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A69B71CE69D6500757E3E /* libz.1.2.5.tbd */; };
 		303A69B91CE69D9800757E3E /* libHarfBuzz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 303A683F1CE505BC00757E3E /* libHarfBuzz.a */; };
+		303A69BD1CE69E2D00757E3E /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BA1CE69E2D00757E3E /* Plasmacore.swift */; };
+		303A69BE1CE69E2D00757E3E /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BB1CE69E2D00757E3E /* PlasmacoreMessage.swift */; };
+		303A69BF1CE69E2D00757E3E /* PlasmacoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303A69BC1CE69E2D00757E3E /* PlasmacoreView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,11 +189,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3023CFEF1CE6B5C200D41CA6 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		303A68211CE420AB00757E3E /* iOS-Plasmacore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-Plasmacore.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		303A68241CE420AB00757E3E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		303A68261CE420AB00757E3E /* Shader.fsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.fsh; path = Shaders/Shader.fsh; sourceTree = "<group>"; };
 		303A68281CE420AB00757E3E /* Shader.vsh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = Shader.vsh; path = Shaders/Shader.vsh; sourceTree = "<group>"; };
-		303A682A1CE420AB00757E3E /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		303A682A1CE420AB00757E3E /* PlasmacoreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlasmacoreViewController.swift; sourceTree = "<group>"; };
 		303A682D1CE420AB00757E3E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		303A682F1CE420AB00757E3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		303A68321CE420AB00757E3E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -326,6 +330,9 @@
 		303A69B21CE69CD800757E3E /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../FreeType/iOS/libfreetype.a; sourceTree = "<group>"; };
 		303A69B41CE69CFB00757E3E /* libbz2.1.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.1.0.tbd; path = usr/lib/libbz2.1.0.tbd; sourceTree = SDKROOT; };
 		303A69B71CE69D6500757E3E /* libz.1.2.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.5.tbd; path = usr/lib/libz.1.2.5.tbd; sourceTree = SDKROOT; };
+		303A69BA1CE69E2D00757E3E /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Plasmacore.swift; path = ../../Plasmacore/Swift/Plasmacore.swift; sourceTree = "<group>"; };
+		303A69BB1CE69E2D00757E3E /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreMessage.swift; path = ../../Plasmacore/Swift/PlasmacoreMessage.swift; sourceTree = "<group>"; };
+		303A69BC1CE69E2D00757E3E /* PlasmacoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreView.swift; path = ../../Plasmacore/Swift/PlasmacoreView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -406,11 +413,12 @@
 				303A68241CE420AB00757E3E /* AppDelegate.swift */,
 				303A68261CE420AB00757E3E /* Shader.fsh */,
 				303A68281CE420AB00757E3E /* Shader.vsh */,
-				303A682A1CE420AB00757E3E /* GameViewController.swift */,
+				303A682A1CE420AB00757E3E /* PlasmacoreViewController.swift */,
 				303A682C1CE420AB00757E3E /* Main.storyboard */,
 				303A682F1CE420AB00757E3E /* Assets.xcassets */,
 				303A68311CE420AB00757E3E /* LaunchScreen.storyboard */,
 				303A68341CE420AB00757E3E /* Info.plist */,
+				3023CFEF1CE6B5C200D41CA6 /* Bridging-Header.h */,
 			);
 			path = "iOS-Plasmacore";
 			sourceTree = "<group>";
@@ -544,6 +552,9 @@
 		303A69841CE51ADF00757E3E /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
+				303A69BA1CE69E2D00757E3E /* Plasmacore.swift */,
+				303A69BB1CE69E2D00757E3E /* PlasmacoreMessage.swift */,
+				303A69BC1CE69E2D00757E3E /* PlasmacoreView.swift */,
 				303A69851CE51B1200757E3E /* RogueInterface.h */,
 				303A69861CE51B1200757E3E /* RogueInterface.mm */,
 			);
@@ -740,18 +751,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				303A69BD1CE69E2D00757E3E /* Plasmacore.swift in Sources */,
+				303A69BF1CE69E2D00757E3E /* PlasmacoreView.swift in Sources */,
 				303A69A91CE6328E00757E3E /* SuperCPPStringBuilder.cpp in Sources */,
 				303A69A61CE6328E00757E3E /* SuperCPPCString.cpp in Sources */,
 				303A69921CE6327900757E3E /* GGBitmap.cpp in Sources */,
 				303A69A51CE6328E00757E3E /* SuperCPP.cpp in Sources */,
 				303A69951CE6328400757E3E /* ImageIO.cpp in Sources */,
 				303A69A71CE6328E00757E3E /* SuperCPPDataBuilder.cpp in Sources */,
-				303A682B1CE420AB00757E3E /* GameViewController.swift in Sources */,
+				303A682B1CE420AB00757E3E /* PlasmacoreViewController.swift in Sources */,
 				303A68251CE420AB00757E3E /* AppDelegate.swift in Sources */,
 				303A69881CE51B4D00757E3E /* RogueInterface.mm in Sources */,
 				303A69A81CE6328E00757E3E /* SuperCPPDataReader.cpp in Sources */,
 				303A69AF1CE6329800757E3E /* Starbright.cpp in Sources */,
 				303A69AE1CE6329800757E3E /* StarbrightGL.cpp in Sources */,
+				303A69BE1CE69E2D00757E3E /* PlasmacoreMessage.swift in Sources */,
 				303A698B1CE51B7F00757E3E /* RogueProgram.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1008,6 +1022,7 @@
 				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "iOS-Plasmacore/Bridging-Header.h";
 				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Debug;
@@ -1022,6 +1037,7 @@
 				LIBRARY_SEARCH_PATHS = ../../FreeType/Mac;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.plasmaworks.iOS-Plasmacore";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "iOS-Plasmacore/Bridging-Header.h";
 				USER_HEADER_SEARCH_PATHS = "../../lpng1621 ../../jpeg-9b";
 			};
 			name = Release;
@@ -1133,6 +1149,7 @@
 				303A68461CE505BC00757E3E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		303A68EC1CE508E400757E3E /* Build configuration list for PBXNativeTarget "JPEG" */ = {
 			isa = XCConfigurationList;
@@ -1141,6 +1158,7 @@
 				303A68EE1CE508E400757E3E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		303A695E1CE50E2D00757E3E /* Build configuration list for PBXNativeTarget "PNG" */ = {
 			isa = XCConfigurationList;
@@ -1149,6 +1167,7 @@
 				303A69601CE50E2D00757E3E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
