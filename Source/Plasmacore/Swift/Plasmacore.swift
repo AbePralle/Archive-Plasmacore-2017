@@ -1,4 +1,8 @@
+#if os(OSX)
 import Cocoa
+#else
+import Foundation
+#endif
 
 class Plasmacore
 {
@@ -57,6 +61,7 @@ class Plasmacore
       }
     )
 
+    #if os(OSX)
     addMessageHandler( "Window.create", handler:
       {
         (m:PlasmacoreMessage) in
@@ -105,6 +110,7 @@ class Plasmacore
           }
       }
     )
+    #endif // os(OSX)
 
     RogueInterface_set_arg_count( Int32(Process.arguments.count) )
     for (index,arg) in Process.arguments.enumerate()
