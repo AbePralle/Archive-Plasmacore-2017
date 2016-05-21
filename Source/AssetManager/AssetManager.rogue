@@ -1,0 +1,43 @@
+try
+  AssetManager.save
+catch (err:Error)
+  println err
+  System.exit 1
+endTry
+
+
+class AssetManager [singleton]
+  DEFINITIONS
+    assets_file = File("Assets/Assets.json")
+
+  PROPERTIES
+    assets : PropertyTable
+
+  METHODS
+    method init
+      load
+
+    method load
+      local path = File(assets_file.path)
+      if (path.filepath.count)
+        if (not path.exists or not path.is_folder)
+          throw Error( "$/ folder does not exist." (path.filepath) )
+        endIf
+      endIf
+
+      assets = PropertyTable.load( assets_file )
+      if (assets.count == 0)
+        println "Creating $" (assets_file.filepath)
+        assets.set( "current_platform", "default" )
+      endIf
+
+      local args = System.command_line_arguments.reader
+      while (args.has_another)
+        trace args.read
+      endWhile
+
+    method save
+      assets.save( assets_file, &formatted )
+
+endClass
+

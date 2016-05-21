@@ -1,10 +1,14 @@
 #==============================================================================
 # Plasmacore.rogue
 #==============================================================================
+
+$include "Box.rogue"
+
+$if not "Console"
+
 $include "Anchor.rogue"
 $include "Assets.rogue"
 $include "Bitmap.rogue"
-$include "Box.rogue"
 $include "Color.rogue"
 $include "Corners.rogue"
 $include "Display.rogue"
@@ -96,3 +100,4 @@ endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );
 
+$endIf  # not Console
