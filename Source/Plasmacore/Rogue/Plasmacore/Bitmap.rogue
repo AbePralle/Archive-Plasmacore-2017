@@ -50,8 +50,8 @@ class Bitmap
       init( bounds.size )
       existing.blit( this, -bounds.position )
 
-    method clone->Bitmap
-      local result = Bitmap( size, pixels.clone )
+    method cloned->Bitmap
+      local result = Bitmap( size, pixels.cloned )
       result.error = this.error
       return result
 

@@ -54,7 +54,7 @@ class Anchor( position:XY ) [compound]
     method create( x:Real64, y:Real64 )->Anchor [macro]
       Anchor(XY(x,y))
 
-    method create( value:PropertyValue )->Anchor
+    method create( value:Value )->Anchor
       if (not value) return Anchor.TOP_LEFT
 
       if (value.is_string)

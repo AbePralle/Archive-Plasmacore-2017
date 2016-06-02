@@ -3,7 +3,7 @@ module Plasmacore
 class Font
   PROPERTIES
     data           : FontData
-    options        : PropertyTable
+    options        : ValueTable
 
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
@@ -34,7 +34,7 @@ class Font
 
       if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
       if (options.contains("snug")) spacing = -1
-      if (options.contains("spacing")) spacing = options.get_int32( "spacing" )
+      if (options.contains("spacing")) spacing = options.int32( "spacing" )
       if (options.contains("scale")) scale = XY( options["scale"] )
 
       return this
@@ -244,7 +244,7 @@ endClass
 class FontLoader
   PROPERTIES
     name               : String
-    options            : PropertyTable
+    options            : ValueTable
     error              : Logical
     default_characters : String
 
@@ -283,7 +283,7 @@ class BitmapFontLoader : FontLoader
       endIf
 
       if (options and options.contains("characters"))
-        default_characters = options.get_string( "characters" )
+        default_characters = options.string( "characters" )
       else
         default_characters = String( (' '..'~')->Character[] )
       endIf
@@ -320,6 +320,7 @@ class BitmapFontLoader : FontLoader
 endClass
 
 
+$if "Console"
 class TrueTypeFontLoader : FontLoader [requisite]
   CLASS
     nativeHeader
@@ -337,7 +338,7 @@ class TrueTypeFontLoader : FontLoader [requisite]
   METHODS
     method init( name, options )
       if (options and options.contains("characters"))
-        default_characters = options.get_string( "characters" )
+        default_characters = options.string( "characters" )
       else
         default_characters = String( (' '..'~')->Character[] )
       endIf
@@ -404,21 +405,24 @@ class TrueTypeFontLoader : FontLoader [requisite]
       return bmp
 
 endClass
+$endIf
 
 class FontManager [singleton]
   PROPERTIES
     loader_lookup    = Table<<String,FontLoader>>()
 
   METHODS
-    method get_font_loader( font_name:String, options=null:PropertyTable )->FontLoader
+    method get_font_loader( font_name:String, options=null:ValueTable )->FontLoader
       local loader = loader_lookup[ font_name ]
       if (loader) return loader
 
       local lc_name = font_name.to_lowercase
       if (lc_name.ends_with(".png") or lc_name.ends_with(".jpg"))
         loader = BitmapFontLoader( font_name, options )
+$if "Console"
       elseIf (lc_name.ends_with(".ttf") or lc_name.ends_with(".otf"))
         loader = TrueTypeFontLoader( font_name, options )
+$endIf
       endIf
 
       if (not loader or loader.error)
@@ -436,7 +440,7 @@ augment Display
     font_data_lookup = Table<<String,Table<<Int32,FontData>>>>()
 
   METHODS
-    method get_font_data( font_name:String, font_height=null:Int32?, options=null:PropertyTable )->FontData
+    method get_font_data( font_name:String, font_height=null:Int32?, options=null:ValueTable )->FontData
       if (not font_height.exists)
         local loader = FontManager.get_font_loader( font_name )
         if (not loader) return null
