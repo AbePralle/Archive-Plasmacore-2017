@@ -39,6 +39,7 @@ class Box( position:XY, size:XY ) [compound]
     method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
+$if not "Console"
     method draw( color:Int32 )->this
       Display.draw( this, color )
       return this
@@ -46,6 +47,7 @@ class Box( position:XY, size:XY ) [compound]
     method draw( color:Color )->this
       Display.draw( this, color )
       return this
+$endIf
 
     method floor->Box
       return Box( position.floor, size.floor )
@@ -56,6 +58,49 @@ class Box( position:XY, size:XY ) [compound]
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
 
+    method operator&( rhs:Box )->Box
+      # Returns the intersection of this box with another box.
+      local a_x1 = position.x
+      local a_y1 = position.y
+      local a_x2 = a_x1 + size.x
+      local a_y2 = a_y1 + size.y
+
+      local b_x1 = rhs.position.x
+      local b_y1 = rhs.position.y
+      local b_x2 = b_x1 + rhs.size.x
+      local b_y2 = b_y1 + rhs.size.y
+
+      if (a_x1 < b_x1) a_x1 = b_x1
+      if (a_y1 < b_y1) a_y1 = b_y1
+      if (a_x2 > b_x2) a_x2 = b_x2
+      if (a_y2 > b_y2) a_y2 = b_y2
+
+      if (a_x1 >= a_x2 or a_y1 >= a_y2) return Box(XY(0,0),XY(0,0))
+
+      return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+
+    method operator|( rhs:Box )->Box
+      # Returns the union of this box with another box.
+      local a_x1 = position.x
+      local a_y1 = position.y
+      local a_x2 = position.x + size.x
+      local a_y2 = position.y + size.y
+      if (a_x2 == a_x1 or a_y2 == a_y1) return rhs
+
+      local b_x1 = rhs.position.x
+      local b_y1 = rhs.position.y
+      local b_x2 = rhs.position.x + rhs.size.x
+      local b_y2 = rhs.position.y + rhs.size.y
+      if (b_x2 == b_x1 or b_y2 == b_y1) return this
+
+      if (b_x1 < a_x1) a_x1 = b_x1
+      if (b_y1 < a_y1) a_y1 = b_y1
+      if (b_x2 > a_x2) a_x2 = b_x2
+      if (b_y2 > a_y2) a_y2 = b_y2
+
+      return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+
+$if not "Console"
     method outline( color:Int32 )->this
       Display.outline( this, color )
       return this
@@ -63,12 +108,13 @@ class Box( position:XY, size:XY ) [compound]
     method outline( color:Color )->this
       Display.outline( this, color )
       return this
+$endIf
 
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
     method to->String
-      return "[@$,$ $x$]" (x,y,width,height)
+      return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)
 
     method top_left->XY [macro]
       this.position

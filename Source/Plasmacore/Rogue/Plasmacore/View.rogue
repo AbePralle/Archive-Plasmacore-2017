@@ -15,7 +15,7 @@ class View
 
     method activate
 
-    method add( child:Component, options=null:PropertyTable )->this
+    method add( child:Component, options=null:ValueTable )->this
       ui.add( child, options )
       return this
 

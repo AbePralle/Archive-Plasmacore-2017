@@ -2,14 +2,15 @@
 # Plasmacore.rogue
 #==============================================================================
 
+$include "Anchor.rogue"
+$include "Bitmap.rogue"
 $include "Box.rogue"
+$include "Color.rogue"
+$include "XY.rogue"
 
 $if not "Console"
 
-$include "Anchor.rogue"
 $include "Assets.rogue"
-$include "Bitmap.rogue"
-$include "Color.rogue"
 $include "Corners.rogue"
 $include "Display.rogue"
 $include "Event.rogue"
@@ -31,7 +32,6 @@ $include "UpdateTimer.rogue"
 $include "View.rogue"
 $include "ViewState.rogue"
 $include "Window.rogue"
-$include "XY.rogue"
 $include "XYZ.rogue"
 $include "XYZW.rogue"
 
@@ -51,7 +51,7 @@ class Plasmacore [requisite singleton]
 
       MessageManager.add_handler( "Application.launch",
         function(m:Message)
-          if (m.get_logical("is_window_based"))
+          if (m.logical("is_window_based"))
             if (Plasmacore.launch_window_name)
               Window( Plasmacore.launch_window_name ).show
             else

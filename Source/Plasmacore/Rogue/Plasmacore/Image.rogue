@@ -33,7 +33,7 @@ class Image
     method adjust_subset( subset:Box )
       data.adjust_subset( subset )
 
-    method clone->Image
+    method cloned->Image
       return Image( this )
 
     method draw

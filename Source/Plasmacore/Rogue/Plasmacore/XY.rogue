@@ -14,13 +14,13 @@ class XY( x:Real64, y:Real64 ) [compound]
     method create( m:Real64, angle:Degrees )->XY
       return XY( m * angle.cos, m * angle.sin )
 
-    method create( value:PropertyValue )->XY
+    method create( value:Value )->XY
       if (not value) return XY(0,0)
 
       if (value.is_list)
-        return XY( value.get_real64(0), value.get_real64(1) )
+        return XY( value.real64(0), value.real64(1) )
       elseIf (value.is_table)
-        return XY( value.get_real64("x"), value.get_real64("y") )
+        return XY( value.real64("x"), value.real64("y") )
       elseIf (value.is_number)
         local n = value->Real64
         return XY( n, n )
@@ -74,6 +74,12 @@ class XY( x:Real64, y:Real64 ) [compound]
     method has_magnitude_less_than( n:Real64 )->Logical
       # Equivalent to and faster than v.magnitude <= n
       return x*x + y*y <= n*n
+
+    method is_non_zero->Logical
+      return x or y
+
+    method is_zero->Logical
+      return x == 0 and y == 0
 
     method magnitude->Real64 [macro]
       Math.sqrt( x*x + y*y )
@@ -150,6 +156,9 @@ class XY( x:Real64, y:Real64 ) [compound]
       # Returns the component of this vector that lies perpendicular to the axis defined
       # by the parameter.
       return this - this.parallelum( axis )
+
+    method product->Real64
+      return x * y
 
     method radians->Radians
       return Radians( Math.atan2( y, x ) )

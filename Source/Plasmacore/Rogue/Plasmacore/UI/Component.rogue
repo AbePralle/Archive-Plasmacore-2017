@@ -21,7 +21,7 @@ class Component : SupportsTheme<<Theme>>
     method init( fixed_size )
       size = fixed_size
 
-    method add( child:Component, options=null:PropertyTable )->this
+    method add( child:Component, options=null:ValueTable )->this
       ensure children
       children.add( child )
       child.parent = this

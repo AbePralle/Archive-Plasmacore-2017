@@ -163,7 +163,7 @@ class Message
     method create_reply->Message
       return MessageManager.create_message( "<reply>", message_id )
 
-    method get_string( name:String, default="":String )->String
+    method string( name:String, default="":String )->String
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
@@ -180,7 +180,7 @@ class Message
 
       return default
 
-    method get_string( name:String, buffer:StringBuilder )->StringBuilder
+    method string( name:String, buffer:StringBuilder )->StringBuilder
       local i = keys.locate_last( name )
       if (not i.exists) return buffer
 
@@ -197,7 +197,7 @@ class Message
 
       return buffer
 
-    method get_real64( name:String, default=0:Real64 )->Real64
+    method real64( name:String, default=0:Real64 )->Real64
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
@@ -215,7 +215,7 @@ class Message
 
       return default
 
-    method get_int64( name:String, default=0:Int64 )->Int64
+    method int64( name:String, default=0:Int64 )->Int64
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
@@ -233,7 +233,7 @@ class Message
 
       return default
 
-    method get_int32( name:String, default=0:Int32 )->Int32
+    method int32( name:String, default=0:Int32 )->Int32
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
@@ -251,7 +251,7 @@ class Message
 
       return default
 
-    method get_logical( name:String, default=false:Logical )->Logical
+    method logical( name:String, default=false:Logical )->Logical
       local i = keys.locate_last( name )
       if (not i.exists) return default
 
@@ -269,7 +269,7 @@ class Message
 
       return default
 
-    method get_bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
+    method bytes( name:String, bytes=Byte[]:Byte[] )->Byte[]
       local i = keys.locate_last( name )
       if (not i.exists) return bytes
 
