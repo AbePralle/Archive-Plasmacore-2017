@@ -92,6 +92,8 @@ class MessageManager [requisite singleton]
         local list = handlers[ incoming_message.type ]
         if (list)
           forEach (handler in list step -1) handler( incoming_message )
+        else
+          println "Unhandled message " + incoming_message.type
         endIf
       endWhile
 

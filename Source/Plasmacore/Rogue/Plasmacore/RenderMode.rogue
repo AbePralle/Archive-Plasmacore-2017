@@ -2,102 +2,59 @@ class RenderMode( value=0:Int32 ) [compound]
   DEFINITIONS
     # dest_blend is (render_mode >> 28) & 15
     # src_blend  is (render_mode >> 24) & 15
-    BLEND_ZERO                     = 0x00
-    BLEND_ONE                      = 0x01
-    BLEND_SOURCE_ALPHA             = 0x02
-    BLEND_INVERSE_SOURCE_ALPHA     = 0x03
-    BLEND_MASK                     = 0x0f
+    BLEND_ZERO                 = 0x00
+    BLEND_ONE                  = 0x01
+    BLEND_SOURCE_ALPHA         = 0x02
+    BLEND_INVERSE_SOURCE_ALPHA = 0x03
+    BLEND_MASK                 = 0x0f
 
-    ENABLE_BLEND                   = 0x00001000
-    ENABLE_TEXTURES                = 0x00002000
-    ENABLE_TEXTURE_WRAP_H          = 0x00004000
-    ENABLE_TEXTURE_WRAP_V          = 0x00008000
-    ENABLE_TEXTURE_WRAP            = (ENABLE_TEXTURE_WRAP_H | ENABLE_TEXTURE_WRAP_V)
-    ENABLE_POINT_FILTER            = 0x00010000
+    BLENDED                    = 0x00001000
+    TEXTURED                   = 0x00002000
+    WRAP_X                     = 0x00004000
+    WRAP_Y                     = 0x00008000
+    WRAP                       = (WRAP_X | WRAP_Y)
+    POINT_FILTER               = 0x00010000
 
-    ENABLE_VERTEX_COLOR_MULTIPLY   = 0x00100000
-    ENABLE_VERTEX_COLOR_ADD        = 0x00200000
-    ENABLE_VERTEX_COLOR_FILL       = 0x00300000
-    ENABLE_VERTEX_COLOR_MODE_MASK  = 0x00f00000
+    COLOR_MULTIPLY             = 0x00100000
+    COLOR_ADD                  = 0x00200000
+    COLOR_FILL                 = 0x00300000
+    COLOR_MODE_MASK            = 0x00f00000
 
-    RENDER_OPTION_MASK             = 0x00FFF000
+    OPTION_MASK                = 0x00FFF000
 
-    OPAQUE_IMAGE  = RenderMode((BLEND_ZERO:<<:28)|(BLEND_ONE:<<:24)|ENABLE_TEXTURES)
-    ALPHA_IMAGE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|ENABLE_BLEND|ENABLE_TEXTURES)
+    OPAQUE_IMAGE  = RenderMode((BLEND_ZERO:<<:28)|(BLEND_ONE:<<:24)|TEXTURED)
+    ALPHA_IMAGE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|BLENDED|TEXTURED)
 
     OPAQUE_SHAPE  = RenderMode((BLEND_ZERO:<<:28)|(BLEND_ONE:<<:24))
-    ALPHA_SHAPE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|ENABLE_BLEND)
+    ALPHA_SHAPE   = RenderMode((BLEND_INVERSE_SOURCE_ALPHA:<<:28)|(BLEND_ONE:<<:24)|BLENDED)
 
   GLOBAL METHODS
+    method create( src_blend:Int32, dest_blend:Int32 )->RenderMode
+      return RenderMode( (dest_blend:<<:28) | (src_blend:<<:24) )
+
     method create( src_blend:Int32, dest_blend:Int32, options=0:Int32 )->RenderMode
-      return RenderMode( options ).enable_blend( src_blend, dest_blend )
+      return RenderMode( (dest_blend:<<:28) | (src_blend:<<:24) | options )
 
   METHODS
-    method enable_blend( src_blend=BLEND_ONE:Int32, dest_blend=BLEND_INVERSE_SOURCE_ALPHA:Int32 )->this
-      value = (value & 0x00ffffff) | (dest_blend:<<:28) | (src_blend:<<:24) | ENABLE_BLEND
-      return this
-
-    method enable_textures( setting=true:Logical )->this
-      if (setting) value |=  ENABLE_TEXTURES
-      else         value &= !ENABLE_TEXTURES
-      return this
-
-    method enable_texture_wrap( &horizontal, &vertical )->this
-      value &= !ENABLE_TEXTURE_WRAP
-      if (horizontal) value |= ENABLE_TEXTURE_WRAP_H
-      if (vertical)   value |= ENABLE_TEXTURE_WRAP_V
-      return this
-
-    method enable_point_filter( setting=true:Logical )->this
-      if (setting) value |=  ENABLE_POINT_FILTER
-      else         value &= !ENABLE_POINT_FILTER
-      return this
-
-    method enable_vertex_color_multiply( setting=true:Logical )->this
-      value &= !ENABLE_VERTEX_COLOR_MODE_MASK
-      if (setting) value |=  ENABLE_VERTEX_COLOR_MULTIPLY
-      return this
-
-    method enable_vertex_color_add( setting=true:Logical )->this
-      value &= !ENABLE_VERTEX_COLOR_MODE_MASK
-      if (setting) value |=  ENABLE_VERTEX_COLOR_ADD
-      return this
-
-    method enable_vertex_color_fill( setting=true:Logical )->this
-      value &= !ENABLE_VERTEX_COLOR_MODE_MASK
-      if (setting) value |=  ENABLE_VERTEX_COLOR_FILL
-      return this
-
-  # QUERY METHODS
-    method are_textures_enabled->Logical [macro]
-      (this.value & RenderMode.ENABLE_TEXTURES)
-
     method dest_blend->Logical [macro]
       ((this.value :>>>: 28) & 15)
 
-    method is_blend_enabled->Logical [macro]
-      (this.value & RenderMode.ENABLE_BLEND)
+    method is_blended->Logical [macro]
+      (this.value & RenderMode.BLENDED)
 
-    method is_point_filter_enabled->Logical [macro]
-      (this.value & RenderMode.ENABLE_POINT_FILTER)
+    method is_point_filtered->Logical [macro]
+      (this.value & RenderMode.POINT_FILTER)
 
-    method is_texture_wrap_enabled( &horizontal, &vertical )->Logical
-      if (horizontal)
-        if (vertical)
-          # Both horizontal & vertical specified so both must be true
-          return ((value & ENABLE_TEXTURE_WRAP) == ENABLE_TEXTURE_WRAP)
-        else
-          # Just checking horizontal
-          return (value & ENABLE_TEXTURE_WRAP_H)
-        endIf
-      else
-        if (vertical)
-          # Just checking vertical
-          return (value & ENABLE_TEXTURE_WRAP_V)
-        else
-          # Neither horizontal nort vertical specified so either can be true
-          return (value & ENABLE_TEXTURE_WRAP)
-        endIf
-      endIf
+    method is_textured->Logical [macro]
+      (this.value & RenderMode.TEXTURED)
+
+    method source_blend->Int32 [macro]
+      ((this.value :>>>: 24) & 15)
+
+    method wrap_x->Logical [macro]
+      (this.value & RenderMode.WRAP_X)
+
+    method wrap_y->Logical [macro]
+      (this.value & RenderMode.WRAP_Y)
 
 endClass

@@ -136,7 +136,11 @@ class Plasmacore
   func launch()->Plasmacore
   {
     RogueInterface_launch()
-    PlasmacoreMessage( type:"Application.launch" ).set( "is_window_based", value:true ).send()
+    var m = PlasmacoreMessage( type:"Application.launch" )
+#if os(OSX)
+    m.set( "is_window_based", value:true )
+#endif
+    m.send()
     return self
   }
 

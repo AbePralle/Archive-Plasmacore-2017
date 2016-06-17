@@ -1,0 +1,39 @@
+module Plasmacore
+
+class ImageGroup
+  PROPERTIES
+    is_loaded     : Logical
+    info          : Value
+    texture_names = String[]
+    textures      = Texture[]
+    is_permanent  : Logical
+
+  METHODS
+    method init( info )
+      forEach (texture_info in info.list("textures"))
+        texture_names.add( texture_info.string("filename") )
+      endForEach
+
+    method load
+      while (load_another) noAction
+
+    method load_another->Logical
+      local next_index = textures.count
+      if (next_index == texture_names.count) return false
+
+      local texture_name = texture_names[ next_index ]
+      local filepath = Plasmacore.asset_filepath( texture_name )
+      if (filepath)
+        textures.add( Texture(filepath) )
+      else
+        println "Texture not found: " + texture_name
+        texture_names.remove_at( next_index )
+      endIf
+
+      return true
+
+    method unload
+      forEach (texture in textures) texture.unload
+      textures.clear
+endClass
+

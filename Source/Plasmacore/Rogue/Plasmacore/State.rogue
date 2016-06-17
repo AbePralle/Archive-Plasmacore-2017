@@ -1,0 +1,101 @@
+module Plasmacore
+
+class State
+  PROPERTIES
+    view           : View
+    is_active      : Logical
+    next_state     : State
+    prior_state    : State
+
+  METHODS
+    method init( view=null )
+
+    method after( e:DrawEvent )
+
+    method after( e:KeyEvent )
+
+    method after( e:PointerEvent )
+
+    method after( e:UpdateEvent )
+
+    method change_state( new_state:State )
+      view.change_state( new_state )
+
+    method draw
+      Display.clear( Color.BLUE )
+
+    method exit_state
+      view.exit_state
+
+    method handle( e:DrawEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:KeyEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:UpdateEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method on( e:DrawEvent )
+      draw
+
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method on( e:UpdateEvent )
+      update
+
+    method push_state( new_state:State )
+      view.push_state( new_state )
+
+    method queue_state( new_state:State )
+      view.queue_state( new_state )
+
+    method on_activate
+
+    method on_deactivate
+
+    method on_resume
+
+    method on_suspend
+
+    method set_view( @view )->this
+      return this
+
+    method update
+endClass
+
+class State<<$ViewType>> : State
+  METHODS
+    method view->$ViewType
+      return @view as $ViewType
+endClass
+
