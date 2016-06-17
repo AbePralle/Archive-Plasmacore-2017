@@ -53,7 +53,7 @@ extern "C" NSData* RogueInterface_send_messages( const unsigned char* data, int 
 
   RogueByte_List__clear( list );
   RogueByte_List__reserve__Int32( list, count );
-  memcpy( list->data->bytes, data, count );
+  memcpy( list->data->as_bytes, data, count );
   list->count = count;
 
   // Call Rogue MessageManager.update(), which sends back a reference to another byte
@@ -61,7 +61,7 @@ extern "C" NSData* RogueInterface_send_messages( const unsigned char* data, int 
   list = RoguePlasmacore__MessageManager__update( mm );
 
   if ( !list ) return [NSData data];
-  return [[NSData alloc] initWithBytes:list->data->bytes length:list->count];
+  return [[NSData alloc] initWithBytes:list->data->as_bytes length:list->count];
 }
 
 extern "C" void RogueInterface_set_arg_count( int count )

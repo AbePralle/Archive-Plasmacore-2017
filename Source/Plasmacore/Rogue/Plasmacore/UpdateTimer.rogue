@@ -15,7 +15,7 @@ class UpdateTimer
 
     method update
       if (first_update)
-        # Ensure we get at least one tick() the first time so that a View or ViewState
+        # Ensure we get at least one tick() the first time so that a View or State
         # gets its update() called before its first draw().
         first_update = false
         previous_update_time = System.time

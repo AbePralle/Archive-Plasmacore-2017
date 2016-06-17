@@ -3,7 +3,7 @@ using  Plasmacore::UI
 
 class View
   PROPERTIES
-    state     = ViewState(this)
+    state     = State(this)
 
     display   : Display
     is_active : Logical
@@ -11,21 +11,57 @@ class View
     ui        = Layout() : Component
 
   METHODS
-    method init( display=Display )
-
-    method activate
-
     method add( child:Component, options=null:ValueTable )->this
       ui.add( child, options )
       return this
 
-    method change_state( new_state:ViewState )
+    method after( e:DrawEvent )
+
+    method after( e:KeyEvent )
+
+    method after( e:PointerEvent )
+
+    method after( e:UpdateEvent )
+
+    method change_state( new_state:State )
+      local cur = new_state
+      while (cur.next_state) cur = cur.next_state
+      cur.next_state = state.next_state
+      state.next_state = null
+      new_state.prior_state = state.prior_state
+
+      state.is_active = false
+      state.on_deactivate
       state = new_state
       state.view = this
+      state.is_active = true
+      state.on_activate
+
+    method draw
+
+    method exit_state
+      state.is_active = false
+      state.on_deactivate
+
+      if (state.next_state)
+        state.next_state.prior_state = state.prior_state
+        state = state.next_state
+        state.view = this
+        state.is_active = true
+        state.on_activate
+      elseIf (state.prior_state)
+        state = state.prior_state
+        state.view = this
+        state.is_active = true
+        state.on_resume
+      else
+        state = State()
+        state.view = this
+        state.is_active = true
+        state.on_activate
+      endIf
 
     method handle( e:DrawEvent )
-      if (not is_active) is_active = true; activate
-
       on( e )
       if (e.is_consumed) return
 
@@ -35,8 +71,6 @@ class View
       after( e )
 
     method handle( e:KeyEvent )
-      if (not is_active) is_active = true; activate
-
       on( e )
       if (e.is_consumed) return
 
@@ -46,8 +80,6 @@ class View
       after( e )
 
     method handle( e:PointerEvent )
-      if (not is_active) is_active = true; activate
-
       on( e )
       if (e.is_consumed) return
 
@@ -57,8 +89,6 @@ class View
       after( e )
 
     method handle( e:UpdateEvent )
-      if (not is_active) is_active = true; activate
-
       on( e )
       if (e.is_consumed) return
 
@@ -68,20 +98,37 @@ class View
       after( e )
 
     method on( e:DrawEvent )
-      display.clear( Color.BLUE )
+      draw
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
     method on( e:UpdateEvent )
+      update
 
-    method after( e:DrawEvent )
+    method on_activate
 
-    method after( e:KeyEvent )
+    method on_deactivate
 
-    method after( e:PointerEvent )
+    method on_resume
 
-    method after( e:UpdateEvent )
+    method on_suspend
+
+    method push_state( new_state:State )
+      new_state.prior_state = state
+      state.is_active = false
+      state.on_suspend
+      state = new_state
+      state.view = this
+      state.is_active = true
+      state.on_activate
+
+    method queue_state( new_state:State )
+      local cur = state
+      while (cur.next_state) cur = cur.next_state
+      cur.next_state = new_state
+
+    method update
 endClass
 

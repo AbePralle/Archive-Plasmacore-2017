@@ -57,8 +57,10 @@ class Window
       find_display( display_name_buffer ).handle( e )
 
     method handle_update_and_draw( display_name_buffer:StringBuilder, display_size:XY )
+      #{
       local display = find_display( display_name_buffer )
       display.update_and_draw( display_size )
+      }#
 
     method show
       Message( "Window.show" ).set("id",id).send
@@ -115,6 +117,7 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
+      #{
       MessageManager.add_handler( "Display.update_and_draw",
         function (m:Message)
           local window_id = m.int32( "window_id" )
@@ -126,6 +129,7 @@ class WindowManager [requisite singleton]
           endIf
         endFunction
       )
+      }#
 
     method find_window( window_id:Int32 )->Window
       if (current_window and window_id == current_window.id) return current_window

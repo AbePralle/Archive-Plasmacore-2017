@@ -1,9 +1,20 @@
 module Plasmacore
 
-class Assets [requisite]
+class Assets
   PROPERTIES
-    #graphics : Graphics
+    set_name     = ""
+    image_groups = ImageGroup[]
 
   METHODS
+    method init( set_name="" )
+
+    method change_set( new_set_name:String )
+
+    method load
+      # Load all assets.
+
+    method load_another->Real64
+      # Loads another asset.  Returns the progress as a value between 0.0 and 1.0.
+      return 0
 endClass
 

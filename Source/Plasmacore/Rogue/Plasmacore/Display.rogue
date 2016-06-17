@@ -2,15 +2,31 @@ module Plasmacore
 using  Plasmacore::UI
 
 class Display [singleton]
-  CLASS
-    nativeHeader #include "Starbright.h"
+  DEPENDENCIES
+    $if "iOS"
+      nativeHeader
+        #include <OpenGLES/ES2/gl.h>
+        #include <OpenGLES/ES2/glext.h>
+        #define glClearDepth glClearDepthf
+      endNativeHeader
 
-  CLASS PROPERTIES
-    default_unit_z = 512.0
+    $elseIf "Mac"
+      nativeHeader #include <OpenGL/gl.h>
+    $endIf
+
+  GLOBAL PROPERTIES
+    default_unit_z    = 512.0
+    default_view_type = @View : TypeInfo
 
   PROPERTIES
+    color_shader                       : Shader
+    texture_shader                     : Shader
+    texture_shader_with_color_multiply : Shader
+    texture_shader_with_color_add      : Shader
+    texture_shader_with_color_fill     : Shader
+
     name             : String
-    view             : View
+    view             = default_view_type.create_object<<View>> : View
 
     window           : Window
 
@@ -37,16 +53,48 @@ class Display [singleton]
     projection_mode   = ProjectionMode()
     unit_z            : Real64
 
-    textures_by_name  = StringTable<<Texture>>()
-    texture_list      = Texture[]
+    custom_shader          : Shader
+    active_render_mode     : RenderMode
+    active_textures        = Texture[]
+    active_primitive_type  = 3
+
+    vertex_count           : Int32
+    vertex_positions       = Real32[]
+    vertex_uvs             = Real32[]
+    vertex_colors          = Int32[]
+
+    textures_by_name   = StringTable<<Texture>>()
+    texture_list       = Texture[]
+
+    # Loaded image groups
+    image_group_list   = ImageGroup[]
+    image_group_lookup = StringTable<<ImageGroup>>()
 
     system_font : Font
     ui_theme    = Theme() # Default theme
 
+  GLOBAL METHODS
+    method create( name:String )->Display
+      return Plasmacore.display( name )
+
   METHODS
-    method init( name )
-      view = Plasmacore.create_view( this )
-      system_font = Font( "FontSystem17.png", &options=@{snug} )
+    method init
+      #view = Plasmacore.create_view( this )
+      #system_font = Font( "FontSystem17.png", &options=@{snug} )
+
+    method activate_view_and_state
+      if (not view) view = default_view_type.create_object<<View>>
+      view.display = this
+      view.state.view = view
+
+      if (not view.is_active)
+        view.is_active = true
+        view.on_activate
+      endIf
+      if (not view.state.is_active)
+        view.state.is_active = true
+        view.state.on_activate
+      endIf
 
     method bounds->Box
       return Box(size)
@@ -55,8 +103,16 @@ class Display [singleton]
       return (size/2).floor
 
     method clear->this
-      native @|Starbright::renderer->clear_color = $this->background_color.argb;
-              |Starbright::renderer->clear( Starbright::Renderer::CLEAR_COLOR );
+      native "int gl_flags = 0;"
+      if (background_color.argb)
+        native "gl_flags |= GL_COLOR_BUFFER_BIT;"
+        native @|int c = $background_color.argb;
+                |gl_flags |= GL_COLOR_BUFFER_BIT;
+                |glClearColor( ((c>>16)&255)/255.0f, ((c>>8)&255)/255.0f, (c&255)/255.0f, ((c>>24)&255)/255.0f );
+      endIf
+
+      native "if (gl_flags) glClear( gl_flags );"
+
       return this
 
     method clear( background_color )->this
@@ -68,6 +124,50 @@ class Display [singleton]
       view_transform_modified = true
       object_transform_modified = true
 
+    method define_texture( gl_id:Int32, bitmap:Bitmap, options:Int32 )->Int32
+      if (not gl_id)
+        native @|GLuint new_id;
+                |glGenTextures( 1, &new_id );
+                |$gl_id = new_id;
+      endIf
+
+      local w = bitmap.width
+      local h = bitmap.height
+      local bpp = options & (32|16|8)
+
+      native @|void* data = $bitmap->pixels->data->as_bytes;
+              |glBindTexture( GL_TEXTURE_2D, $gl_id );
+              |switch ($bpp)
+              |{
+              |  case 32:
+              |    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, $w, $h, 0, GL_BGRA, GL_UNSIGNED_BYTE, data );
+              |    break;
+              |
+              |  case 16:
+              |    {
+              |      // Convert 16-bit ARGB to 16-bit RGBA
+              |      int count = $w*$h;
+              |      RogueWord* cursor = ((RogueWord*) data) - 1;
+              |      while (--count >= 0)
+              |      {
+              |        RogueWord pixel = *(++cursor);
+              |        *cursor = (RogueWord)
+              |                ( ((pixel<<4) & 0x0f00)
+              |                | ((pixel>>4)&0xf0)
+              |                | ((pixel<<12)&0xf000)
+              |                | ((pixel>>12)&15) );
+              |      }
+              |    }
+              |    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, $w, $h, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, data );
+              |    break;
+              |}
+
+      return gl_id
+
+    method delete_texture( gl_id:Int32 )
+      native @|GLuint texture_id = (GLuint) gl_id;
+              |glDeleteTextures( 1, &texture_id );
+
     method draw( box:Box, color:Color )
       draw( box, Colors(color) )
 
@@ -76,51 +176,46 @@ class Display [singleton]
 
     method draw( box:Box, colors:Colors )
       draw_solid_quad( transform(Corners<<XY>>(box)), colors,
-        select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, Shader.COLOR )
+        select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
     method draw_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
-      native @|Starbright::renderer->set_shader( $shader.id );
-              |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
-              |Starbright::renderer->set_render_mode( $render_mode.value );
-              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
-              |
-              |v[0].x = $corners.a.x;
-              |v[0].y = $corners.a.y;
-              |v[0].z = $corners.a.z;
-              |v[0].w = $corners.a.w;
-              |v[1].x = $corners.b.x;
-              |v[1].y = $corners.b.y;
-              |v[1].z = $corners.b.z;
-              |v[1].w = $corners.b.w;
-              |v[2].x = $corners.c.x;
-              |v[2].y = $corners.c.y;
-              |v[2].z = $corners.c.z;
-              |v[2].w = $corners.c.w;
-              |v[3].x = $corners.a.x;
-              |v[3].y = $corners.a.y;
-              |v[3].z = $corners.a.z;
-              |v[3].w = $corners.a.w;
-              |v[4].x = $corners.c.x;
-              |v[4].y = $corners.c.y;
-              |v[4].z = $corners.c.z;
-              |v[4].w = $corners.c.w;
-              |v[5].x = $corners.d.x;
-              |v[5].y = $corners.d.y;
-              |v[5].z = $corners.d.z;
-              |v[5].w = $corners.d.w;
-              |
-              |v[0].color = $colors.a.argb;
-              |v[0].color = $colors.a.argb;
-              |v[1].color = $colors.b.argb;
-              |v[1].color = $colors.b.argb;
-              |v[2].color = $colors.c.argb;
-              |v[2].color = $colors.c.argb;
-              |v[3].color = $colors.a.argb;
-              |v[3].color = $colors.a.argb;
-              |v[4].color = $colors.c.argb;
-              |v[4].color = $colors.c.argb;
-              |v[5].color = $colors.d.argb;
-              |v[5].color = $colors.d.argb;
+      set_primitive_type( 3 )
+      set_render_mode( render_mode, shader )
+
+      vertex_count += 6
+
+      vertex_positions.add( corners.a.x )
+      vertex_positions.add( corners.a.y )
+      vertex_positions.add( corners.a.z )
+      vertex_positions.add( corners.a.w )
+      vertex_positions.add( corners.b.x )
+      vertex_positions.add( corners.b.y )
+      vertex_positions.add( corners.b.z )
+      vertex_positions.add( corners.b.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
+
+      vertex_positions.add( corners.a.x )
+      vertex_positions.add( corners.a.y )
+      vertex_positions.add( corners.a.z )
+      vertex_positions.add( corners.a.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
+      vertex_positions.add( corners.d.x )
+      vertex_positions.add( corners.d.y )
+      vertex_positions.add( corners.d.z )
+      vertex_positions.add( corners.d.w )
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.b.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.d.argb )
 
     method draw_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
@@ -129,64 +224,60 @@ class Display [singleton]
         render_mode:RenderMode,
         shader:Shader )
 
-      native @|Starbright::renderer->set_texture( 0, $texture->id );
-              |Starbright::renderer->set_shader( $shader.id );
-              |Starbright::renderer->set_primitive_type( Starbright::Renderer::TRIANGLES );
-              |Starbright::renderer->set_render_mode( $render_mode.value );
-              |Starbright::Vertex* v = Starbright::renderer->add_vertices( 6 );
-              |
-              |v[0].x = $corners.a.x;
-              |v[0].y = $corners.a.y;
-              |v[0].z = $corners.a.z;
-              |v[0].w = $corners.a.w;
-              |v[1].x = $corners.b.x;
-              |v[1].y = $corners.b.y;
-              |v[1].z = $corners.b.z;
-              |v[1].w = $corners.b.w;
-              |v[2].x = $corners.c.x;
-              |v[2].y = $corners.c.y;
-              |v[2].z = $corners.c.z;
-              |v[2].w = $corners.c.w;
-              |v[3].x = $corners.a.x;
-              |v[3].y = $corners.a.y;
-              |v[3].z = $corners.a.z;
-              |v[3].w = $corners.a.w;
-              |v[4].x = $corners.c.x;
-              |v[4].y = $corners.c.y;
-              |v[4].z = $corners.c.z;
-              |v[4].w = $corners.c.w;
-              |v[5].x = $corners.d.x;
-              |v[5].y = $corners.d.y;
-              |v[5].z = $corners.d.z;
-              |v[5].w = $corners.d.w;
-              |
-              |v[0].u = $uv.a.x;
-              |v[0].v = $uv.a.y;
-              |v[1].u = $uv.b.x;
-              |v[1].v = $uv.b.y;
-              |v[2].u = $uv.c.x;
-              |v[2].v = $uv.c.y;
-              |v[3].u = $uv.a.x;
-              |v[3].v = $uv.a.y;
-              |v[4].u = $uv.c.x;
-              |v[4].v = $uv.c.y;
-              |v[5].u = $uv.d.x;
-              |v[5].v = $uv.d.y;
-              |
-              |v[0].color = $colors.a.argb;
-              |v[0].color = $colors.a.argb;
-              |v[1].color = $colors.b.argb;
-              |v[1].color = $colors.b.argb;
-              |v[2].color = $colors.c.argb;
-              |v[2].color = $colors.c.argb;
-              |v[3].color = $colors.a.argb;
-              |v[3].color = $colors.a.argb;
-              |v[4].color = $colors.c.argb;
-              |v[4].color = $colors.c.argb;
-              |v[5].color = $colors.d.argb;
-              |v[5].color = $colors.d.argb;
+      set_texture( 0, texture )
+      set_primitive_type( 3 )
+      set_render_mode( render_mode, shader )
+
+      vertex_count += 6
+
+      vertex_positions.add( corners.a.x )
+      vertex_positions.add( corners.a.y )
+      vertex_positions.add( corners.a.z )
+      vertex_positions.add( corners.a.w )
+      vertex_positions.add( corners.b.x )
+      vertex_positions.add( corners.b.y )
+      vertex_positions.add( corners.b.z )
+      vertex_positions.add( corners.b.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
+
+      vertex_positions.add( corners.a.x )
+      vertex_positions.add( corners.a.y )
+      vertex_positions.add( corners.a.z )
+      vertex_positions.add( corners.a.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
+      vertex_positions.add( corners.d.x )
+      vertex_positions.add( corners.d.y )
+      vertex_positions.add( corners.d.z )
+      vertex_positions.add( corners.d.w )
+
+      vertex_uvs.add( uv.a.x );
+      vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.b.x );
+      vertex_uvs.add( uv.b.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.a.x );
+      vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.d.x );
+      vertex_uvs.add( uv.d.y );
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.b.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.d.argb )
 
     method handle( e:KeyEvent )
+      activate_view_and_state
       view.state.handle( e )
 
     method handle( e:PointerEvent )
@@ -201,10 +292,29 @@ class Display [singleton]
         pointer_exists = true
         pointer_position = e.position
       endIf
+      activate_view_and_state
       view.state.handle( e )
 
     method height->Int32 [macro]
       this.size.y->Int32
+
+    method image_group( group_name:String )->ImageGroup
+      # Finds existing image group if already loaded
+      local group = image_group_lookup[ group_name ]
+      if (group) return group
+
+      local info = Plasmacore.find_image_group_info( group_name )
+      if (info) group = ImageGroup( info )
+
+      # Return a dummy group on error
+      if (not group)
+        println "Image Group not found: " + group_name
+        group = ImageGroup( @{} )
+      endIf
+
+      image_group_lookup[ group_name ] = group
+      image_group_list.add( group )
+      return group
 
     method outline( box:Box, color:Int32 )
       outline( box, Color(color) )
@@ -245,6 +355,231 @@ class Display [singleton]
       view_transform_modified = true
       return this
 
+    method render( size )
+      Display = this  # set the singleton reference to be this display
+
+      if (not color_shader)
+        # Set up default shaders
+        color_shader                       = Shader.create_color_shader
+        texture_shader                     = Shader.create_texture_shader
+        texture_shader_with_color_multiply = Shader.create_texture_shader_with_color_multiply
+        texture_shader_with_color_add      = Shader.create_texture_shader_with_color_add
+        texture_shader_with_color_fill     = Shader.create_texture_shader_with_color_fill
+      endIf
+
+      activate_view_and_state
+
+      view.ui.update_layout( Box(size) )
+
+      clear_transforms
+      projection_mode = projection_mode.configure( size )
+      projection_mode.activate
+
+      update_timer.update
+
+      activate_view_and_state
+      while (update_timer.tick)
+        view.state.handle( UpdateEvent.init )
+      endWhile
+      view.state.handle( DrawEvent.init )
+
+      #OverlayLog.update
+      #OverlayLog.draw
+
+      render
+      native "glFlush();"
+
+    method render
+      if (not vertex_count) return
+
+      local render_mode = active_render_mode
+
+      local shader = custom_shader
+      if (not shader)
+        # Choose shader based on render mode.
+        if (render_mode.is_textured)
+          which (render_mode.value & RenderMode.COLOR_MODE_MASK)
+            case RenderMode.COLOR_MULTIPLY: shader = texture_shader_with_color_multiply
+            case RenderMode.COLOR_ADD:      shader = texture_shader_with_color_add
+            case RenderMode.COLOR_FILL:     shader = texture_shader_with_color_fill
+            others:                         shader = texture_shader
+          endWhich
+        else
+          shader = color_shader
+        endIf
+      endIf
+
+      if (not shader)
+        println "Display.render: No active shader"
+        return
+      endIf
+
+      native @|glViewport( 0, 0, (int)$size.x, (int)$size.y );
+
+      if (render_mode.is_blended)
+        local gl_source_blend = 0
+        which (render_mode.source_blend)
+          case RenderMode.BLEND_ZERO:                 gl_source_blend = native("GL_ZERO")->Int32
+          case RenderMode.BLEND_ONE:                  gl_source_blend = native("GL_ONE")->Int32
+          case RenderMode.BLEND_SOURCE_ALPHA:         gl_source_blend = native("GL_SRC_ALPHA")->Int32
+          case RenderMode.BLEND_INVERSE_SOURCE_ALPHA: gl_source_blend = native("GL_ONE_MINUS_SRC_ALPHA")->Int32
+        endWhich
+
+        local gl_dest_blend = 0
+        which (render_mode.dest_blend)
+          case RenderMode.BLEND_ZERO:                 gl_dest_blend = native("GL_ZERO")->Int32
+          case RenderMode.BLEND_ONE:                  gl_dest_blend = native("GL_ONE")->Int32
+          case RenderMode.BLEND_SOURCE_ALPHA:         gl_dest_blend = native("GL_SRC_ALPHA")->Int32
+          case RenderMode.BLEND_INVERSE_SOURCE_ALPHA: gl_dest_blend = native("GL_ONE_MINUS_SRC_ALPHA")->Int32
+        endWhich
+
+        native @|glEnable( GL_BLEND );
+                |glBlendFunc( $gl_source_blend, $gl_dest_blend );
+      else
+        native @|glDisable( GL_BLEND );
+      endIf
+
+      if (render_mode.is_textured)
+        forEach (i in 0..<active_textures.count.or_smaller(shader.texture_settings.count))
+          local texture = active_textures[ i ]
+          if (texture)
+            local setting = shader.texture_settings[ i ]
+            native @|glActiveTexture( GL_TEXTURE0+$i );
+                    |glBindTexture( GL_TEXTURE_2D, $texture->id );
+                    |glUniform1i( $setting, $i );
+
+            if (render_mode.wrap_x)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+            endIf
+
+            if (render_mode.wrap_y)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+            endIf
+
+            if (render_mode.is_point_filtered)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            endIf
+          endIf
+        endForEach
+      endIf
+
+      # ---- Set Vertex Color Mode ------------------------------------------------
+      # Copy vertex colors and set up vertex color mode
+      # Swap red and blue while premultiplying R,G,B by A.
+      local count = vertex_colors.count
+      native @|{
+              |  RogueInt32* src = $vertex_colors->data->as_int32s - 1;
+              |  while (--$count >= 0)
+              |  {
+              |    int color = *(++src);
+              |    int a = (color >> 24) & 255;
+              |    int r = (((color >> 16) & 255) * a) / 255;
+              |    int g = (((color >> 8) & 255) * a) / 255;
+              |    int b = ((color & 255) * a) / 255;
+              |    *src = (a << 24) | (b << 16) | (g << 8) | r;
+              |  }
+              |}
+      # Configure shader
+      native @|RogueReal64* transform64 = &$projection_transform.r1c1;
+              |RogueReal32  transform32[16];
+              |transform32[0] = (RogueReal32) transform64[0];
+              |transform32[1] = (RogueReal32) transform64[1];
+              |transform32[2] = (RogueReal32) transform64[2];
+              |transform32[3] = (RogueReal32) transform64[3];
+              |transform32[4] = (RogueReal32) transform64[4];
+              |transform32[5] = (RogueReal32) transform64[5];
+              |transform32[6] = (RogueReal32) transform64[6];
+              |transform32[7] = (RogueReal32) transform64[7];
+              |transform32[8] = (RogueReal32) transform64[8];
+              |transform32[9] = (RogueReal32) transform64[9];
+              |transform32[10] = (RogueReal32) transform64[10];
+              |transform32[11] = (RogueReal32) transform64[11];
+              |transform32[12] = (RogueReal32) transform64[12];
+              |transform32[13] = (RogueReal32) transform64[13];
+              |transform32[14] = (RogueReal32) transform64[14];
+              |transform32[15] = (RogueReal32) transform64[15];
+              |
+              |glUseProgram( $shader->program_id );
+              |
+              |glUniformMatrix4fv( $shader->transform_setting, 1, GL_FALSE, transform32 );
+              |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0,
+              |                       $vertex_positions->data->as_real32s );
+              |glEnableVertexAttribArray( $shader->position_attribute );
+
+      if (shader.color_attribute >= 0)
+        native @|glVertexAttribPointer( $shader->color_attribute, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0,
+                |$vertex_colors->data->as_int32s );
+                |glEnableVertexAttribArray( $shader->color_attribute );
+      endIf
+
+      if (shader.uv_attribute >= 0)
+        native @|glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, $vertex_uvs->data->as_real32s );
+                |glEnableVertexAttribArray( $shader->uv_attribute );
+      endIf
+
+      which (active_primitive_type)
+        case 3
+          native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
+
+        case 2
+          native @|glDrawArrays( GL_LINES, 0, $vertex_count );
+
+        case 1
+          native @|glDrawArrays( GL_POINTS, 0, $vertex_count );
+      endWhich
+
+      #@trace native("glGetError()")->Int32
+
+      # Cleanup
+      vertex_count = 0
+      vertex_positions.clear
+      vertex_uvs.clear
+      vertex_colors.clear
+
+    method set_primitive_type( primitive_type:Int32 )->this
+      if (primitive_type == active_primitive_type) return this
+      render
+      active_primitive_type = primitive_type
+      return this
+
+    method set_projection_transform( @projection_transform )->this
+      render
+      return this
+
+    method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
+      if (render_mode.value == active_render_mode.value and custom_shader is shader) return this
+      render
+      active_render_mode = render_mode
+      custom_shader = shader
+      return this
+
+    method set_texture( index:Int32, texture:Texture )->this
+      if (index < active_textures.count and active_textures[index] is texture) return this
+      render
+      active_textures.expand_to_include( index )[ index ] = texture
+      return this
+
+    method set_state( new_state:State )->this
+      # Sets the state of this Display's current view.
+      view.state = new_state
+      return this
+
+    method set_view( @view )->this
+      view.display = this
+      return this
+
+    method state->State [macro]
+      # Obtains the state of this Display's current view.
+      this.view.state
+
     method transform->Matrix
       update_transform
       return @transform
@@ -259,24 +594,11 @@ class Display [singleton]
       local z = -unit_z
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
 
-    method update_and_draw( size )
-      Display = this  # set the singleton reference to be this display
-
-      view.ui.update_layout( Box(size) )
-
-      clear_transforms
-      projection_mode = projection_mode.configure( size )
-      projection_mode.activate
-
-      update_timer.update
-
-      while (update_timer.tick)
-        view.state.handle( UpdateEvent.init )
-      endWhile
-      view.state.handle( DrawEvent.init )
-
-      OverlayLog.update
-      OverlayLog.draw
+    method unload_image_groups
+      # Unloads all image groups except those flagged 'is_permanent'.
+      forEach (group in image_group_list)
+        if (not group.is_permanent) group.unload
+      endForEach
 
     method update_transform
       if (not (view_transform_modified or object_transform_modified)) return
@@ -314,10 +636,6 @@ class Display [singleton]
           transform = Matrix.identity
         endIf
       endIf
-
-    method set_projection_transform( @projection_transform )->this
-      native "Starbright::renderer->set_transform( &$this->projection_transform.r1c1 );"
-      return this
 
     method width->Int32 [macro]
       this.size.x->Int32

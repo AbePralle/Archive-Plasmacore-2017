@@ -95,7 +95,7 @@ class PlasmacoreView: NSOpenGLView
     let display_height = Int(bounds.height)
     Starbright_begin_draw( renderer_id, Int32(display_width), Int32(display_height) )
 
-    let m = PlasmacoreMessage( type:"Display.update_and_draw" )
+    let m = PlasmacoreMessage( type:"Display.render" )
     m.set( "window_id", value:windowID ).set( "display_name", value:name )
     m.set( "width",  value:display_width )
     m.set( "height", value:display_height )

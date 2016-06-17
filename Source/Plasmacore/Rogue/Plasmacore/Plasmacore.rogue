@@ -6,6 +6,8 @@ $include "Anchor.rogue"
 $include "Bitmap.rogue"
 $include "Box.rogue"
 $include "Color.rogue"
+$include "JPEG.rogue"
+$include "PNG.rogue"
 $include "XY.rogue"
 
 $if not "Console"
@@ -17,6 +19,8 @@ $include "Event.rogue"
 $include "Font.rogue"
 $include "UI"
 $include "Image.rogue"
+$include "ImageGroup.rogue"
+$include "ImageList.rogue"
 $include "Keyboard.rogue"
 $include "Matrix.rogue"
 $include "Messaging.rogue"
@@ -27,10 +31,10 @@ $include "RenderMode.rogue"
 $include "Rotation.rogue"
 $include "Shader.rogue"
 $include "Sprite.rogue"
+$include "State.rogue"
 $include "Texture.rogue"
 $include "UpdateTimer.rogue"
 $include "View.rogue"
-$include "ViewState.rogue"
 $include "Window.rogue"
 $include "XYZ.rogue"
 $include "XYZW.rogue"
@@ -39,15 +43,24 @@ module Plasmacore
 
 class Plasmacore [requisite singleton]
   PROPERTIES
-    next_resource_id       = 1
-    display_view_types     = StringTable<<TypeInfo>>()
-    global_update_callback : Function()
-    global_update_timer    = UpdateTimer()
-    launch_window_name     : String
+    default_asset_folder    = ""
+
+    next_resource_id        = 1
+    display_view_types      = StringTable<<TypeInfo>>()
+    global_update_callback  : Function()
+    global_update_timer     = UpdateTimer()
+    launch_window_name      : String
+    displays                = StringTable<<Display>>()
+
+    image_manifest          : ValueTable
+    image_group_info_lookup = @{}
+    image_info_lookup       = @{}
 
   METHODS
     method init
       Console.println "Initializing Plasmacore"
+
+      load_image_manifest
 
       MessageManager.add_handler( "Application.launch",
         function(m:Message)
@@ -60,25 +73,43 @@ class Plasmacore [requisite singleton]
           endIf
         endFunction )
 
-        set_display_view( "default", @View )
+      MessageManager.add_handler( "Display.render",
+        function(m:Message)
+          Display( m.string("display_name") ).render( XY(m.int32("display_width"),m.int32("display_height")) )
+        endFunction )
+
+    method asset_file( name:String )->File
+      local filepath = asset_filepath( name )
+      if (not filepath) return null
+      return File( filepath )
+
+    method asset_filepath( name:String )->String
+      if (File.exists(name)) return name   # already correct
+
+      local filepath = native( "Plasmacore_find_asset( $name )" )->String
+      if (filepath) return filepath
+
+      name = "Images/" + name
+      return native( "Plasmacore_find_asset( $name )" )->String
 
     method create_resource_id->Int32
       ++next_resource_id
       return (next_resource_id - 1)
 
-    method find_asset( name:String )->String
-      local filepath = native( "Plasmacore_find_asset( $name )" )->String
-      if (filepath) return filepath
+    method display( name:String )->Display
+      local result = displays[ name ]
+      if (result) return result
 
-      name = "Assets/" + name
-      return native( "Plasmacore_find_asset( $name )" )->String
+      result = Display()
+      result.name = name
+      Plasmacore.displays[ name ] = result
+      return result
 
-    method create_view( display:Display )->View
-      local type = display_view_types[ display.name ]
-      if (not type) type = display_view_types[ "default" ]
-      if (not type) return null
+    method find_image_group_info( name:String )->Value
+      return image_group_info_lookup[ name ]
 
-      return type.create_object<<View>>.init( display )
+    method find_image_info( name:String )->Value
+      return image_info_lookup[ name ]
 
     method global_update
       global_update_timer.update
@@ -86,16 +117,37 @@ class Plasmacore [requisite singleton]
         if (global_update_callback) global_update_callback()
       endWhile
 
+    method index_assets
+      image_group_info_lookup = @{}
+      image_info_lookup = @{}
+      forEach (group_info in Plasmacore.image_manifest.list("groups"))
+        image_group_info_lookup[ group_info.string("name") ] = group_info
+        forEach (image_info in group_info.list("images"))
+          local name = image_info.string("name")
+          local info = @{ group:group_info, image:image_info }
+          image_info_lookup[ name ] = info
+          if (name.begins_with(default_asset_folder))
+            image_info_lookup[ name.after_first(default_asset_folder) ] = info
+          endIf
+        endForEach
+      endForEach
+
+    method load_image_manifest
+      image_manifest = ValueTable.load( asset_file("ImageManifest.json") )
+      index_assets
+
     method on_global_update( global_update_callback )
       noAction
 
-    method set_display_view( display_name:String, view_type:TypeInfo )
-      # Sets the initial view type
-      display_view_types[ display_name ] = view_type
+    method set_default_asset_folder( folder:String )->this
+      if (not folder) folder = ""
+      if (default_asset_folder == folder) return this
 
-    method set_display_view( display_name:String, view:View )
-      # Sets the active view of any existing displays matching the display name
-      WindowManager.set_display_view( display_name, view )
+      if (folder.count) folder = File.ensure_ends_with_separator( folder )
+      @default_asset_folder = folder
+      index_assets
+      return this
+
 endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );

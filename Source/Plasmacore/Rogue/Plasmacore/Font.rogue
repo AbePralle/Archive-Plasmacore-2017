@@ -67,9 +67,9 @@ class FontData
       prepare( text )
 
       if (font.color.argb == 0xFFFFFFFF)
-        image.shader = Shader.TEXTURE
+        #image.shader = Shader.TEXTURE
       else
-        image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
+        #image.shader = Shader.TEXTURE_WITH_COLOR_MULTIPLY
       endIf
       image.color = font.color
 
@@ -78,7 +78,7 @@ class FontData
         local info = this[ ch ]
         if (info)
           image.anchor = Anchor.TOP_LEFT
-          image.adjust_subset( info.bounds )
+          image.adjust_uv( info.bounds )
           image.size = info.size * font.scale
           image.position = cursor+info.offset * font.scale
           image.draw
@@ -268,7 +268,7 @@ class BitmapFontLoader : FontLoader
 
   METHODS
     method init( name, options )
-      local filepath = Plasmacore.find_asset( name )
+      local filepath = Plasmacore.asset_filepath( name )
       if (not filepath)
         error = true
         println ''ERROR loading bitmap font "$" - no such file.'' (name)
@@ -322,7 +322,7 @@ endClass
 
 $if "Console"
 class TrueTypeFontLoader : FontLoader [requisite]
-  CLASS
+  DEPENDENCIES
     nativeHeader
       #include "ft2build.h"
       #include FT_FREETYPE_H
@@ -343,7 +343,7 @@ class TrueTypeFontLoader : FontLoader [requisite]
         default_characters = String( (' '..'~')->Character[] )
       endIf
 
-      local filepath = Plasmacore.find_asset( name )
+      local filepath = Plasmacore.asset_filepath( name )
       if (not filepath)
         error = true
         println ''ERROR loading TrueType font "$" - no such file.'' (name)

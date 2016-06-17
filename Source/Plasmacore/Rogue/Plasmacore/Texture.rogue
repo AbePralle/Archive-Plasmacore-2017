@@ -1,9 +1,6 @@
 module Plasmacore
 
 class Texture
-  CLASS
-    nativeHeader #include "Starbright.h"
-
   PROPERTIES
     id            : Int32    # id in loading display context
     image_size    : XY       # In pixels
@@ -16,9 +13,14 @@ class Texture
       local texture = Display.textures_by_name[ name ]
       if (texture) return texture
 
-      local filepath = Plasmacore.find_asset( name )
+      local filepath = Plasmacore.asset_filepath( name )
       if (filepath)
+        texture = Display.textures_by_name[ filepath ]
+        if (texture) return texture
+
+        println "Loading " + filepath
         texture = Texture( File(filepath) )
+        Display.textures_by_name[ filepath ] = texture
       else
         println "File not found: " + name
         texture = Texture( Bitmap(1,1,Color.WHITE) )
@@ -29,63 +31,17 @@ class Texture
 
   METHODS
     method init( file:File )->Texture
-      nativeCode
-        #include "ImageIO.h"
-        using namespace ImageIO;
-        #include "GGBitmap.h"
-      endNativeCode
+      local bitmap = Bitmap( file )
+      image_size = bitmap.size
 
-      local image_w : Int32
-      local image_h : Int32
-      local texture_w : Int32
-      local texture_h : Int32
+      is_opaque = bitmap.is_opaque
+      if (not is_opaque) bitmap.premultiply_alpha
+      bitmap.expand_to_power_of_two
 
-      native @|FILE* fp = fopen( (const char*)$file->filepath->utf8, "rb" );
-              |if (fp)
-              |{
-              |  fseek( fp, 0, SEEK_END );
-              |  int file_size = (int) ftell( fp );
-              |  fseek( fp, 0, SEEK_SET );
-              |  char* file_bytes = new char[ file_size ];
-              |  fread( file_bytes, 1, file_size, fp );
-              |
-              |  Decoder decoder;
-              |  if (decoder.open((Byte*)file_bytes,file_size))
-              |  {
-              |    $image_w = decoder.width;
-              |    $image_h = decoder.height;
-              |
-              |    GG::Bitmap bitmap( 0, $image_w, $image_h, 32 );
-              |    if (decoder.decode_argb32( (ARGB32*)bitmap.data ))
-              |    {
-              |      $is_opaque = true;
-              |      ARGB32* data = (ARGB32*) bitmap.data;
-              |      for (int i=$image_w*$image_h; --i>=0; )
-              |      {
-              |        if ((data[i] & 0xFF000000) != 0xFF000000)
-              |        {
-              |          $is_opaque = false;
-              |          break;
-              |        }
-              |      }
-              |      bitmap.filter( GG::FilterFn_premultiply_alpha );
-              |      bitmap.expand_to_power_of_two();
-              |      $texture_w = bitmap.width;
-              |      $texture_h = bitmap.height;
-              |      $id = Starbright::renderer->define_texture($id, (ARGB32*)bitmap.data, $texture_w, $texture_h, 32);
-              |    }
-              |  }
-              |
-              |  delete[] file_bytes;
-              |  fclose( fp );
-              |}
+      texture_size = bitmap.size
+      uv_size = image_size / texture_size
 
-      if (id)
-        image_size   = XY( image_w, image_h )
-        texture_size = XY( texture_w, texture_h )
-        uv_size      = image_size / texture_size
-      endIf
-
+      id = Display.define_texture( id, bitmap, 32 )
       Display.texture_list.add( this )
 
     method init( bitmap:Bitmap )
@@ -98,18 +54,11 @@ class Texture
       this.image_size.x
 
     method set( bitmap:Bitmap )
-      nativeCode
-        #include "ImageIO.h"
-        using namespace ImageIO;
-        #include "GGBitmap.h"
-      endNativeCode
-
       is_opaque = bitmap.is_opaque
+      if (not is_opaque) bitmap.premultiply_alpha
+      bitmap.expand_to_power_of_two
 
-      local image_w = bitmap.width
-      local image_h = bitmap.height
-      local texture_w, texture_h : Int32
-      local bpp = 32
+      image_size = bitmap.size
 
       if (not id)
         # First time being defined - otherwise this same texture is being redefined
@@ -117,23 +66,26 @@ class Texture
         Display.texture_list.add( this )
       endIf
 
-      native @|GG::Bitmap bitmap( $bitmap->pixels->data->bytes, $image_w, $image_h, $bpp );
-              |bitmap.filter( GG::FilterFn_premultiply_alpha );
-              |bitmap.expand_to_power_of_two();
-              |$texture_w = bitmap.width;
-              |$texture_h = bitmap.height;
-              |$id = Starbright::renderer->define_texture( $id,
-              |    (ARGB32*)bitmap.data, $texture_w, $texture_h, 32 );
+      texture_size = bitmap.size
+      uv_size = image_size / texture_size
 
-      image_size   = XY( image_w, image_h )
-      texture_size = XY( texture_w, texture_h )
-      uv_size      = image_size / texture_size
+      id = Display.define_texture( id, bitmap, 32 )
 
     method texture_height->Int32 [macro]
       this.texture_size.y
 
     method texture_width->Int32 [macro]
       this.texture_size.x
+
+    method unload->this
+      Display.delete_texture( id )
+      Display.texture_list.remove( this )
+      forEach (key in Display.textures_by_name.keys)
+        if (Display.textures_by_name[key] is this)
+          Display.textures_by_name.remove( key )
+        endIf
+      endForEach
+      return this
 
     method uv_height->Real64 [macro]
       this.uv_size.y

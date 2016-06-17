@@ -2,6 +2,7 @@ module Plasmacore
 
 class Image
   PROPERTIES
+    name        : String
     data        : ImageData
     position    : XY
     z           = 1.0
@@ -14,6 +15,8 @@ class Image
     colors      = Colors(Color.WHITE) : Colors
 
   METHODS
+    method init( name )
+
     method init( other:Image )
       data        = other.data
       position    = other.position
@@ -26,12 +29,14 @@ class Image
       render_mode = other.render_mode
       colors      = other.colors
 
+    method init( data )
+
     method add( child:Image )->this
       data.add( child )
       return this
 
-    method adjust_subset( subset:Box )
-      data.adjust_subset( subset )
+    method adjust_uv( subset:Box )
+      data.adjust_uv( subset )
 
     method cloned->Image
       return Image( this )
@@ -41,6 +46,47 @@ class Image
 
     method draw( position )
       data.draw( this )
+
+    method load
+      if (data) return
+      if (perform_load) return
+
+      println "Error loading " + name
+      data = ColorFillImageData()
+      colors = Colors( Color.WHITE )
+      render_mode = RenderMode.OPAQUE_SHAPE
+      shader = ColorShader
+
+    method perform_load->Logical
+      local info = Plasmacore.image_info_lookup[ name ]
+      if (not info) return false
+
+      local group_info = info.table( "group" )
+      local image_info = info.table( "image" )
+      local image_type = image_info.string( "type" )
+      which (image_type)
+        case "image"
+          # Image consists of one part
+          local part = image_info.list( "parts" ).first
+          if (not part) return false
+
+          local part_type = part.string( "type" )
+          which (part_type)
+            case "texture"
+              local sheet_info = group_info.list("textures")[ part.int32("sheet") ]
+              if (not sheet_info) return false
+              local texture = Texture( sheet_info.string("filename") )
+              size = XY( part.int32("width"), part.int32("height") )
+              data = TextureImageData( texture )
+              data.adjust_uv( Box(part.int32("tx"), part.int32("ty"), size) )
+              shader = TextureShader
+              render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+              return true
+
+          endWhich
+      endWhich
+
+      return false
 
     method set( bitmap:Bitmap )
       data = data.set( bitmap )
@@ -103,19 +149,20 @@ class Image
       # t=0.0: shader set to TEXTURE
       # t>0.0: shader set to TEXTURE_WITH_COLOR_FILL, color alpha set to t*255
       if (t == 0)
-        shader = Shader.TEXTURE
+        shader = TextureShader
       else
         local a = Int32( t * 255 )
         colors.a = colors.a.with_alpha( a )
         colors.b = colors.b.with_alpha( a )
         colors.c = colors.c.with_alpha( a )
         colors.d = colors.d.with_alpha( a )
-        shader = Shader.TEXTURE_WITH_COLOR_FILL
+        shader = TextureShaderWithColorFill
       endIf
 
       return this
 endClass
 
+#{
 class CompositeImage : Image
   METHODS
     method init( size )
@@ -124,40 +171,43 @@ class CompositeImage : Image
     method init( w:Int32, h:Int32 )
       init( XY(w,h) )
 endClass
+}#
 
-class ColorFillImage : Image
-  METHODS
-    method init( color:Color, size=Displays.size )
-      colors = Colors( color )
-      data = ColorFillImageData()
-      shader = Shader.COLOR
-      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+routine ColorFillImage( color:Color, size=Displays.size:XY )->Image
+  local result = Image( ColorFillImageData() )
+  result.colors = Colors( color )
+  result.shader = ColorShader
+  result.render_mode = select{ color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+  return result
+endRoutine
 
-    method init( colors, size=Display.size )
-      data = ColorFillImageData()
-      shader = Shader.COLOR
-      render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
-endClass
+routine ColorFillImage( colors:Colors, size=Displays.size:XY )->Image
+  local result = Image( ColorFillImageData() )
+  result.colors = colors
+  result.shader = ColorShader
+  result.render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+  return result
+endRoutine
 
-class TextureImage : Image
-  METHODS
-    method init( texture:Texture )
-      data = TextureImageData( texture )
-      shader = Shader.TEXTURE
-      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-      size = texture.image_size
+routine TextureImage( texture:Texture )->Image
+  local result = Image( TextureImageData(texture) )
+  result.shader = TextureShader
+  result.render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+  result.size = texture.image_size
+  return result
+endRoutine
 
-    method init( bitmap:Bitmap )
-      init( Texture(bitmap) )
+routine TextureImage( bitmap:Bitmap )->Image
+  return TextureImage( Texture(bitmap) )
+endRoutine
 
-endClass
 
 class ImageData
   METHODS
     method add( child:Image )
       println "Illegal operation $.add(Image)." (type_name)
 
-    method adjust_subset( subset:Box )
+    method adjust_uv( subset:Box )
       noAction
 
     method draw( image:Image )
@@ -235,7 +285,7 @@ class TextureImageData : ImageData
     method init( texture )
       uv2 = texture.uv_size
 
-    method adjust_subset( subset:Box )
+    method adjust_uv( subset:Box )
       uv1 = subset.top_left / texture.texture_size
       uv2 = subset.bottom_right / texture.texture_size
 
