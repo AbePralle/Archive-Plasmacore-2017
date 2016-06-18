@@ -146,33 +146,7 @@ class Bitmap
     method clear( color=Color.BLACK:Color )
       forEach (i of pixels) pixels[i] = color
 
-    method extend_edges( bounds:Box )
-      local x1 = bounds.position.x
-      local y1 = bounds.position.y
-      local w  = bounds.size.x
-      local h  = bounds.size.y
-      local x2 = x1 + (w - 1)
-      local y2 = y1 + (h - 1)
-      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
-      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
-      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
-      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
-
-    method expand_to_power_of_two->this
-      local wp2 = width.to_power_of_two
-      local hp2 = width.to_power_of_two
-      if (wp2 == width and hp2 == height) return this
-
-      local result = Bitmap( wp2, hp2 )
-      this.blit( result, XY(0,0) )
-      width = result.width
-      height = result.height
-      pixels = result.pixels
-      error = result.error
-
-      return this
-
-    method fill( box:Box, color:Color )
+    method draw( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
       local x_limit = x1 + box.size.x->Int32
@@ -203,6 +177,65 @@ class Bitmap
               |  dest += $row_skip;
               |}
 
+    method draw( box:Box, color:Color, channel_mask:Int32 )
+      local x1 = box.position.x->Int32
+      local y1 = box.position.y->Int32
+      local x_limit = x1 + box.size.x->Int32
+      local y_limit = y1 + box.size.y->Int32
+
+      local w = width
+      local h = height
+
+      if (x1 < 0) x1 = 0
+      if (y1 < 0) y1 = 0
+      if (x_limit >= w) x_limit = w
+      if (y_limit >= h) y_limit = h
+
+      if (x1 >= x_limit or y1 >= y_limit) return
+
+      local argb = color.argb & channel_mask
+      local row_width = x_limit - x1
+      local row_skip = width - row_width
+      local rows = y_limit - y1
+
+      native @|RogueInt32* dest = ($pixels->data->as_int32s + $y1*$w + $x1);
+              |RogueInt32  inverse_mask = ~$channel_mask;
+              |while (--$rows >= 0)
+              |{
+              |  for (int i=$row_width; --i>=0; )
+              |  {
+              |    *dest = (*dest & inverse_mask) | $argb;
+              |    ++dest;
+              |  }
+              |  dest += $row_skip;
+              |}
+
+    method extend_edges( bounds:Box )
+      local x1 = bounds.position.x
+      local y1 = bounds.position.y
+      local w  = bounds.size.x
+      local h  = bounds.size.y
+      local x2 = x1 + (w - 1)
+      local y2 = y1 + (h - 1)
+      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
+      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
+
+    method expand_to_power_of_two->this
+      local wp2 = width.to_power_of_two
+      local hp2 = width.to_power_of_two
+      if (wp2 == width and hp2 == height) return this
+
+      local result = Bitmap( wp2, hp2 )
+      this.blit( result, XY(0,0) )
+      width = result.width
+      height = result.height
+      pixels = result.pixels
+      error = result.error
+
+      return this
+
     method decode( bytes:Byte[] )->Logical
       if (bytes.count < 4) return false
 
@@ -232,6 +265,20 @@ class Bitmap
               |  }
               |}
               |return true;
+
+    method outline( box:Box, color:Color )
+      draw( Box(box.top_left, XY(box.width,1)), color )
+      draw( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
+
+      draw( Box(box.top_left,            XY(1,box.height)), color )
+      draw( Box(box.top_right - XY(1,0), XY(1,box.height)), color )
+
+    method outline( box:Box, color:Color, channel_mask:Int32 )
+      draw( Box(box.top_left, XY(box.width,1)), color, channel_mask )
+      draw( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color, channel_mask )
+
+      draw( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
+      draw( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
 
     method premultiply_alpha->this
       # Multiplies the R,G,B components of each color by their current
