@@ -2,48 +2,30 @@ module Plasmacore
 
 augment Image[]
   PROPERTIES
-    name : String
+    name       : String
+    image_info : Value
+    is_loaded  : Logical
 
   METHODS
     method init( name )
+      init( Plasmacore.image_info_lookup[ name ] )
 
-    method load
-      if (count) return
-      if (perform_load) return
-
-      println "Error loading " + name
-      add( ColorFillImage( Color.WHITE, XY(16,16) ) )
-
-    method perform_load->Logical
-      local info = Plasmacore.image_info_lookup[ name ]
-      if (not info) return false
-
-      local group_info = info.table( "group" )
-      local image_info = info.table( "image" )
+    method init( image_info )
       local image_type = image_info.string( "type" )
       which (image_type)
-        case "images"
-          forEach (part in image_info.list("parts"))
-            local part_type = part.string( "type" )
-            which (part_type)
-              case "texture"
-                local sheet_info = group_info.list("textures")[ part.int32("sheet") ]
-                if (not sheet_info) return false
-                local texture = Texture( sheet_info.string("filename") )
-                local size = XY( part.int32("width"), part.int32("height") )
-                local img = TextureImage( texture )
-                img.size = size
-                img.adjust_uv( Box(part.int32("tx"), part.int32("ty"), size) )
-                img.shader = TextureShader
-                img.render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-                add( img )
-            endWhich
+        case "Image[]"
+          forEach (frame_info in image_info.list("images"))
+            add( Image(frame_info) )
           endForEach
-        others
-          return false
       endWhich
 
-      return true
+    method collect_texture_names( texture_names:StringTable<<Logical>> )
+      forEach (image in this) image.collect_texture_names( texture_names )
+
+    method load
+      if (is_loaded) return
+      is_loaded = true
+      forEach (image in this) image.load
 
 endAugment
 

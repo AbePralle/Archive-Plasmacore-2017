@@ -78,7 +78,7 @@ class FontData
         local info = this[ ch ]
         if (info)
           image.anchor = Anchor.TOP_LEFT
-          image.adjust_uv( info.bounds )
+          image.uv = info.bounds
           image.size = info.size * font.scale
           image.position = cursor+info.offset * font.scale
           image.draw
