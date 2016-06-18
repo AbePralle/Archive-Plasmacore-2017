@@ -3,6 +3,7 @@ module Plasmacore
 class Image
   PROPERTIES
     name        : String
+    image_info  : Value    # all the info necessary to load the image
     data        : ImageData
     position    : XY
     z           = 1.0
@@ -16,6 +17,9 @@ class Image
 
   METHODS
     method init( name )
+      init( Plasmacore.image_info_lookup[ name ] )
+
+    method init( image_info )
 
     method init( other:Image )
       data        = other.data
@@ -35,55 +39,52 @@ class Image
       data.add( child )
       return this
 
-    method adjust_uv( subset:Box )
-      data.adjust_uv( subset )
+    method set_uv( subset:Box )
+      data.set_uv( subset )
 
     method cloned->Image
       return Image( this )
 
+    method collect_texture_names( texture_names:StringTable<<Logical>> )
+      if (not image_info) return
+
+      which (image_info.string("type"))
+        case "TextureImage"
+          texture_names[ image_info.string("texture") ] = true
+      endWhich
+
     method draw
+      load
       data.draw( this )
 
     method draw( position )
+      load
       data.draw( this )
 
     method load
       if (data) return
       if (perform_load) return
 
-      println "Error loading " + name
+      println "Error loading " + select{ name || image_info->String }
       data = ColorFillImageData()
       colors = Colors( Color.WHITE )
       render_mode = RenderMode.OPAQUE_SHAPE
       shader = ColorShader
 
     method perform_load->Logical
-      local info = Plasmacore.image_info_lookup[ name ]
-      if (not info) return false
+      if (not image_info) return false
 
-      local group_info = info.table( "group" )
-      local image_info = info.table( "image" )
       local image_type = image_info.string( "type" )
       which (image_type)
-        case "image"
-          # Image consists of one part
-          local part = image_info.list( "parts" ).first
-          if (not part) return false
-
-          local part_type = part.string( "type" )
-          which (part_type)
-            case "texture"
-              local sheet_info = group_info.list("textures")[ part.int32("sheet") ]
-              if (not sheet_info) return false
-              local texture = Texture( sheet_info.string("filename") )
-              size = XY( part.int32("width"), part.int32("height") )
-              data = TextureImageData( texture )
-              data.adjust_uv( Box(part.int32("tx"), part.int32("ty"), size) )
-              shader = TextureShader
-              render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-              return true
-
-          endWhich
+        case "TextureImage"
+          local texture = Texture( image_info.string("texture") )
+          data = TextureImageData( texture )
+          local bounds = Box( image_info.table("uv") )
+          size = bounds.size
+          uv = bounds
+          shader = TextureShader
+          render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+          return true
       endWhich
 
       return false
@@ -207,7 +208,7 @@ class ImageData
     method add( child:Image )
       println "Illegal operation $.add(Image)." (type_name)
 
-    method adjust_uv( subset:Box )
+    method set_uv( subset:Box )
       noAction
 
     method draw( image:Image )
@@ -285,7 +286,7 @@ class TextureImageData : ImageData
     method init( texture )
       uv2 = texture.uv_size
 
-    method adjust_uv( subset:Box )
+    method set_uv( subset:Box )
       uv1 = subset.top_left / texture.texture_size
       uv2 = subset.bottom_right / texture.texture_size
 

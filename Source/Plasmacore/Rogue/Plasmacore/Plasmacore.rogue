@@ -19,7 +19,7 @@ $include "Event.rogue"
 $include "Font.rogue"
 $include "UI"
 $include "Image.rogue"
-$include "ImageGroup.rogue"
+#$include "ImageGroup.rogue"
 $include "ImageList.rogue"
 $include "Keyboard.rogue"
 $include "Matrix.rogue"
@@ -53,7 +53,7 @@ class Plasmacore [requisite singleton]
     displays                = StringTable<<Display>>()
 
     image_manifest          : ValueTable
-    image_group_info_lookup = @{}
+    #image_group_info_lookup = @{}
     image_info_lookup       = @{}
 
   METHODS
@@ -105,8 +105,8 @@ class Plasmacore [requisite singleton]
       Plasmacore.displays[ name ] = result
       return result
 
-    method find_image_group_info( name:String )->Value
-      return image_group_info_lookup[ name ]
+      #method find_image_group_info( name:String )->Value
+      #return image_group_info_lookup[ name ]
 
     method find_image_info( name:String )->Value
       return image_info_lookup[ name ]
@@ -118,16 +118,15 @@ class Plasmacore [requisite singleton]
       endWhile
 
     method index_assets
-      image_group_info_lookup = @{}
+      #image_group_info_lookup = @{}
       image_info_lookup = @{}
       forEach (group_info in Plasmacore.image_manifest.list("groups"))
-        image_group_info_lookup[ group_info.string("name") ] = group_info
+        #image_group_info_lookup[ group_info.string("name") ] = group_info
         forEach (image_info in group_info.list("images"))
           local name = image_info.string("name")
-          local info = @{ group:group_info, image:image_info }
-          image_info_lookup[ name ] = info
+          image_info_lookup[ name ] = image_info
           if (name.begins_with(default_asset_folder))
-            image_info_lookup[ name.after_first(default_asset_folder) ] = info
+            image_info_lookup[ name.after_first(default_asset_folder) ] = image_info
           endIf
         endForEach
       endForEach

@@ -2,19 +2,52 @@ module Plasmacore
 
 class Assets
   PROPERTIES
-    set_name     = ""
-    image_groups = ImageGroup[]
+    loaded_asset_count : Int32
+    total_asset_count  : Int32
+    pending_textures   = String[]
+    finished_loading   : Logical
 
   METHODS
-    method init( set_name="" )
-
-    method change_set( new_set_name:String )
+    method init_object
 
     method load
-      # Load all assets.
+      while (load_another < 1.0) noAction
 
     method load_another->Real64
-      # Loads another asset.  Returns the progress as a value between 0.0 and 1.0.
-      return 0
+      if (finished_loading and loaded_asset_count == total_asset_count) return 1.0
+
+      if (not total_asset_count)
+        # Figure out which properties are unloaded assets.
+        local texture_names = StringTable<<Logical>>()
+        forEach (p in type_info.properties)
+          which (p.type.name)
+            case "Plasmacore::Image"
+              local image = get_property<<Image>>( p.name )
+              if (image) image.collect_texture_names( texture_names )
+
+            case "Plasmacore::Image[]"
+              local images = get_property<<Image[]>>( p.name )
+              if (images) images.collect_texture_names( texture_names )
+          endWhich
+        endForEach
+
+        forEach (texture_name in texture_names.keys)
+          if (not Display.textures_by_name.contains(texture_name))
+            pending_textures.add( texture_name )
+            ++total_asset_count
+          endIf
+        endForEach
+      endIf
+
+      if (pending_textures.count)
+        Texture( pending_textures.remove_last )
+        ++loaded_asset_count
+      endIf
+
+      if (loaded_asset_count == total_asset_count) finished_loading = true
+      if (finished_loading) return 1.0  # avoid divide by zero
+
+      return loaded_asset_count / Real64(total_asset_count)
+
 endClass
 

@@ -17,6 +17,9 @@ class Box( position:XY, size:XY ) [compound]
     method create( size:XY )->Box
       return Box( XY(0,0), size )
 
+    method create( value:Value )->Box
+      return Box( value.real64("x"), value.real64("y"), value.real64("width"), value.real64("height") )
+
     method from_corners( top_left:XY, bottom_right:XY )->Box
       return Box( top_left, bottom_right - top_left )
 
@@ -115,6 +118,13 @@ $endIf
 
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)
+
+    method to->Value( &integer )
+      if (integer)
+        return @{ x:x->Int32, y:y->Int32, width:width->Int32, height:height->Int32 }
+      else
+        return @{ x:x, y:y, width:width, height:height }
+      endIf
 
     method top_left->XY [macro]
       this.position

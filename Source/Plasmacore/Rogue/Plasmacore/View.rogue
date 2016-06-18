@@ -10,6 +10,9 @@ class View
 
     ui        = Layout() : Component
 
+    loaded_asset_count : Int32
+    total_asset_count  : Int32
+
   METHODS
     method add( child:Component, options=null:ValueTable )->this
       ui.add( child, options )
@@ -30,6 +33,7 @@ class View
       state.next_state = null
       new_state.prior_state = state.prior_state
 
+      new_state.on_prepare
       state.is_active = false
       state.on_deactivate
       state = new_state
@@ -40,24 +44,31 @@ class View
     method draw
 
     method exit_state
+      local new_state : State
+      if (state.next_state)
+        new_state = state.next_state
+      elseIf (state.prior_state)
+        new_state = state.prior_state
+      else
+        new_state = State()
+      endIf
+
+      new_state.view = this
+      new_state.on_prepare
+
       state.is_active = false
       state.on_deactivate
 
+      new_state.is_active = true
+
       if (state.next_state)
-        state.next_state.prior_state = state.prior_state
-        state = state.next_state
-        state.view = this
-        state.is_active = true
+        new_state.prior_state = state.prior_state
+        state = new_state
         state.on_activate
       elseIf (state.prior_state)
-        state = state.prior_state
-        state.view = this
-        state.is_active = true
+        state = new_state
         state.on_resume
       else
-        state = State()
-        state.view = this
-        state.is_active = true
         state.on_activate
       endIf
 
@@ -97,6 +108,33 @@ class View
 
       after( e )
 
+    method load_another_asset->Real64
+      if (loaded_asset_count and loaded_asset_count == total_asset_count) return 1.0
+
+      loaded_asset_count = 0
+      total_asset_count = 0
+      forEach (p in type_info.properties)
+        if (p.type.is_reference)
+          local assets = get_property<<Assets>>( p.name )
+          if (assets)
+            if (not assets.finished_loading) assets.load_another
+            loaded_asset_count += assets.loaded_asset_count
+            total_asset_count += assets.total_asset_count
+          endIf
+        endIf
+      endForEach
+
+      if (total_asset_count == 0) return 1.0
+
+      return loaded_asset_count / Real64(total_asset_count)
+
+    method load_assets
+      local progress = 0.0
+      while (progress < 1.0)
+        progress = load_another_asset
+        println "Loading assets $/$ ($%)" (loaded_asset_count,total_asset_count,(progress*100).format(0))
+      endWhile
+
     method on( e:DrawEvent )
       draw
 
@@ -110,6 +148,8 @@ class View
     method on_activate
 
     method on_deactivate
+
+    method on_prepare
 
     method on_resume
 

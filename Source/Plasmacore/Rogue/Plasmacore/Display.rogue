@@ -67,8 +67,8 @@ class Display [singleton]
     texture_list       = Texture[]
 
     # Loaded image groups
-    image_group_list   = ImageGroup[]
-    image_group_lookup = StringTable<<ImageGroup>>()
+    #image_group_list   = ImageGroup[]
+    #image_group_lookup = StringTable<<ImageGroup>>()
 
     system_font : Font
     ui_theme    = Theme() # Default theme
@@ -298,6 +298,7 @@ class Display [singleton]
     method height->Int32 [macro]
       this.size.y->Int32
 
+      #{
     method image_group( group_name:String )->ImageGroup
       # Finds existing image group if already loaded
       local group = image_group_lookup[ group_name ]
@@ -315,6 +316,7 @@ class Display [singleton]
       image_group_lookup[ group_name ] = group
       image_group_list.add( group )
       return group
+      }#
 
     method outline( box:Box, color:Int32 )
       outline( box, Color(color) )
@@ -594,11 +596,13 @@ class Display [singleton]
       local z = -unit_z
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
 
+      #{
     method unload_image_groups
       # Unloads all image groups except those flagged 'is_permanent'.
       forEach (group in image_group_list)
         if (not group.is_permanent) group.unload
       endForEach
+      }#
 
     method update_transform
       if (not (view_transform_modified or object_transform_modified)) return

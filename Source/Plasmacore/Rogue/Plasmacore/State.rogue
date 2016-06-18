@@ -63,6 +63,12 @@ class State
 
       after( e )
 
+    method load_another_asset->Real64
+      return view.load_another_asset
+
+    method load_assets
+      view.load_assets
+
     method on( e:DrawEvent )
       draw
 
@@ -82,6 +88,8 @@ class State
     method on_activate
 
     method on_deactivate
+
+    method on_prepare
 
     method on_resume
 
