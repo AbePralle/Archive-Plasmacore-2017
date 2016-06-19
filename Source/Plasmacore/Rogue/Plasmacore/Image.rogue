@@ -239,9 +239,13 @@ class CompositeImageData : ImageData
         Display.push_view_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
 
-      forEach (img in images) img.draw
+      forEach (piece in images) piece.draw
+
+      on_draw
 
       Display.pop_view_transform
+
+    method on_draw
 
 endClass
 

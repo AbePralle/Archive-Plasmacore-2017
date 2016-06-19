@@ -1,0 +1,41 @@
+module Plasmacore
+
+#{
+class Scriptable [aspect]
+  METHODS
+    method on( script:Script ) [abstract]
+      # The following `script` properties will be set relative to the current
+      # command being executed:
+      #
+      #   command  : String
+      #   t        : Real64  # 0..duration
+      #   duration : Real64  # In seconds
+      #   args     : Value   # Arbitrary command arguments
+      #
+      # on(Script) is guaranteed to be called once with t==0 (an appropriate
+      # time to perform initialization) and once with t==duration.  If
+      # duration==0 then the same call satisfies both requirements.
+      #
+      # The value of `t` will always differ between calls.
+      #
+      # If `args` is a ValueList or ValueTable then any changes made will
+      # be preserved for the next iteration.
+endClass
+
+class ScriptCmd
+  PROPERTIES
+    context : Object
+endClass
+
+class Script<<$ContextType>>
+  PROPERTIES
+    # The following four properties are set just before an object's on(Script)
+    # method is called.
+    command  : String  # Current command
+    t        : Real64  # Current command time, 0..duration
+    duration : Real64  # Current command duration in seconds
+    args     : Value   # Arbitrary command arguments
+
+  METHODS
+
+    }#
