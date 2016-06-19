@@ -48,9 +48,9 @@ class Image
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       if (not image_info) return
 
-      which (image_info.string("type"))
+      which (image_info["type"]->String)
         case "TextureImage"
-          texture_names[ image_info.string("texture") ] = true
+          texture_names[ image_info["texture"]->String ] = true
       endWhich
 
     method draw
@@ -74,12 +74,12 @@ class Image
     method perform_load->Logical
       if (not image_info) return false
 
-      local image_type = image_info.string( "type" )
+      local image_type = image_info[ "type" ]->String
       which (image_type)
         case "TextureImage"
-          local texture = Texture( image_info.string("texture") )
+          local texture = Texture( image_info["texture"]->String )
           data = TextureImageData( texture )
-          local bounds = Box( image_info.table("uv") )
+          local bounds = Box( image_info["uv"] )
           size = bounds.size
           uv = bounds
           shader = TextureShader

@@ -34,7 +34,7 @@ class Font
 
       if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
       if (options.contains("snug")) spacing = -1
-      if (options.contains("spacing")) spacing = options.int32( "spacing" )
+      if (options.contains("spacing")) spacing = options[ "spacing" ]->Int32
       if (options.contains("scale")) scale = XY( options["scale"] )
 
       return this
@@ -283,7 +283,7 @@ class BitmapFontLoader : FontLoader
       endIf
 
       if (options and options.contains("characters"))
-        default_characters = options.string( "characters" )
+        default_characters = options[ "characters" ]->String
       else
         default_characters = String( (' '..'~')->Character[] )
       endIf
