@@ -37,6 +37,7 @@ class PlasmacoreViewController : GLKViewController
     let view = self.view as! GLKView
     view.context = self.context!
     view.drawableDepthFormat = .Format24
+    view.multipleTouchEnabled = true
 
     self.setupGL()
   }
@@ -85,6 +86,26 @@ class PlasmacoreViewController : GLKViewController
     m.set( "display_width",  value:Int(display_width) )
     m.set( "display_height", value:Int(display_height) )
     m.send()
+  }
+
+  override func touchesBegan( touches:Set<UITouch>, withEvent event:UIEvent? )
+  {
+    var touch_number = 1
+    for touch in touches
+    {
+      let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+      m.set( "display_name",   value:name )
+      m.set( "type", value:1 )  // press
+
+      let scale = UIScreen.mainScreen().scale
+      let os_pt = touch.locationInView( nil )
+      m.set( "x",      value:Int( os_pt.x * scale ) )
+      m.set( "y",      value:Int( os_pt.y * scale ) )
+      m.set( "index",  value:touch_number )
+      m.send()
+
+      touch_number += 1
+    }
   }
 }
 

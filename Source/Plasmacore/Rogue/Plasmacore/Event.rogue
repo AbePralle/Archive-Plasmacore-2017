@@ -96,11 +96,11 @@ class PointerEvent : Event [singleton]
     type        : Int32
     position    : XY
     delta       : XY
-    button      : Int32
+    index       : Int32
     id          : Int32
 
   METHODS
-    method init( type, position, delta, button, id )
+    method init( type, position, delta, index, id )
       is_consumed = false  # Need to be explicit because PointerEvent is recycled.
 
     method is_movement->Logical [macro]
@@ -110,23 +110,23 @@ class PointerEvent : Event [singleton]
       (this.type == PointerEvent.PRESS)
 
     method is_press( button_index:Int32 )->Logical
-      return (this.type == PRESS and button == button_index)
+      return (this.type == PRESS and index == button_index)
 
     method is_release->Logical [macro]
       (this.type == PointerEvent.RELEASE)
 
     method is_release( button_index:Int32 )->Logical
-      return (this.type == RELEASE and button == button_index)
+      return (this.type == RELEASE and index == button_index)
 
     method is_scroll->Logical [macro]
       (this.type == PointerEvent.SCROLL)
 
     method to->String
       local buffer = StringBuilder()
-      buffer.print( "Pointer " ).print( id ).print( " " )
+      buffer.print( "Pointer " )
       which (type)
         case MOVEMENT: buffer.print( "movement" )
-        case PRESS:    buffer.print( "press button " ).print( button )
+        case PRESS:    buffer.print( "press index " ).print( index )
         case RELEASE:  buffer.print( "release" )
         case SCROLL:   buffer.print( "scroll " ).print( delta )
       endWhich
