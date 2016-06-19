@@ -128,10 +128,10 @@ class Plasmacore [requisite singleton]
     method index_assets
       #image_group_info_lookup = @{}
       image_info_lookup = @{}
-      forEach (group_info in Plasmacore.image_manifest.list("groups"))
+      forEach (group_info in Plasmacore.image_manifest["groups"])
         #image_group_info_lookup[ group_info.string("name") ] = group_info
-        forEach (image_info in group_info.list("images"))
-          local name = image_info.string("name")
+        forEach (image_info in group_info["images"])
+          local name = image_info["name"]->String
           image_info_lookup[ name ] = image_info
           if (name.begins_with(default_asset_folder))
             image_info_lookup[ name.after_first(default_asset_folder) ] = image_info

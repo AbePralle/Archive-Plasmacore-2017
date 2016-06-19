@@ -11,10 +11,10 @@ augment Image[]
       init( Plasmacore.image_info_lookup[ name ] )
 
     method init( image_info )
-      local image_type = image_info.string( "type" )
+      local image_type = image_info["type"]->String
       which (image_type)
         case "Image[]"
-          forEach (frame_info in image_info.list("images"))
+          forEach (frame_info in image_info["images"])
             add( Image(frame_info) )
           endForEach
       endWhich
