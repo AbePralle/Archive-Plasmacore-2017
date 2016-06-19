@@ -21,7 +21,7 @@ class State
     method change_state( new_state:State )
       view.change_state( new_state )
 
-    method draw
+    method on_draw
       Display.clear( Color.BLUE )
 
     method exit_state
@@ -70,14 +70,14 @@ class State
       view.load_assets
 
     method on( e:DrawEvent )
-      draw
+      on_draw
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
     method on( e:UpdateEvent )
-      update
+      on_update
 
     method push_state( new_state:State )
       view.push_state( new_state )
@@ -98,7 +98,7 @@ class State
     method set_view( @view )->this
       return this
 
-    method update
+    method on_update
 endClass
 
 class State<<$ViewType>> : State

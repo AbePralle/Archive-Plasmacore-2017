@@ -27,6 +27,9 @@ class Box( position:XY, size:XY ) [compound]
     method at( proportional_position:XY )->XY
       return position + proportional_position * size
 
+    method at( u:Real64, v:Real64 )->XY
+      return position + XY(u,v) * size
+
     method at( anchor:Anchor )->XY
       return position + anchor.position * size
 

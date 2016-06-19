@@ -90,7 +90,7 @@ class PlasmacoreViewController : GLKViewController
 
   override func touchesBegan( touches:Set<UITouch>, withEvent event:UIEvent? )
   {
-    var touch_number = 1
+    var touch_index = 0
     for touch in touches
     {
       let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
@@ -101,10 +101,72 @@ class PlasmacoreViewController : GLKViewController
       let os_pt = touch.locationInView( nil )
       m.set( "x",      value:Int( os_pt.x * scale ) )
       m.set( "y",      value:Int( os_pt.y * scale ) )
-      m.set( "index",  value:touch_number )
+      m.set( "index",  value:touch_index )
       m.send()
 
-      touch_number += 1
+      touch_index += 1
+    }
+  }
+
+  override func touchesMoved( touches:Set<UITouch>, withEvent event:UIEvent? )
+  {
+    var touch_index = 0
+    for touch in touches
+    {
+      let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+      m.set( "display_name",   value:name )
+      m.set( "type", value:0 )  // move
+
+      let scale = UIScreen.mainScreen().scale
+      let os_pt = touch.locationInView( nil )
+      m.set( "x",      value:Int( os_pt.x * scale ) )
+      m.set( "y",      value:Int( os_pt.y * scale ) )
+      m.set( "index",  value:touch_index )
+      m.send()
+
+      touch_index += 1
+    }
+  }
+
+  override func touchesEnded( touches:Set<UITouch>, withEvent event:UIEvent? )
+  {
+    var touch_index = 0
+    for touch in touches
+    {
+      let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+      m.set( "display_name",   value:name )
+      m.set( "type", value:2 )  // release
+
+      let scale = UIScreen.mainScreen().scale
+      let os_pt = touch.locationInView( nil )
+      m.set( "x",      value:Int( os_pt.x * scale ) )
+      m.set( "y",      value:Int( os_pt.y * scale ) )
+      m.set( "index",  value:touch_index )
+      m.send()
+
+      touch_index += 1
+    }
+  }
+
+  override func touchesCancelled( touches:Set<UITouch>?, withEvent event:UIEvent? )
+  {
+    guard let touches = touches else { return }
+
+    var touch_index = 0
+    for touch in touches
+    {
+      let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+      m.set( "display_name",   value:name )
+      m.set( "type", value:2 )  // release (we count canceled touches as releases)
+
+      let scale = UIScreen.mainScreen().scale
+      let os_pt = touch.locationInView( nil )
+      m.set( "x",      value:Int( os_pt.x * scale ) )
+      m.set( "y",      value:Int( os_pt.y * scale ) )
+      m.set( "index",  value:touch_index )
+      m.send()
+
+      touch_index += 1
     }
   }
 }

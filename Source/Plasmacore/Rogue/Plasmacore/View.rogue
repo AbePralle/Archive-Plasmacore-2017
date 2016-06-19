@@ -41,7 +41,7 @@ class View
       state.is_active = true
       state.on_activate
 
-    method draw
+    method on_draw
 
     method exit_state
       local new_state : State
@@ -136,14 +136,14 @@ class View
       endWhile
 
     method on( e:DrawEvent )
-      draw
+      on_draw
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
     method on( e:UpdateEvent )
-      update
+      on_update
 
     method on_activate
 
@@ -169,6 +169,6 @@ class View
       while (cur.next_state) cur = cur.next_state
       cur.next_state = new_state
 
-    method update
+    method on_update
 endClass
 
