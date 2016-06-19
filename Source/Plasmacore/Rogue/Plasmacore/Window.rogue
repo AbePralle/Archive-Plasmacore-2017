@@ -78,6 +78,7 @@ class WindowManager [requisite singleton]
 
   METHODS
     method init
+      #{
       MessageManager.add_handler( "Display.key_event",
         function (m:Message)
           local window_id = m.int32( "window_id" )
@@ -117,7 +118,6 @@ class WindowManager [requisite singleton]
         endFunction
       )
 
-      #{
       MessageManager.add_handler( "Display.update_and_draw",
         function (m:Message)
           local window_id = m.int32( "window_id" )
