@@ -35,11 +35,11 @@ class View
 
       new_state.on_prepare
       state.is_active = false
-      state.on_deactivate
+      state.on_finish
       state = new_state
       state.view = this
       state.is_active = true
-      state.on_activate
+      state.on_start
 
     method on_draw
 
@@ -57,19 +57,19 @@ class View
       new_state.on_prepare
 
       state.is_active = false
-      state.on_deactivate
+      state.on_finish
 
       new_state.is_active = true
 
       if (state.next_state)
         new_state.prior_state = state.prior_state
         state = new_state
-        state.on_activate
+        state.on_start
       elseIf (state.prior_state)
         state = new_state
         state.on_resume
       else
-        state.on_activate
+        state.on_start
       endIf
 
     method handle( e:DrawEvent )
@@ -145,9 +145,9 @@ class View
     method on( e:UpdateEvent )
       on_update
 
-    method on_activate
+    method on_start
 
-    method on_deactivate
+    method on_finish
 
     method on_prepare
 
@@ -162,7 +162,7 @@ class View
       state = new_state
       state.view = this
       state.is_active = true
-      state.on_activate
+      state.on_start
 
     method queue_state( new_state:State )
       local cur = state

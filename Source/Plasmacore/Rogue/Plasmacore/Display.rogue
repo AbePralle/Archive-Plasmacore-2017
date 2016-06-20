@@ -89,11 +89,11 @@ class Display [singleton]
 
       if (not view.is_active)
         view.is_active = true
-        view.on_activate
+        view.on_start
       endIf
       if (not view.state.is_active)
         view.state.is_active = true
-        view.state.on_activate
+        view.state.on_start
       endIf
 
     method at( u:Real64, v:Real64 )->XY

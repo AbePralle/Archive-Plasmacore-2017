@@ -1,0 +1,135 @@
+module Plasmacore
+
+class AnimationScript
+  PROPERTIES
+    commands  = AnimationCmd[]
+    start_t   : Real64
+    t         : Real64
+
+  METHODS
+    method add( cmd:AnimationCmd, progress_fn=Progress.LINEAR:Function(Real64)->Real64 )->this
+      commands.add( cmd )
+      cmd.progress_fn = progress_fn
+      cmd.on_attach( this )
+      return this
+
+    method update->Logical
+      # Returns 'true' if any commands are still active
+      if (not commands.count) return false
+
+      local dt  : Real64
+      local now = System.time
+      if (t)
+        # Script already running
+        dt = now - t
+      else
+        # Script starting
+        dt = 0
+        start_t = now
+      endIf
+      t = now
+
+      contingent
+        while (commands.count and not commands.first.update(dt))
+          commands.remove_first
+        endWhile
+
+        necessary (commands.count)
+        necessary (not commands.first.is_blocking)
+
+        forEach (i in 1..<commands.count)
+          local cmd = commands[i]
+          if (cmd.update(dt)) necessary (not cmd.is_blocking)
+        endForEach
+      endContingent
+
+      return commands.count?
+
+    method wait( duration=0:Real64 )->this
+      # Adds a 'wait' command that waits until all currently executing commands
+      # have finished and then waits an additional amount of time specified by
+      # the duration.
+      return add( AnimationCmdWait(duration) )
+
+    method wait_until( elapsed_seconds:Real64 )->this
+      # Blocks further commands until the total elapsed time in the script is >= elapsed_seconds.
+      return add( AnimationCmdWaitUntil(elapsed_seconds) )
+endClass
+
+class AnimationCmd
+  PROPERTIES
+    t           = -1.0
+    duration    : Real64
+    progress_fn : Function(Real64)->Real64
+
+  METHODS
+    method init( duration=0 )
+
+    method is_blocking->Logical
+      # Return true if this command blocks successive commands from executing
+      # if this command is not the first active command in the script - used
+      # to implement AnimationCmdWait.
+      return false
+
+    method on_attach( script:AnimationScript )
+
+    method on_start
+
+    method on_finish
+
+    method on_update
+
+    method progress->Real64
+      return select{ duration:progress_fn(t/duration) || 1.0 }
+
+    method update( dt:Real64 )->Logical
+      if (t == -1)
+        t = 0
+        on_start
+      elseIf (t == duration)
+        return false
+      else
+        t += dt
+        if (t > duration) t = duration
+      endIf
+
+      on_update
+
+      if (t < duration)
+        return true
+      else
+        on_finish
+        return false
+      endIf
+
+endClass
+
+
+class AnimationCmdWait( duration=0 ) : AnimationCmd
+  PROPERTIES
+    script : AnimationScript
+
+  METHODS
+    method is_blocking->Logical
+      return (script.commands.count and (script.commands.first isNot this or progress < 1.0))
+
+    method on_attach( script )
+
+    method update( dt:Real64 )->Logical
+      return prior.update(dt) or is_blocking
+endClass
+
+class AnimationCmdWaitUntil( elapsed_seconds:Real64 ) : AnimationCmd
+  PROPERTIES
+    script : AnimationScript
+
+  METHODS
+    method is_blocking->Logical
+      return script.t - script.start_t < elapsed_seconds
+
+    method on_attach( script )
+
+    method update( dt:Real64 )->Logical
+      return prior.update(dt) or is_blocking
+endClass
+
