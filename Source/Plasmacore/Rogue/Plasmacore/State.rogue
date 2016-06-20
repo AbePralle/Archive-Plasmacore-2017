@@ -85,9 +85,9 @@ class State
     method queue_state( new_state:State )
       view.queue_state( new_state )
 
-    method on_activate
+    method on_start
 
-    method on_deactivate
+    method on_finish
 
     method on_prepare
 
