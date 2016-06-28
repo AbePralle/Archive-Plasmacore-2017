@@ -156,11 +156,11 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           1
       )
 
-    method to_matrix( handle:XYZ, post_translate:XYZ )->Matrix
+    method to->Matrix( handle:XYZ, translate:XYZ )
       local m = this->Matrix
-      m[12] = -m[0]*handle.x - m[4]*handle.y - m[8]*handle.z  + post_translate.x
-      m[13] = -m[1]*handle.x - m[5]*handle.y - m[9]*handle.z  + post_translate.y
-      m[14] = -m[2]*handle.x - m[6]*handle.y - m[10]*handle.z + post_translate.z
+      m[12] = -m[0]*handle.x - m[4]*handle.y - m[8]*handle.z  + translate.x
+      m[13] = -m[1]*handle.x - m[5]*handle.y - m[9]*handle.z  + translate.y
+      m[14] = -m[2]*handle.x - m[6]*handle.y - m[10]*handle.z + translate.z
 
       return m
 

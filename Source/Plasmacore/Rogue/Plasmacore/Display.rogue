@@ -37,21 +37,27 @@ class Display [singleton]
 
     size             : XY
 
+    projection_locus : XY
+    # The "origin" for 3D perspective and the vanishing point for polygons
+    # parallel to the camera axis.  Reset to Display.center at the beginning
+    # of every draw.
+
+
     background_color = Color.BLACK : Color
 
     projection_transform : Matrix
-
     transform            : Matrix
     view_transform       = Matrix.identity : Matrix
     object_transform     = Matrix.identity : Matrix
     view_transforms      = Matrix[]
     object_transforms    = Matrix[]
 
+    projection_transform_modified : Logical
     view_transform_modified       : Logical
     object_transform_modified     : Logical
 
-    projection_mode   = ProjectionMode()
-    unit_z            : Real64
+    projection_mode   = ProjectionMode2DX()
+    unit_z            = default_unit_z : Real64
 
     custom_shader          : Shader
     active_render_mode     : RenderMode
@@ -191,34 +197,34 @@ class Display [singleton]
       vertex_positions.add( corners.a.y )
       vertex_positions.add( corners.a.z )
       vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.b.x )
-      vertex_positions.add( corners.b.y )
-      vertex_positions.add( corners.b.z )
-      vertex_positions.add( corners.b.w )
       vertex_positions.add( corners.c.x )
       vertex_positions.add( corners.c.y )
       vertex_positions.add( corners.c.z )
       vertex_positions.add( corners.c.w )
+      vertex_positions.add( corners.b.x )
+      vertex_positions.add( corners.b.y )
+      vertex_positions.add( corners.b.z )
+      vertex_positions.add( corners.b.w )
 
       vertex_positions.add( corners.a.x )
       vertex_positions.add( corners.a.y )
       vertex_positions.add( corners.a.z )
       vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
       vertex_positions.add( corners.d.x )
       vertex_positions.add( corners.d.y )
       vertex_positions.add( corners.d.z )
       vertex_positions.add( corners.d.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
 
       vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.d.argb )
+      vertex_colors.add( colors.c.argb )
 
     method draw_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
@@ -237,47 +243,47 @@ class Display [singleton]
       vertex_positions.add( corners.a.y )
       vertex_positions.add( corners.a.z )
       vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.b.x )
-      vertex_positions.add( corners.b.y )
-      vertex_positions.add( corners.b.z )
-      vertex_positions.add( corners.b.w )
       vertex_positions.add( corners.c.x )
       vertex_positions.add( corners.c.y )
       vertex_positions.add( corners.c.z )
       vertex_positions.add( corners.c.w )
+      vertex_positions.add( corners.b.x )
+      vertex_positions.add( corners.b.y )
+      vertex_positions.add( corners.b.z )
+      vertex_positions.add( corners.b.w )
 
       vertex_positions.add( corners.a.x )
       vertex_positions.add( corners.a.y )
       vertex_positions.add( corners.a.z )
       vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
       vertex_positions.add( corners.d.x )
       vertex_positions.add( corners.d.y )
       vertex_positions.add( corners.d.z )
       vertex_positions.add( corners.d.w )
+      vertex_positions.add( corners.c.x )
+      vertex_positions.add( corners.c.y )
+      vertex_positions.add( corners.c.z )
+      vertex_positions.add( corners.c.w )
 
       vertex_uvs.add( uv.a.x );
       vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
       vertex_uvs.add( uv.b.x );
       vertex_uvs.add( uv.b.y );
-      vertex_uvs.add( uv.c.x );
-      vertex_uvs.add( uv.c.y );
       vertex_uvs.add( uv.a.x );
       vertex_uvs.add( uv.a.y );
-      vertex_uvs.add( uv.c.x );
-      vertex_uvs.add( uv.c.y );
       vertex_uvs.add( uv.d.x );
       vertex_uvs.add( uv.d.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
 
       vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.d.argb )
+      vertex_colors.add( colors.c.argb )
 
     method handle( e:KeyEvent )
       activate_view_and_state
@@ -362,6 +368,7 @@ class Display [singleton]
 
     method render( size )
       Display = this  # set the singleton reference to be this display
+      projection_locus = center
 
       if (not color_shader)
         # Set up default shaders
@@ -377,8 +384,7 @@ class Display [singleton]
       view.ui.update_layout( Box(size) )
 
       clear_transforms
-      projection_mode = projection_mode.configure( size )
-      projection_mode.activate
+      projection_mode.update
 
       update_timer.update
 
@@ -420,6 +426,9 @@ class Display [singleton]
       endIf
 
       native @|glViewport( 0, 0, (int)$size.x, (int)$size.y );
+              |glEnable( GL_CULL_FACE );
+              |glFrontFace( GL_CCW );
+              |glCullFace( GL_BACK );
 
       if (render_mode.is_blended)
         local gl_source_blend = 0
@@ -493,28 +502,8 @@ class Display [singleton]
               |  }
               |}
       # Configure shader
-      native @|RogueReal64* transform64 = &$projection_transform.r1c1;
-              |RogueReal32  transform32[16];
-              |transform32[0] = (RogueReal32) transform64[0];
-              |transform32[1] = (RogueReal32) transform64[1];
-              |transform32[2] = (RogueReal32) transform64[2];
-              |transform32[3] = (RogueReal32) transform64[3];
-              |transform32[4] = (RogueReal32) transform64[4];
-              |transform32[5] = (RogueReal32) transform64[5];
-              |transform32[6] = (RogueReal32) transform64[6];
-              |transform32[7] = (RogueReal32) transform64[7];
-              |transform32[8] = (RogueReal32) transform64[8];
-              |transform32[9] = (RogueReal32) transform64[9];
-              |transform32[10] = (RogueReal32) transform64[10];
-              |transform32[11] = (RogueReal32) transform64[11];
-              |transform32[12] = (RogueReal32) transform64[12];
-              |transform32[13] = (RogueReal32) transform64[13];
-              |transform32[14] = (RogueReal32) transform64[14];
-              |transform32[15] = (RogueReal32) transform64[15];
+      native @|glUseProgram( $shader->program_id );
               |
-              |glUseProgram( $shader->program_id );
-              |
-              |glUniformMatrix4fv( $shader->transform_setting, 1, GL_FALSE, transform32 );
               |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0,
               |                       $vertex_positions->data->as_real32s );
               |glEnableVertexAttribArray( $shader->position_attribute );
@@ -555,8 +544,19 @@ class Display [singleton]
       active_primitive_type = primitive_type
       return this
 
+    method set_projection_locus( new_locus:XY )->this
+      if (new_locus != projection_locus)
+        @projection_locus = new_locus
+        projection_mode.update
+      endIf
+      return this
+
+    method set_projection_mode( @projection_mode )->this
+      projection_mode.update
+      return this
+
     method set_projection_transform( @projection_transform )->this
-      render
+      projection_transform_modified = true
       return this
 
     method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
@@ -608,41 +608,52 @@ class Display [singleton]
       }#
 
     method update_transform
-      if (not (view_transform_modified or object_transform_modified)) return
+      if (not (view_transform_modified or object_transform_modified or projection_transform_modified)) return
 
-      if (object_transform_modified)
-        object_transform_modified = false
-        if (object_transforms.count)
-          object_transform = object_transforms.first
-          forEach (i in 1..object_transforms.count-1)
-            object_transform = object_transform * object_transforms[i]
-          endForEach
+      if (view_transform_modified or object_transform_modified)
+        if (object_transform_modified)
+          object_transform_modified = false
+          if (object_transforms.count)
+            #{
+            object_transform = object_transforms.first
+            forEach (i in 1..object_transforms.count-1)
+              object_transform = object_transform * object_transforms[i]
+            endForEach
+            }#
+            object_transform = object_transforms.last
+            forEach (i in object_transforms.count-2 downTo 0)
+              object_transform = object_transform * object_transforms[i]
+            endForEach
+          endIf
         endIf
-      endIf
 
-      if (view_transform_modified)
-        view_transform_modified = false
+        if (view_transform_modified)
+          view_transform_modified = false
+          if (view_transforms.count)
+            view_transform = view_transforms.last
+            forEach (i in view_transforms.count-2 downTo 0)
+              view_transform = view_transform * view_transforms[i]
+            endForEach
+          endIf
+        endIf
+
         if (view_transforms.count)
-          view_transform = view_transforms.last
-          forEach (i in view_transforms.count-2 downTo 0)
-            view_transform = view_transform * view_transforms[i]
-          endForEach
+          if (object_transforms.count)
+            transform = view_transform * object_transform
+          else
+            transform = view_transform
+          endIf
+        else
+          if (object_transforms.count)
+            transform = object_transform
+          else
+            transform = Matrix.identity
+          endIf
         endIf
       endIf
 
-      if (view_transforms.count)
-        if (object_transforms.count)
-          transform = view_transform * object_transform
-        else
-          transform = view_transform
-        endIf
-      else
-        if (object_transforms.count)
-          transform = object_transform
-        else
-          transform = Matrix.identity
-        endIf
-      endIf
+      transform = projection_transform * @transform
+      projection_transform_modified = false
 
     method width->Int32 [macro]
       this.size.x->Int32

@@ -40,7 +40,6 @@ $endIf
     pixel_shader_id       : Int32
     program_id            : Int32
 
-    transform_setting  : Int32
     position_attribute : Int32
     color_attribute    : Int32
     uv_attribute       : Int32
@@ -60,7 +59,6 @@ $endIf
               |
               |glLinkProgram( $program_id );
               |
-              |$transform_setting  = glGetUniformLocation( $program_id, "transform" );
               |$position_attribute = glGetAttribLocation( $program_id, "position" );
               |$color_attribute    = glGetAttribLocation( $program_id, "color" );
               |$uv_attribute       = glGetAttribLocation( $program_id,  "uv" );
@@ -102,20 +100,19 @@ $endIf
         &vertex_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "uniform mat4   transform;                  \n" +
           "attribute vec4 position;                   \n" +
           "attribute" + LOWP + "vec4 color;           \n" +
           "varying  " + LOWP + "vec4 vertex_color;    \n" +
           "void main()                                \n" +
           "{                                          \n" +
-          "  gl_Position = transform * position;      \n" +
+          "  gl_Position = position;                  \n" +
           "  vertex_color = color / 255.0;            \n" +
           "}                                          \n",
 
         &pixel_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "varying" + LOWP + "vec4 vertex_color; \n" +
+          "varying" + LOWP + "vec4 vertex_color;    \n" +
           "void main()                              \n" +
           "{                                        \n" +
           "  gl_FragColor = vertex_color;           \n" +
@@ -127,13 +124,12 @@ $endIf
         &vertex_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "uniform mat4   transform;             \n" +
           "attribute vec4 position;              \n" +
           "attribute      vec2 uv;               \n" +
           "varying        vec2 vertex_uv;        \n" +
           "void main()                           \n" +
           "{                                     \n" +
-          "  gl_Position = transform * position; \n" +
+          "  gl_Position = position;             \n" +
           "  vertex_uv = uv;                     \n" +
           "}                                     \n",
 
@@ -153,7 +149,6 @@ $endIf
         &vertex_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "uniform mat4   transform;                  \n" +
           "attribute vec4 position;                   \n" +
           "attribute      vec2 uv;                    \n" +
           "varying        vec2 vertex_uv;             \n" +
@@ -161,7 +156,7 @@ $endIf
           "varying  "+LOWP+"vec4 vertex_color;        \n" +
           "void main()                                \n" +
           "{                                          \n" +
-          "  gl_Position = transform * position;      \n" +
+          "  gl_Position = position;                  \n" +
           "  vertex_uv = uv;                          \n" +
           "  vertex_color = color / 255.0;            \n" +
           "}                                          \n",
@@ -183,7 +178,6 @@ $endIf
         &vertex_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "uniform mat4   transform;                 \n" +
           "attribute vec4 position;                  \n" +
           "attribute      vec2 uv;                   \n" +
           "varying        vec2 vertex_uv;            \n" +
@@ -191,7 +185,7 @@ $endIf
           "varying  "+LOWP+"vec4 vertex_color;       \n" +
           "void main()                               \n" +
           "{                                         \n" +
-          "  gl_Position = transform * position;     \n" +
+          "  gl_Position = position;                 \n" +
           "  vertex_uv = uv;                         \n" +
           "  vertex_color = color / 255.0;           \n" +
           "}                                         \n",
@@ -214,7 +208,6 @@ $endIf
         &vertex_shader =
           GLSL_VERSION +
           PRECISION_MEDIUMP_FLOAT +
-          "uniform mat4   transform;                            \n" +
           "attribute vec4 position;                             \n" +
           "attribute      vec2 uv;                              \n" +
           "varying        vec2 vertex_uv;                       \n" +
@@ -223,7 +216,7 @@ $endIf
           "varying  "+LOWP+"float vertex_inverse_a;             \n" +
           "void main()                                          \n" +
           "{                                                    \n" +
-          "  gl_Position = transform * position;                \n" +
+          "  gl_Position = position;                            \n" +
           "  vertex_uv = uv;                                    \n" +
           "  vertex_color = color / 255.0;                      \n" +
           "  vertex_inverse_a = 1.0 - vertex_color.a;           \n" +

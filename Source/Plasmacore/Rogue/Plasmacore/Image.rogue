@@ -39,6 +39,14 @@ class Image
       data.add( child )
       return this
 
+    method bounds->Box
+      return bounds( position )
+
+    method bounds( at_position:XY )->Box
+      local s = size * scale
+      local handle = (anchor.position * s).floor
+      return Box( at_position - handle, s )
+
     method set_uv( subset:Box )
       data.set_uv( subset )
 
@@ -79,9 +87,9 @@ class Image
         case "TextureImage"
           local texture = Texture( image_info["texture"]->String )
           data = TextureImageData( texture )
-          local bounds = Box( image_info["uv"] )
-          size = bounds.size
-          uv = bounds
+          local uv_bounds = Box( image_info["uv"] )
+          size = uv_bounds.size
+          uv = uv_bounds
           shader = TextureShader
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
@@ -234,7 +242,7 @@ class CompositeImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_view_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
+        Display.push_view_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
       else
         Display.push_view_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
@@ -259,7 +267,7 @@ class ColorFillImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_object_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
+        Display.push_object_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
       else
         Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
@@ -302,7 +310,7 @@ class TextureImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_object_transform( Quaternion(image.rotation).to_matrix( handle, XYZ(pos,z)) )
+        Display.push_object_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
       else
         Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf

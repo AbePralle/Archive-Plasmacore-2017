@@ -1,9 +1,0 @@
-module Plasmacore
-
-class Progress [singleton]
-  PROPERTIES
-    LINEAR        = function(p:Real64)->Real64: return p
-    BACK_OUT      = function(p:Real64)->Real64: return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
-    QUADRATIC_OUT = function(p:Real64)->Real64: return -p * (p - 2)
-endClass
-
