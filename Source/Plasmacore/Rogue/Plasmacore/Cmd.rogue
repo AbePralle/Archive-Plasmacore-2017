@@ -1,0 +1,91 @@
+module Plasmacore
+
+class Cmd
+  PROPERTIES
+    duration       : Real64
+    progress_fn    = ProgressFn.LINEAR : Function(Real64)->Real64
+
+    next_cmd       : Cmd
+    concurrent_cmd : Cmd
+
+    t              : Real64
+    dt             : Real64
+    last_time      : Real64 # 0:not started
+
+  GLOBAL METHODS
+    method operator+( a:Cmd, b:Cmd )->Cmd
+      if (not a) return b
+      if (not b) return a
+      return a.and_then( b )
+
+    method operator|( a:Cmd, b:Cmd )->Cmd
+      if (not a) return b
+      if (not b) return a
+      return a.and_also( b )
+
+  METHODS
+    method init( duration=0, progress_fn=ProgressFn.LINEAR )
+
+    method and_also( cmd:Cmd )->this
+      local cur = this
+      while (cur.concurrent_cmd) cur = cur.concurrent_cmd
+      cur.concurrent_cmd = cmd
+      return this
+
+    method and_then( cmd:Cmd )->this
+      local cur = this
+      while (cur.next_cmd) cur = cur.next_cmd
+      cur.next_cmd = cmd
+      return this
+
+    method on_start
+
+    method on_update
+
+    method on_finish
+
+    method progress->Real64
+      return select{ duration>0:progress_fn(t/duration) || 1.0 }
+
+    method set_duration( @duration )->this
+      return this
+
+    method set_progress_fn( @progress_fn )->this
+      return this
+
+    method update->Cmd
+      local cur_time = System.time
+      if (not last_time)
+        on_start
+      else
+        dt = cur_time - last_time
+        t += dt
+        if (duration >= 0 and t > duration) t = duration
+      endIf
+
+      last_time = cur_time
+
+      on_update
+
+      if (concurrent_cmd)
+        concurrent_cmd = concurrent_cmd.update
+      endIf
+
+      if (duration < 0 or t < duration)
+        return this
+      endIf
+
+      on_finish
+
+      if (next_cmd)
+        if (concurrent_cmd) next_cmd.and_also( concurrent_cmd )
+        return next_cmd.update
+      elseIf (concurrent_cmd)
+        return concurrent_cmd
+      else
+        return null
+      endIf
+endClass
+
+class CmdWait : Cmd;
+

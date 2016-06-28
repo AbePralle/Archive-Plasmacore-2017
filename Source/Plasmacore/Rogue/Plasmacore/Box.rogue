@@ -39,6 +39,11 @@ class Box( position:XY, size:XY ) [compound]
     method bottom_right->XY
       return (position + size)
 
+    method contains( pos:XY )->Logical
+      if (pos.x < position.x or pos.x >= position.x + size.x) return false
+      if (pos.y < position.y or pos.y >= position.y + size.y) return false
+      return true
+
     method cropped( delta:Real64 )->Box
       return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
 

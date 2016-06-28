@@ -2,49 +2,31 @@ module Plasmacore
 
 class ProjectionMode
   METHODS
-    method init
-
-    method activate
-      noAction  # Override me
-
-    method configure( display_size:XY )->ProjectionMode
-      # Default: configure graphics mode 2DX
-      local w = display_size.x
-      local h = display_size.y
-      return configure_2dx( w, h )
-
-    method configure_2dx( width:Real64, height:Real64, unit_z=Display.default_unit_z:Real64, max_z=16:Real64 )->ProjectionMode
-      return GraphicsMode2DX( width, height, unit_z, max_z )
+    method update  [abstract]
 endClass
 
-class GraphicsMode2DX : ProjectionMode
+class ProjectionMode2DX : ProjectionMode
   PROPERTIES
-    width  : Int32
-    height : Int32
     unit_z : Real64
     max_z  : Real64
 
   METHODS
-    method init( width, height, unit_z, max_z )
+    method init( unit_z=Display.default_unit_z, max_z=16 )
 
-    method activate
+    method update
+      local width   = Display.width
+      local height  = Display.height
+
       local k = (unit_z + 1) * 2
       Display.unit_z = unit_z
-      local tx = width / 2.0
-      local ty = height / 2.0
-      Display.projection_transform = Matrix.projection( -width/k, -height/k, width/k, height/k, 1, (max_z*k)/3 ) ...
-          * Matrix.translate( XYZ(-tx,-ty,0) )
-
-    method configure( display_size:XY )->this
-      if (display_size.x != width or display_size.y != height)
-        @trace display_size
-      endIf
-      width  = display_size.x
-      height = display_size.y
-      return configure_2dx( width, height, unit_z, max_z )
-
-    method configure_2dx( width, height, unit_z, max_z )->this
-      return this
+      local locus_sx = Display.projection_locus.x / width
+      local locus_sy = Display.projection_locus.y / height
+      local left = (-2 * width / k)  * locus_sx
+      local top  = (-2 * height / k) * locus_sy
+      local right = left + 2*width/k
+      local bottom = top + 2*height/k
+      Display.projection_transform = Matrix.projection( left, top, right, bottom, 1, (max_z*k)/3 ) ...
+        * Matrix.translate( XYZ(-width*locus_sx,-height*locus_sy,0) )
 
 endClass
 
