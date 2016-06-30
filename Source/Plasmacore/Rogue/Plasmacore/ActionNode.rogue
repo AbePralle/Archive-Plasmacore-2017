@@ -1,38 +1,41 @@
 module Plasmacore
 
-class Cmd
+class ActionNodeBase<<$SpecializedCmdType>>
+  GLOBAL METHODS
+    method operator+( a:$SpecializedCmdType, b:$SpecializedCmdType )->$SpecializedCmdType
+      if (not a) return b
+      if (not b) return a
+      return a.and_then( b )
+
+    method operator|( a:$SpecializedCmdType, b:$SpecializedCmdType )->$SpecializedCmdType
+      if (not a) return b
+      if (not b) return a
+      return a.and_also( b )
+
+endClass
+
+class ActionNode<<$SpecializedCmdType>> : ActionNodeBase<<$SpecializedCmdType>> [aspect]
   PROPERTIES
     duration       : Real64
     progress_fn    = ProgressFn.LINEAR : Function(Real64)->Real64
 
-    next_cmd       : Cmd
-    concurrent_cmd : Cmd
+    next_cmd       : $SpecializedCmdType
+    concurrent_cmd : $SpecializedCmdType
 
     t              : Real64
     dt             : Real64
     last_time      : Real64 # 0:not started
 
-  GLOBAL METHODS
-    method operator+( a:Cmd, b:Cmd )->Cmd
-      if (not a) return b
-      if (not b) return a
-      return a.and_then( b )
-
-    method operator|( a:Cmd, b:Cmd )->Cmd
-      if (not a) return b
-      if (not b) return a
-      return a.and_also( b )
-
   METHODS
     method init( duration=0, progress_fn=ProgressFn.LINEAR )
 
-    method and_also( cmd:Cmd )->this
+    method and_also( cmd:$SpecializedCmdType )->this
       local cur = this
       while (cur.concurrent_cmd) cur = cur.concurrent_cmd
       cur.concurrent_cmd = cmd
       return this
 
-    method and_then( cmd:Cmd )->this
+    method and_then( cmd:$SpecializedCmdType )->this
       local cur = this
       while (cur.next_cmd) cur = cur.next_cmd
       cur.next_cmd = cmd
@@ -53,7 +56,7 @@ class Cmd
     method set_progress_fn( @progress_fn )->this
       return this
 
-    method update->Cmd
+    method update->$SpecializedCmdType
       local cur_time = System.time
       if (not last_time)
         on_start
@@ -78,7 +81,11 @@ class Cmd
       on_finish
 
       if (next_cmd)
-        if (concurrent_cmd) next_cmd.and_also( concurrent_cmd )
+        if (concurrent_cmd)
+          # Attach any parallel commands remaining in this finished command to the
+          # next command in this chain that will be the new head.
+          next_cmd.and_also( concurrent_cmd )
+        endIf
         return next_cmd.update
       elseIf (concurrent_cmd)
         return concurrent_cmd
@@ -86,6 +93,4 @@ class Cmd
         return null
       endIf
 endClass
-
-class CmdWait : Cmd;
 

@@ -12,8 +12,8 @@ $include "XY.rogue"
 
 $if not "Console"
 
+$include "ActionNode.rogue"
 $include "Assets.rogue"
-$include "Cmd.rogue"
 $include "Corners.rogue"
 $include "Display.rogue"
 $include "Event.rogue"

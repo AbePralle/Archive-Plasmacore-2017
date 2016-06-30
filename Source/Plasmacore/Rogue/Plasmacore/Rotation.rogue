@@ -37,6 +37,9 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
       Rotation.radians( 0, 0, r.value )
 
   METHODS
+    method is_rotated->Logical
+      return (x.value or y.value or z.value)
+
     method is_zero->Logical
       return not (x.value or y.value or z.value)
 
