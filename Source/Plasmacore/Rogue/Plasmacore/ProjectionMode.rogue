@@ -19,8 +19,8 @@ class ProjectionMode2DX : ProjectionMode
 
       local k = (unit_z + 1) * 2
       Display.unit_z = unit_z
-      local locus_sx = Display.projection_locus.x / width
-      local locus_sy = Display.projection_locus.y / height
+      local locus_sx = Display.perspective_center.x / width
+      local locus_sy = Display.perspective_center.y / height
       local left = (-2 * width / k)  * locus_sx
       local top  = (-2 * height / k) * locus_sy
       local right = left + 2*width/k

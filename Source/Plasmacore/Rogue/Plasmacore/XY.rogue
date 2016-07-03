@@ -35,6 +35,20 @@ class XY( x:Real64, y:Real64 ) [compound]
     method ceiling->XY
       return XY( Math.ceiling(x), Math.ceiling(y) )
 
+    method clamped( low=null:Real64?, high=null:Real64? )->XY
+      # Adjusts both x and y to be within the given limits
+      local new_x = x
+      local new_y = y
+      if (low.exists)
+        if (new_x < low.value) new_x = low.value
+        if (new_y < low.value) new_y = low.value
+      endIf
+      if (high.exists)
+        if (new_x > high.value) new_x = high.value
+        if (new_y > high.value) new_y = high.value
+      endIf
+      return XY( new_x, new_y )
+
     method clamped( box:Box )->XY
       # Adjusts this point to be within the boundaries of the given box.
       local vx = x

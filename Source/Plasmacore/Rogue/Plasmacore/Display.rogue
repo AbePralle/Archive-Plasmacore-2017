@@ -25,19 +25,19 @@ class Display [singleton]
     texture_shader_with_color_add      : Shader
     texture_shader_with_color_fill     : Shader
 
-    name             : String
-    view             = default_view_type.create_object<<View>> : View
+    name               : String
+    view               = default_view_type.create_object<<View>> : View
 
-    window           : Window
+    window             : Window
 
-    update_timer     = UpdateTimer()
+    update_timer       = UpdateTimer()
 
-    pointer_position : XY
-    pointer_exists   : Logical
+    pointer_position   : XY
+    pointer_exists     : Logical
 
-    size             : XY
+    size               : XY
 
-    projection_locus : XY
+    perspective_center : XY
     # The "origin" for 3D perspective and the vanishing point for polygons
     # parallel to the camera axis.  Reset to Display.center at the beginning
     # of every draw.
@@ -368,7 +368,7 @@ class Display [singleton]
 
     method render( size )
       Display = this  # set the singleton reference to be this display
-      projection_locus = center
+      perspective_center = center
 
       if (not color_shader)
         # Set up default shaders
@@ -544,9 +544,9 @@ class Display [singleton]
       active_primitive_type = primitive_type
       return this
 
-    method set_projection_locus( new_locus:XY )->this
-      if (new_locus != projection_locus)
-        @projection_locus = new_locus
+    method set_perspective_center( new_center:XY )->this
+      if (new_center != perspective_center)
+        @perspective_center = new_center
         projection_mode.update
       endIf
       return this

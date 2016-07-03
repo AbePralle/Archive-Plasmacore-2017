@@ -1,45 +1,69 @@
 module Plasmacore
 
-class ActionNodeBase<<$SpecializedCmdType>>
+class ActionNodeBase<<$SpecializedNodeType>>
   GLOBAL METHODS
-    method operator+( a:$SpecializedCmdType, b:$SpecializedCmdType )->$SpecializedCmdType
+    method operator+( a:$SpecializedNodeType, b:$SpecializedNodeType )->$SpecializedNodeType
       if (not a) return b
       if (not b) return a
       return a.and_then( b )
 
-    method operator|( a:$SpecializedCmdType, b:$SpecializedCmdType )->$SpecializedCmdType
+    method operator|( a:$SpecializedNodeType, b:$SpecializedNodeType )->$SpecializedNodeType
       if (not a) return b
       if (not b) return a
       return a.and_also( b )
 
 endClass
 
-class ActionNode<<$SpecializedCmdType>> : ActionNodeBase<<$SpecializedCmdType>> [aspect]
+class ActionNode<<$SpecializedNodeType>> : ActionNodeBase<<$SpecializedNodeType>> [aspect]
   PROPERTIES
-    duration       : Real64
-    progress_fn    = ProgressFn.LINEAR : Function(Real64)->Real64
+    duration        : Real64
+    progress_fn     = ProgressFn.LINEAR : Function(Real64)->Real64
 
-    next_cmd       : $SpecializedCmdType
-    concurrent_cmd : $SpecializedCmdType
+    next_node       : $SpecializedNodeType
+    concurrent_node : $SpecializedNodeType
 
-    t              : Real64
-    dt             : Real64
-    last_time      : Real64 # 0:not started
+    t               : Real64
+    dt              : Real64
+    last_time       : Real64 # 0:not started
 
   METHODS
     method init( duration=0, progress_fn=ProgressFn.LINEAR )
 
-    method and_also( cmd:$SpecializedCmdType )->this
-      local cur = this
-      while (cur.concurrent_cmd) cur = cur.concurrent_cmd
-      cur.concurrent_cmd = cmd
+    method and_also( node:$SpecializedNodeType )->this
+      if (node)
+        local cur = this
+        while (cur.concurrent_node) cur = cur.concurrent_node
+        cur.concurrent_node = node
+      endIf
       return this
 
-    method and_then( cmd:$SpecializedCmdType )->this
-      local cur = this
-      while (cur.next_cmd) cur = cur.next_cmd
-      cur.next_cmd = cmd
+    method and_then( node:$SpecializedNodeType )->this
+      if (node)
+        local cur = this
+        while (cur.next_node) cur = cur.next_node
+        cur.next_node = node
+      endIf
       return this
+
+    method insert_next( node:$SpecializedNodeType )->this
+      if (node) next_node = node.and_then( next_node )
+      return this
+
+    method next->$SpecializedNodeType
+      # Finds the successor to this node, adjusts links if necessary, and
+      # returns it or the result of a call to its update().
+      if (next_node)
+        if (concurrent_node)
+          # Attach any parallel commands remaining in this finished command to the
+          # next command in this chain that will be the new head.
+          next_node.and_also( concurrent_node )
+        endIf
+        return next_node.update
+      elseIf (concurrent_node)
+        return concurrent_node
+      else
+        return null
+      endIf
 
     method on_start
 
@@ -56,7 +80,7 @@ class ActionNode<<$SpecializedCmdType>> : ActionNodeBase<<$SpecializedCmdType>> 
     method set_progress_fn( @progress_fn )->this
       return this
 
-    method update->$SpecializedCmdType
+    method update->$SpecializedNodeType
       local cur_time = System.time
       if (not last_time)
         on_start
@@ -70,8 +94,8 @@ class ActionNode<<$SpecializedCmdType>> : ActionNodeBase<<$SpecializedCmdType>> 
 
       on_update
 
-      if (concurrent_cmd)
-        concurrent_cmd = concurrent_cmd.update
+      if (concurrent_node)
+        concurrent_node = concurrent_node.update
       endIf
 
       if (duration < 0 or t < duration)
@@ -80,17 +104,6 @@ class ActionNode<<$SpecializedCmdType>> : ActionNodeBase<<$SpecializedCmdType>> 
 
       on_finish
 
-      if (next_cmd)
-        if (concurrent_cmd)
-          # Attach any parallel commands remaining in this finished command to the
-          # next command in this chain that will be the new head.
-          next_cmd.and_also( concurrent_cmd )
-        endIf
-        return next_cmd.update
-      elseIf (concurrent_cmd)
-        return concurrent_cmd
-      else
-        return null
-      endIf
+      return next
 endClass
 
