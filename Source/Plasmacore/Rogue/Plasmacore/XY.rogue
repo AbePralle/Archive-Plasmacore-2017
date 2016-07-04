@@ -198,6 +198,13 @@ class XY( x:Real64, y:Real64 ) [compound]
       endIf
       return StringBuilder().print( "[" ).print( x, n ).print( "," ).print( y, n ).print( "]" )->String
 
+    method to->Value( &integer )
+      if (integer)
+        return @{ x:x->Int32, y:y->Int32 }
+      else
+        return @{ x:x, y:y }
+      endIf
+
     method xv->XY
       return XY(x,0)
 
