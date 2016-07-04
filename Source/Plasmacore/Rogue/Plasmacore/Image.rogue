@@ -20,6 +20,7 @@ class Image
       init( Plasmacore.image_info_lookup[ name ] )
 
     method init( image_info )
+      size = XY( image_info["width"]->Int32, image_info["height"]->Int32 )
 
     method init( other:Image )
       data        = other.data
@@ -47,8 +48,8 @@ class Image
       local handle = (anchor.position * s).floor
       return Box( at_position - handle, s )
 
-    method set_uv( subset:Box )
-      data.set_uv( subset )
+    method set_texture_bounds( subset:Box )
+      data.set_texture_bounds( subset )
 
     method cloned->Image
       return Image( this )
@@ -87,9 +88,7 @@ class Image
         case "TextureImage"
           local texture = Texture( image_info["texture"]->String )
           data = TextureImageData( texture )
-          local uv_bounds = Box( image_info["uv"] )
-          size = uv_bounds.size
-          uv = uv_bounds
+          texture_bounds = Box( image_info["texture_x"]->Int32, image_info["texture_y"]->Int32, size )
           shader = TextureShader
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
@@ -216,7 +215,7 @@ class ImageData
     method add( child:Image )
       println "Illegal operation $.add(Image)." (type_name)
 
-    method set_uv( subset:Box )
+    method set_texture_bounds( subset:Box )
       noAction
 
     method draw( image:Image )
@@ -298,7 +297,7 @@ class TextureImageData : ImageData
     method init( texture )
       uv2 = texture.uv_size
 
-    method set_uv( subset:Box )
+    method set_texture_bounds( subset:Box )
       uv1 = subset.top_left / texture.texture_size
       uv2 = subset.bottom_right / texture.texture_size
 

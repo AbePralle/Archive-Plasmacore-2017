@@ -87,7 +87,7 @@ endClass
 
 class PointerEvent : Event [singleton]
   ENUMERATE
-    MOVEMENT = 0
+    MOVE     = 0
     PRESS    = 1
     RELEASE  = 2
     SCROLL   = 3
@@ -103,8 +103,8 @@ class PointerEvent : Event [singleton]
     method init( type, position, delta, index, id )
       is_consumed = false  # Need to be explicit because PointerEvent is recycled.
 
-    method is_movement->Logical [macro]
-      (this.type == PointerEvent.MOVEMENT)
+    method is_move->Logical [macro]
+      (this.type == PointerEvent.MOVE)
 
     method is_press->Logical [macro]
       (this.type == PointerEvent.PRESS)
@@ -125,7 +125,7 @@ class PointerEvent : Event [singleton]
       local buffer = StringBuilder()
       buffer.print( "Pointer " )
       which (type)
-        case MOVEMENT: buffer.print( "movement" )
+        case MOVE:     buffer.print( "move" )
         case PRESS:    buffer.print( "press index " ).print( index )
         case RELEASE:  buffer.print( "release" )
         case SCROLL:   buffer.print( "scroll " ).print( delta )
