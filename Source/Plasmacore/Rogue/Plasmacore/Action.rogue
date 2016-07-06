@@ -42,6 +42,10 @@ class Action
       endIf
       return this
 
+    method finish
+      if (duration < 0) duration = 0
+      t = duration
+
     method insert_next( node:Action )->this
       if (node) next_node = node.then( next_node )
       return this

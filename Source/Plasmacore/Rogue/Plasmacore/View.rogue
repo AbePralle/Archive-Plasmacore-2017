@@ -34,12 +34,19 @@ class View
       new_state.prior_state = state.prior_state
 
       new_state.on_prepare
-      state.is_active = false
       state.on_finish
+      state.is_active = false
       state = new_state
       state.view = this
       state.is_active = true
       state.on_start
+
+    method change_view( new_view:View )
+      new_view.display = display
+      new_view.on_prepare
+      this.on_finish
+      this.is_active = false
+      display.view = new_view
 
     method on_draw
 
@@ -56,8 +63,8 @@ class View
       new_state.view = this
       new_state.on_prepare
 
-      state.is_active = false
       state.on_finish
+      state.is_active = false
 
       new_state.is_active = true
 
