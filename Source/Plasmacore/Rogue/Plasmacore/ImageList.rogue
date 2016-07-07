@@ -27,5 +27,8 @@ augment Image[]
       is_loaded = true
       forEach (image in this) image.load
 
+    method unload
+      forEach (image in this) image.unload
+      is_loaded = false
 endAugment
 
