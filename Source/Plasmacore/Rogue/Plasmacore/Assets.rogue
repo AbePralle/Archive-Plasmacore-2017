@@ -16,28 +16,7 @@ class Assets
     method load_another->Real64
       if (finished_loading and loaded_asset_count == total_asset_count) return 1.0
 
-      if (not total_asset_count)
-        # Figure out which properties are unloaded assets.
-        local texture_names = StringTable<<Logical>>()
-        forEach (p in type_info.properties)
-          which (p.type.name)
-            case "Plasmacore::Image"
-              local image = get_property<<Image>>( p.name )
-              if (image) image.collect_texture_names( texture_names )
-
-            case "Plasmacore::Image[]"
-              local images = get_property<<Image[]>>( p.name )
-              if (images) images.collect_texture_names( texture_names )
-          endWhich
-        endForEach
-
-        forEach (texture_name in texture_names.keys)
-          if (not Display.textures_by_name.contains(texture_name))
-            pending_textures.add( texture_name )
-            ++total_asset_count
-          endIf
-        endForEach
-      endIf
+      if (not total_asset_count) reset_loading_info
 
       if (pending_textures.count)
         Texture( pending_textures.remove_last )
@@ -48,6 +27,33 @@ class Assets
       if (finished_loading) return 1.0  # avoid divide by zero
 
       return loaded_asset_count / Real64(total_asset_count)
+
+    method reset_loading_info
+      loaded_asset_count = 0
+      total_asset_count = 0
+      finished_loading = false
+      pending_textures.clear
+
+      # Figure out which properties are unloaded assets.
+      local texture_names = StringTable<<Logical>>()
+      forEach (p in type_info.properties)
+        which (p.type.name)
+          case "Plasmacore::Image"
+            local image = get_property<<Image>>( p.name )
+            if (image) image.collect_texture_names( texture_names )
+
+          case "Plasmacore::Image[]"
+            local images = get_property<<Image[]>>( p.name )
+            if (images) images.collect_texture_names( texture_names )
+        endWhich
+      endForEach
+
+      forEach (texture_name in texture_names.keys)
+        if (not Display.textures_by_name.contains(texture_name))
+          pending_textures.add( texture_name )
+          ++total_asset_count
+        endIf
+      endForEach
 
 endClass
 

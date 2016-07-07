@@ -40,6 +40,9 @@ class Image
       data.add( child )
       return this
 
+    method alpha->Real64
+      return colors.a.alpha / 255.0
+
     method bounds->Box
       return bounds( position )
 
@@ -70,8 +73,14 @@ class Image
       load
       data.draw( this )
 
+    method is_loaded->Logical
+      return (data and data.is_loaded)
+
     method load
-      if (data) return
+      if (data)
+        data.load
+        return
+      endIf
       if (perform_load) return
 
       println "Error loading " + select{ name || image_info->String }
@@ -88,7 +97,8 @@ class Image
         case "TextureImage"
           local texture = Texture( image_info["texture"]->String )
           data = TextureImageData( texture )
-          texture_bounds = Box( image_info["texture_x"]->Int32, image_info["texture_y"]->Int32, size )
+          local texture_size = XY( image_info["texture_width"]->Int32, image_info["texture_height"]->Int32 )
+          texture_bounds = Box( image_info["texture_x"]->Int32, image_info["texture_y"]->Int32, texture_size )
           shader = TextureShader
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
@@ -99,6 +109,16 @@ class Image
     method set( bitmap:Bitmap )
       data = data.set( bitmap )
       size = bitmap.size
+
+    method set_alpha( a:Real64 )->this
+      if (a >= 1.0)
+        shader = TextureShader
+      else
+        local a32 = (a * 255)->Int32.clamped( 0, 255 ) :<<: 24
+        colors = (colors & 0xFFFFFF) | a32
+        shader = TextureShaderWithColorMultiply
+      endIf
+      return this
 
     method set_anchor( @anchor )->this
       return this
@@ -150,10 +170,7 @@ class Image
     method set_size( @size )->this
       return this
 
-    method set_z( @z )->this
-      return this
-
-    method tint( t:Real64 )->this
+    method set_tint( t:Real64 )->this
       # t=0.0: shader set to TEXTURE
       # t>0.0: shader set to TEXTURE_WITH_COLOR_FILL, color alpha set to t*255
       if (t == 0)
@@ -168,6 +185,17 @@ class Image
       endIf
 
       return this
+
+    method set_z( @z )->this
+      return this
+
+    method unload->this
+      if (data)
+        data.unload
+        data = null
+      endIf
+      return this
+
 endClass
 
 #{
@@ -215,13 +243,22 @@ class ImageData
     method add( child:Image )
       println "Illegal operation $.add(Image)." (type_name)
 
-    method set_texture_bounds( subset:Box )
-      noAction
-
     method draw( image:Image )
+
+    method is_loaded->Logical
+      return true
+
+    method load
+      noAction
 
     method set( bitmap:Bitmap )->ImageData
       return TextureImageData( Texture(bitmap) )
+
+    method set_texture_bounds( subset:Box )
+      noAction
+
+    method unload
+      noAction
 
 endClass
 
@@ -297,9 +334,8 @@ class TextureImageData : ImageData
     method init( texture )
       uv2 = texture.uv_size
 
-    method set_texture_bounds( subset:Box )
-      uv1 = subset.top_left / texture.texture_size
-      uv2 = subset.bottom_right / texture.texture_size
+    method is_loaded->Logical
+      return texture.is_loaded
 
     method draw( image:Image )
       local size = image.size * image.scale
@@ -330,8 +366,19 @@ class TextureImageData : ImageData
 
       Display.pop_object_transform
 
+    method load
+      texture.load
+
     method set( bitmap:Bitmap )->this
       texture.set( bitmap )
       return this
+
+    method set_texture_bounds( subset:Box )
+      uv1 = subset.top_left / texture.texture_size
+      uv2 = subset.bottom_right / texture.texture_size
+
+    method unload
+      texture.unload
+
 endClass
 

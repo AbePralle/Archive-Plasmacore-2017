@@ -174,8 +174,20 @@ class Display [singleton]
       return gl_id
 
     method delete_texture( gl_id:Int32 )
-      native @|GLuint texture_id = (GLuint) gl_id;
+      if (not gl_id) return
+
+      trace gl_id
+      native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
+
+      #{
+      texture_list.remove( this )
+      forEach (key in textures_by_name.keys)
+        if (textures_by_name[key] is this)
+          textures_by_name.remove( key )
+        endIf
+      endForEach
+      }#
 
     method draw( box:Box, color:Color )
       draw( box, Colors(color) )
@@ -598,14 +610,6 @@ class Display [singleton]
       local t = transform
       local z = -unit_z
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
-
-      #{
-    method unload_image_groups
-      # Unloads all image groups except those flagged 'is_permanent'.
-      forEach (group in image_group_list)
-        if (not group.is_permanent) group.unload
-      endForEach
-      }#
 
     method update_transform
       if (not (view_transform_modified or object_transform_modified or projection_transform_modified)) return

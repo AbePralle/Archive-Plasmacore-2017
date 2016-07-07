@@ -21,8 +21,20 @@ class Color( argb:Int32 ) [compound]
       return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
 
   METHODS
+    method alpha->Int32
+      return (argb :>>: 24) & 255
+
+    method blue->Int32
+      return argb & 255
+
+    method green->Int32
+      return (argb :>>: 8) & 255
+
     method is_opaque->Logical
       return ((argb & 0xFF000000) == 0xFF000000)
+
+    method red->Int32
+      return (argb :>>: 16) & 255
 
     method with_alpha( a:Int32 )->Color
       return Color( (a :<<: 24) | (this.argb & 0xFFffFF) )
@@ -63,8 +75,8 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
     method create( a:Int32, b:Int32, c:Int32 )->Colors
       return Colors( Color(a), Color(b), Color(c), Color(0), 3 )
 
-    method create( a:Int32, b:Int32, c:Int32, d:Int32 )->Colors
-      return Colors( Color(a), Color(b), Color(c), Color(d), 4 )
+    method create( a:Int32, b:Int32, c:Int32, d:Int32, count=4:Int32 )->Colors
+      return Colors( Color(a), Color(b), Color(c), Color(d), count )
 
   METHODS
     method is_opaque->Logical
@@ -86,5 +98,14 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
         case 0: return true
         others: return false
       endWhich
+
+    method operator&( n:Int32 )->Colors
+      return Colors( a.argb&n, b.argb&n, c.argb&n, d.argb&n, count )
+
+    method operator|( n:Int32 )->Colors
+      return Colors( a.argb|n, b.argb|n, c.argb|n, d.argb|n, count )
+
+    method operator!->Colors
+      return Colors( !a.argb, !b.argb, !c.argb, !d.argb, count )
 endClass
 
