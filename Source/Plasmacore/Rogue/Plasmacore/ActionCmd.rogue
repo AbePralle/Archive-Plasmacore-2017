@@ -1,13 +1,13 @@
 module Plasmacore
 
-class Action
+class ActionCmd
   GLOBAL METHODS
-    method operator+( a:Action, b:Action )->Action
+    method operator+( a:ActionCmd, b:ActionCmd )->ActionCmd
       if (not a) return b
       if (not b) return a
       return a.then( b )
 
-    method operator|( a:Action, b:Action )->Action
+    method operator|( a:ActionCmd, b:ActionCmd )->ActionCmd
       if (not a) return b
       if (not b) return a
       return a.also( b )
@@ -16,8 +16,8 @@ class Action
     duration        : Real64
     progress_fn     = ProgressFn.LINEAR : Function(Real64)->Real64
 
-    next_node       : Action
-    concurrent_node : Action
+    next_node       : ActionCmd
+    concurrent_node : ActionCmd
 
     t               : Real64
     dt              : Real64
@@ -26,7 +26,7 @@ class Action
   METHODS
     method init( duration=0, progress_fn=ProgressFn.LINEAR )
 
-    method also( node:Action )->this
+    method also( node:ActionCmd )->this
       if (node)
         local cur = this
         while (cur.concurrent_node) cur = cur.concurrent_node
@@ -34,7 +34,7 @@ class Action
       endIf
       return this
 
-    method then( node:Action )->this
+    method then( node:ActionCmd )->this
       if (node)
         local cur = this
         while (cur.next_node) cur = cur.next_node
@@ -46,11 +46,14 @@ class Action
       if (duration < 0) duration = 0
       t = duration
 
-    method insert_next( node:Action )->this
+    method insert_next( node:ActionCmd )->this
       if (node) next_node = node.then( next_node )
       return this
 
-    method next->Action
+    method is_finished->Logical
+      return (duration >= 0 and t >= duration)
+
+    method next->ActionCmd
       # Finds the successor to this node, adjusts links if necessary, and
       # returns it or the result of a call to its update().
       if (next_node)
@@ -82,12 +85,12 @@ class Action
     method set_progress_fn( @progress_fn )->this
       return this
 
-    method update->Action
+    method update->ActionCmd
       local cur_time = System.time
       if (not last_time)
         on_start
       else
-        dt = cur_time - last_time
+        dt = (cur_time - last_time).clamped(0,1.0/10.0)
         t += dt
         if (duration >= 0 and t > duration) t = duration
       endIf
@@ -109,4 +112,4 @@ class Action
       return next
 endClass
 
-class ActionWait( duration ) : Action;
+class ActionCmdWait( duration ) : ActionCmd;

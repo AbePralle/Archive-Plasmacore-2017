@@ -176,7 +176,6 @@ class Display [singleton]
     method delete_texture( gl_id:Int32 )
       if (not gl_id) return
 
-      trace gl_id
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
 
