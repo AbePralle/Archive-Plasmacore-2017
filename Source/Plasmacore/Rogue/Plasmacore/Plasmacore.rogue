@@ -12,7 +12,7 @@ $include "XY.rogue"
 
 $if not "Console"
 
-$include "Action.rogue"
+$include "ActionCmd.rogue"
 $include "Assets.rogue"
 $include "Corners.rogue"
 $include "Display.rogue"

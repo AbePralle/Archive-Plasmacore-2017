@@ -1,8 +1,5 @@
 #include "RogueInterface.h"
 #include "RogueProgram.h"
-//#include "Starbright.h"
-//#include "StarbrightGL.h"
-//#include "SuperCPPResourceBank.h"
 
 #include <cstdio>
 #include <cstring>
@@ -10,8 +7,6 @@ using namespace std;
 
 static int          RogueInterface_argc = 0;
 static const char** RogueInterface_argv = {0};
-
-//SuperCPP::ResourceBank<Starbright::Renderer*> starbright_renderers;
 
 NSString* Plasmacore_rogue_string_to_ns_string( RogueString* st )
 {
@@ -47,21 +42,29 @@ extern "C" void RogueInterface_launch()
 
 extern "C" NSData* RogueInterface_send_messages( const unsigned char* data, int count )
 {
-  RogueClassPlasmacore__MessageManager* mm =
-    (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
-  RogueByte_List* list = mm->io_buffer;
+  try
+  {
+    RogueClassPlasmacore__MessageManager* mm =
+      (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
+    RogueByte_List* list = mm->io_buffer;
 
-  RogueByte_List__clear( list );
-  RogueByte_List__reserve__Int32( list, count );
-  memcpy( list->data->as_bytes, data, count );
-  list->count = count;
+    RogueByte_List__clear( list );
+    RogueByte_List__reserve__Int32( list, count );
+    memcpy( list->data->as_bytes, data, count );
+    list->count = count;
 
-  // Call Rogue MessageManager.update(), which sends back a reference to another byte
-  // list containing messages to us.
-  list = RoguePlasmacore__MessageManager__update( mm );
+    // Call Rogue MessageManager.update(), which sends back a reference to another byte
+    // list containing messages to us.
+    list = RoguePlasmacore__MessageManager__update( mm );
 
-  if ( !list ) return [NSData data];
-  return [[NSData alloc] initWithBytes:list->data->as_bytes length:list->count];
+    if ( !list ) return [NSData data];
+    return [[NSData alloc] initWithBytes:list->data->as_bytes length:list->count];
+  }
+  catch (RogueException* err)
+  {
+    RogueException__display( err );
+    return [NSData data];
+  }
 }
 
 extern "C" void RogueInterface_set_arg_count( int count )
