@@ -224,7 +224,7 @@ class Bitmap
 
     method expand_to_power_of_two->this
       local wp2 = width.to_power_of_two
-      local hp2 = width.to_power_of_two
+      local hp2 = height.to_power_of_two
       if (wp2 == width and hp2 == height) return this
 
       local result = Bitmap( wp2, hp2 )
