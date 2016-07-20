@@ -66,6 +66,9 @@ $endIf
     method height->Real64 [macro]
       this.size.y
 
+    method intersects( other:Box )->Logical
+      return (this & other).width?
+
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
 
