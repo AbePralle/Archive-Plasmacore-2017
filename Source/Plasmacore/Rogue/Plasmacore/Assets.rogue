@@ -38,6 +38,10 @@ class Assets
       local texture_names = StringTable<<Logical>>()
       forEach (p in type_info.properties)
         which (p.type.name)
+          case "Plasmacore::Font"
+            local font = get_property<<Font>>( p.name )
+            if (font) font.collect_texture_names( texture_names )
+
           case "Plasmacore::Image"
             local image = get_property<<Image>>( p.name )
             if (image) image.collect_texture_names( texture_names )

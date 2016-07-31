@@ -72,9 +72,7 @@ class Display [singleton]
     textures_by_name   = StringTable<<Texture>>()
     texture_list       = Texture[]
 
-    # Loaded image groups
-    #image_group_list   = ImageGroup[]
-    #image_group_lookup = StringTable<<ImageGroup>>()
+    font_data_by_name  = StringTable<<FontData>>()
 
     system_font : Font
     ui_theme    = Theme() # Default theme
@@ -187,15 +185,6 @@ class Display [singleton]
 
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
-
-      #{
-      texture_list.remove( this )
-      forEach (key in textures_by_name.keys)
-        if (textures_by_name[key] is this)
-          textures_by_name.remove( key )
-        endIf
-      endForEach
-      }#
 
     method draw( box:Box, color:Color )
       draw( box, Colors(color) )
