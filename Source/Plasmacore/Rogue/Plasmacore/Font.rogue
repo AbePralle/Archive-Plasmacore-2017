@@ -2,8 +2,11 @@ module Plasmacore
 
 class Font
   PROPERTIES
+    name           : String
+    image_info     : Value
+
     data           : FontData
-    options        : ValueTable
+    #options        : ValueTable
 
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
@@ -11,17 +14,19 @@ class Font
     color          = Color.WHITE : Color
 
   METHODS
-    method init( name:String, options=null )
-      data = Display.get_font_data( name, null, options )
-      set_options( options )
+    method init( name )
+      data = FontData( name )
 
-    method init( name:String, height:Int32, options=null )
-      data = Display.get_font_data( name, height, options )
-      set_options( options )
+    method collect_texture_names( texture_names:StringTable<<Logical>> )
+      data.collect_texture_names( texture_names )
+
+    method load
+      data.load
 
     method draw( text:String, position:XY )
       if (data) data.draw( this, text, position )
 
+    #{
     method get( ch:Character )->FontCharacter
       return select{ data:data[ ch ] || null }
 
@@ -50,10 +55,122 @@ class Font
 
     method prepare( text=null:String )
       if (data) data.prepare( text )
+      }#
+
+    method unload
+      data.unload
+
+
+endClass
+
+class FontData
+  GLOBAL METHODS
+    method create( name:String )->FontData
+      local entry = Display.font_data_by_name.find( name )
+      if (entry) return entry.value
+
+      return FontData( name, Plasmacore.image_info_lookup[ name ] )
+
+  PROPERTIES
+    name             : String
+    image_info       : Value
+    is_loaded        : Logical
+    height           : Int32
+    characters       = FontCharacter[]( 128, null )
+    character_lookup : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
+
+  METHODS
+    method init( name, image_info )
+      require (image_info["type"] == "Font")
+      forEach (character_info in image_info["characters"])
+        local ch = FontCharacter( Character(character_info//unicode->Int32), Image(character_info) )
+        require (ch.unicode >= 0)
+        if (ch.unicode < 128)
+          characters[ ch.unicode ] = ch
+        else
+          characters.add( ch )
+          ensure character_lookup
+          character_lookup[ ch.unicode ] = ch
+        endIf
+      endForEach
+
+    method collect_texture_names( texture_names:StringTable<<Logical>> )
+      forEach (ch in characters)
+        if (ch) ch.image.collect_texture_names( texture_names )
+      endForEach
+
+    method draw( font:Font, text:String, position:XY  )
+      load
+
+      local color = font.color
+      local shader = select(color.argb){ 0xFFFFffff:TextureShader() || TextureShaderWithColorMultiply() }
+
+      local cursor = position #- Box(text_size(text)*font.scale).at( font.anchor ).floor
+      forEach (ch in text)
+        local font_ch = this[ ch ]
+        if (font_ch)
+          local image = font_ch.image
+          #image.size = font_ch.size * font.scale
+          image.shader = shader
+          image.color = color
+          image.position = cursor
+          image.draw
+          cursor += font_ch.advance * font.scale + XY(font.spacing,0) * font.scale
+        endIf
+      endForEach
+
+    method get( unicode:Character )->FontCharacter
+      if (unicode >= 0 and unicode <= 127) return characters[ unicode ]
+      return character_lookup[ unicode ]
+
+    method load
+      if (is_loaded) return
+      is_loaded = true
+      forEach (ch in characters)
+        if (ch)
+          ch.image.load
+          ch.image.anchor = Anchor.TOP_LEFT
+        endIf
+      endForEach
+
+    method unload
+      if (not is_loaded) return
+      is_loaded = false
+      forEach (ch in characters)
+        if (ch)
+          ch.image.unload
+        endIf
+      endForEach
 
 endClass
 
 
+class FontCharacter
+  PROPERTIES
+    unicode   : Character
+    image     : Image
+
+    size      : XY
+    advance   : XY
+
+  METHODS
+    method init( unicode, image )
+      size    = image.size
+      advance = size.xv
+
+      #{
+    method bounds->Box
+      return Box( top_left, size )
+      }#
+
+    method height->Int32 [macro]
+      Int32(size.y)
+
+    method width->Int32 [macro]
+      Int32(size.x)
+endClass
+
+#{
 class FontData
   PROPERTIES
     loader         : FontLoader
@@ -118,8 +235,9 @@ class FontData
       if (not info) return XY(0,0)
       return info.advance
 endClass
+}#
 
-
+#{
 class DynamicallyLoadedFontData : FontData
   PROPERTIES
     bitmap         : Bitmap
@@ -213,34 +331,14 @@ class DynamicallyLoadedFontData : FontData
       endIf
 
 endClass
+}#
 
 
-class FontCharacter
-  PROPERTIES
-    font_data : FontData
-    unicode   : Character
-
-    exists    : Logical
-    top_left  : XY
-    size      : XY
-
-    offset    : XY
-    advance   : XY
-
-  METHODS
-    method init( font_data, unicode )
-
-    method bounds->Box
-      return Box( top_left, size )
-
-    method height->Int32 [macro]
-      Int32(size.y)
-
-    method width->Int32 [macro]
-      Int32(size.x)
-endClass
+#{
+}#
 
 
+#{
 class FontLoader
   PROPERTIES
     name               : String
@@ -318,7 +416,9 @@ class BitmapFontLoader : FontLoader
     method nominal_height->Int32
       return character_height
 endClass
+}#
 
+#{
 
 $if "Console"
 class TrueTypeFontLoader : FontLoader [requisite]
@@ -468,3 +568,4 @@ augment Display
 
 endAugment
 
+}#
