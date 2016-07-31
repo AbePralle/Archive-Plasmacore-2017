@@ -107,5 +107,13 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
 
     method operator!->Colors
       return Colors( !a.argb, !b.argb, !c.argb, !d.argb, count )
+
+    method to->String
+      which (count)
+        case 1: return a->String
+        case 2: return "[$,$]" (a,b)
+        case 3: return "[$,$,$]" (a,b,c)
+        others: return "[$,$,$,$]" (a,b,c,d)
+      endWhich
 endClass
 

@@ -1,6 +1,6 @@
 module Plasmacore
 
-class ProjectionMode
+class ProjectionMode [abstract]
   METHODS
     method update  [abstract]
 endClass

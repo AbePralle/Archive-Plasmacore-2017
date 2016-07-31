@@ -81,9 +81,9 @@ class Plasmacore [requisite singleton]
 
         MessageManager.add_handler( "Display.on_pointer_event",
           function(m:Message)
-            PointerEvent.init( m.int32("type"), XY(m.int32("x"),m.int32("y")), XY(m.real64("dx"),m.real64("dy")),
+          local e = PointerEvent( m.int32("type"), XY(m.int32("x"),m.int32("y")), XY(m.real64("dx"),m.real64("dy")),
               m.int32("index"), m.int32("id") )
-            Display( m.string("display_name") ).handle( PointerEvent )
+            Display( m.string("display_name") ).handle( e )
           endFunction )
 
     method asset_file( name:String )->File
