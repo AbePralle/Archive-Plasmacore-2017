@@ -9,10 +9,19 @@
 import GLKit
 import OpenGLES
 
+#if os(OSX)
+    import Cocoa
+#else
+    import Foundation
+    import UIKit
+#endif
+
+
 class PlasmacoreViewController : GLKViewController
 {
   var context: EAGLContext? = nil
   var name = "Unnamed"
+
 
   deinit {
     self.tearDownGL()
@@ -72,6 +81,11 @@ class PlasmacoreViewController : GLKViewController
 
   func update()
   {
+  }
+
+  override func prefersStatusBarHidden()->Bool
+  {
+    return true
   }
 
   override func glkView( view:GLKView, drawInRect rect:CGRect)

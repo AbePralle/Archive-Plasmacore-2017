@@ -14,6 +14,7 @@ class Image
     anchor      = Anchor.CENTER : Anchor
     render_mode : RenderMode
     colors      = Colors(Color.WHITE) : Colors
+    alpha       = 1.0
 
   METHODS
     method init( name )
@@ -37,11 +38,8 @@ class Image
     method init( data )
 
     method add( child:Image )->this
-      data.add( child )
+      if (data) data.add( child )
       return this
-
-    method alpha->Real64
-      return colors.a.alpha / 255.0
 
     method bounds->Box
       return bounds( position )
@@ -52,7 +50,7 @@ class Image
       return Box( at_position - handle, s )
 
     method set_texture_bounds( subset:Box )
-      data.set_texture_bounds( subset )
+      if (data) data.set_texture_bounds( subset )
 
     method cloned->Image
       return Image( this )
@@ -66,30 +64,24 @@ class Image
       endWhich
 
     method draw
-      load
+      if (not prepare) return
       data.draw( this )
 
     method draw( position )
-      load
+      if (not prepare)
+        return
+      endIf
       data.draw( this )
 
     method is_loaded->Logical
       return (data and data.is_loaded)
 
-    method load
+    method load->Logical
       if (data)
         data.load
-        return
+        return true
       endIf
-      if (perform_load) return
 
-      println "Error loading " + select{ name || image_info->String }
-      data = ColorFillImageData()
-      colors = Colors( Color.WHITE )
-      render_mode = RenderMode.OPAQUE_SHAPE
-      shader = ColorShader
-
-    method perform_load->Logical
       if (not image_info) return false
 
       local image_type = image_info[ "type" ]->String
@@ -106,18 +98,35 @@ class Image
 
       return false
 
-    method set( bitmap:Bitmap )
-      data = data.set( bitmap )
-      size = bitmap.size
+    method prepare->Logical
+      if (alpha <= 0.0) return false
 
-    method set_alpha( a:Real64 )->this
-      if (a >= 1.0)
+      if (not load)
+        println "Error loading " + select{ name || image_info->String }
+        data = ColorFillImageData()
+        colors = Colors( Color.WHITE )
+        render_mode = RenderMode.OPAQUE_SHAPE
+        shader = ColorShader
+        alpha = 0
+        return false
+      endIf
+
+      # Apply alpha
+      if (alpha >= 1.0)
         shader = TextureShader
       else
-        local a32 = (a * 255)->Int32.clamped( 0, 255 ) :<<: 24
+        local a32 = (alpha * 255)->Int32.clamped( 0, 255 ) :<<: 24
         colors = (colors & 0xFFFFFF) | a32
         shader = TextureShaderWithColorMultiply
       endIf
+      return true
+
+
+    method set( bitmap:Bitmap )
+      if (data) data = data.set( bitmap )
+      size = bitmap.size
+
+    method set_alpha( @alpha )->this
       return this
 
     method set_anchor( @anchor )->this
@@ -176,11 +185,8 @@ class Image
       if (t == 0)
         shader = TextureShader
       else
-        local a = Int32( t * 255 )
-        colors.a = colors.a.with_alpha( a )
-        colors.b = colors.b.with_alpha( a )
-        colors.c = colors.c.with_alpha( a )
-        colors.d = colors.d.with_alpha( a )
+        local a32 = (t * 255)->Int32.clamped( 0, 255 ) :<<: 24
+        colors = (colors & 0xFFFFFF) | a32
         shader = TextureShaderWithColorFill
       endIf
 

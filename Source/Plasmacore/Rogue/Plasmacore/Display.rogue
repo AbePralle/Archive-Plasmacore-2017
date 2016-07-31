@@ -89,6 +89,15 @@ class Display [singleton]
       #system_font = Font( "FontSystem17.png", &options=@{snug} )
 
     method activate_view_and_state
+      if (not color_shader)
+        # Set up default shaders
+        color_shader                       = Shader.create_color_shader
+        texture_shader                     = Shader.create_texture_shader
+        texture_shader_with_color_multiply = Shader.create_texture_shader_with_color_multiply
+        texture_shader_with_color_add      = Shader.create_texture_shader_with_color_add
+        texture_shader_with_color_fill     = Shader.create_texture_shader_with_color_fill
+      endIf
+
       if (not view) view = default_view_type.create_object<<View>>
       view.display = this
       view.state.view = view
@@ -381,15 +390,6 @@ class Display [singleton]
       Display = this  # set the singleton reference to be this display
       perspective_center = center
 
-      if (not color_shader)
-        # Set up default shaders
-        color_shader                       = Shader.create_color_shader
-        texture_shader                     = Shader.create_texture_shader
-        texture_shader_with_color_multiply = Shader.create_texture_shader_with_color_multiply
-        texture_shader_with_color_add      = Shader.create_texture_shader_with_color_add
-        texture_shader_with_color_fill     = Shader.create_texture_shader_with_color_fill
-      endIf
-
       activate_view_and_state
 
       view.ui.update_layout( Box(size) )
@@ -401,9 +401,9 @@ class Display [singleton]
 
       activate_view_and_state
       while (update_timer.tick)
-        view.state.handle( UpdateEvent.init )
+        view.state.handle( UpdateEvent.init_object )
       endWhile
-      view.state.handle( DrawEvent.init )
+      view.state.handle( DrawEvent.init_object )
 
       #OverlayLog.update
       #OverlayLog.draw

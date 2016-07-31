@@ -92,8 +92,8 @@ class WindowManager [requisite singleton]
 
           local window    = WindowManager.find_window( window_id )
           if (window)
-            KeyEvent.init( keycode, unicode, syscode, is_press, is_repeat )
-            window.handle_key_event( display_name, KeyEvent )
+            local e = KeyEvent( keycode, unicode, syscode, is_press, is_repeat )
+            window.handle_key_event( display_name, e )
           endIf
         endFunction
       )
@@ -112,8 +112,8 @@ class WindowManager [requisite singleton]
 
           local window    = WindowManager.find_window( window_id )
           if (window)
-            PointerEvent.init( type, XY(x,y), XY(dx,dy), button, id )
-            window.handle_pointer_event( display_name, PointerEvent )
+            local e = PointerEvent( type, XY(x,y), XY(dx,dy), button, id )
+            window.handle_pointer_event( display_name, e )
           endIf
         endFunction
       )
