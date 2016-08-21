@@ -20,7 +20,8 @@ class XY( x:Real64, y:Real64 ) [compound]
       if (value.is_list)
         return XY( value[0]->Real64, value[1]->Real64 )
       elseIf (value.is_table)
-        return XY( value["x"]->Real64, value["y"]->Real64 )
+        if (value.contains("x")) return XY( value//x->Real64, value//y->Real64 )
+        else                     return XY( value//width->Real64, value//height->Real64 )
       elseIf (value.is_number)
         local n = value->Real64
         return XY( n, n )

@@ -26,7 +26,6 @@ class Font
     method draw( text:String, position:XY )
       if (data) data.draw( this, text, position )
 
-    #{
     method get( ch:Character )->FontCharacter
       return select{ data:data[ ch ] || null }
 
@@ -34,6 +33,7 @@ class Font
       if (data) return data.height * scale.y
       else      return 0
 
+      #{
     method set_options( @options )->this
       if (not options) return this
 
@@ -43,6 +43,7 @@ class Font
       if (options.contains("scale")) scale = XY( options["scale"] )
 
       return this
+      }#
 
     method text_size( text:String )->XY
       return select{ data:data.text_size( text ) * scale || XY(0,0) }
@@ -52,10 +53,6 @@ class Font
 
     method text_size( ch:Character )->XY
       return select{ data:data.text_size( ch ) * scale || XY(0,0) }
-
-    method prepare( text=null:String )
-      if (data) data.prepare( text )
-      }#
 
     method unload
       data.unload
@@ -76,8 +73,8 @@ class FontData
     image_info       : Value
     is_loaded        : Logical
     height           : Int32
-    characters       = FontCharacter[]( 128, null )
-    character_lookup : Table<<Character,FontCharacter>>  # Note: does not contain the ASCII characters
+    characters       = FontCharacter[]( 128, null )  # first 128 are in correct slots, additional in any order
+    character_lookup : Table<<Character,FontCharacter>>
 
   METHODS
     method init( name, image_info )
@@ -89,9 +86,9 @@ class FontData
           characters[ ch.unicode ] = ch
         else
           characters.add( ch )
-          ensure character_lookup
-          character_lookup[ ch.unicode ] = ch
         endIf
+        ensure character_lookup
+        character_lookup[ ch.unicode ] = ch
       endForEach
 
     method collect_texture_names( texture_names:StringTable<<Logical>> )
@@ -105,7 +102,7 @@ class FontData
       local color = font.color
       local shader = select(color.argb){ 0xFFFFffff:TextureShader() || TextureShaderWithColorMultiply() }
 
-      local cursor = position #- Box(text_size(text)*font.scale).at( font.anchor ).floor
+      local cursor = position - Box(text_size(text)*font.scale).at( font.anchor ).floor
       forEach (ch in text)
         local font_ch = this[ ch ]
         if (font_ch)
@@ -132,6 +129,27 @@ class FontData
           ch.image.anchor = Anchor.TOP_LEFT
         endIf
       endForEach
+
+    method text_size( text:String )->XY
+      local w = 0.0
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info) w += info.advance.x
+      endForEach
+      return XY( w, height )
+
+    method text_size( text:StringBuilder )->XY
+      local w = 0.0
+      forEach (ch in text)
+        local info = this[ ch ]
+        if (info) w += info.advance.x
+      endForEach
+      return XY( w, height )
+
+    method text_size( ch:Character )->XY
+      local info = this[ ch ]
+      if (not info) return XY(0,0)
+      return info.advance
 
     method unload
       if (not is_loaded) return
@@ -421,7 +439,7 @@ endClass
 #{
 
 $if "Console"
-class TrueTypeFontLoader : FontLoader [requisite]
+class TrueTypeFontLoader : FontLoader [essential]
   DEPENDENCIES
     nativeHeader
       #include "ft2build.h"

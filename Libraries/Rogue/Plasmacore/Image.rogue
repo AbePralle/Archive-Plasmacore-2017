@@ -21,9 +21,11 @@ class Image
       init( Plasmacore.image_info_lookup[ name ] )
 
     method init( image_info )
-      size = XY( image_info["width"]->Int32, image_info["height"]->Int32 )
+      size = XY( image_info//display_size )
 
     method init( other:Image )
+      name        = other.name
+      image_info  = other.image_info
       data        = other.data
       position    = other.position
       z           = other.z
@@ -34,6 +36,7 @@ class Image
       anchor      = other.anchor
       render_mode = other.render_mode
       colors      = other.colors
+      alpha       = other.alpha
 
     method init( data )
 
@@ -46,11 +49,11 @@ class Image
 
     method bounds( at_position:XY )->Box
       local s = size * scale
-      local handle = (anchor.position * s).floor
+      local handle = (anchor.position * s)
       return Box( at_position - handle, s )
 
-    method set_texture_bounds( subset:Box )
-      if (data) data.set_texture_bounds( subset )
+    method set-uv( subset:Box )
+      if (data) data.uv = subset
 
     method cloned->Image
       return Image( this )
@@ -60,7 +63,7 @@ class Image
 
       which (image_info["type"]->String)
         case "TextureImage"
-          texture_names[ image_info["texture"]->String ] = true
+          texture_names[ image_info//texture//filename->String ] = true
       endWhich
 
     method draw
@@ -87,10 +90,10 @@ class Image
       local image_type = image_info[ "type" ]->String
       which (image_type)
         case "TextureImage"
-          local texture = Texture( image_info["texture"]->String )
+          local texture_info = image_info//texture
+          local texture = Texture( texture_info//filename->String )
           data = TextureImageData( texture )
-          local texture_size = XY( image_info["texture_width"]->Int32, image_info["texture_height"]->Int32 )
-          texture_bounds = Box( image_info["texture_x"]->Int32, image_info["texture_y"]->Int32, texture_size )
+          uv = Box( texture_info//bounds )
           shader = TextureShader
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
@@ -260,7 +263,7 @@ class ImageData
     method set( bitmap:Bitmap )->ImageData
       return TextureImageData( Texture(bitmap) )
 
-    method set_texture_bounds( subset:Box )
+    method set-uv( subset:Box )
       noAction
 
     method unload
@@ -278,7 +281,7 @@ class CompositeImageData : ImageData
 
     method draw( image:Image )
       local size = image.size * image.scale
-      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
       local pos = image.position
@@ -303,7 +306,7 @@ class ColorFillImageData : ImageData
   METHODS
     method draw( image:Image )
       local size = image.size * image.scale
-      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
       local pos = image.position
@@ -345,7 +348,7 @@ class TextureImageData : ImageData
 
     method draw( image:Image )
       local size = image.size * image.scale
-      local handle = XYZ( (image.anchor.position * size).floor, 0 )
+      local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
       local pos = image.position
@@ -379,7 +382,7 @@ class TextureImageData : ImageData
       texture.set( bitmap )
       return this
 
-    method set_texture_bounds( subset:Box )
+    method set-uv( subset:Box )
       uv1 = subset.top_left / texture.texture_size
       uv2 = subset.bottom_right / texture.texture_size
 

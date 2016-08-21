@@ -18,7 +18,11 @@ class Box( position:XY, size:XY ) [compound]
       return Box( XY(0,0), size )
 
     method create( value:Value )->Box
-      return Box( value["x"]->Real64, value["y"]->Real64, value["width"]->Real64, value["height"]->Real64 )
+      if (value.contains("position"))
+        return Box( XY(value//position), XY(value//size) )
+      else
+        return Box( value//x->Real64, value//y->Real64, value//width->Real64, value//height->Real64 )
+      endIf
 
     method from_corners( top_left:XY, bottom_right:XY )->Box
       return Box( top_left, bottom_right - top_left )

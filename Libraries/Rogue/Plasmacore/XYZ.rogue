@@ -67,7 +67,7 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
     method to->String
       return "[$,$,$]" (x,y,z)
 
-    method to->XY [requisite]
+    method to->XY [essential]
       return XY(x,y)
 endClass
 

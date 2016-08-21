@@ -4,10 +4,10 @@
 
 module Plasmacore
 
-$requisite Byte[].clear()
-$requisite Byte[].reserve(Int32)
+$essential Byte[].clear()
+$essential Byte[].reserve(Int32)
 
-class MessageManager [requisite singleton]
+class MessageManager [essential singleton]
   PROPERTIES
     io_buffer = Byte[]  # native layer accesses this directly
     io_reader = BufferedDataReader( io_buffer )
@@ -81,7 +81,7 @@ class MessageManager [requisite singleton]
       send( m )
       reply_callbacks_by_id[ m.message_id ] = callback
 
-    method update->Byte[] [requisite]
+    method update->Byte[] [essential]
       # 'io_reader' has already been set up to decode 'io_buffer', which
       # in turn has already been filled with incoming message bytes by the
       # native layer.
