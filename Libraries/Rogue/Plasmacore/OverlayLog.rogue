@@ -1,6 +1,6 @@
 module Plasmacore
 
-class OverlayLog : PrintWriter<<output_buffer>> [requisite singleton]
+class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
   PROPERTIES
     lines = String[]
     timer = Timer(6)  # time until lines removed

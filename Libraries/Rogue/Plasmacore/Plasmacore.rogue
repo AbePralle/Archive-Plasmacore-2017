@@ -42,7 +42,7 @@ $include "XYZW.rogue"
 
 module Plasmacore
 
-class Plasmacore [requisite singleton]
+class Plasmacore [essential singleton]
   PROPERTIES
     default_asset_folder    = ""
 

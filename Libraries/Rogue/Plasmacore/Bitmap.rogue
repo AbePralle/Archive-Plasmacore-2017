@@ -11,10 +11,10 @@ class Bitmap
     error   : Logical
 
   METHODS
-    method init( _size:XY, color=Color.BLACK:Color ) [requisite]
+    method init( _size:XY, color=Color.BLACK:Color ) [essential]
       init( _size.x, _size.y, color )
 
-    method init( width, height, color=Color.BLACK:Color ) [requisite]
+    method init( width, height, color=Color.BLACK:Color ) [essential]
       init( width, height, Color[]( width*height, color ) )
 
     method init( file:File )
