@@ -146,7 +146,7 @@ class Bitmap
     method clear( color=Color.BLACK:Color )
       forEach (i of pixels) pixels[i] = color
 
-    method draw( box:Box, color:Color )
+    method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
       local x_limit = x1 + box.size.x->Int32
@@ -177,7 +177,7 @@ class Bitmap
               |  dest += $row_skip;
               |}
 
-    method draw( box:Box, color:Color, channel_mask:Int32 )
+    method fill( box:Box, color:Color, channel_mask:Int32 )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
       local x_limit = x1 + box.size.x->Int32
@@ -266,19 +266,19 @@ class Bitmap
               |}
               |return true;
 
-    method outline( box:Box, color:Color )
-      draw( Box(box.top_left, XY(box.width,1)), color )
-      draw( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
+    method draw( box:Box, color:Color )
+      fill( Box(box.top_left, XY(box.width,1)), color )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
 
-      draw( Box(box.top_left,            XY(1,box.height)), color )
-      draw( Box(box.top_right - XY(1,0), XY(1,box.height)), color )
+      fill( Box(box.top_left,            XY(1,box.height)), color )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color )
 
-    method outline( box:Box, color:Color, channel_mask:Int32 )
-      draw( Box(box.top_left, XY(box.width,1)), color, channel_mask )
-      draw( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color, channel_mask )
+    method draw( box:Box, color:Color, channel_mask:Int32 )
+      fill( Box(box.top_left, XY(box.width,1)), color, channel_mask )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color, channel_mask )
 
-      draw( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
-      draw( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
+      fill( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
 
     method premultiply_alpha->this
       # Multiplies the R,G,B components of each color by their current
