@@ -43,6 +43,9 @@ class Box( position:XY, size:XY ) [compound]
     method bottom_right->XY
       return (position + size)
 
+    method center->XY [macro]
+      this.at(0.5,0.5)
+
     method contains( pos:XY )->Logical
       if (pos.x < position.x or pos.x >= position.x + size.x) return false
       if (pos.y < position.y or pos.y >= position.y + size.y) return false
@@ -55,12 +58,12 @@ class Box( position:XY, size:XY ) [compound]
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
 $if not "Console"
-    method draw( color:Int32 )->this
-      Display.draw( this, color )
+    method fill( color:Int32 )->this
+      Display.fill( this, color )
       return this
 
-    method draw( color:Color )->this
-      Display.draw( this, color )
+    method fill( color:Color )->this
+      Display.fill( this, color )
       return this
 $endIf
 
@@ -119,12 +122,12 @@ $endIf
       return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
 
 $if not "Console"
-    method outline( color:Int32 )->this
-      Display.outline( this, color )
+    method draw( color:Int32 )->this
+      Display.draw( this, color )
       return this
 
-    method outline( color:Color )->this
-      Display.outline( this, color )
+    method draw( color:Color )->this
+      Display.draw( this, color )
       return this
 $endIf
 

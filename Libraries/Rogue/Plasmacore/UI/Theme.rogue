@@ -12,15 +12,15 @@ class Theme
       component.dispatch_theme_draw( this )
 
     method draw( component:Component )
-      #component.bounds.outline( Color.WHITE )
+      #component.bounds.draw( Color.WHITE )
 
     method draw( button:Button )
-      button.bounds.draw( Color.BLUE )
+      button.bounds.fill( Color.BLUE )
 
     method draw( layout:Layout )
       noAction
 
     method draw( panel:Panel )
-      panel.bounds.draw( Color.WHITE )
+      panel.bounds.fill( Color.WHITE )
 endClass
 

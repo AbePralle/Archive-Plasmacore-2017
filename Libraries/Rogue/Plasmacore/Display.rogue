@@ -186,17 +186,17 @@ class Display [singleton]
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
 
-    method draw( box:Box, color:Color )
-      draw( box, Colors(color) )
+    method fill( box:Box, color:Color )
+      fill( box, Colors(color) )
 
-    method draw( box:Box, color:Int32 )
-      draw( box, Colors(color) )
+    method fill( box:Box, color:Int32 )
+      fill( box, Colors(color) )
 
-    method draw( box:Box, colors:Colors )
-      draw_solid_quad( transform(Corners<<XY>>(box)), colors,
+    method fill( box:Box, colors:Colors )
+      fill_solid_quad( transform(Corners<<XY>>(box)), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
-    method draw_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
+    method fill_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
 
@@ -235,7 +235,7 @@ class Display [singleton]
       vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
 
-    method draw_textured_quad( texture:Texture,
+    method fill_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
         colors:Colors,
         uv:Corners<<XY>>,
@@ -336,15 +336,15 @@ class Display [singleton]
       return group
       }#
 
-    method outline( box:Box, color:Int32 )
-      outline( box, Color(color) )
+    method draw( box:Box, color:Int32 )
+      draw( box, Color(color) )
 
-    method outline( box:Box, color:Color )
-      draw( Box(box.top_left,1,box.height), color )
-      draw( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
+    method draw( box:Box, color:Color )
+      fill( Box(box.top_left,1,box.height), color )
+      fill( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
       if (box.width > 2)
-        draw( Box(box.top_left+XY(1,0),box.width-2,1), color )
-        draw( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
+        fill( Box(box.top_left+XY(1,0),box.width-2,1), color )
+        fill( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
       endIf
 
     method pop_object_transform( n=1:Int32 )->this

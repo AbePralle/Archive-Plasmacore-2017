@@ -26,6 +26,9 @@ class Font
     method draw( text:String, position:XY )
       if (data) data.draw( this, text, position )
 
+    method draw( text:String, box:Box )
+      draw( text, box.at(anchor) )
+
     method get( ch:Character )->FontCharacter
       return select{ data:data[ ch ] || null }
 
@@ -45,14 +48,77 @@ class Font
       return this
       }#
 
-    method text_size( text:String )->XY
-      return select{ data:data.text_size( text ) * scale || XY(0,0) }
+    method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
+      return select{ data:data.measure( text ) * scale || XY(0,0) }
 
-    method text_size( text:StringBuilder )->XY
-      return select{ data:data.text_size( text ) * scale || XY(0,0) }
+    method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
+      return select{ data:data.measure( text ) * scale || XY(0,0) }
 
-    method text_size( ch:Character )->XY
-      return select{ data:data.text_size( ch ) * scale || XY(0,0) }
+    method measure( ch:Character )->XY
+      return select{ data:data.measure( ch ) * scale || XY(0,0) }
+
+    method word_wrap( st:String, pixel_width:Int32 )->String[]
+     # Returns a word-wrapped version of the given string as a list of lines.
+      # Existing newlines characters will cause a new line to begin
+      # immediately. Spaces immediately following existing newline characters
+      # are preserved.
+      return word_wrap( st, pixel_width, StringBuilder() )->String.split('\n')
+
+    method word_wrap( st:String, pixel_width:Int32, buffer:StringBuilder )->StringBuilder
+      # Prints a word-wrapped version of the given string into the specified
+      # StringBuilder. Existing newlines characters will cause a new line to
+      # begin immediately. Spaces immediately following existing newline
+      # characters are preserved.
+      local i1, i2 : Int32
+      local len = st.count
+      local w = 0.0
+
+      if (st == "" or pixel_width <= 0) return buffer
+
+      local needs_newline = false
+      local starting_i2 = i2
+      while (i2 < len)
+        starting_i2 = i2
+
+        # find last space or first \n
+        while (w <= pixel_width and i2 < len and st[i2] != '\n')
+          local char_w = measure( st, i2, i2 ).x
+          w += char_w
+          i2++
+        endWhile
+
+        local initial_i2 = i2
+
+        if (w > pixel_width)
+          --i2
+          while (st[i2]!=' ' and st[i2]!='\n' and i2>i1) i2--
+          if (i2 == i1) i2 = initial_i2 - 1
+        endIf
+
+        if (needs_newline) buffer.println
+        forEach (i in i1..<i2) buffer.print( st[i] )
+        needs_newline = true
+        w = 0
+
+        if (i2 == len)
+          return buffer
+        else
+          which (st[i2])
+            case ' ':
+              while (i2<len and st[i2]==' ') i2++
+              if (i2<len and st[i2]=='\n') i2++
+
+            case '\n':
+              i2++
+          endWhich
+          i1 = i2
+        endIf
+
+        if (starting_i2 == i2) return buffer  # Kludge/error
+
+      endWhile
+
+      return buffer
 
     method unload
       data.unload
@@ -78,9 +144,11 @@ class FontData
 
   METHODS
     method init( name, image_info )
+
       require (image_info["type"] == "Font")
       forEach (character_info in image_info["characters"])
         local ch = FontCharacter( Character(character_info//unicode->Int32), Image(character_info) )
+        height = height.or_larger( ch.image.size.y )
         require (ch.unicode >= 0)
         if (ch.unicode < 128)
           characters[ ch.unicode ] = ch
@@ -99,18 +167,31 @@ class FontData
     method draw( font:Font, text:String, position:XY  )
       load
 
+      position = position - Box(measure(text)*font.scale).at( font.anchor ).yv
+
+      if (text.contains('\n'))
+        local h = height * font.scale.y
+        forEach (line in text.split('\n'))
+          draw_line( font, line, position )
+          position += XY(0,h)
+        endForEach
+      else
+        draw_line( font, text, position )
+      endIf
+
+    method draw_line( font:Font, text:String, position:XY  )
       local color = font.color
       local shader = select(color.argb){ 0xFFFFffff:TextureShader() || TextureShaderWithColorMultiply() }
 
-      local cursor = position - Box(text_size(text)*font.scale).at( font.anchor ).floor
+      local cursor = position - Box(measure(text)*font.scale).at( font.anchor ).xv
       forEach (ch in text)
         local font_ch = this[ ch ]
         if (font_ch)
           local image = font_ch.image
-          #image.size = font_ch.size * font.scale
+          image.size = font_ch.size * font.scale
           image.shader = shader
           image.color = color
-          image.position = cursor
+          image.position = cursor + font_ch.offset
           image.draw
           cursor += font_ch.advance * font.scale + XY(font.spacing,0) * font.scale
         endIf
@@ -122,6 +203,7 @@ class FontData
 
     method load
       if (is_loaded) return
+
       is_loaded = true
       forEach (ch in characters)
         if (ch)
@@ -130,23 +212,54 @@ class FontData
         endIf
       endForEach
 
-    method text_size( text:String )->XY
+    method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
+      local max_w = 0.0
       local w = 0.0
-      forEach (ch in text)
-        local info = this[ ch ]
-        if (info) w += info.advance.x
-      endForEach
-      return XY( w, height )
+      local h = height : Real64
+      local max_i2 = text.count - 1
+      if (i1) i1 = i1.value.clamped(0,max_i2)
+      if (i2) i2 = i2.value.clamped(0,max_i2)
 
-    method text_size( text:StringBuilder )->XY
+      forEach (index in select{i1||0}..select{i2||max_i2})
+        local ch = text[index]
+        if (ch == '\n')
+          h += height
+          max_w = max_w.or_larger( w )
+          w = 0.0
+        else
+          local info = this[ ch ]
+          if (info) w += info.advance.x
+        endIf
+      endForEach
+
+      max_w = max_w.or_larger( w )
+      return XY( max_w, h )
+
+    method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
+      local max_w = 0.0
       local w = 0.0
-      forEach (ch in text)
-        local info = this[ ch ]
-        if (info) w += info.advance.x
-      endForEach
-      return XY( w, height )
+      local h = height : Real64
+      local max_i2 = text.count - 1
+      if (i1) i1 = i1.value.clamped(0,max_i2)
+      if (i2) i2 = i2.value.clamped(0,max_i2)
 
-    method text_size( ch:Character )->XY
+      forEach (index in select{i1||0}..select{i2||max_i2})
+        local ch = text[index]
+        if (ch == '\n')
+          h += height
+          max_w = max_w.or_larger( w )
+          w = 0.0
+        else
+          local info = this[ ch ]
+          if (info) w += info.advance.x
+        endIf
+      endForEach
+
+      max_w = max_w.or_larger( w )
+      return XY( max_w, h )
+
+    method measure( ch:Character )->XY
+      if (ch == '\n') return XY(0,height)
       local info = this[ ch ]
       if (not info) return XY(0,0)
       return info.advance
@@ -169,7 +282,8 @@ class FontCharacter
     image     : Image
 
     size      : XY
-    advance   : XY
+    offset    : XY  # Added to cursor during draw
+    advance   : XY  # Added to cursor after drawing
 
   METHODS
     method init( unicode, image )
@@ -208,7 +322,7 @@ class FontData
       endIf
       image.color = font.color
 
-      local cursor = position - Box(text_size(text)*font.scale).at( font.anchor ).floor
+      local cursor = position - Box(text_size(text)*font.scale).at( font.anchor )
       forEach (ch in text)
         local info = this[ ch ]
         if (info)
