@@ -18,18 +18,21 @@ class State
     method init( view=null )
 
     method after( e:DrawEvent )
+      after_draw
 
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
 
     method after( e:UpdateEvent )
+      after_update
+
+    method after_draw
+
+    method after_update
 
     method change_state( new_state:State )
       view.change_state( new_state )
-
-    method on_draw
-      Display.clear( Color.BLUE )
 
     method exit_state
       view.exit_state
@@ -94,6 +97,9 @@ class State
       if (not new_state.view) new_state.view = view
       view.queue_state( new_state )
 
+    method on_draw
+      Display.clear( Color.BLUE )
+
     method on_start
 
     method on_finish
@@ -104,10 +110,11 @@ class State
 
     method on_suspend
 
+    method on_update
+
     method set_view( @view )->this
       return this
 
-    method on_update
 endClass
 
 class State<<$ViewType>> : State
