@@ -79,7 +79,7 @@ class WindowManager [essential singleton]
   METHODS
     method init
       #{
-      MessageManager.add_handler( "Display.key_event",
+      MessageManager.add_listener( "Display.key_event",
         function (m:Message)
           local window_id = m.int32( "window_id" )
           local display_name = m.string( "display_name", WindowManager.string_buffer.clear )
@@ -98,7 +98,7 @@ class WindowManager [essential singleton]
         endFunction
       )
 
-      MessageManager.add_handler( "Display.pointer_event",
+      MessageManager.add_listener( "Display.pointer_event",
         function (m:Message)
           local window_id = m.int32( "window_id" )
           local display_name = m.string( "display_name", WindowManager.string_buffer.clear )
@@ -118,7 +118,7 @@ class WindowManager [essential singleton]
         endFunction
       )
 
-      MessageManager.add_handler( "Display.update_and_draw",
+      MessageManager.add_listener( "Display.update_and_draw",
         function (m:Message)
           local window_id = m.int32( "window_id" )
           local display_name = m.string( "display_name", WindowManager.string_buffer.clear )

@@ -7,6 +7,24 @@ module Plasmacore
 $essential Byte[].clear()
 $essential Byte[].reserve(Int32)
 
+routine add_message_listener( type:String, fn:Function(Message), &once )->Function(Message)
+  MessageManager.add_listener( type, fn, once )
+  return fn
+endRoutine
+
+routine set_message_listener( type:String, fn:Function(Message), &once )->Function(Message)
+  MessageManager.set_listener( type, fn, once )
+  return fn
+endRoutine
+
+routine remove_message_listener( type:String, fn:Function(Message) )
+  MessageManager.remove_listener( type, fn )
+endRoutine
+
+routine remove_message_listeners( type:String )
+  MessageManager.remove_listeners( type )
+endRoutine
+
 class MessageManager [essential singleton]
   PROPERTIES
     io_buffer = Byte[]  # native layer accesses this directly
@@ -27,29 +45,48 @@ class MessageManager [essential singleton]
     outgoing_message = Message()
       # Recycled for outgoing messages
 
-    handlers              = Table<<String,Function(Message)[]>>()
+    listeners             = Table<<String,Function(Message)[]>>()
+    one_time_listeners    = Table<<String,Function(Message)[]>>()
     reply_callbacks_by_id = Table<<Int32,Function(Message)>>()
 
   METHODS
     method init_object
-      add_handler( "<reply>",
+      add_listener( "<reply>",
         function(m:Message)
           local callback = MessageManager.reply_callbacks_by_id.remove( m.message_id )
           if (callback) callback( m )
         endFunction
       )
 
-    method add_handler( type:String, handler:Function(Message) )
-      local list = handlers[ type ]
+    method add_listener( type:String, listener:Function(Message), &once )
+      local table = select{ once:one_time_listeners || listeners }
+      local list = table[ type ]
       if (not list)
         list = Function(Message)[]
-        handlers[ type ] = list
+        table[ type ] = list
       endIf
-      list.add( handler )
+      list.add( listener )
 
-    method remove_handler( type:String, handler:Function(Message) )
-      local list = handlers[ type ]
-      if (list) list.remove( handler )
+    method remove_listener( type:String, listener:Function(Message) )
+      local list = listeners[ type ]
+      if (list) list.remove( listener )
+      list = one_time_listeners[ type ]
+      if (list) list.remove( listener )
+
+    method remove_listeners( type:String )
+      local list = listeners[ type ]
+      if (list) list.clear
+      list = one_time_listeners[ type ]
+      if (list) list.clear
+
+    method set_listener( type:String, listener:Function(Message), &once )
+      local table = select{ once:one_time_listeners || listeners }
+      local list = table[ type ]
+      if (not list)
+        list = Function(Message)[]
+        table[ type ] = list
+      endIf
+      list.clear.add( listener )
 
     method consolidated_type_name( name:String )->String
       local consolidated = message_type_lookup[ name ]
@@ -89,10 +126,23 @@ class MessageManager [essential singleton]
 
       while (io_reader.has_another)
         incoming_message.init( io_reader )
-        local list = handlers[ incoming_message.type ]
+        local handled = false
+
+        local list = listeners[ incoming_message.type ]
         if (list)
-          forEach (handler in list step -1) handler( incoming_message )
-        else
+          handled = true
+          forEach (listener in list step -1) listener( incoming_message )
+        endIf
+
+        list = one_time_listeners[ incoming_message.type ]
+        if (list)
+          handled = true
+          local n = list.count
+          forEach (listener in list step -1) listener( incoming_message )
+          list.discard( 0, n )
+        endIf
+
+        if (not handled)
           println "Unhandled message " + incoming_message.type
         endIf
       endWhile
@@ -164,6 +214,38 @@ class Message
 
     method create_reply->Message
       return MessageManager.create_message( "<reply>", message_id )
+
+    method get( name:String )->Value
+      local i = keys.locate_last( name )
+      if (not i.exists) return UndefinedValue
+
+      reader.seek( offsets[i.value] )
+
+      which (reader.read_int32x)
+        case DATA_TYPE_STRING
+          return Value( reader.read_string( MessageManager.string_buffer.clear )->String )
+
+        case DATA_TYPE_BYTES
+          local count = reader.read_int32x
+          MessageManager.string_buffer.clear
+          forEach (1..count) MessageManager.string_buffer.print( reader.read->Character )
+          return Value( MessageManager.string_buffer->String )
+
+        case DATA_TYPE_REAL64
+          return Value( reader.read_real64 )
+
+        case DATA_TYPE_INT64
+          return Value( reader.read_int64x )
+
+        case DATA_TYPE_INT32
+          return Value( reader.read_int32x )
+
+        case DATA_TYPE_LOGICAL
+          return Value( reader.read_int32x? )
+
+        others
+          return UndefinedValue
+      endWhich
 
     method string( name:String, default="":String )->String
       local i = keys.locate_last( name )

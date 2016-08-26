@@ -64,7 +64,7 @@ class Plasmacore [essential singleton]
 
       load_image_manifest
 
-      MessageManager.add_handler( "Application.launch",
+      MessageManager.add_listener( "Application.launch",
         function(m:Message)
           if (m.logical("is_window_based"))
             if (Plasmacore.launch_window_name)
@@ -75,12 +75,12 @@ class Plasmacore [essential singleton]
           endIf
         endFunction )
 
-      MessageManager.add_handler( "Display.render",
+        MessageManager.add_listener( "Display.render",
         function(m:Message)
           Display( m.string("display_name") ).render( XY(m.int32("display_width"),m.int32("display_height")) )
         endFunction )
 
-        MessageManager.add_handler( "Display.on_pointer_event",
+        MessageManager.add_listener( "Display.on_pointer_event",
           function(m:Message)
           local e = PointerEvent( m.int32("type"), XY(m.int32("x"),m.int32("y")), XY(m.real64("dx"),m.real64("dy")),
               m.int32("index"), m.int32("id") )
