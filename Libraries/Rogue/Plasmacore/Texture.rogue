@@ -107,3 +107,4 @@ class Texture
       this.uv_size.x
 endClass
 
+

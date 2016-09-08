@@ -2,16 +2,16 @@ module Plasmacore
 
 class ProgressFn [singleton]
   PROPERTIES
-    LINEAR        = function(p:Real64)->Real64: return p
-    QUADRATIC     = function(p:Real64)->Real64: return select{ p<0.5:2*p*p || 0.5 + (0.5-p) * (2*p-3) }
+    LINEAR        = function(p:Real64)->(Real64): return p
+    QUADRATIC     = function(p:Real64)->(Real64): return select{ p<0.5:2*p*p || 0.5 + (0.5-p) * (2*p-3) }
 
-    OUT_BACK      = function(p:Real64)->Real64: return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
-    OUT_QUADRATIC = function(p:Real64)->Real64: return -p * (p - 2)
-    OUT_ELASTIC   = function(p:Real64)->Real64
+    OUT_BACK      = function(p:Real64)->(Real64): return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
+    OUT_QUADRATIC = function(p:Real64)->(Real64): return -p * (p - 2)
+    OUT_ELASTIC   = function(p:Real64)->(Real64)
                       local t = 0.3
                       return 2^(-10*p) * Radians((p-t/4)*(2*pi)/t).sin + 1
                     endFunction
-    OUT_BACK_EASY = function(p:Real64)->Real64
+    OUT_BACK_EASY = function(p:Real64)->(Real64)
                       return 1 - ((1.0 - p)^2 - (1.0 - p)/1.25 * Radians((1.0 - p) * pi).sin)
                     endFunction
 endClass
