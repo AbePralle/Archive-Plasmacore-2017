@@ -11,7 +11,10 @@ class Font
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
     spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
+
     color          = Color.WHITE : Color
+    alpha          = 1.0
+    shader         : Shader  # leave null for default
 
   METHODS
     method init( name )
@@ -24,17 +27,19 @@ class Font
       data.load
 
     method draw( text:String, position:XY )
-      if (data) data.draw( this, text, position )
+      data.draw( this, text, position )
 
     method draw( text:String, box:Box )
       draw( text, box.at(anchor) )
 
+    method exists->Logical
+      return data.exists
+
     method get( ch:Character )->FontCharacter
-      return select{ data:data[ ch ] || null }
+      return data[ ch ]
 
     method height->Real64
-      if (data) return data.height * scale.y
-      else      return 0
+      return data.height * scale.y
 
       #{
     method set_options( @options )->this
@@ -49,13 +54,13 @@ class Font
       }#
 
     method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
-      return select{ data:data.measure( text ) * scale || XY(0,0) }
+      return data.measure( text ) * scale
 
     method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
-      return select{ data:data.measure( text ) * scale || XY(0,0) }
+      return data.measure( text ) * scale
 
     method measure( ch:Character )->XY
-      return select{ data:data.measure( ch ) * scale || XY(0,0) }
+      return data.measure( ch ) * scale
 
     method word_wrap( st:String, pixel_width:Int32 )->String[]
      # Returns a word-wrapped version of the given string as a list of lines.
@@ -126,38 +131,60 @@ class Font
 
 endClass
 
+class FontLoaders [singleton]
+  PROPERTIES
+    loaders = StringTable<<Function(String)->(FontData)>>()
+
+  METHODS
+    method init
+      this[ "SystemFont" ] = (function(name) => SystemFontData())
+
+    method get( name:String )->Function(String)->(FontData)
+      return loaders[ name ]
+
+    method set( name:String, loader:Function(String)->(FontData) )->this
+      loaders[ name ] = loader
+      return this
+endClass
+
 class FontData
   GLOBAL METHODS
     method create( name:String )->FontData
       local entry = Display.font_data_by_name.find( name )
       if (entry) return entry.value
 
-      return FontData( name, Plasmacore.image_info_lookup[ name ] )
+      local loader = FontLoaders[ name ]
+      local font_data = select{ loader:loader(name) || FontData(name, Plasmacore.image_info_lookup[name]) }
+      Display.font_data_by_name[ name ] = font_data
+
+      return font_data
 
   PROPERTIES
     name             : String
     image_info       : Value
+    exists           : Logical
     is_loaded        : Logical
     height           : Int32
     characters       = FontCharacter[]( 128, null )  # first 128 are in correct slots, additional in any order
-    character_lookup : Table<<Character,FontCharacter>>
+    character_lookup = Table<<Character,FontCharacter>>()
 
   METHODS
     method init( name, image_info )
-
-      require (image_info["type"] == "Font")
-      forEach (character_info in image_info["characters"])
-        local ch = FontCharacter( Character(character_info//unicode->Int32), Image(character_info) )
-        height = height.or_larger( ch.image.size.y )
-        require (ch.unicode >= 0)
-        if (ch.unicode < 128)
-          characters[ ch.unicode ] = ch
-        else
-          characters.add( ch )
-        endIf
-        ensure character_lookup
-        character_lookup[ ch.unicode ] = ch
-      endForEach
+      if (image_info)
+        require (image_info["type"] == "Font")
+        forEach (character_info in image_info["characters"])
+          local ch = FontCharacter( Character(character_info//unicode->Int32), Image(character_info) )
+          height = height.or_larger( ch.image.size.y )
+          require (ch.unicode >= 0)
+          if (ch.unicode < 128)
+            characters[ ch.unicode ] = ch
+          else
+            characters.add( ch )
+          endIf
+          character_lookup[ ch.unicode ] = ch
+        endForEach
+        exists = true
+      endIf
 
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       forEach (ch in characters)
@@ -180,17 +207,14 @@ class FontData
       endIf
 
     method draw_line( font:Font, text:String, position:XY  )
-      local color = font.color
-      local shader = select(color.argb){ 0xFFFFffff:TextureShader() || TextureShaderWithColorMultiply() }
-
       local cursor = position - Box(measure(text)*font.scale).at( font.anchor ).xv
       forEach (ch in text)
         local font_ch = this[ ch ]
         if (font_ch)
           local image = font_ch.image
           image.size = font_ch.size * font.scale
-          image.shader = shader
-          image.color = color
+          image.color = font.color
+          image.shader = font.shader  # if null, default is used
           image.position = cursor + font_ch.offset
           image.draw
           cursor += font_ch.advance * font.scale + XY(font.spacing,0) * font.scale

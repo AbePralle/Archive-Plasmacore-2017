@@ -21,6 +21,7 @@ $include "Font.rogue"
 $include "UI"
 $include "Image.rogue"
 $include "ImageList.rogue"
+$include "ImageSheetBuilder.rogue"
 $include "Keyboard.rogue"
 $include "Matrix.rogue"
 $include "Messaging.rogue"
@@ -33,6 +34,7 @@ $include "Rotation.rogue"
 $include "Shader.rogue"
 $include "Sprite.rogue"
 $include "State.rogue"
+$include "SystemFont.rogue"
 $include "TargetValue.rogue"
 $include "Texture.rogue"
 $include "UpdateTimer.rogue"
@@ -57,6 +59,9 @@ class Plasmacore [essential singleton]
     image_manifest          : ValueTable
     #image_group_info_lookup = @{}
     image_info_lookup       = @{}
+
+    cache_folder : String
+    data_folder  : String
 
   METHODS
     method init
@@ -101,9 +106,21 @@ class Plasmacore [essential singleton]
       name = "Images/" + name
       return native( "Plasmacore_find_asset( $name )" )->String
 
+    method cache_folder->String
+      if (not @cache_folder)
+        cache_folder = native( "Plasmacore_get_library_folder()" )->String + "/Caches"
+      endIf
+      return @cache_folder
+
     method create_resource_id->Int32
       ++next_resource_id
       return (next_resource_id - 1)
+
+    method data_folder->String
+      if (not @data_folder)
+        data_folder = native( "Plasmacore_get_documents_folder()" )->String
+      endIf
+      return @data_folder
 
     method display( name:String )->Display
       local result = displays[ name ]
@@ -159,5 +176,7 @@ class Plasmacore [essential singleton]
 endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );
+nativeCode extern "C" RogueString* Plasmacore_get_documents_folder();
+nativeCode extern "C" RogueString* Plasmacore_get_library_folder();
 
 $endIf  # not Console

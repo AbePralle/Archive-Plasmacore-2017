@@ -22,6 +22,20 @@ RogueString* Plasmacore_ns_string_to_rogue_string( NSString* st )
   return RogueString_validate( result );
 }
 
+extern "C" RogueString* Plasmacore_get_documents_folder()
+{
+  return Plasmacore_ns_string_to_rogue_string(
+     [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject] path]
+  );
+}
+
+extern "C" RogueString* Plasmacore_get_library_folder()
+{
+  return Plasmacore_ns_string_to_rogue_string(
+     [[[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask] lastObject] path]
+  );
+}
+
 extern "C" RogueString* Plasmacore_find_asset( RogueString* filepath )
 {
   NSString* ns_name = Plasmacore_rogue_string_to_ns_string( filepath );

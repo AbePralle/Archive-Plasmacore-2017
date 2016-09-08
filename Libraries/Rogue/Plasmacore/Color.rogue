@@ -51,14 +51,18 @@ class Color( argb:Int32 ) [compound]
     method red_byte->Int32
       return (argb :>>: 16) & 255
 
+    method times_alpha( a:Real64 )->Color
+      return (Int32((argb:>>:24) * a):<<:24) | (argb & 0xffFFff)
+
+    method to->String
+      return argb.to_hex_string
+
     method with_alpha( a:Real64 )->Color
       return with_alpha_byte( (a*255)->Int32 )
 
     method with_alpha_byte( a:Int32 )->Color
       return Color( (a.clamped(0,255) :<<: 24) | (this.argb & 0xFFffFF) )
 
-    method to->String
-      return argb.to_hex_string
 endClass
 
 
@@ -91,21 +95,21 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
   METHODS
     method is_opaque->Logical
       which (count)
-        case 4: return ((a.argb & b.argb & c.argb & d.argb & 0xFF000000) == 0xFF000000)
-        case 3: return ((a.argb & b.argb & c.argb & 0xFF000000) == 0xFF000000)
-        case 2: return ((a.argb & b.argb & 0xFF000000) == 0xFF000000)
-        case 1: return ((a.argb & 0xFF000000) == 0xFF000000)
         case 0: return true
+        case 1: return ((a.argb & 0xFF000000) == 0xFF000000)
+        case 2: return ((a.argb & b.argb & 0xFF000000) == 0xFF000000)
+        case 3: return ((a.argb & b.argb & c.argb & 0xFF000000) == 0xFF000000)
+        case 4: return ((a.argb & b.argb & c.argb & d.argb & 0xFF000000) == 0xFF000000)
         others: return false
       endWhich
 
     method is_opaque_white->Logical
       which (count)
-        case 4: return ((a.argb & b.argb & c.argb & d.argb) == 0xFFFFFFFF)
-        case 3: return ((a.argb & b.argb & c.argb) == 0xFFFFFFFF)
-        case 2: return ((a.argb & b.argb) == 0xFFFFFFFF)
-        case 1: return ((a.argb) == 0xFFFFFFFF)
         case 0: return true
+        case 1: return ((a.argb) == 0xFFFFFFFF)
+        case 2: return ((a.argb & b.argb) == 0xFFFFFFFF)
+        case 3: return ((a.argb & b.argb & c.argb) == 0xFFFFFFFF)
+        case 4: return ((a.argb & b.argb & c.argb & d.argb) == 0xFFFFFFFF)
         others: return false
       endWhich
 
@@ -124,6 +128,18 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
         case 2: return "[$,$]" (a,b)
         case 3: return "[$,$,$]" (a,b,c)
         others: return "[$,$,$,$]" (a,b,c,d)
+      endWhich
+
+    method times_alpha( new_a:Real64 )->Colors
+      if (new_a == 1.0) return this
+
+      which (count)
+        case 0: return this
+        case 1: return Colors( a.times_alpha(new_a), b, c, d, 1 )
+        case 2: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c, d, 2 )
+        case 3: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c.times_alpha(new_a), d, 3 )
+        case 4: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c.times_alpha(new_a), d.times_alpha(new_a), 4 )
+        others: return this
       endWhich
 endClass
 

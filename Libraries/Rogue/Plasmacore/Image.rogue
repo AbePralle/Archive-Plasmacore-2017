@@ -14,7 +14,11 @@ class Image
     anchor      = Anchor.CENTER : Anchor
     render_mode : RenderMode
     colors      = Colors(Color.WHITE) : Colors
-    alpha       = 1.0
+    alpha       = 1.0  # Master alpha; multiplies each color's alpha component
+
+    selected_shader : Shader
+    # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
+
 
   METHODS
     method init( name )
@@ -94,7 +98,6 @@ class Image
           local texture = Texture( texture_info//filename->String )
           data = TextureImageData( texture )
           uv = Box( texture_info//bounds )
-          shader = TextureShader
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
       endWhich
@@ -109,19 +112,21 @@ class Image
         data = ColorFillImageData()
         colors = Colors( Color.WHITE )
         render_mode = RenderMode.OPAQUE_SHAPE
-        shader = ColorShader
         alpha = 0
         return false
       endIf
 
-      # Apply alpha
-      if (alpha >= 1.0)
-        shader = TextureShader
+      if (shader)
+        selected_shader = shader
       else
-        local a32 = (alpha * 255)->Int32.clamped( 0, 255 ) :<<: 24
-        colors = (colors & 0xFFFFFF) | a32
-        shader = TextureShaderWithColorMultiply
+        # Use default shader
+        if (alpha < 1.0 or not colors.is_opaque_white)
+          selected_shader = TextureShaderWithColorMultiply
+        else
+          selected_shader = TextureShader
+        endIf
       endIf
+
       return true
 
 
@@ -129,7 +134,7 @@ class Image
       if (data) data = data.set( bitmap )
       size = bitmap.size
 
-    method set_alpha( @alpha )->this
+    method set-alpha( @alpha )->this
       return this
 
     method set_anchor( @anchor )->this
@@ -177,6 +182,7 @@ class Image
       return this
 
     method set_shader( @shader )->this
+      # Pass 'null' for default.
       return this
 
     method set_size( @size )->this
@@ -186,7 +192,7 @@ class Image
       # t=0.0: shader set to TEXTURE
       # t>0.0: shader set to TEXTURE_WITH_COLOR_FILL, color alpha set to t*255
       if (t == 0)
-        shader = TextureShader
+        shader = null  # use default
       else
         local a32 = (t * 255)->Int32.clamped( 0, 255 ) :<<: 24
         colors = (colors & 0xFFFFFF) | a32
@@ -194,6 +200,13 @@ class Image
       endIf
 
       return this
+
+    method set_tint( t:Real64, tint_color:Color )->this
+      color = tint_color
+      return set_tint( t )
+
+    method set_tint( t:Real64, colors )->this
+      return set_tint( t )
 
     method set_z( @z )->this
       return this
@@ -236,7 +249,6 @@ endRoutine
 
 routine TextureImage( texture:Texture )->Image
   local result = Image( TextureImageData(texture) )
-  result.shader = TextureShader
   result.render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
   result.size = texture.image_size
   return result
@@ -327,7 +339,7 @@ class ColorFillImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.fill_solid_quad( corners, image.colors, image.render_mode, image.shader )
+      Display.fill_solid_quad( corners, image.colors.times_alpha(image.alpha), image.render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
@@ -369,9 +381,9 @@ class TextureImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-        Display.fill_textured_quad( texture, corners, image.colors,
+        Display.fill_textured_quad( texture, corners, image.colors.times_alpha(image.alpha),
         Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-        image.render_mode, image.shader )
+        image.render_mode, image.selected_shader )
 
       Display.pop_object_transform
 

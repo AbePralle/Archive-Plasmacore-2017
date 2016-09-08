@@ -1,0 +1,55 @@
+module Plasmacore
+
+class ImageSheetBuilder
+  PROPERTIES
+    bitmap     : Bitmap
+    cursor_x   = 0
+    cursor_y   = 0
+    row_height : Int32
+    texture    : Texture
+
+  METHODS
+    method init( texture_width:Int32, minimum_texture_height:Int32 )
+      bitmap = Bitmap( texture_width, minimum_texture_height.to_power_of_two )
+
+    method place( img:Bitmap )->Box
+      local w = img.width
+      local h = img.height
+
+      if (cursor_x + w > bitmap.width)
+        cursor_x  = 0
+        cursor_y += row_height + 2
+      endIf
+
+      row_height = row_height.or_larger( h )
+
+      if (cursor_y + row_height > bitmap.height)
+        local copy = Bitmap( texture_width, (cursor_y + row_height).to_power_of_two )
+        bitmap.blit( copy, XY(0,0) )
+        bitmap = copy
+      endIf
+
+      local pos = XY( cursor_x, cursor_y )
+      img.blit( bitmap, pos )
+
+      # Extend each edge 1 pixel to prevent rendering artifacts
+      bitmap.blit( Box(pos,w,1),              bitmap, pos - XY(0,1) )  # top
+      bitmap.blit( Box(pos+XY(0,h-1),w,1),    bitmap, pos + XY(0,h) )  # bottom
+
+      bitmap.blit( Box(pos-XY(0,1),1,h+2),    bitmap, pos-XY(1,1)  )   # left
+      bitmap.blit( Box(pos+XY(w-1,-1),1,h+2), bitmap, pos+XY(w,-1) )   # right
+
+      cursor_x += w + 2
+
+      return Box( pos, w, h )
+
+    method texture->Texture
+      return this->Texture
+
+    method to->Texture
+      if (@texture) return @texture
+
+      texture = Texture( bitmap )
+      return @texture
+
+endClass

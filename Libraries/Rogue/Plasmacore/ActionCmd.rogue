@@ -14,7 +14,7 @@ class ActionCmd
 
   PROPERTIES
     duration        : Real64
-    progress_fn     = ProgressFn.LINEAR : Function(Real64)->Real64
+    progress_fn     = ProgressFn.LINEAR : Function(Real64)->(Real64)
 
     next_node       : ActionCmd
     concurrent_node : ActionCmd

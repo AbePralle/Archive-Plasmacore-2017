@@ -84,7 +84,7 @@ class Display [singleton]
   METHODS
     method init
       #view = Plasmacore.create_view( this )
-      #system_font = Font( "FontSystem17.png", &options=@{snug} )
+      system_font = Font( "SystemFont" ) #, &options=@{snug} )
 
     method activate_view_and_state
       if (not color_shader)
@@ -100,14 +100,21 @@ class Display [singleton]
       view.display = this
       view.state.view = view
 
-      if (not view.is_active)
-        view.is_active = true
-        view.on_start
-      endIf
-      if (not view.state.is_active)
-        view.state.is_active = true
-        view.state.on_start
-      endIf
+      loop
+        if (not view.is_active)
+          view.is_active = true
+          view.on_start
+          nextIteration
+        endIf
+
+        if (not view.state.is_active)
+          view.state.is_active = true
+          view.state.on_start
+          nextIteration
+        endIf
+
+        escapeLoop
+      endLoop
 
     method at( u:Real64, v:Real64 )->XY
       return bounds.at( u, v )
@@ -115,8 +122,8 @@ class Display [singleton]
     method bounds->Box
       return Box(size)
 
-    method center->XY
-      return (size/2).floor
+    method center->XY [macro]
+      (size/2)
 
     method clear->this
       native "int gl_flags = 0;"
@@ -388,10 +395,12 @@ class Display [singleton]
 
       update_timer.update
 
-      activate_view_and_state
       while (update_timer.tick)
+        activate_view_and_state
         view.state.handle( UpdateEvent.init_object )
       endWhile
+
+      activate_view_and_state
       view.state.handle( DrawEvent.init_object )
 
       #OverlayLog.update
