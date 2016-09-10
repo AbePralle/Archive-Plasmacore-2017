@@ -6,7 +6,8 @@ class Font
     image_info     : Value
 
     data           : FontData
-    #options        : ValueTable
+    options        : @{}
+    snap           : Logical
 
     anchor         = Anchor.TOP_LEFT : Anchor
     scale          = XY(1,1)
@@ -17,7 +18,7 @@ class Font
     shader         : Shader  # leave null for default
 
   METHODS
-    method init( name )
+    method init( name, options=@{} )
       data = FontData( name )
 
     method collect_texture_names( texture_names:StringTable<<Logical>> )
@@ -41,17 +42,14 @@ class Font
     method height->Real64
       return data.height * scale.y
 
-      #{
     method set_options( @options )->this
-      if (not options) return this
-
-      if (options.contains("anchor")) anchor = Anchor( options["anchor"] )
-      if (options.contains("snug")) spacing = -1
-      if (options.contains("spacing")) spacing = options[ "spacing" ]->Int32
-      if (options.contains("scale")) scale = XY( options["scale"] )
+      if (options.contains("anchor")) anchor = Anchor( options//anchor )
+      snap = options//snap->Logical
+      spacing = options//spacing->Int32
+      if (options//snug->Logical) spacing = -1
+      if (options.contains("scale")) scale = XY( options//scale )
 
       return this
-      }#
 
     method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
       return data.measure( text ) * scale
@@ -208,6 +206,7 @@ class FontData
 
     method draw_line( font:Font, text:String, position:XY  )
       local cursor = position - Box(measure(text)*font.scale).at( font.anchor ).xv
+      if (font.snap) cursor = cursor.floor
       forEach (ch in text)
         local font_ch = this[ ch ]
         if (font_ch)

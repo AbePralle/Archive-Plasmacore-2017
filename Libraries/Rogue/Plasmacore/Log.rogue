@@ -1,0 +1,12 @@
+module Plasmacore
+
+class Log : PrintWriter<<output_buffer>> [singleton]
+  PROPERTIES
+    output_buffer = StringBuilder()
+
+  METHODS
+    method write( buffer:StringBuilder )->this
+      Console.write( buffer ).flush
+      return this
+endClass
+

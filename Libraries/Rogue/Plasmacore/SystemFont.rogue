@@ -15,15 +15,23 @@ class SystemFontData : FontData
       is_loaded = true
 
       local bitmap = Bitmap( png_data )
-      local image = Image( bitmap )
-      image.anchor = Anchor.TOP_LEFT
-      height = bitmap.height
+      local sheet_builder = ImageSheetBuilder( 512, 8 )
 
       local w = bitmap.width / 95
       local h = bitmap.height
+      height = h
+
+      local char_bounds = Box[]( 95 )
+      forEach (i in 0..<95)
+        char_bounds.add( sheet_builder.place(Bitmap(bitmap,Box(i*w,0,w,h))) )
+      endForEach
+
+      local font_sheet = Image( sheet_builder->Texture )
+      font_sheet.anchor = Anchor.TOP_LEFT
+
       forEach (i in 0..<95)
         local unicode = Character( ' ' + i )
-        local ch = FontCharacter( unicode, Image(image,Box(i*w,0,w,h)) )
+        local ch = FontCharacter( unicode, Image(font_sheet,char_bounds[i]) )
         if (unicode < 128) characters[ unicode ] = ch
         else               characters.add( ch )
         character_lookup[ unicode ] = ch
