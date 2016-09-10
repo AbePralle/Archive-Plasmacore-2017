@@ -93,6 +93,9 @@ class XY( x:Real64, y:Real64 ) [compound]
     method is_non_zero->Logical
       return x or y
 
+    method is_power_of_two->Logical
+      return x.is_power_of_two and y.is_power_of_two
+
     method is_zero->Logical
       return x == 0 and y == 0
 

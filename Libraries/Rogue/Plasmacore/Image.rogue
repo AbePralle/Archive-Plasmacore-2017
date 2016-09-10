@@ -42,7 +42,39 @@ class Image
       colors      = other.colors
       alpha       = other.alpha
 
+    method init( other:Image, subset:Box )
+      name        = other.name
+      image_info  = other.image_info  # may need to tweak
+      data        = other.data.cloned
+      position    = other.position
+      z           = other.z
+      size        = subset.size
+      scale       = other.scale
+      rotation    = other.rotation
+      shader      = other.shader
+      anchor      = other.anchor
+      render_mode = other.render_mode
+      colors      = other.colors
+      alpha       = other.alpha
+
+      local texture_data = data as TextureImageData
+      if (texture_data)
+        uv = subset + texture_data.uv1 * texture_data.texture.texture_size
+      else
+        # Program probably has a logical error if 'data' is not instanceOf TextureImageData
+        # but we'll try.
+        uv = subset
+      endIf
+
     method init( data )
+
+    method init( bitmap:Bitmap )
+      init( Texture(bitmap) )
+
+    method init( texture:Texture )
+      init( TextureImageData(texture) )
+      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+      size = texture.image_size
 
     method add( child:Image )->this
       if (data) data.add( child )
@@ -264,6 +296,10 @@ class ImageData
     method add( child:Image )
       println "Illegal operation $.add(Image)." (type_name)
 
+    method cloned->ImageData
+      println "Illegal operation $.cloned()." (type_name)
+      return this
+
     method draw( image:Image )
 
     method is_loaded->Logical
@@ -291,6 +327,11 @@ class CompositeImageData : ImageData
     method add( child:Image )
       images.add( child )
 
+    method cloned->ImageData
+      local result = CompositeImageData()
+      result.images = images.cloned
+      return result
+
     method draw( image:Image )
       local size = image.size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
@@ -316,6 +357,9 @@ endClass
 
 class ColorFillImageData : ImageData
   METHODS
+    method cloned->this
+      return this
+
     method draw( image:Image )
       local size = image.size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
@@ -354,6 +398,12 @@ class TextureImageData : ImageData
   METHODS
     method init( texture )
       uv2 = texture.uv_size
+
+    method cloned->ImageData
+      local result = TextureImageData( texture )
+      result.uv1 = uv1
+      result.uv2 = uv2
+      return result
 
     method is_loaded->Logical
       return texture.is_loaded

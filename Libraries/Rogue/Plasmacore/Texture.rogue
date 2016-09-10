@@ -69,9 +69,18 @@ class Texture
       return this
 
     method set( bitmap:Bitmap )
+      local original_bitmap = bitmap
+
       is_opaque = bitmap.is_opaque
-      if (not is_opaque) bitmap.premultiply_alpha
-      bitmap.expand_to_power_of_two
+      if (not is_opaque)
+        bitmap = bitmap.cloned
+        bitmap.premultiply_alpha
+      endIf
+
+      if (not bitmap.size.is_power_of_two)
+        if (bitmap is original_bitmap) bitmap = bitmap.cloned
+        bitmap.expand_to_power_of_two
+      endIf
 
       image_size = bitmap.size
 
