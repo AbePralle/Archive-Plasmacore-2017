@@ -8,8 +8,26 @@ class SystemFontData : FontData
   METHODS
     method init
       name = "SystemFont"
-      is_loaded = true
       exists = true
+
+    method load
+      if (is_loaded) return
+      is_loaded = true
+
+      local bitmap = Bitmap( png_data )
+      local image = Image( bitmap )
+      image.anchor = Anchor.TOP_LEFT
+      height = bitmap.height
+
+      local w = bitmap.width / 95
+      local h = bitmap.height
+      forEach (i in 0..<95)
+        local unicode = Character( ' ' + i )
+        local ch = FontCharacter( unicode, Image(image,Box(i*w,0,w,h)) )
+        if (unicode < 128) characters[ unicode ] = ch
+        else               characters.add( ch )
+        character_lookup[ unicode ] = ch
+      endForEach
 
   GLOBAL PROPERTIES
     png_data = Byte[](
