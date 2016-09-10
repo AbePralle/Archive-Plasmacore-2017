@@ -19,11 +19,11 @@ class Texture
         texture = Display.textures_by_name[ filepath ]
         if (texture) return texture.load
 
-        println "Loading " + filepath
+        Log.println "Loading " + filepath
         texture = Texture( File(filepath) )
         Display.textures_by_name[ filepath ] = texture
       else
-        println "File not found: " + name
+        Log.println "File not found: " + name
         texture = Texture( Bitmap(1,1,Color.WHITE) )
       endIf
 

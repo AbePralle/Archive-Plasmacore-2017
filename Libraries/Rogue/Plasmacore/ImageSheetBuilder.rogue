@@ -9,7 +9,7 @@ class ImageSheetBuilder
     texture    : Texture
 
   METHODS
-    method init( texture_width:Int32, minimum_texture_height:Int32 )
+    method init( texture_width:Int32, minimum_texture_height=16:Int32 )
       bitmap = Bitmap( texture_width, minimum_texture_height.to_power_of_two )
 
     method place( img:Bitmap )->Box
@@ -24,7 +24,7 @@ class ImageSheetBuilder
       row_height = row_height.or_larger( h )
 
       if (cursor_y + row_height > bitmap.height)
-        local copy = Bitmap( texture_width, (cursor_y + row_height).to_power_of_two )
+        local copy = Bitmap( bitmap.width, (cursor_y + row_height).to_power_of_two )
         bitmap.blit( copy, XY(0,0) )
         bitmap = copy
       endIf

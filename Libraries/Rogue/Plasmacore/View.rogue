@@ -139,7 +139,7 @@ class View
       local progress = 0.0
       while (progress < 1.0)
         progress = load_another_asset
-        println "Loading assets $/$ ($%)" (loaded_asset_count,total_asset_count,(progress*100).format(0))
+        Log.println "Loading assets $/$ ($%)" (loaded_asset_count,total_asset_count,(progress*100).format(0))
       endWhile
 
     method on( e:DrawEvent )

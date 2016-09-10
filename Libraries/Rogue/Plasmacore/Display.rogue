@@ -84,7 +84,7 @@ class Display [singleton]
   METHODS
     method init
       #view = Plasmacore.create_view( this )
-      system_font = Font( "SystemFont" ) #, &options=@{snug} )
+      system_font = Font( "SystemFont", &options=@{snug,snap} )
 
     method activate_view_and_state
       if (not color_shader)
@@ -403,8 +403,8 @@ class Display [singleton]
       activate_view_and_state
       view.state.handle( DrawEvent.init_object )
 
-      #OverlayLog.update
-      #OverlayLog.draw
+      OverlayLog.update
+      OverlayLog.draw
 
       render
       native "glFlush();"
