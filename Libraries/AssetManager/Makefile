@@ -6,8 +6,8 @@ ROGUEC_FLAGS += --debug
 
 FREETYPE_FOLDER := freetype-2.6.3
 HARFBUZZ_FOLDER := harfbuzz-1.2.6
-PNG_FOLDER      := lpng1621
-JPEG_FOLDER     := jpeg-9b
+PNG_FOLDER      := PNG/Source
+JPEG_FOLDER     := JPEG/Source
 
 BUILD_FOLDER          := Build
 HARFBUZZ_BUILD_FOLDER := ../HarfBuzz/Build
