@@ -353,7 +353,7 @@
 		3092F4A51D871A7D00C153AC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Plasmaworks;
 				TargetAttributes = {
 					307233021D8A21CD00A882D4 = {
@@ -361,6 +361,7 @@
 					};
 					3092F5531D886F7800C153AC = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = BPJALV287H;
 					};
 				};
 			};
@@ -496,6 +497,7 @@
 		3072330A1D8A21CD00A882D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -504,6 +506,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "a68904ca-c422-4349-be50-5ea72556500a";
 				PUBLIC_HEADERS_FOLDER_PATH = "Headers/$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				STRIP_STYLE = "non-global";
@@ -513,10 +516,12 @@
 		3072330B1D8A21CD00A882D4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "PNG_ARM_NEON_OPT=0";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "a68904ca-c422-4349-be50-5ea72556500a";
 				PUBLIC_HEADERS_FOLDER_PATH = "Headers/$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				STRIP_STYLE = "non-global";
@@ -537,8 +542,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -585,8 +592,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -616,14 +625,20 @@
 		3092F5541D886F7800C153AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = BPJALV287H;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "a68904ca-c422-4349-be50-5ea72556500a";
 			};
 			name = Debug;
 		};
 		3092F5551D886F7800C153AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEVELOPMENT_TEAM = BPJALV287H;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "a68904ca-c422-4349-be50-5ea72556500a";
 			};
 			name = Release;
 		};
@@ -637,6 +652,7 @@
 				3072330B1D8A21CD00A882D4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3092F4A81D871A7D00C153AC /* Build configuration list for PBXProject "PlasmacoreImageIO" */ = {
 			isa = XCConfigurationList;
