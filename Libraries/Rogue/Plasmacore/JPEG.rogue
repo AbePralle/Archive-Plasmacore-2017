@@ -3,7 +3,7 @@ module Plasmacore
 class JPEGDecoder
   DEPENDENCIES
     nativeHeader #include <setjmp.h>
-    $if ("iOS" or "MacOS") nativeHeader #include <Plasmacore/jpeglib.h>
+    $if ("iOS" or "MacOS") nativeHeader #include <PlasmacoreImageIO/jpeglib.h>
     $else                  nativeHeader #include "jpeglib.h"
 
     nativeCode

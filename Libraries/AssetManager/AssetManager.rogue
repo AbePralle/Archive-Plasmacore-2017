@@ -1613,9 +1613,9 @@ class Placement
             local h = bitmap.height - 1
             local characters = op//characters
             local x1 = 0
-            forEach (ch in characters)
+            forEach (ch at ch_index in characters)
               if (x1 >= bitmap_width)
-                println "ERROR: invalid font parameters for " + asset//filepath
+                println "ERROR: font parameters for $ specify more characters ($) than exist in the font strip ($)." (asset//filepath,characters.count,ch_index)
                 return
               endIf
               local argb = pixels[x1].argb
