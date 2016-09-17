@@ -58,6 +58,8 @@ extern "C" NSData* RogueInterface_send_messages( const unsigned char* data, int 
 {
   try
   {
+    Rogue_collect_garbage();
+
     RogueClassPlasmacore__MessageManager* mm =
       (RogueClassPlasmacore__MessageManager*) ROGUE_SINGLETON(Plasmacore__MessageManager);
     RogueByte_List* list = mm->io_buffer;

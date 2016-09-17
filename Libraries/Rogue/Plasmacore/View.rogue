@@ -3,10 +3,11 @@ using  Plasmacore::UI
 
 class View
   PROPERTIES
-    state     = State(this)
+    state              = State(this)
 
-    display   : Display
-    is_active : Logical
+    display            : Display
+    is_active          : Logical
+    needs_first_update = true
 
     ui        = Layout() : Component
 

@@ -1,4 +1,0 @@
-#!/bin/sh
-make -C Source/AssetManager --silent
-exec "Programs/Mac/assetmanager" "$@"
-

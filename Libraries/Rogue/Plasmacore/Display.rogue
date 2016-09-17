@@ -107,9 +107,21 @@ class Display [singleton]
           nextIteration
         endIf
 
+        if (view.needs_first_update)
+          view.needs_first_update = false
+          view.on( UpdateEvent.init_object )
+          nextIteration
+        endIf
+
         if (not view.state.is_active)
           view.state.is_active = true
           view.state.on_start
+          nextIteration
+        endIf
+
+        if (view.state.needs_first_update)
+          view.state.needs_first_update = false
+          view.state.on( UpdateEvent.init_object )
           nextIteration
         endIf
 
