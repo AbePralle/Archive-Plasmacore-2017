@@ -3,8 +3,7 @@ module Plasmacore
 class PNGDecoder
   DEPENDENCIES
     nativeHeader #include <setjmp.h>
-    $if ("iOS" or "MacOS") nativeHeader #include <PlasmacoreImageIO/png.h>
-    $else                  nativeHeader #include "png.h"
+    nativeHeader #include "png.h"
 
     nativeCode
       void Rogue_png_decoder_error_callback( png_structp png_ptr, png_const_charp msg )

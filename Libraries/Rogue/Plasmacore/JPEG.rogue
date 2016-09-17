@@ -3,8 +3,7 @@ module Plasmacore
 class JPEGDecoder
   DEPENDENCIES
     nativeHeader #include <setjmp.h>
-    $if ("iOS" or "MacOS") nativeHeader #include <PlasmacoreImageIO/jpeglib.h>
-    $else                  nativeHeader #include "jpeglib.h"
+    nativeHeader #include "jpeglib.h"
 
     nativeCode
       void Rogue_jpeg_decoder_error_callback( j_common_ptr jpeg_info )

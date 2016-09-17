@@ -6,8 +6,9 @@ ROGUEC_FLAGS += --debug
 
 FREETYPE_FOLDER := freetype-2.6.3
 HARFBUZZ_FOLDER := harfbuzz-1.2.6
-PNG_FOLDER      := PNG/Source
-JPEG_FOLDER     := JPEG/Source
+PNG_FOLDER      := ImageIO/Source
+JPEG_FOLDER     := ImageIO/Source
+IMAGE_IO_FOLDER := ImageIO/Source
 
 BUILD_FOLDER          := Build
 HARFBUZZ_BUILD_FOLDER := ../HarfBuzz/Build
@@ -100,16 +101,13 @@ AM_CCFLAGS += -lbz2
 
 all: update build
 
-build: $(BUILD_FOLDER) $(BUILD_FOLDER)/$(PNG_FOLDER) $(BUILD_FOLDER)/$(JPEG_FOLDER) $(HARFBUZZ_BUILD_FOLDER)/libharfbuzz.a assetmanager
+build: $(BUILD_FOLDER) $(BUILD_FOLDER)/$(IMAGE_IO_FOLDER) $(HARFBUZZ_BUILD_FOLDER)/libharfbuzz.a assetmanager
 
 $(BUILD_FOLDER):
 	mkdir -p $(BUILD_FOLDER)
 
-$(BUILD_FOLDER)/$(PNG_FOLDER):
-	mkdir -p $(BUILD_FOLDER)/$(PNG_FOLDER)
-
-$(BUILD_FOLDER)/$(JPEG_FOLDER):
-	mkdir -p $(BUILD_FOLDER)/$(JPEG_FOLDER)
+$(BUILD_FOLDER)/$(IMAGE_IO_FOLDER):
+	mkdir -p $(BUILD_FOLDER)/$(IMAGE_IO_FOLDER)
 
 $(BUILD_FOLDER)/%.o: ../%.cpp
 	clang $(IMAGE_IO_CCFLAGS) -c $< -o $@

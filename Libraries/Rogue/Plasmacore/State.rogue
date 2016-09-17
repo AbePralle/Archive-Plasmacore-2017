@@ -9,10 +9,13 @@ class State
       return a
 
   PROPERTIES
-    view           : View
-    is_active      : Logical
-    next_state     : State
-    prior_state    : State
+    view               : View
+
+    is_active          : Logical
+    needs_first_update = true
+
+    next_state         : State
+    prior_state        : State
 
   METHODS
     method init( view=null )

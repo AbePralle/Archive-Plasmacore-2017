@@ -15,13 +15,16 @@ class TargetValue<<$DataType>>
       return target_value - value
 
     method set-target_value( new_target_value:$DataType )->this
+      if (target_value == new_target_value) return this
       initial_value = value
       @target_value = new_target_value
       start_time = System.time
       return this
 
-    method set-value( initial_value )->this
-      @target_value = initial_value
+    method set-value( new_value:$DataType )->this
+      if (initial_value == new_value and target_value == new_value) return this
+      @initial_value = new_value
+      @target_value = new_value
       start_time = System.time
       return this
 
@@ -55,10 +58,10 @@ class RateLimitedTargetValue<<$DataType>> : TargetValue<<$DataType>>
 endClass
 
 
-class TimeBasedTargetValue<<$DataType>> : TargetValue<<$DataType>>
+class TimeLimitedTargetValue<<$DataType>> : TargetValue<<$DataType>>
   PROPERTIES
     duration    : Real64
-    progress_fn : Function(Real64)->Real64
+    progress_fn : Function(Real64)->(Real64)
 
   METHODS
     method init( initial_value, duration, progress_fn=ProgressFn.LINEAR )
@@ -67,7 +70,10 @@ class TimeBasedTargetValue<<$DataType>> : TargetValue<<$DataType>>
 
     method value->$DataType
       local t = ((System.time - start_time) / duration).clamped( 0, 1 )
+      if (t == 0) return initial_value
+      if (t == 1) return target_value
       return initial_value + (target_value - initial_value) * progress_fn(t)
+
 endClass
 
 
