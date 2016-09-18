@@ -46,9 +46,8 @@ update:
 #update:
 #	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(ROGUE_STANDARD_LIB) Libraries/Rogue
 #	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(PLASMACORE)/Build.rogue .
+#	@rsync -a --exclude=".*"          --out-format="Updating %n%L" $(PLASMACORE)/Libraries/AssetManager Libraries
 #	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(PLASMACORE)/Libraries/Rogue/Plasmacore Libraries/Rogue
-#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(PLASMACORE)/Libraries/Plasmacore/CPP Libraries/Plasmacore
-#	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(PLASMACORE)/Libraries/Plasmacore/Swift Libraries/Plasmacore
 #	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" $(PLASMACORE)/Libraries/ImageIO Libraries
 
 

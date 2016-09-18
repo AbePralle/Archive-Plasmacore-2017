@@ -45,7 +45,7 @@ class SavedState( cmd:String, inventory:String, config:String );
 
 class AssetManager [singleton]
   PROPERTIES
-    config_file = File( ".am.config" )
+    config_file = File( ".am.config.local" )
     inventory_file = File( "Assets/Inventory.json" )
     absolute_base_folder : String
     base_folder = "Assets"
@@ -125,6 +125,7 @@ class AssetManager [singleton]
 
 
     method load
+      File.create_folder( base_folder + "/Images" )
       cur_folder = base_folder
       absolute_base_folder = File.absolute_filepath( base_folder )
 
@@ -326,10 +327,18 @@ class AssetManager [singleton]
 
     method add_file( filepath:String )
       cur_group.ensure_table( "assets" )
-      if (not cur_group//assets.contains( filepath ) )
+      if (not cur_group//assets.contains( filepath ))
         println "Adding " + filepath
         AssetManager.mark_group_modified
         cur_group//assets[ filepath ] = @{ filepath:filepath }
+
+        if (cur_group//type == "Unknown")
+          if (filepath.begins_with("Assets/Images"))
+            cur_group//type = "Images"
+          else
+            cur_group//type = "Assets"
+          endIf
+        endIf
       endIf
 
     method remove_files( filepaths:String[] )
@@ -423,7 +432,7 @@ class AssetManager [singleton]
 
       if (not group_names.contains(cur_group_name))
         group_names.add( cur_group_name )
-        cur_platform//groups[ cur_group_name ] = @{name:cur_group_name}
+        cur_platform//groups[ cur_group_name ] = @{name:cur_group_name,type:"Unknown"}
       endIf
 
       cur_group = cur_platform//groups[ cur_group_name ]
@@ -1405,7 +1414,8 @@ class ExamineImageAsset
 
       local bitmap = AssetManager.get_bitmap( asset_name )
       if (not bitmap)
-        println "ERROR: Unable to load image."
+        println "ERROR: Unable to load image \"$\"." (asset_name)
+        return null
       endIf
 
       println "-" * 79
