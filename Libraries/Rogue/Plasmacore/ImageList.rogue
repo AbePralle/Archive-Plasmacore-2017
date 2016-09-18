@@ -22,13 +22,15 @@ augment Image[]
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       forEach (image in this) image.collect_texture_names( texture_names )
 
-    method load
-      if (is_loaded) return
+    method load->this
+      if (is_loaded) return this
       is_loaded = true
       forEach (image in this) image.load
+      return this
 
-    method unload
+    method unload->this
       forEach (image in this) image.unload
       is_loaded = false
+      return this
 endAugment
 

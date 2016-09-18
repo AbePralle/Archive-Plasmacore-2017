@@ -42,7 +42,7 @@ class Font
     method height->Real64
       return data.height * scale.y
 
-    method set_options( @options )->this
+    method set-options( @options )->this
       if (options.contains("anchor")) anchor = Anchor( options//anchor )
       snap = options//snap->Logical
       spacing = options//spacing->Int32
@@ -59,6 +59,13 @@ class Font
 
     method measure( ch:Character )->XY
       return data.measure( ch ) * scale
+
+    method set-scale( s:Real64 )->this
+      @scale = XY( s, s )
+      return this
+
+    method set-scale( @scale )->this
+      return this
 
     method word_wrap( st:String, pixel_width:Int32 )->String[]
      # Returns a word-wrapped version of the given string as a list of lines.

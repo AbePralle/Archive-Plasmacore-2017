@@ -81,9 +81,9 @@ class Image
       return this
 
     method bounds->Box
-      return bounds( position )
+      return bounds_at( position )
 
-    method bounds( at_position:XY )->Box
+    method bounds_at( at_position:XY )->Box
       local s = size * scale
       local handle = (anchor.position * s)
       return Box( at_position - handle, s )
