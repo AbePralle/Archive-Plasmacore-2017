@@ -22,13 +22,14 @@ class Plasmacore
   var reply_handlers = [Int:PlasmacoreMessageHandler]()
   var resources = [Int:AnyObject]()
 
-  var update_timer : NSTimer?
+  var update_timer : Timer?
 
-  private init()
+  fileprivate init()
   {
   }
 
-  func addMessageHandler( type:String, handler:((PlasmacoreMessage)->Void) )->Int
+  @discardableResult
+  func addMessageHandler( type:String, handler:@escaping ((PlasmacoreMessage)->Void) )->Int
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
@@ -49,12 +50,13 @@ class Plasmacore
     return info.handlerID
   }
 
+  @discardableResult
   func configure()->Plasmacore
   {
-    addMessageHandler( "<reply>", handler:
+    addMessageHandler( type: "<reply>", handler:
       {
         (m:PlasmacoreMessage) in
-          if let info = Plasmacore.singleton.reply_handlers.removeValueForKey( m.message_id )
+          if let info = Plasmacore.singleton.reply_handlers.removeValue( forKey: m.message_id )
           {
             info.callback( m )
           }
@@ -112,8 +114,8 @@ class Plasmacore
     )
     #endif // os(OSX)
 
-    RogueInterface_set_arg_count( Int32(Process.arguments.count) )
-    for (index,arg) in Process.arguments.enumerate()
+    RogueInterface_set_arg_count( Int32(CommandLine.arguments.count) )
+    for (index,arg) in CommandLine.arguments.enumerated()
     {
       RogueInterface_set_arg_value( Int32(index), arg )
     }
@@ -122,7 +124,7 @@ class Plasmacore
     return self
   }
 
-  func getResourceID( resource:AnyObject? )->Int
+  func getResourceID( _ resource:AnyObject? )->Int
   {
     guard let resource = resource else { return 0 }
 
@@ -133,6 +135,7 @@ class Plasmacore
     return 0
   }
 
+  @discardableResult
   func launch()->Plasmacore
   {
     RogueInterface_launch()
@@ -144,11 +147,11 @@ class Plasmacore
     return self
   }
 
-  static func lastIndexOf( st:String, lookFor:String )->Int?
+  static func lastIndexOf( _ st:String, lookFor:String )->Int?
   {
-    if let r = st.rangeOfString( lookFor, options:.BackwardsSearch )
+    if let r = st.range( of: lookFor, options:.backwards )
     {
-      return st.startIndex.distanceTo( r.startIndex )
+      return st.characters.distance(from: st.startIndex, to: r.lowerBound)
     }
 
     return nil
@@ -156,24 +159,24 @@ class Plasmacore
 
   func relaunch()->Plasmacore
   {
-    PlasmacoreMessage( type:"Application.launch" ).set( "is_window_based", value:true ).send()
+    PlasmacoreMessage( type:"Application.launch" ).set( name:"is_window_based", value:true ).send()
     return self
   }
 
-  func removeMessageHandler( handlerID:Int )
+  func removeMessageHandler( _ handlerID:Int )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
     if let handler = handlers_by_id[ handlerID ]
     {
-      handlers_by_id.removeValueForKey( handlerID )
+      handlers_by_id.removeValue( forKey: handlerID )
       if let handler_list = handlers[ handler.type ]
       {
         for i in 0..<handler_list.count
         {
           if (handler_list[i] === handler)
           {
-            handlers[ handler.type ]!.removeAtIndex( i );
+            handlers[ handler.type ]!.remove( at: i );
             return;
           }
         }
@@ -181,7 +184,7 @@ class Plasmacore
     }
   }
 
-  func send( m:PlasmacoreMessage )
+  func send( _ m:PlasmacoreMessage )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }    // @synchronized (self)
 
@@ -197,7 +200,7 @@ class Plasmacore
     update()
   }
 
-  func send_rsvp( m:PlasmacoreMessage, callback:((PlasmacoreMessage)->Void) )
+  func send_rsvp( _ m:PlasmacoreMessage, callback:@escaping ((PlasmacoreMessage)->Void) )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
@@ -206,7 +209,7 @@ class Plasmacore
     send( m )
   }
 
-  func setIdleUpdateFrequency( f:Double )->Plasmacore
+  func setIdleUpdateFrequency( _ f:Double )->Plasmacore
   {
     idleUpdateFrequency = f
     if (update_timer != nil)
@@ -221,7 +224,7 @@ class Plasmacore
   {
     if (update_timer === nil)
     {
-      update_timer = NSTimer.scheduledTimerWithTimeInterval( idleUpdateFrequency, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )
+      update_timer = Timer.scheduledTimer( timeInterval: idleUpdateFrequency, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )
     }
     update()
   }
@@ -261,8 +264,12 @@ class Plasmacore
       pending_message_data = temp
 
       let received_data = RogueInterface_send_messages( io_buffer, Int32(io_buffer.count) )
-      let count = received_data.length
-      let bytes = UnsafePointer<UInt8>( received_data.bytes )
+      let count = received_data!.count
+      received_data!.withUnsafeBytes{ ( bytes:UnsafePointer<UInt8>)->Void in
+        //{(bytes: UnsafePointer<CChar>)->Void in
+        //Use `bytes` inside this closure
+        //...
+
       var read_pos = 0
       while (read_pos+4 <= count)
       {
@@ -297,6 +304,7 @@ class Plasmacore
         }
         read_pos += size
       }
+      }
 
       io_buffer.removeAll()
 
@@ -312,7 +320,7 @@ class Plasmacore
     {
       // There are still some pending messages after 10 iterations.  Schedule another round
       // in 1/60 second instead of the usual 1.0 seconds.
-      NSTimer.scheduledTimerWithTimeInterval( 1.0/60.0, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats:false )
+      Timer.scheduledTimer( timeInterval: 1.0/60.0, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats:false )
     }
   }
 }
@@ -323,7 +331,7 @@ class PlasmacoreMessageHandler
   var type      : String
   var callback  : ((PlasmacoreMessage)->Void)
 
-  init( handlerID:Int, type:String, callback:((PlasmacoreMessage)->Void) )
+  init( handlerID:Int, type:String, callback:@escaping ((PlasmacoreMessage)->Void) )
   {
     self.handlerID = handlerID
     self.type = type
