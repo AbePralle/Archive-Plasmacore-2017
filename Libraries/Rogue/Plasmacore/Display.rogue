@@ -205,6 +205,17 @@ class Display [singleton]
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
 
+    method draw( box:Box, color:Int32 )
+      draw( box, Color(color) )
+
+    method draw( box:Box, color:Color )
+      fill( Box(box.top_left,1,box.height), color )
+      fill( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
+      if (box.width > 2)
+        fill( Box(box.top_left+XY(1,0),box.width-2,1), color )
+        fill( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
+      endIf
+
     method fill( box:Box, color:Color )
       fill( box, Colors(color) )
 
@@ -335,6 +346,12 @@ class Display [singleton]
     method height->Int32 [macro]
       this.size.y->Int32
 
+    method is_landscape->Logical
+      return (width > height)
+
+    method is_portrait->Logical
+      return (width <= height)
+
       #{
     method image_group( group_name:String )->ImageGroup
       # Finds existing image group if already loaded
@@ -354,17 +371,6 @@ class Display [singleton]
       image_group_list.add( group )
       return group
       }#
-
-    method draw( box:Box, color:Int32 )
-      draw( box, Color(color) )
-
-    method draw( box:Box, color:Color )
-      fill( Box(box.top_left,1,box.height), color )
-      fill( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
-      if (box.width > 2)
-        fill( Box(box.top_left+XY(1,0),box.width-2,1), color )
-        fill( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
-      endIf
 
     method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)

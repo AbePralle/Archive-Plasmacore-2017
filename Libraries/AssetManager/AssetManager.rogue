@@ -1928,7 +1928,8 @@ class ImageCompiler
 
         local img_name = shorten( asset//filepath->String )
         local path = File.path( img_name )
-        img_name = group_name + img_name.rightmost( -(img_name.leftmost_common_substring_count(path)) )
+        local common_count = img_name.leftmost_common_substring_count( path )
+        img_name = group_name + select{ common_count:img_name.rightmost( -common_count ) || "/" + img_name }
         local img = @{ type:asset//cache//type, name:img_name, display_size:asset//cache//display_size }
         images.add( img )
         which (img//type)
