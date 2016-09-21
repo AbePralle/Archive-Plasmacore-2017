@@ -6,7 +6,20 @@ import Foundation
 
 class Plasmacore
 {
-  static let singleton = Plasmacore()
+  static let _singleton = Plasmacore()
+
+  static var singleton:Plasmacore
+  {
+    get
+    {
+      let result = _singleton
+      if (result.is_launched) { return result }
+      return result.configure().launch()
+    }
+  }
+
+  var is_configured = false
+  var is_launched   = false
 
   var nextHandlerID = 1
   var idleUpdateFrequency = 0.5
@@ -53,6 +66,9 @@ class Plasmacore
   @discardableResult
   func configure()->Plasmacore
   {
+    if (is_configured) { return self }
+    is_configured = true
+
     addMessageHandler( type: "<reply>", handler:
       {
         (m:PlasmacoreMessage) in
@@ -138,6 +154,9 @@ class Plasmacore
   @discardableResult
   func launch()->Plasmacore
   {
+    if (is_launched) { return self }
+    is_launched = true
+
     RogueInterface_launch()
     var m = PlasmacoreMessage( type:"Application.launch" )
 #if os(OSX)
@@ -222,6 +241,8 @@ class Plasmacore
 
   func start()
   {
+    if ( !is_launched ) { configure().launch() }
+
     if (update_timer === nil)
     {
       update_timer = Timer.scheduledTimer( timeInterval: idleUpdateFrequency, target:self, selector: #selector(Plasmacore.update), userInfo:nil, repeats: true )

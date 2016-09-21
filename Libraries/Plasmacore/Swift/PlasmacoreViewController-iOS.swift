@@ -19,8 +19,8 @@ import OpenGLES
 
 class PlasmacoreViewController : GLKViewController
 {
+  var name = "Main"
   var context: EAGLContext? = nil
-  var name = "Unnamed"
 
 
   deinit {
@@ -93,8 +93,8 @@ class PlasmacoreViewController : GLKViewController
     let m = PlasmacoreMessage( type:"Display.render" )
 
     let scale = UIScreen.main.scale
-    let display_width  = Int( UIScreen.main.bounds.size.width * scale )
-    let display_height = Int( UIScreen.main.bounds.size.height * scale )
+    let display_width  = Int( view.bounds.size.width * scale )
+    let display_height = Int( view.bounds.size.height * scale )
 
     m.set( name:"display_name",   value:name )
     m.set( name:"display_width",  value:Int(display_width) )
@@ -112,7 +112,7 @@ class PlasmacoreViewController : GLKViewController
       m.set( name:"type", value:1 )  // press
 
       let scale = UIScreen.main.scale
-      let os_pt = touch.location( in: nil )
+      let os_pt = touch.location( in: self.view )
       m.set( name:"x",      value:Int( os_pt.x * scale ) )
       m.set( name:"y",      value:Int( os_pt.y * scale ) )
       m.set( name:"index",  value:touch_index )
@@ -132,7 +132,7 @@ class PlasmacoreViewController : GLKViewController
       m.set( name:"type", value:0 )  // move
 
       let scale = UIScreen.main.scale
-      let os_pt = touch.location( in: nil )
+      let os_pt = touch.location( in: self.view )
       m.set( name:"x",      value:Int( os_pt.x * scale ) )
       m.set( name:"y",      value:Int( os_pt.y * scale ) )
       m.set( name:"index",  value:touch_index )
@@ -152,7 +152,7 @@ class PlasmacoreViewController : GLKViewController
       m.set( name:"type", value:2 )  // release
 
       let scale = UIScreen.main.scale
-      let os_pt = touch.location( in: nil )
+      let os_pt = touch.location( in: self.view )
       m.set( name:"x",      value:Int( os_pt.x * scale ) )
       m.set( name:"y",      value:Int( os_pt.y * scale ) )
       m.set( name:"index",  value:touch_index )
@@ -174,7 +174,7 @@ class PlasmacoreViewController : GLKViewController
       m.set( name:"type", value:2 )  // release (we count canceled touches as releases)
 
       let scale = UIScreen.main.scale
-      let os_pt = touch.location( in: nil )
+      let os_pt = touch.location( in: self.view )
       m.set( name:"x",      value:Int( os_pt.x * scale ) )
       m.set( name:"y",      value:Int( os_pt.y * scale ) )
       m.set( name:"index",  value:touch_index )
