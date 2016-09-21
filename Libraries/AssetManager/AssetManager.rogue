@@ -121,6 +121,8 @@ class AssetManager [singleton]
         manifest.save( File(manifest_filepath), &formatted )
       endIf
 
+      #if (File.exists("Assets/Images/Icon.png"))
+
       return true
 
 
