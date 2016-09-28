@@ -33,7 +33,7 @@ class Image
       data        = other.data
       position    = other.position
       z           = other.z
-      size        = other.size
+      size        = other.@size
       scale       = other.scale
       rotation    = other.rotation
       shader      = other.shader
@@ -48,7 +48,7 @@ class Image
       data        = other.data.cloned
       position    = other.position
       z           = other.z
-      size        = subset.size
+      size        = subset.@size
       scale       = other.scale
       rotation    = other.rotation
       shader      = other.shader
@@ -84,11 +84,11 @@ class Image
       return bounds_at( position )
 
     method bounds_at( at_position:XY )->Box
-      local s = size * scale
+      local s = @size * scale
       local handle = (anchor.position * s)
       return Box( at_position - handle, s )
 
-    method set-uv( subset:Box )
+    method set_uv( subset:Box )
       if (data) data.uv = subset
 
     method cloned->Image
@@ -166,7 +166,7 @@ class Image
       if (data) data = data.set( bitmap )
       size = bitmap.size
 
-    method set-alpha( @alpha )->this
+    method set_alpha( @alpha )->this
       return this
 
     method set_anchor( @anchor )->this
@@ -243,6 +243,9 @@ class Image
     method set_z( @z )->this
       return this
 
+    method size->XY
+      return @size * @scale
+
     method unload->this
       if (data)
         data.unload
@@ -311,7 +314,7 @@ class ImageData
     method set( bitmap:Bitmap )->ImageData
       return TextureImageData( Texture(bitmap) )
 
-    method set-uv( subset:Box )
+    method set_uv( subset:Box )
       noAction
 
     method unload
@@ -333,7 +336,7 @@ class CompositeImageData : ImageData
       return result
 
     method draw( image:Image )
-      local size = image.size * image.scale
+      local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
@@ -361,7 +364,7 @@ class ColorFillImageData : ImageData
       return this
 
     method draw( image:Image )
-      local size = image.size * image.scale
+      local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
@@ -409,7 +412,7 @@ class TextureImageData : ImageData
       return texture.is_loaded
 
     method draw( image:Image )
-      local size = image.size * image.scale
+      local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
       local z = -Display.unit_z * image.z
 
@@ -432,8 +435,8 @@ class TextureImageData : ImageData
         transform * XYZ( 0, h, 0 ) )
 
         Display.fill_textured_quad( texture, corners, image.colors.times_alpha(image.alpha),
-        Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-        image.render_mode, image.selected_shader )
+          Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
+          image.render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
@@ -444,7 +447,7 @@ class TextureImageData : ImageData
       texture.set( bitmap )
       return this
 
-    method set-uv( subset:Box )
+    method set_uv( subset:Box )
       uv1 = subset.top_left / texture.texture_size
       uv2 = subset.bottom_right / texture.texture_size
 

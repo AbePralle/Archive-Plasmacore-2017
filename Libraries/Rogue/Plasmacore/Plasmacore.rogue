@@ -88,9 +88,13 @@ class Plasmacore [essential singleton]
 
         MessageManager.add_listener( "Display.on_pointer_event",
           function(m:Message)
-          local e = PointerEvent( m.int32("type"), XY(m.int32("x"),m.int32("y")), XY(m.real64("dx"),m.real64("dy")),
+            local display = Display( m.string("display_name") )
+            local scale = display.display_scale
+            local pos   = XY( m.int32("x"), m.int32("y") ) * scale
+            local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
+            local e = PointerEvent( m.int32("type"), pos, delta,
               m.int32("index"), m.int32("id") )
-            Display( m.string("display_name") ).handle( e )
+            display.handle( e )
           endFunction )
 
     method asset_file( name:String )->File
@@ -104,7 +108,7 @@ class Plasmacore [essential singleton]
       local filepath = native( "Plasmacore_find_asset( $name )" )->String
       if (filepath) return filepath
 
-      name = "Images/" + name
+      name = "Assets/Images/" + name
       return native( "Plasmacore_find_asset( $name )" )->String
 
     method cache_folder->String
@@ -125,11 +129,11 @@ class Plasmacore [essential singleton]
 
     method display( name:String )->Display
       local result = displays[ name ]
-      if (result) return result
-
-      result = Display()
-      result.name = name
-      Plasmacore.displays[ name ] = result
+      if (not result)
+        result = Display()
+        result.name = name
+        Plasmacore.displays[ name ] = result
+      endIf
       return result
 
       #method find_image_group_info( name:String )->Value

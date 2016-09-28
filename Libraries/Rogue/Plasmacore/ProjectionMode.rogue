@@ -25,7 +25,9 @@ class ProjectionMode2DX : ProjectionMode
       local top  = (-2 * height / k) * locus_sy
       local right = left + 2*width/k
       local bottom = top + 2*height/k
-      Display.projection_transform = Matrix.projection( left, top, right, bottom, 1, (max_z*k)/3 ) ...
+
+      Display.projection_transform = ...
+        Matrix.projection( left, top, right, bottom, 1, (max_z*k)/3 ) ...
         * Matrix.translate( XYZ(-width*locus_sx,-height*locus_sy,0) )
 
 endClass

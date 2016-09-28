@@ -35,7 +35,10 @@ class Display [singleton]
     pointer_position   : XY
     pointer_exists     : Logical
 
-    size               : XY
+    size                : XY
+    true_size           : XY
+    target_display_size : XY?
+    display_scale       : Real64
 
     perspective_center : XY
     # The "origin" for 3D perspective and the vanishing point for polygons
@@ -52,7 +55,7 @@ class Display [singleton]
     view_transforms      = Matrix[]
     object_transforms    = Matrix[]
 
-    projection_transform_modified : Logical
+    transform_modified        : Logical
     view_transform_modified       : Logical
     object_transform_modified     : Logical
 
@@ -158,6 +161,7 @@ class Display [singleton]
       view_transforms.clear
       view_transform_modified = true
       object_transform_modified = true
+      transform_modified = true
 
     method define_texture( gl_id:Int32, bitmap:Bitmap, options:Int32 )->Int32
       if (not gl_id)
@@ -377,6 +381,7 @@ class Display [singleton]
         if (object_transforms.count)
           object_transforms.remove_last
           object_transform_modified = true
+          transform_modified = true
         endIf
       endForEach
       return this
@@ -386,6 +391,7 @@ class Display [singleton]
         if (view_transforms.count)
           view_transforms.remove_last
           view_transform_modified = true
+          transform_modified = true
         endIf
       endForEach
       return this
@@ -393,23 +399,26 @@ class Display [singleton]
     method push_object_transform( m:Matrix )->this
       object_transforms.add( m )
       object_transform_modified = true
+      transform_modified = true
       return this
 
     method push_view_transform( m:Matrix )->this
       view_transforms.add( m )
       view_transform_modified = true
+      transform_modified = true
       return this
 
-    method render( size )
+    method render( true_size )
       Display = this  # set the singleton reference to be this display
+
+      clear_transforms
       perspective_center = center
+
+      scale_to_fit( target_display_size )
 
       activate_view_and_state
 
       view.ui.update_layout( Box(size) )
-
-      clear_transforms
-      projection_mode.update
 
       update_timer.update
 
@@ -452,7 +461,7 @@ class Display [singleton]
         return
       endIf
 
-      native @|glViewport( 0, 0, (int)$size.x, (int)$size.y );
+      native @|glViewport( 0, 0, (int)$true_size.x, (int)$true_size.y );
               |glEnable( GL_CULL_FACE );
               |glFrontFace( GL_CCW );
               |glCullFace( GL_BACK );
@@ -565,6 +574,21 @@ class Display [singleton]
       vertex_uvs.clear
       vertex_colors.clear
 
+    method scale_to_fit( w:Int32, h:Int32 )->this
+      return scale_to_fit( XY(w,h) )
+
+    method scale_to_fit( @target_display_size )->this
+      render
+      if (target_display_size.exists)
+        display_scale = (target_display_size.value / true_size).max
+        size = true_size * display_scale
+      else
+        display_scale = 1.0
+        size = true_size
+      endIf
+      projection_mode.update
+      return this
+
     method set_primitive_type( primitive_type:Int32 )->this
       if (primitive_type == active_primitive_type) return this
       render
@@ -583,7 +607,7 @@ class Display [singleton]
       return this
 
     method set_projection_transform( @projection_transform )->this
-      projection_transform_modified = true
+      transform_modified = true
       return this
 
     method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
@@ -626,8 +650,14 @@ class Display [singleton]
       local z = -unit_z
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
 
+    method true_height->Int32 [macro]
+      this.true_size.y->Int32
+
+    method true_width->Int32 [macro]
+      this.true_size.x->Int32
+
     method update_transform
-      if (not (view_transform_modified or object_transform_modified or projection_transform_modified)) return
+      if (not transform_modified) return
 
       if (view_transform_modified or object_transform_modified)
         if (object_transform_modified)
@@ -672,7 +702,7 @@ class Display [singleton]
       endIf
 
       transform = projection_transform * @transform
-      projection_transform_modified = false
+      transform_modified = false
 
     method width->Int32 [macro]
       this.size.x->Int32

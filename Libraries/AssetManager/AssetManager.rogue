@@ -99,8 +99,8 @@ class AssetManager [singleton]
 
     method compile_platform( platform_name:String )->Logical
       if (not platform_names.contains(platform_name))
-        println ''Platform "$" is not defined.'' (platform_name)
-        return false
+        println ''Asset Manager: Platform "$" is not defined; creating empty platform.'' (platform_name)
+        change_platform( platform_name )
       endIf
 
       println "Compiling $ assets..." (platform_name)
@@ -115,16 +115,71 @@ class AssetManager [singleton]
         newest_timestamp = newest_timestamp.or_larger( cur_group//timestamp->Real64 )
       endForEach
 
-      local manifest_filepath = cur_build_folder + "Images/ImageManifest.json"
+      local manifest_filepath = cur_build_folder + "Assets/Images/ImageManifest.json"
       if (not File.exists(manifest_filepath) or File.timestamp(manifest_filepath) < newest_timestamp)
         println "  Writing $..." (manifest_filepath)
         manifest.save( File(manifest_filepath), &formatted )
       endIf
 
-      #if (File.exists("Assets/Images/Icon.png"))
+      if (cur_platform_name == "iOS")
+        compile_ios_icons
+      endIf
 
       return true
 
+    method compile_ios_icons
+      local square_bitmaps = Bitmap[]
+      if (File.exists("Assets/Icons/iOS"))
+        forEach (filename in File.listing("Assets/Icons/iOS"))
+          local lc = filename.to_lowercase
+          if (lc.ends_with(".png") or lc.ends_with(".jpg"))
+            local bitmap = Bitmap( File(filename) )
+            if (not bitmap.error)
+              if (bitmap.width == bitmap.height)
+                square_bitmaps.expand_to_include( bitmap.size.x )[ bitmap.size.x ] = bitmap
+              endIf
+            endIf
+          endIf
+        endForEach
+      endIf
+
+      if (square_bitmaps.count == 0) return
+
+      File.create_folder( "Build/iOS/Icons" )
+      generate_icon( square_bitmaps, 20, 20, (forEach in 1..3) )
+      generate_icon( square_bitmaps, 29, 29, (forEach in 1..3) )
+      generate_icon( square_bitmaps, 40, 40, (forEach in 1..3) )
+      generate_icon( square_bitmaps, 50, 50, (forEach in 1..2) )
+      generate_icon( square_bitmaps, 57, 57, (forEach in 1..2) )
+      generate_icon( square_bitmaps, 60, 60, (forEach in 2..3) )
+      generate_icon( square_bitmaps, 72, 72, (forEach in 1..2) )
+      generate_icon( square_bitmaps, 76, 76, (forEach in 1..2) )
+      generate_icon( square_bitmaps, 83.5, 83.5, 2 )
+
+    method generate_icon( sizes:Bitmap[], w:Real64, h:Real64, density:Int32 )
+      local ws = select{ w==w.floor:w->Int32->String || w->String }
+      local hs = select{ h==h.floor:h->Int32->String || h->String }
+      local filepath = "Build/iOS/Icons/Icon-$x$@$x.png" (ws,hs,density)
+
+      local bitmap : Bitmap
+      forEach (i in (w*density)->Int32..<sizes.count)
+        bitmap = sizes[i]
+        if (bitmap) escapeForEach
+      endForEach
+
+      if (not bitmap)
+        forEach (i in (w*density)->Int32 downTo 0)
+          bitmap = sizes[i]
+          if (bitmap) escapeForEach
+        endForEach
+      endIf
+
+      if (not File.exists(filepath) or File.timestamp(filepath) < File.timestamp(bitmap.filepath))
+        local pixel_w = (w * density)->Int32
+        local pixel_h = (h * density)->Int32
+        println "  Writing $ [$x$]" (filepath,pixel_w,pixel_h)
+        File.save( filepath, bitmap.resized(pixel_w,pixel_h).to_png_bytes )
+      endIf
 
     method load
       File.create_folder( base_folder + "/Images" )
@@ -258,12 +313,12 @@ class AssetManager [singleton]
       local is_recursive = ls_args and ls_args.contains("**")
 
       if (ls_args)
-        listing = File.listing( folder, &recursive=is_recursive, &ignore_hidden )
+        listing = File.listing( folder, &recursive=is_recursive, &ignore_hidden, &omit_path )
         forEach (filepath in rewriter=listing.rewriter)
           if (filepath.matches_wildcard_pattern(ls_args)) rewriter.write( filepath )
         endForEach
       else
-        listing = File.listing( folder, &ignore_hidden )
+        listing = File.listing( folder, &ignore_hidden, &omit_path )
       endIf
 
       forEach (filepath in listing)
@@ -390,6 +445,7 @@ class AssetManager [singleton]
 
       if (cur_platform_name)
         cur_build_folder = "Build/$/" (cur_platform_name)
+        File.create_folder( cur_build_folder + "Assets/Images" )
       else
         cur_build_folder = null
       endIf
@@ -567,7 +623,7 @@ class AssetManager [singleton]
                  |"am" is used to create GROUPS of assets for different PLATFORMS using FILES
                  |from Asset Manager's CURRENT FOLDER.
                  |
-                 |The Asset Manager COMMAND PROMPT looks like this usually:
+                 |The Asset Manager COMMAND PROMPT usually looks like this:
                  |
                  |[PlatformName::GroupName] Current/Folder>>
                  |
@@ -755,7 +811,7 @@ class Menu
           AssetManager.change_platform( cmd )
         endIf
 
-      elseIf (input.begins_with('?'))
+      elseIf (input.begins_with('?') or input == "help")
         if (input == "?")
           AssetManager.display_help( active_command )
         else
@@ -903,8 +959,7 @@ class Menu
             if (File(folder).exists)
               local first = true
               local listing = File.listing( folder, &recursive, &ignore_hidden )
-              forEach (filename in listing)
-                local filepath = folder + "/" + filename
+              forEach (filepath in listing)
                 if (not AssetManager.any_group_contains_asset(filepath))
                   if (first) println "Updating " + AssetManager.cur_group_name; first = false
                   print "  "
@@ -931,7 +986,7 @@ class Menu
           local found_any = false
 
           println "> List Untracked Files"
-          local listing = File.listing( "Assets/Images", &recursive, &ignore_hidden )
+          local listing = File.listing( "Assets/Images", &recursive, &ignore_hidden, &omit_path )
           forEach (filename in listing)
             local filepath = "Assets/Images/" + filename
             contingent
@@ -1291,9 +1346,13 @@ class Menu
       endWhich
 
     method get_listing( pattern=null:String, &folders, &recursive, &absolute )->String[]
+      local omit_path = not absolute
       local listing : String[]
-      if (recursive) listing = File.listing( AssetManager.cur_folder, &recursive, &absolute=absolute, &ignore_hidden )
-      else           listing = File.listing( AssetManager.cur_folder, &absolute=absolute, &ignore_hidden )
+      if (recursive)
+        listing = File.listing( AssetManager.cur_folder, &recursive, &absolute=absolute, &ignore_hidden, &omit_path=omit_path )
+      else
+        listing = File.listing( AssetManager.cur_folder, &absolute=absolute, &ignore_hidden, &omit_path=omit_path )
+      endIf
 
       forEach (filepath in rewriter=listing.rewriter)
         if (pattern and not filepath.matches_wildcard_pattern(pattern)) nextIteration
@@ -1714,7 +1773,7 @@ class ImageCompiler
 
   METHODS
     method compile( &view_result )->Logical
-      output_folder = "$Images/" (AssetManager.cur_build_folder)
+      output_folder = "$Assets/Images/" (AssetManager.cur_build_folder)
       base_output_name = ("$-$-" (AssetManager.cur_platform_name,AssetManager.cur_group_name)).replacing('/','-').replacing('\\','-')
 
       if (File.exists(output_folder))
@@ -1729,7 +1788,7 @@ class ImageCompiler
 
       # Delete any existing files
       local filter = base_output_name + "*"
-      forEach (filepath in File.listing(output_folder,&ignore_hidden))
+      forEach (filepath in File.listing(output_folder,&ignore_hidden,&omit_path))
         if (filepath.matches_wildcard_pattern(filter))
           File.delete( output_folder + filepath )
         endIf
@@ -1825,7 +1884,7 @@ class ImageCompiler
       local matching_file_count = 0
       local filter = base_output_name + "*"
       local oldest_output_timestamp : Real64?
-      forEach (filepath in File.listing(output_folder,&ignore_hidden))
+      forEach (filepath in File.listing(output_folder,&ignore_hidden,&omit_path))
         if (filepath.matches_wildcard_pattern(filter))
           ++matching_file_count
           local output_timestamp = File.timestamp( output_folder + filepath )
