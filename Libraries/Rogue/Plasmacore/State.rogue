@@ -101,7 +101,6 @@ class State
       view.queue_state( new_state )
 
     method on_draw
-      Display.clear( Color.BLUE )
 
     method on_start
 

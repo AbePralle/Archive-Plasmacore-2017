@@ -5,10 +5,11 @@ class Bitmap
     resize_row_buffer = Int32[]
 
   PROPERTIES
-    width   : Int32
-    height  : Int32
-    pixels  : Color[]
-    error   : Logical
+    width    : Int32
+    height   : Int32
+    pixels   : Color[]
+    error    : Logical
+    filepath : String
 
   METHODS
     method init( _size:XY, color=Color.BLACK:Color ) [essential]
@@ -19,6 +20,7 @@ class Bitmap
 
     method init( file:File )
       if (file and file.filepath)
+        filepath = file.filepath
         init( file.load_as_bytes )
       else
         if (not file)

@@ -1,6 +1,8 @@
 # Vim
 *.swp
+*.local
 
+Assets
 Programs
 
 Test
@@ -27,7 +29,3 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-
-Source/PlasmacoreStudio/qt
-
-
