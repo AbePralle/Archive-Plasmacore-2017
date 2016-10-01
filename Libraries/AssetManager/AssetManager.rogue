@@ -10,6 +10,7 @@ help//rmplatform    = "Remove Platform"
 help//all           = "List All - list all groups and assets in current platform."
 help//mkgroup       = "Make Group - turn current directory and all the files it contains into a new asset group."
 help//clonegroup    = "Clone Group - Clones the current group to a new group name or multiple matching groups and files matching a string using a replacement string."
+help//clonegroups   = "Clone Groups"
 help//add           = "Add to Group - add all files or selected files in current directory to current asset group."
 help//inventory     = "Inventory - list files added to current asset group."
 help//view          = "View Assets"
@@ -40,6 +41,19 @@ catch (err:Error)
   println err
   System.exit 1
 endTry
+
+routine scale_string_to_value( scale_string:String )->Real64
+  if (scale_string.contains('/'))
+    local dims = scale_string.split( '/' )
+    if (dims.count != 2)
+      println "Syntax error in fraction: $." (scale_string)
+      return 1.0
+    endIf
+    return dims[0]->Real64 / dims[1]->Real64
+  else
+    return scale_string->Real64
+  endIf
+endRoutine
 
 class SavedState( cmd:String, inventory:String, config:String );
 
@@ -349,7 +363,7 @@ class AssetManager [singleton]
       cur_group//name = new_name
       AssetManager.mark_group_modified
 
-    method clone_groups( search_string:String, replace_string:String )
+    method clone_groups( search_string:String, replace_string:String, scale_string:String )
       forEach (group_name in group_names.cloned)
         if (group_name.contains(search_string))
           local new_group_name = group_name.replacing( search_string, replace_string )
@@ -358,18 +372,27 @@ class AssetManager [singleton]
             change_group( group_name )
             clone_group( new_group_name )
 
-            forEach (key in cur_group//assets.keys)
-              local asset = cur_group//assets[ key ]
-              local asset_name = asset//filepath->String
-              if (asset_name.contains(search_string))
-                local new_asset_name = asset_name.replacing( search_string, replace_string )
-                if (not cur_group//assets.contains(new_asset_name))
-                  println "Renaming asset $ -> $" (short_asset_name(asset_name),short_asset_name(new_asset_name))
-                  asset//filepath = new_asset_name
-                  cur_group//assets[ new_asset_name ] = cur_group//assets.remove( asset_name )
+            if (scale_string)
+              # Apply a scale operation to all assets
+              forEach (asset in cur_group//assets)
+                local s = scale_string_to_value( scale_string )
+                asset.ensure_list( "operations" ).add( @{name:"rescale",scale:s,label:"scale $"(scale_string)} )
+              endForEach
+            else
+              # Perform search and replace on all asset names
+              forEach (key in cur_group//assets.keys)
+                local asset = cur_group//assets[ key ]
+                local asset_name = asset//filepath->String
+                if (asset_name.contains(search_string))
+                  local new_asset_name = asset_name.replacing( search_string, replace_string )
+                  if (not cur_group//assets.contains(new_asset_name))
+                    println "Renaming asset $ -> $" (short_asset_name(asset_name),short_asset_name(new_asset_name))
+                    asset//filepath = new_asset_name
+                    cur_group//assets[ new_asset_name ] = cur_group//assets.remove( asset_name )
+                  endIf
                 endIf
-              endIf
-            endForEach
+              endForEach
+            endIf
           endIf
         endIf
       endForEach
@@ -660,19 +683,22 @@ class AssetManager [singleton]
                  |    Lists any image files that aren't part of any group.
                  |
                  |GROUP COMMANDS
-                 |  group <new group name>
+                 |  group <group name>
                  |    List existing groups and/or change the current group to a new or existing
                  |    group.
                  |
                  |  clonegroup <new group name>
-                 |    Creates a copy of the current platform.
+                 |    Creates a copy of the current group.
                  |
-                 |  clonegroup <search text> <replace text>
-                 |    Creates a copy of the current group, searching for <search text> in the
-                 |    group name and all asset filepaths and replacing it with <replace text>.
-                 |    For example, if the current group is "BG/LoRes" containing assets located
-                 |    in "WaterWorld/LoRes/", entering "cloneg LoRes HiRes" will clone the group
-                 |    to one called "BG/HiRes" with assets located in "WaterWorld/HiRes/".
+                 |  clonegroups <search text> <replace text> [<scale>]
+                 |    Creates a copy of any group with a group name containing <search text>,
+                 |    replacing <search text> in the group name and in all asset filepaths
+                 |    with <replace text>.  Scale can be a single number (such as 2 or 0.5)
+                 |    or a faction such as 1024/768.  If a scale is specified then shallow
+                 |    clones are made (where only group names change) and then all assets in a
+                 |    cloned group have a rescaling operation applied to them.  If no scale is
+                 |    specified then groups are deep cloned (where asset names and filepaths
+                 |    may change as well).
                  |
                  |  add <files>
                  |    Add files from the current folder to the current group.  Use "*" to select
@@ -872,14 +898,36 @@ class Menu
             return null
           endIf
 
-        case "clonegroup"
+        case "clonegroup", "clonegroups"
           if (args)
             AssetManager.save_undo( "$ $"(cmd,args) )
             if (args.contains(' '))
-              local search_string  = args.before_first(' ').trimmed
-              local replace_string = args.after_first(' ').trimmed
-              println "> Clone Groups *$* -> *$*" (search_string,replace_string)
-              AssetManager.clone_groups( search_string, replace_string )
+              local individual_args = args.split( ' ' )
+              local search_string, replace_string, scale_string : String
+              local stage = 1
+              forEach (arg in individual_args)
+                if (arg.count)
+                  which (stage)
+                    case 1: search_string = arg.trimmed; ++stage
+                    case 2: replace_string = arg.trimmed; ++stage
+                    case 3: scale_string = arg.trimmed; ++stage
+                    case 4
+                      println "Too many arguments to $ - expected 3 max." (cmd)
+                      return null
+                  endWhich
+                endIf
+              endForEach
+              if (stage == 3)
+                println "Not enough arguments to $ - expected 2 or 3." (cmd)
+                return null
+              endIf
+
+              if (scale_string)
+                println "> Clone Groups *$* -> *$* with rescale:$" (search_string,replace_string,scale_string)
+              else
+                println "> Clone Groups *$* -> *$*" (search_string,replace_string)
+              endIf
+              AssetManager.clone_groups( search_string, replace_string, scale_string )
             else
               println "> Clone Group $ -> $" (AssetManager.cur_group_name,args)
               AssetManager.clone_group( args )
@@ -1503,6 +1551,7 @@ class ExamineImageAsset
       println "  Default mapping equivalent to: varfont 32-126 AKA varfont ' '-'~'"
       println "split <tiles-wide>x<tiles-high>"
       println "resample <width>x<height> (resizes pixel data while retaining display size)"
+      println "rescale  [<scale>|<top>/<bottom>] (resizes both pixel data and display size)"
       println "view"
       println "(p)revious, (n)ext"
       #{
@@ -1582,6 +1631,13 @@ class ExamineImageAsset
         asset.ensure_list( "operations" ).add( @{name:"resample",width:w,height:h,label:"resample $x$"(w,h)} )
         AssetManager.mark_group_modified
         return this
+
+      elseIf ("rescale".begins_with(input) and input.count >= 4)
+        local s = scale_string_to_value( args )
+        asset.ensure_list( "operations" ).add( @{name:"rescale",scale:s,label:"rescale $"(args)} )
+        AssetManager.mark_group_modified
+        return this
+
       endIf
 
       println "ERROR: Invalid command " + input
@@ -1704,6 +1760,12 @@ class Placement
             local w = op//width->Int32
             local h = op//height->Int32
             Placement( asset, bitmap.resized(w,h), display_width, display_height ).collect( operations.rest, placements )
+
+          case "rescale"
+            local s = op//scale->Real64
+            local w = (bitmap.width * s)->Int32
+            local h = (bitmap.height * s)->Int32
+            Placement( asset, bitmap.resized(w,h), (display_width*s)->Int32, (display_height*s)->Int32 ).collect( operations.rest, placements )
 
           others
             println "ERROR processing $: Unsupported operation $." (asset//filepath,op//label)
