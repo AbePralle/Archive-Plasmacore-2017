@@ -1,0 +1,1133 @@
+class Value
+  GLOBAL METHODS
+    method create( value:Logical )->Value
+      return select{ value:LogicalValue.true_value || LogicalValue.false_value }
+
+    method create( value:Real64 )->Value
+      return Real64Value( value )
+
+    method create( value:Object )->Value
+      if (value is null) return NullValue
+      return ObjectValue( value )
+
+    method create( value:String )->Value
+      if (value is null) return NullValue
+      return StringValue( value )
+
+    method create( value:Value )->Value
+      return value
+
+    method load( file:File )->Value
+      return JSON.load( file )
+
+    method parse( json:String )->Value
+      return JSON.parse( json )
+
+    method operator?( value:Value )->Logical
+      return (value is not null and value.is_non_null and (not value.is_logical or value->Logical))
+
+  METHODS
+    method add( value:Int32 )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:Logical )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:Real64 )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:Object )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:String )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:Value )->this
+      return this
+
+    method add( other:Value[] )->this
+      return this
+
+    method add_all( other:Value )->this
+      if (other.count)
+        reserve( other.count )
+        forEach (value in other.values) add( value )
+      else
+        add( other )
+      endIf
+      return this
+
+    method clear->this
+      return this
+
+    method cloned->Value
+      return this
+
+    method contains( table_key_or_list_value:String )->Logical
+      return false
+
+    method contains( table_key_or_list_value:Value )->Logical
+      return false
+
+    method contains( query:Function(Value)->(Logical) )->Logical
+      return first( query ) not instanceOf UndefinedValue
+
+    method count->Int32
+      return 0
+
+    method count( query:Function(Value)->(Logical) )->Int32
+      return 0
+
+    method ensure_list( key:String )->ValueList
+      # When called on a ValueTable, ensures that the table contains a list
+      # with the given key, creating it if necessary, and returns that list.
+      # When called on any other type of Value, a new ValueList
+      # will be returned but it won't be stored in a table.
+      return @[]
+
+    method ensure_table( key:String )->ValueTable
+      # When called on a ValueTable, ensures that the table contains a table
+      # with the given key, creating it if necessary, and returns that table.
+      # When called on any other type of Value, a new ValueTable
+      # will be returned but it won't be stored in a table.
+      return @{}
+
+    method first->Value
+      return this[ 0 ]
+
+    method first( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
+
+    method get( index:Int32 )->Value
+      return UndefinedValue
+
+    method get( key:String )->Value
+      return UndefinedValue
+
+    method get( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
+
+    method insert( value:Int32, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Logical, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Real64, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Object, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:String, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Value, before_index=0:Int32 )->this
+      return this
+
+    method insert( other:Value[], before_index=0:Int32 )->this
+      return this
+
+    method insert_all( other:Value, before_index=0:Int32 )->this
+      if (other.count)
+        reserve( other.count )
+        forEach (value in other.values step -1) insert( value, before_index )
+      else
+        insert( other, before_index )
+      endIf
+      return this
+
+    method is_collection->Logical
+      return false
+
+    method is_complex->Logical
+      if (not is_collection) return false
+      if (count > 1)         return true
+      forEach (value in this)
+        if (value and value.is_complex) return true
+      endForEach
+      return false
+
+    method is_int32->Logical
+      return false
+
+    method is_list->Logical
+      return false
+
+    method is_logical->Logical
+      return false
+
+    method is_null->Logical
+      return false
+
+    method is_non_null->Logical
+      return true
+
+    method is_number->Logical
+      return false
+
+    method is_object->Logical
+      return false
+
+    method is_real64->Logical
+      return false
+
+    method is_string->Logical
+      return false
+
+    method is_table->Logical
+      return false
+
+    method is_undefined->Logical
+      return false
+
+    method keys->String[]
+      return String[]
+
+    method last->Value
+      return this[ count - 1 ]
+
+    method last( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
+
+    method locate( value:Value )->Value
+      return Value[]
+
+    method locate( query:Function(Value)->(Logical) )->Value[]
+      return Value[]
+
+    method operator==( other:Value )->Logical
+      return this is other
+
+    method operator==( other:Byte )->Logical
+      return this == Value( other )
+
+    method operator==( other:Character )->Logical
+      return this == Value( ""+other )
+
+    method operator==( other:Int64 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Int32 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Logical )->Logical
+      return this == Value( other )
+
+    method operator==( other:Real64 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Real32 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Object )->Logical
+      return this == Value( other )
+
+    method operator==( other:String )->Logical
+      return this == Value( other )
+
+    method operator<( other:Value )->Logical
+      return object_id < other.object_id
+
+    method operator<( other:Byte )->Logical
+      return this < Value( other )
+
+    method operator<( other:Character )->Logical
+      return this < Value( ""+other )
+
+    method operator<( other:Int64 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Int32 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Logical )->Logical
+      return this < Value( other )
+
+    method operator<( other:Real64 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Real32 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Object )->Logical
+      return this < Value( other )
+
+    method operator<( other:String )->Logical
+      return this < Value( other )
+
+    method operator-()->Value
+      return Value( 0 )
+
+    method operator+( other:Value )->Value
+      return Value( 0 )
+
+    method operator-( other:Value )->Value
+      return Value( 0 )
+
+    method operator*( other:Value )->Value
+      return Value( 0 )
+
+    method operator/( other:Value )->Value
+      return Value( 0 )
+
+    method operator%( other:Value )->Value
+      return Value( 0 )
+
+    method operator+( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator-( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator*( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator/( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator%( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator+( other:String )->Value
+      return Value( 0 )
+
+    method operator*( other:String )->Value
+      return Value( 0 )
+
+    method remove( value:Value )->Value
+      return value
+
+    method remove( key:String )->Value
+      return remove( Value(key) )
+
+    method remove( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
+
+    method remove_at( index:Int32 )->Value
+      return remove( this[index] )
+
+    method remove_first->Value
+      return remove( first )
+
+    method remove_last->Value
+      return remove( last )
+
+    method reserve( additional_elements:Int32 )->this
+      noAction
+      return this
+
+    method rest( result_list=null:Value )->Value
+      # Returns the "rest" of this collection: a `ValueList` containing all of the items
+      # in this collection after the first item.  The `result_list` parameter is
+      # used if it's specified (a `ValueList` is expected); otherwise a new `ValueList`
+      # is created and returned.
+      #
+      # If this `Value` is not a collection or if it is empty then an empty list is
+      # returned.
+      if (not result_list) result_list = @[]
+      result_list.reserve( (count-1).clamped(0) )
+
+      forEach (index of this)
+        if (index > 0) result_list.add( this[index] )
+      endForEach
+
+      return result_list
+
+    method save( file:File, formatted=false:Logical )->Logical
+      return file.save( to_json(formatted) )
+
+    method set( index:Int32, value:Int32 )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:Logical )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:Real64 )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:Object )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:String )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:Value )->this
+      return this
+
+    method set( key:String, value:Int32 )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:Logical )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:Real64 )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:Object )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:String )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:Value )->this
+      return this
+
+    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+      return this
+
+    method sorted( compare_fn:Function(a:Value,b:Value)->(Logical) )->Value
+      return cloned
+
+    method to->Byte
+      return this->Int32->Byte
+
+    method to->Character
+      local st = this->String
+      if (st.count) return st[0]
+      return Character(0)
+
+    method to->Int64
+      return this->Real64->Int64
+
+    method to->Int32
+      return 0
+
+    method to->Logical
+      return (this->Int32)
+
+    method to->Real64
+      return this->Int32->Real64
+
+    method to->Real32
+      return this->Real64->Real32
+
+    method to->Object
+      return null
+
+    method to->Value
+      return this
+
+    method to->ValueList
+      return select{ this.is_list:this as ValueList || @[] }
+
+    method to->ValueTable
+      return select{ this.is_table:this as ValueTable || @{} }
+
+    method to<<$AsType>>()->$AsType [macro]
+      (this->Object as $AsType)
+
+    method to_json( formatted=false:Logical )->String
+      return to_json( StringBuilder(), formatted )->String
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      return buffer
+
+    method values( list=null:Value )->Value
+      if (list)
+        list.add_all( this )
+        return list
+      else
+        return this
+      endIf
+
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [essential]
+      throw Error("This Value is not indexable")
+$endIf
+endClass
+
+class NullValue : Value [singleton]
+  METHODS
+    method is_non_null->Logical
+      return false
+
+    method is_null->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      return  (other is null or other.is_null)
+
+    method operator<( other:Value )->Logical
+      return (other and other.is_non_null)
+
+    method to->Int32
+      return 0
+
+    method to->String
+      return "null"
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      return buffer.print( "null" )
+endClass
+
+class UndefinedValue : NullValue [singleton]
+  METHODS
+    method is_undefined->Logical
+      return true
+
+    method to->String
+      return ""
+endClass
+
+class LogicalValue( value:Logical ) : Value
+  GLOBAL PROPERTIES
+    true_value  = LogicalValue( true )
+    false_value = LogicalValue( false )
+
+  METHODS
+    method is_logical->Logical
+      return true
+
+    method to->Int32
+      if (value) return 1
+      else       return 0
+
+    method to->Logical
+      return value
+
+    method to->String
+      return value->String
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      buffer.print( value )
+      return buffer
+endClass
+
+class Real64Value( value:Real64 ) : Value
+  METHODS
+    method is_number->Logical
+      return true
+
+    method is_real64->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      if (other.is_number) return (value == other->Real64)
+      else                 return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_number) return (value < other->Real64)
+      else                 return object_id < other.object_id
+
+    method operator-()->Value
+      return Real64Value( -value )
+
+    method operator+( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other->Real64 )
+
+    method operator-( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value - other->Real64 )
+
+    method operator*( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value * other->Real64 )
+
+    method operator/( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value / other->Real64 )
+
+    method operator%( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value % other->Real64 )
+
+    method operator+( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
+
+    method operator-( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
+
+    method operator*( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value * other )
+
+    method operator/( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value / other )
+
+    method operator%( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value % other )
+
+    method operator+( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
+
+    method operator*( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( Int32(value) * other )
+
+    method to->Int32
+      return value
+
+    method to->Real64
+      return value
+
+    method to->String
+      return value.format()
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      if (value.fractional_part) buffer.print( value )
+      else                       buffer.print( value, 0 )  # omit the ".0"
+      return buffer
+endClass
+
+class ObjectValue( value:Object ) : Value
+  METHODS
+    method is_object->Logical
+      return true
+
+    method to->Object
+      return value
+
+    method to->String
+      return value->String
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      buffer.print( value->String )
+      return buffer
+endClass
+
+class StringValue( value:String ) : Value
+  GLOBAL PROPERTIES
+    empty_string = StringValue( "" )
+
+  METHODS
+    method count->Int32
+      return value.count
+
+    method get( index:Int32 )->Value
+      if (index < 0 or index >= value.count) return UndefinedValue
+      return Value( ""+value[index] )
+
+    method is_string->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      if (other.is_string) return (value == other->String)
+      else                 return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_string) return (value < other->String)
+      else                 return object_id < other.object_id
+
+    method operator+( other:Value )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other->String )
+
+    method operator*( other:Value )->Value
+      if (not other) return Value(0)
+      return StringValue( value * other->Int32 )
+
+    method operator+( other:Real64 )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
+
+    method operator+( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
+
+    method to->Character
+      if (value.count > 0) return value[0]
+      else                 return 0->Character
+
+    method to->Int32
+      return value->Int32
+
+    method to->Logical
+      return (value == "true" or value == "TRUE" or value == "yes" or value == "YES" or value == "1")
+
+    method to->Real64
+      return value->Real64
+
+    method to->String
+      return value
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      return to_json( value, buffer, formatted )
+
+  GLOBAL METHODS
+    method to_json( value:String, buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      if (value)
+        buffer.print '"'
+        forEach (ch in value)
+          which (ch)
+            case '"':
+              buffer.print( "\\\"" )
+            case '\\':
+              buffer.print( "\\\\" )
+            case '\b':
+              buffer.print( "\\b" )
+            case '\f':
+              buffer.print( "\\f" )
+            case '\n':
+              buffer.print( "\\n" )
+            case '\r':
+              buffer.print( "\\r" )
+            case '\t':
+              buffer.print( "\\t" )
+            others
+              if (ch >= 32 and ch <= 126)
+                buffer.print( ch )
+              elseIf (ch < 32 or ch == 127 or ch == 0x2028 or ch == 0x2029)
+                # RE: 2028/9:
+                # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
+                buffer.print( "\\u" )
+                local n = ch : Int32
+                forEach (nibble in 0..3)
+                  local digit = (n :>>>: 12) & 15
+                  n = n:<<:4
+                  if (digit <= 9)
+                    buffer.print( digit )
+                  else
+                    buffer.print( ('a' + (digit - 10))->Character )
+                  endIf
+                endForEach
+              else
+                # Store printable Unicode without encoding as \\uXXXX
+                buffer.print( ch )
+              endIf
+          endWhich
+        endForEach
+        buffer.print '"'
+      else
+        buffer.print "null"
+      endIf
+      return buffer
+endClass
+
+class ValueList : Value
+  PROPERTIES
+    data : Value[]
+
+  METHODS
+    method init
+      init( 0 )
+
+    method init( initial_capacity:Int32 )
+      data = Value[]( initial_capacity )
+
+    method init( data )
+
+    method cloned->ValueList
+      local result = ValueList( count )
+      forEach (value in this)
+        if (value) result.add( value.cloned )
+      endForEach
+      return result
+
+    method add( value:Value )->this
+      data.add( value )
+      return this
+
+    method add( other:Value[] )->this
+      data.add( other )
+      return this
+
+    method insert( value:Value, before_index=0:Int32 )->this
+      data.insert( value, before_index )
+      return this
+
+    method insert( other:Value[], before_index=0:Int32 )->this
+      data.insert( other, before_index )
+      return this
+
+    method clear->ValueList
+      data.clear
+      return this
+
+    method contains( value:String )->Logical
+      forEach (existing in data)
+        if (existing and existing.is_string and existing->String == value) return true
+      endForEach
+      return false
+
+    method contains( value:Value )->Logical
+      forEach (existing in data)
+        if (existing and existing == value) return true
+      endForEach
+      return false
+
+    method count->Int32
+      return data.count
+
+    method count( query:Function(Value)->(Logical) )->Int32
+      local result = 0
+      forEach (v in data)
+        if (query(v)) ++result
+      endForEach
+      return result
+
+    method first->Value
+      return this.get(0)
+
+    method first( query:Function(Value)->(Logical) )->Value
+      forEach (v in data)
+        if (query(v)) return v
+      endForEach
+      return UndefinedValue
+
+    method get( index:Int32 )->Value
+      if (index < 0 or index >= data.count) return UndefinedValue
+      return select{ data[index] || UndefinedValue }
+
+    method get( query:Function(Value)->(Logical) )->Value
+      local results : ValueList
+      forEach (value in this)
+        if (query(value))
+          ensure results
+          results.add( value )
+        endIf
+      endForEach
+
+      if (results) return results
+      else         return UndefinedValue
+
+    method is_collection->Logical
+      return true
+
+    method is_list->Logical
+      return true
+
+    method last->Value
+      return this.get( data.count - 1 )
+
+    method last( query:Function(Value)->(Logical) )->Value
+      forEach (v in data step -1)
+        if (query(v)) return v
+      endForEach
+      return UndefinedValue
+
+    method locate( value:Value )->Value
+      forEach (v at index in this)
+        if (v == value) return index
+      endForEach
+      return UndefinedValue
+
+    method locate( query:Function(Value)->(Logical) )->Value[]
+      local results = Value[]
+      forEach (value at index in this)
+        if (query(value)) results.add( index )
+      endForEach
+      return results
+
+    method remove( value:Value )->Value
+      return data.remove( value )
+
+    method remove( query:Function(Value)->(Logical) )->Value
+      local results = this[ query ]
+      if (not results) return results
+
+      forEach (v in results) remove( v )
+      return results
+
+    method remove_at( index:Int32 )->Value
+      return data.remove_at( index )
+
+    method remove_first->Value
+      return data.remove_first
+
+    method remove_last->Value
+      return data.remove_last
+
+    method reserve( additional_elements:Int32 )->this
+      data.reserve( additional_elements )
+      return this
+
+    method set( index:Int32, new_value:Value )->Value
+      if (index < 0) return this
+
+      while (index >= data.count) add( null as Value )
+      data.set( index, new_value )
+
+      return this
+
+    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+      data.sort( compare_fn )
+      return this
+
+    method sorted( compare_fn:Function(a:Value,b:Value)->(Logical) )->ValueList
+      return cloned.sort( compare_fn ) as ValueList
+
+    method to->Logical
+      return true
+
+    method to->String
+      return data->String
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      local pretty_print = (formatted and is_complex)
+
+      buffer.print( '[' )
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent += 2
+      endIf
+
+      local first = true
+      forEach (value in data)
+        if (first)
+          first = false
+        else
+          buffer.print( ',' )
+          if (pretty_print) buffer.println
+        endIf
+
+        if (value) value.to_json( buffer, formatted )
+        else       buffer.print( "null" )
+      endForEach
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent -= 2
+      endIf
+
+      buffer.print( ']' )
+      return buffer
+
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [essential]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+$endIf
+
+    GLOBAL METHODS
+      method load( file:File )->ValueList
+        if (not file or not file.exists) return ValueList()
+        return JSON.parse_list( file.load_as_string )
+
+      method parse( json:String )->ValueList
+        return JSON.parse_list( json )
+endClass
+
+class ValueTable : Value
+  PROPERTIES
+    data    : Table<<String,Value>>
+
+  METHODS
+    method init
+      data = Table<<String,Value>>()
+
+    method init( data )
+
+    method clear->this
+      data.clear
+      return this
+
+    method cloned->ValueTable
+      local result_data = data.cloned
+
+      local cur = result_data.first_entry
+      while (cur)
+        if (cur.value) cur.value = cur.value.cloned
+        cur = cur.next_entry
+      endWhile
+
+      return ValueTable( result_data )
+
+    method contains( key:String )->Logical
+      return data.contains( key )
+
+    method contains( key:Value )->Logical
+      if (not key or not key.is_string) return false
+      return contains( key->String )
+
+    method count->Int32
+      return data.count
+
+    method count( query:Function(Value)->(Logical) )->Int32
+      local result = 0
+      forEach (v in data.value_reader)
+        if (query(v)) ++result
+      endForEach
+      return result
+
+    method ensure_list( key:String )->ValueList
+      # Ensures that this table contains a list with the given key, creating
+      # it if necessary, and returns that list.
+      local list = this[ key ] as ValueList
+      if (list) return list
+      list = @[]
+      this[ key ] = list
+      return list
+
+    method ensure_table( key:String )->ValueTable
+      # Ensures that this table contains a table with the given key, creating
+      # it if necessary, and returns that table.
+      local table = this[ key ] as ValueTable
+      if (table) return table
+      table = @{}
+      this[ key ] = table
+      return table
+
+    method first( query:Function(Value)->(Logical) )->Value
+      forEach (key in keys)
+        local v = this[ key ]
+        if (query(v)) return v
+      endForEach
+      return UndefinedValue
+
+    method get( index:Int32 )->Value
+      if (index < 0 or index >= count) return UndefinedValue
+      return select{ data[ keys[index] ] || UndefinedValue }
+
+    method get( key:String )->Value
+      return select{ data[ key ] || UndefinedValue }
+
+    method get( query:Function(Value)->(Logical) )->Value
+      local results : ValueList
+      forEach (key in keys)
+        local value = this[key]
+        if (query(value))
+          ensure results
+          results.add( value )
+        endIf
+      endForEach
+
+      if (results) return results
+      else         return UndefinedValue
+
+    method is_collection->Logical
+      return true
+
+    method is_table->Logical
+      return true
+
+    method keys->String[]
+      return data.keys
+
+    method last( query:Function(Value)->(Logical) )->Value
+      forEach (key in keys step -1)
+        local v = this[ key ]
+        if (query(v)) return v
+      endForEach
+      return UndefinedValue
+
+    method locate( value:Value )->Value
+      local cur = data.first_entry
+      while (cur)
+        if (cur.value == value) return cur.key
+        cur = cur.next_entry
+      endWhile
+      return UndefinedValue
+
+    method locate( query:Function(Value)->(Logical) )->Value[]
+      local results = Value[]
+      forEach (key in keys)
+        if (query(this[key])) results.add( key )
+      endForEach
+      return results
+
+    method remove( key:String )->Value
+      return data.remove( key )
+
+    method remove( query:Function(Value)->(Logical) )->Value
+      local remove_keys : String[]
+      local results : @[]
+
+      forEach (key in keys)
+        local v = this[ key ]
+        if (query(v))
+          ensure results
+          ensure remove_keys
+          remove_keys.add( key )
+          results.add( v )
+        endIf
+      endForEach
+
+      if (not remove_keys) return UndefinedValue
+      forEach (key in remove_keys) remove( key )
+      return results
+
+    method remove_at( index:Int32 )->Value
+      if (index < 0 or index >= count) return UndefinedValue
+      return data.remove( data.keys[index] )
+
+    method set( index:Int32, value:Value )->this
+      return set( ""+index, value )
+
+    method set( key:String, new_value:Value )->this
+      data.set( key, new_value )
+      return this
+
+    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+      data.sort( function(a,b) with(compare_fn) => compare_fn(a.value,b.value) )
+      return this
+
+    method to->Logical
+      return true
+
+    method to->String
+      return data->String
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      local pretty_print = (formatted and is_complex)
+
+      buffer.print( '{' )
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent += 2
+      endIf
+
+      local first = true
+      forEach (key in data.keys)
+        if (first)
+          first = false
+        else
+          buffer.print( ',' )
+          if (pretty_print) buffer.println
+        endIf
+
+        StringValue.to_json( key, buffer, formatted )
+        buffer.print( ':' )
+
+        local value = data[key]
+        if (pretty_print and value and value.is_complex) buffer.println
+
+        if (value) value.to_json( buffer, formatted )
+        else       buffer.print( "null" )
+      endForEach
+
+      if (pretty_print) buffer.println; buffer.indent -= 2
+
+      buffer.print( '}' )
+      return buffer
+
+    method values( list=null:Value )->Value
+      if (not list) list = @[]( count )
+
+      local cur = data.first_entry
+      while (cur)
+        list.add( cur.value )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [essential]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+
+    method _get_element( key:String )->Value [essential]
+      return get(key)
+$endIf
+
+    GLOBAL METHODS
+      method load( file:File )->ValueTable
+        if (not file or not file.exists) return ValueTable()
+        return JSON.parse_table( file.load_as_string )
+
+      method parse( json:String )->ValueTable
+        return JSON.parse_table( json )
+endClass

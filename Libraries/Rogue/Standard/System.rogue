@@ -1,0 +1,72 @@
+class System [essential]
+  GLOBAL PROPERTIES
+    command_line_arguments = String[]
+    executable_filepath    : String
+    environment            : SystemEnvironment
+
+  GLOBAL METHODS
+    method exit( result_code:Int32 )
+      $if ("C++")
+        native @|Rogue_quit();
+                |exit( $result_code );
+      $endIf
+
+    method run( command:String )->Int32
+      # TODO: http://stackoverflow.com/questions/27046728/how-do-you-use-posix-spawn-to-replace-the-deprecated-system-to-launch-opendiff
+      local return_val = 0
+      native @|$return_val = system( (char*)$command->utf8 );
+      if (return_val == -1) throw Error("Process was not created")
+      return return_val
+
+    method time->Real64
+      $if ("C++")
+        native @|#if defined(_WIN32)
+                |  struct __timeb64 time_struct;
+                |  RogueReal64 time_seconds;
+                |  _ftime64_s( &time_struct );
+                |  time_seconds = (RogueReal64) time_struct.time;
+                |  time_seconds += time_struct.millitm / 1000.0;
+                |  return time_seconds;
+                |
+                |#else
+                |  struct timeval time_struct;
+                |  RogueReal64 time_seconds;
+                |  gettimeofday( &time_struct, 0 );
+                |  time_seconds = (RogueReal64) time_struct.tv_sec;
+                |  time_seconds += (time_struct.tv_usec / 1000000.0);
+                |  return time_seconds;
+                |#endif
+      $endIf
+endClass
+
+class SystemEnvironment [compound]
+  METHODS
+    method get( name:String )->String
+      local result : String
+
+      native @|char* c_result = getenv( (char*)$name->utf8 );
+              |if (c_result)
+              |{
+              |  $result = RogueString_create_from_utf8( c_result );
+              |}
+
+      return select{ result:result || null }
+
+    method listing->String[]
+      nativeHeader extern "C" char **environ;
+
+      local result = String[]
+      native "char** env = environ;"
+      while (native("*env")->Logical)
+        result.add( native("RogueString_create_from_utf8( *(env++) )")->String.before_first('=') )
+      endWhile
+
+      return result;
+
+    method set( name:String, value:String )
+      if (value and value.count)
+        native @|setenv( (char*)$name->utf8, (char*)$value->utf8, 1 );
+      else
+        native @|unsetenv( (char*)$name->utf8 );
+      endIf
+endClass

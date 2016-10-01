@@ -1,0 +1,679 @@
+class GenericList
+endClass
+
+class List<<$DataType>> : GenericList
+  PROPERTIES
+    data      : Array<<$DataType>>
+    count     : Int32
+
+  METHODS
+    method init
+      init( 0 )
+
+    method init( initial_capacity:Int32 )
+      if (initial_capacity) data = Array<<$DataType>>( initial_capacity )
+
+    method init( initial_capacity:Int32, initial_value:$DataType )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = initial_value
+      endIf
+
+    method apply( fn:Function($DataType) )->this
+      forEach (item in this) fn( item )
+      return this
+
+    method applying( fn:Function($DataType) )->$DataType[]
+      return cloned.apply( fn )
+
+    method cloned->$DataType[]
+      local result = $DataType[]( count )
+      forEach (value in this)
+        result.add( value )
+      endForEach
+      return result
+
+    method add( value:$DataType )->this  [preferred]
+      reserve(1)[count] = value
+      ++count
+      return this
+
+    method add( other:$DataType[] )->this
+      reserve(other.count)
+      forEach (value in other) add( value )
+      return this
+
+    method capacity->Int32
+      if (not data) return 0
+      return data.count
+
+    method clear->this
+      discard_from( 0 )
+      return this
+
+    method contains( value:$DataType )->Logical [macro]
+      this.locate( value )?
+
+    method contains( query:Function($DataType)->(Logical) )->Logical
+      return first( query ).exists
+
+    method count( query:Function($DataType)->(Logical) )->Int32
+      # Counts the number of items that pass the query function.
+      local result = 0
+      forEach (value in this)
+        if (query(value)) ++result
+      endForEach
+      return result
+
+    method ensure_capacity( desired_capacity:Int32 )->this
+      return reserve( desired_capacity - count )
+
+    method expand_to_count( minimum_count:Int32 )->this
+      # Expands the list if necessary to have at least 'minimum_count' elements.
+      if (count < minimum_count)
+        ensure_capacity( minimum_count )
+        count = minimum_count
+      endIf
+      return this
+
+    method expand_to_include( index:Int32 )->this
+      # Expands the list if necessary to include the specified index.
+      return expand_to_count( index + 1 )
+
+    method first->$DataType [macro]
+      this.data[0]
+
+    method first( query:Function($DataType)->(Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+
+      return null
+
+    method from( i1:Int32 )->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, i1 )
+
+    method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, i1, i2+1 )
+
+    method discard( i1:Int32, n=1:Int32 )->this
+      local i2 = i1 + n
+      data.set( i1, data, i2, (count-i2) )
+      return discard_from( count-n )
+
+    method discard( discard_if:Function($DataType)->(Logical) )->this
+      # Discards any item that passes the query function.
+      local rewriter = this.rewriter
+      forEach (value in rewriter)
+        if (not discard_if(value)) rewriter.write( value )
+      endForEach
+      return this
+
+    method discard_from( index:Int32 )->this
+      local zero_value : $DataType
+      local c = count
+      while (c > index)
+        --c
+        data[c] = zero_value
+      endWhile
+      count = c
+      return this
+
+    method filter( keep_if:Function($DataType)->(Logical) )->this [macro]
+      this.keep( keep_if )
+
+    method filtered( keep_if:Function($DataType)->(Logical) )->$DataType[] [macro]
+      this.keeping( keep_if )
+
+    method get( index:Int32 )->$DataType [macro]
+      this.data[index]
+
+    method get( query:Function($DataType)->(Logical) )->$DataType[]
+      local results = $DataType[]
+
+      forEach (value in this)
+        if (query(value)) results.add( value )
+      endForEach
+
+      return results
+
+    method heapsort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+      Heapsort<<$DataType>>.sort( this, compare_fn )
+
+    method insert( value:$DataType, before_index=0:Int32 )->this
+      if (before_index < 0) before_index = 0
+
+      if (before_index >= count)
+        return add( value )
+      else
+        reserve( 1 )
+
+        shift( &i1=before_index, &delta=1 )
+
+        # Copy in the new value
+        data[ before_index ] = value
+      endIf
+      return this
+
+    method insert( other:$DataType[], before_index=0:Int32 )->this
+      if (before_index < 0) before_index = 0
+
+      local n = other.count
+      if (n == 0) return this
+
+      if (before_index >= count)
+        return add( other )
+      else
+        reserve( n )
+
+        # Shift everything over
+        shift( &i1=before_index, &delta=n )
+
+        # Copy in the new values
+        forEach (value in other)
+          data[ before_index ] = value
+          ++before_index
+        endForEach
+      endIf
+      return this
+
+    method insertion_sort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+      InsertionSort<<$DataType>>.sort( this, compare_fn )
+
+    method is_empty->Logical
+      return count == 0
+
+    method keep( keep_if:Function($DataType)->(Logical) )->this
+      local write_pos = 0
+      forEach (i of this)
+        local value = this[i]
+        if (keep_if(value))
+          this[write_pos] = value
+          ++write_pos
+        endIf
+      endForEach
+      discard_from( write_pos )
+      return this
+
+    method keeping( keep_if:Function($DataType)->(Logical) )->$DataType[]
+      return cloned.keep( keep_if )
+
+    method last->$DataType
+      return this.data[ count - 1 ]
+
+    method last( query:Function($DataType)->(Logical) )->$DataType?
+      forEach (value in this step -1)
+        if (query(value)) return value
+      endForEach
+
+      return null
+
+    method locate( value:$DataType )->Int32? [preferred]
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i of this)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate( query:Function($DataType)->(Logical) )->Int32[]
+      local result = Int32[]
+      forEach (value at index in this)
+        if (query(value)) result.add( index )
+      endForEach
+      return result
+
+    method locate_last( value:$DataType )->Int32?
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this step -1)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i of this step -1)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method mapped<<$ToType>>( map_fn:Function($DataType)->($ToType) )->$ToType[]
+      local result = $ToType[]( capacity )
+      forEach (element in this) result.add( map_fn(element) )
+      return result
+
+    method modify( fn:Function($DataType)->($DataType) )->this
+      forEach (index of this) this[index] = fn(this[index])
+      return this
+
+    method modified( fn:Function($DataType)->($DataType) )->$DataType[]
+      return cloned.modify( fn )
+
+    method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
+      # n           - A value between 0 and (permutation_count-1).  0 gives the
+      #               original list and (permutation_count-1) gives the list in
+      #               reverse order.
+      # output_list - A optional existing list to store the output permutation in.
+      #               Will be created dynamically if not passed in.
+      if (not output_list) output_list = $DataType[]( count )
+      output_list.clear
+      if (count == 0) return output_list
+
+      forEach (value in this) output_list.add( value )
+
+      local c = count
+      while (c)
+        output_list.add( output_list.remove_at(n % c) )
+        n /= c
+        --c
+      endWhile
+
+      return output_list
+
+    method permutation_count->Int64
+      # The permutation count is the factorial of the list size
+      if (count == 0) return 0
+
+      local c = 1 : Int64
+      forEach (n in 2..count)
+        c *= n
+      endForEach
+
+      return c
+
+    method quicksort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+      Quicksort<<$DataType>>.sort( this, compare_fn )
+
+    method random->$DataType
+      # Returns an element at random
+      local default_value : $DataType
+      if (not count) return default_value
+
+      return this[ Random.next_int32(this.count) ]
+
+    method reader->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, 0 )
+
+    method rebuilder->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
+
+    method reduced<<$ToType>>( reduce_fn:Function(Int32,$DataType,$ToType)->($ToType) )->$ToType
+      local result : $ToType
+      forEach (index of this)
+        result = reduce_fn( index, this[index], result )
+      endForEach
+      return result
+
+    method reserve( additional_elements:Int32 )->$DataType[]
+      local required_capacity = count + additional_elements
+
+      if (not data)
+        if (required_capacity < 10) required_capacity = 10
+        data = Array<<$DataType>>( required_capacity )
+      elseIf (required_capacity > data.count)
+        local cap = capacity
+        if (required_capacity < cap+cap) required_capacity = cap+cap
+        local new_data = Array<<$DataType>>( required_capacity )
+        new_data.set( 0, data )
+        data = new_data
+      endIf
+
+      return this
+
+    method remove( value:$DataType )->$DataType
+      local index = locate( value )
+      if (index)
+        return remove_at( index.value )
+      else
+        return value
+      endIf
+
+    method remove( query:Function($DataType)->(Logical) )->$DataType[]
+      # Returns the list of items that pass the query function while removing
+      # them from this list.
+      local result = $DataType[]
+      local rewriter = this.rewriter
+      forEach (value in rewriter)
+        if (query(value)) result.add( value )
+        else              rewriter.write( value )
+      endForEach
+      return result
+
+    method remove_at( index:Int32 )->$DataType
+      local result = this[ index ]
+      data.set( index, data, index+1 )
+      local zero_value : $DataType
+      --count
+      data[count] = zero_value
+      return result
+
+    method remove_first->$DataType [macro]
+      this.remove_at(0)
+
+    method remove_last->$DataType
+      return remove_at( count - 1 )
+
+    method rest( result_list=null:$DataType[] )->$DataType[]
+      # Returns the "rest" of this list: a list containing all of the items
+      # in this list after the first item.  The `result_list` parameter is
+      # used if it's specified; otherwise a new list is created and returned.
+      #
+      # If this list is empty then an empty list is returned.
+      ensure result_list
+      result_list.reserve( (count-1).clamped(0) )
+
+      forEach (index of this)
+        if (index > 0) result_list.add( this[index] )
+      endForEach
+
+      return result_list
+
+    method reverse->this
+      return reverse( 0, count-1 )
+
+    method reverse( i1:Int32, i2:Int32 )->this
+      if (i1 < 0) i1 = 0
+      if (i2 >= count) i2 = count - 1
+
+      local _data = data
+      while (i1 < i2)
+        local temp = _data[i1]
+        _data[i1] = _data[i2]
+        _data[i2] = temp
+        ++i1
+        --i2
+      endWhile
+
+      return this
+
+    method rewriter->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
+
+    method set( index:Int32, new_value:$DataType ) [macro]
+      this.data[ index ] = new_value
+
+    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this
+      if (delta == 0) return this
+
+      local n : Int32
+      if (element_count.exists) n = element_count.value
+      else                      n = count - i1
+
+      local dest_i2 = (i1 + delta + n) - 1
+      expand_to_include( dest_i2 )
+      data.set( i1+delta, data, i1, n )
+      if (fill.exists)
+        local value = fill.value
+        if (delta > 0)
+          forEach (i in i1..i1+delta-1) data[i] = value
+        else
+          forEach (i in i1+delta+n..i1+n-1) data[i] = value
+        endIf
+      endIf
+      return this
+
+    method shuffle->this
+      local n = count
+      forEach (i of this) swap( i, Random.next_int32(n) )
+      return this
+
+    method shuffled->$DataType[]
+      return cloned.shuffle
+
+    method sort( compare_fn:Function($DataType,$DataType)->(Logical) )->this
+      return this.quicksort( compare_fn )
+
+    method sorted( compare_fn:Function($DataType,$DataType)->(Logical) )->$DataType[]
+      return cloned.sort( compare_fn )
+
+    method subset( i1:Int32 )->$DataType[]
+      return subset( i1, count-i1 )
+
+    method subset( i1:Int32, n:Int32 )->$DataType[]
+      local result = $DataType[]( n )
+      forEach (i in i1..<i1+n) result.add( this[i] )
+      return result
+
+    method swap( i1:Int32, i2:Int32 )->this
+      local temp = data[i1]
+      data[i1] = data[i2]
+      data[i2] = temp
+      return this
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.print( '[' )
+      local first = true
+      forEach (value in this)
+        if (first) first = false
+        else       buffer.print( ',' )
+        if (value is null) buffer.print( "null" )
+        else               buffer.print( value->String )
+      endForEach
+      buffer.print( ']' )
+      return buffer
+
+    method to->Value
+      local result = @[]
+      forEach (item in this) result.add( Value(item) )
+      return result
+
+    method to->ValueList
+      return this->Value
+
+    method to_array->Array<<$DataType>>
+      local result = Array<<$DataType>>( count )
+      forEach (i of this)
+        result[i] = this[i]
+      endForEach
+      return result
+
+    method writer->ListWriter<<$DataType>>
+      return ListWriter<<$DataType>>( this )
+
+$if ("Cython")
+    method _get_element( index:Int32 )->$DataType [essential]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+
+    method _set_element( index:Int32, new_value:$DataType ) [essential]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      set(index, new_value)
+
+    method _get_base_address()->PointerInt [essential]
+      return native("&($this->data->as_bytes)")->PointerInt
+$endIf
+endClass
+
+class ListReader<<$DataType>> : Reader<<$DataType>>
+  PROPERTIES
+    list       : $DataType[]
+    position   : Int32
+    limit      : Int32
+    is_limited : Logical
+
+  METHODS
+    method init( list, position=0 )
+
+    method init( list, position, limit )
+      is_limited = true
+
+    method has_another->Logical
+      if (is_limited) return (position < limit)
+      else            return (position < list.count)
+
+    method peek->$DataType
+      return list[ position ]
+
+    method read->$DataType
+      ++position
+      return list[ position - 1 ]
+
+    method reset->this
+      seek( 0 )
+      return this
+
+    method seek( pos:Int32 )->this
+      if (pos < 0) pos = 0
+
+      if (is_limited)
+        if (pos > limit) pos = limit
+      else
+        if (pos > list.count) pos = list.count
+      endIf
+
+      position = pos
+      return this
+
+endClass
+
+class ListWriter<<$DataType>> : Writer<<$DataType>>
+  PROPERTIES
+    list     : $DataType[]
+    position : Int32
+
+  METHODS
+    method init( list )
+      position = list.count
+
+    method close->this
+      list.discard_from( position )
+      return this
+
+    method seek( pos:Int32 )->this
+      if (pos < 0) pos = 0
+      position = pos
+      list.expand_to_count( pos )
+      return this
+
+    method seek_end()->this
+      position = list.count
+      return this
+
+    method write( value:$DataType )->this
+      if (position == list.count) list.add( value )
+      else                        list[ position ] = value
+      ++position
+      return this
+endClass
+
+augment Byte[]
+  METHODS
+    method init( hex:String )
+      add( hex )
+
+    method add( hex:String )->this
+      if (hex.count & 1)
+        println "ERROR: odd number of characters in Byte[].add(hex:String)."
+        return this
+      endIf
+
+      local dest_i = count
+      reserve( hex.count/2 )
+      count += hex.count/2
+
+      forEach (hex_i of hex step 2)
+        data[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
+        ++dest_i
+      endForEach
+
+      return this
+
+    method to_hex_string->String
+      # Returns a string of hexadecimal digit pairs encoding each byte.
+      #
+      # Example:
+      #
+      #   println Byte[][0,127,160,255].to_hex_string  # "007FA0FF"
+      local buffer = StringBuilder( count*2 )
+      forEach (b in this) buffer.print( ((b:>>:4)&15).to_hex_character ).print( (b&15).to_hex_character )
+      return buffer->String
+endAugment
+
+augment String[]
+  METHODS
+    method joined( separator="\n":String )->String
+      local total_count = 0
+      forEach (line in this) total_count += line.count
+
+      local builder = StringBuilder( total_count )
+      forEach (line in this)
+        if (builder.count) builder.print( separator )
+        builder.print( line )
+      endForEach
+
+      return builder->String
+endAugment
+
+class ListRewriter<<$DataType>>
+  PROPERTIES
+    list        : $DataType[]
+    read_index  : Int32
+    write_index : Int32
+
+  METHODS
+    method init( list )
+
+    method has_another->Logical
+      if (read_index < list.count)
+        return true
+      else
+        # automatically finish up
+        list.discard_from( write_index )
+        return false
+      endIf
+
+      return (read_index < list.count)
+
+    method peek( lookahead=0:Int32 )->$DataType
+      return list[ read_index + lookahead ]
+
+    method read->$DataType
+      ++read_index
+      return list[ read_index - 1 ]
+
+    method reset( new_list=null:$DataType[] )->this
+      if (new_list) list = new_list  # else use same as before
+      read_index = 0
+      write_index = 0
+      return this
+
+    method write( value:$DataType )->this
+      if (write_index == read_index)
+        # We're adding more items to the list then it originally had.
+
+        # Make sure there's at least one more spot
+        list.reserve( 1 )
+
+        local unread_count = list.count - read_index
+
+        # Shift all the unread elements over to the end of the backing array,
+        # effectively inserting 1 or more empty spots for us to write
+        # additional data to.
+        list.data.set( list.capacity-unread_count, list.data, read_index, unread_count )
+
+        read_index += (list.capacity - list.count)
+
+        # Change the list count to include the shifted data
+        list.count = list.capacity
+      endIf
+
+      list[ write_index ] = value
+      ++write_index
+
+      return this
+endClass
+

@@ -1,0 +1,91 @@
+class Stopwatch
+  PROPERTIES
+    start_time = System.time: Real64
+
+  METHODS
+    method elapsed->Real64
+      return (System.time - start_time)
+
+    method restart->this
+      start_time = System.time
+      return this
+
+    method operator+( delta_time:Real64 )->this
+      # Increase the elapsed interval of this stopwatch.
+      start_time -= delta_time
+      return this
+
+    method operator-( delta_time:Real64 )->this
+      # Decrease the elapsed interval of this stopwatch.
+      start_time += delta_time
+      return this
+
+    method to->String
+      return StringBuilder().print( elapsed, 2 ).print( " seconds" )->String
+
+  GLOBAL PROPERTIES
+    stopwatches : StringTable<<Stopwatch>>
+
+  GLOBAL METHODS
+    method finish( key:String )
+      print   key
+      print   ": "
+      println Stopwatch[ key ]
+      stopwatches.remove( key )
+
+    method get( key:String )->Stopwatch
+      ensure( stopwatches )
+      local stopwatch = stopwatches[ key ]
+      if (stopwatch) return stopwatch
+      ensure stopwatch
+      stopwatches[ key ] = stopwatch
+      return stopwatch
+
+    method remove( key:String )->Stopwatch
+      return select{ stopwatches:stopwatches.remove(key) || Stopwatch() }
+
+    method start( key:String )->Stopwatch
+      return Stopwatch[ key ].restart
+endClass
+
+
+class Timer
+  PROPERTIES
+    duration                 : Real64
+    start_time = System.time : Real64
+
+  METHODS
+    method init( duration )
+
+    method elapsed->Real64
+      return (System.time - start_time)
+
+    method is_expired->Logical
+      return elapsed >= duration
+
+    method operator+( delta_time:Real64 )->this
+      # Increase the elapsed interval of this timer.
+      start_time += delta_time
+      return this
+
+    method operator-( delta_time:Real64 )->this
+      # Decrease the elapsed interval of this timer.
+      start_time -= delta_time
+      return this
+
+    method remaining->Real64
+      return duration - elapsed
+
+    method restart->this
+      start_time = System.time
+      return this
+
+    method restart( duration )->this
+      start_time = System.time
+      return this
+
+    method to->String
+      return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
+
+endClass
+

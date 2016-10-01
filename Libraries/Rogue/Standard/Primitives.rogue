@@ -1,0 +1,732 @@
+class PrimitiveWorkBuffer : StringBuilder [singleton];
+
+class Real64 [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Real64
+      return value
+
+    method create( value:Real32 )->Real64
+      return value->Real64
+
+    method create( value:Int64 )->Real64
+      return value->Real64
+
+    method create( value:Int32 )->Real64
+      return value->Real64
+
+    method create( value:Character )->Real64
+      return value->Real64
+
+    method create( value:Byte )->Real64
+      return value->Real64
+
+    method create( value:Logical )->Real64
+      return select{ value:1 || 0 }
+
+  METHODS
+    method abs->Real64
+      if (this >= 0) return this
+      else           return -this
+
+    method ceiling->Real64 [macro]
+      Math.ceiling( this )
+
+    method clamped( &low=null:Real64?, &high=null:Real64? )->Real64
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method decimal_digit_count->Int32
+      PrimitiveWorkBuffer.clear.print( this )
+      local dot = PrimitiveWorkBuffer.locate( '.' )
+
+      # NaN, +/- infinity
+      if (not dot.exists) return 0
+
+      local start = dot.value + 1
+      local count = PrimitiveWorkBuffer.count
+
+      # Check for "3.0" etc.
+      if (count == start + 1 and PrimitiveWorkBuffer[start] == '0') return 0
+
+      return (count - start)
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method floor->Real64 [macro]
+      Math.floor( this )
+
+    method format( decimal_digits=null:Int32? )->String
+      local digits = select{ decimal_digits || decimal_digit_count }
+      return StringBuilder().print( this, digits )->String
+
+    method fractional_part->Real64
+      if (this >= 0) return this - whole_part
+      else           return whole_part - this
+
+    method hash_code->Int32
+      return integer_bits->Int32
+
+    method integer_bits->Int64
+      $if ("C++")
+        native "return *((RogueInt64*)&$this);"
+      $endIf
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Real64>>( this )
+
+    method is_finite->Logical
+      return (this == this) and (this - this == 0)
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_power_of_two->Logical
+      if (this.floor != this) return false
+      return this->Int64.is_power_of_two
+
+    method is_NaN->Logical
+      return (this != this)
+
+    method is_not_a_number->Logical
+      return (this != this)
+
+    method is_number->Logical
+      return (this == this) and (this - this == 0)
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Real64 )->Real64
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Real64 )->Real64
+      return select{ this<=other:this || other }
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method sign->Real64
+      return Real64( select{ this>0:1 || this<0:-1 || 0 } )
+
+      unitTest assert( (5.0).sign == 1.0 )
+      unitTest assert( (0.0).sign == 0.0 )
+      unitTest assert( (-5.0).sign == -1.0 )
+
+    method to->Object
+      return Boxed<<Real64>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->Value
+      return Value( this )
+
+    method to_power_of_two->Real64
+      return this->Int64.to_power_of_two->Real64
+
+    method whole_digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).locate( '.' ).value
+
+    method whole_part->Real64
+      if (this >= 0) return floor
+      else           return ceiling
+endClass
+
+class Real32 [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Real32
+      return value->Real32
+
+    method create( value:Real32 )->Real32
+      return value
+
+    method create( value:Int64 )->Real32
+      return value->Real32
+
+    method create( value:Int32 )->Real32
+      return value->Real32
+
+    method create( value:Character )->Real32
+      return value->Real32
+
+    method create( value:Byte )->Real32
+      return value->Real32
+
+    method create( value:Logical )->Real32
+      return select{ value:1 || 0 }
+
+  METHODS
+    method abs->Real32
+      if (this >= 0) return this
+      else           return -this
+
+    method ceiling->Real32 [macro]
+      Real32( Math.ceiling(this) )
+
+    method clamped( &low=null:Real32?, &high=null:Real32? )->Real32
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method decimal_digit_count->Int32
+      return this->Real64.decimal_digit_count
+
+    method floor->Real32 [macro]
+      Real32( Math.floor(this) )
+
+    method format( decimal_digits=null:Int32? )->String
+      return Real64(this).format( decimal_digits )
+
+    method fractional_part->Real32
+      if (this >= 0) return this - whole_part
+      else           return whole_part - this
+
+    method integer_bits->Int32
+      $if ("C++")
+        native "return *((RogueInt32*)&$this);"
+      $endIf
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Real32>>( this )
+
+    method is_finite->Logical
+      return (this == this) and (this - this == 0)
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_NaN->Logical
+      return (this != this)
+
+    method is_not_a_number->Logical
+      return (this != this)
+
+    method is_number->Logical
+      return (this == this) and (this - this == 0)
+
+    method is_power_of_two->Logical
+      if (this.floor != this) return false
+      return this->Int64.is_power_of_two
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Real32 )->Real32
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Real32 )->Real32
+      return select{ this<=other:this || other }
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method sign->Real32
+      return Real32( select{ this>0:1 || this<0:-1 || 0 } )
+
+      unitTest assert( Real32(5.0).sign == Real32(1.0) )
+      unitTest assert( Real32(0.0).sign == Real32(0.0) )
+      unitTest assert( Real32(-5.0).sign == Real32(-1.0) )
+
+    method to->Object
+      return Boxed<<Real32>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->Value
+      return Value( this )
+
+    method to_power_of_two->Real32
+      return this->Int64.to_power_of_two->Real32
+
+    method whole_digit_count->Int32
+      return this->Real64.whole_digit_count
+
+    method whole_part->Real32
+      if (this >= 0) return floor
+      else           return ceiling
+endClass
+
+class Int64 [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Int64
+      return value->Int64
+
+    method create( value:Real32 )->Int64
+      return value->Int64
+
+    method create( value:Int64 )->Int64
+      return value
+
+    method create( value:Int32 )->Int64
+      return value->Int64
+
+    method create( value:Character )->Int64
+      return value->Int64
+
+    method create( value:Byte )->Int64
+      return value->Int64
+
+    method create( value:Logical )->Int64
+      return select{ value:1 || 0 }
+
+  METHODS
+    method abs->Int64
+      if (this >= 0) return this
+      else           return -this
+
+    method real_bits->Real64
+      $if ("C++")
+        native "return *((RogueReal64*)&$this);"
+      $endIf
+
+    method clamped( &low=null:Int64?, &high=null:Int64? )->Int64
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method hash_code->Int32
+      return this
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Int64>>( this )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Int64 )->Int64
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Int64 )->Int64
+      return select{ this<=other:this || other }
+
+    method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
+      local bits = 0
+      local temp = base
+      while (temp > 1) ++bits; temp = temp:>>>:1
+
+      if (digits > 1) (this:>>>:bits).print_in_power2_base( base, digits-1, buffer )
+      buffer.print( (this & (base-1)).to_digit )
+      return buffer
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method sign->Int64
+      return Int64( select{ this>0:1 || this<0:-1 || 0 } )
+
+      unitTest assert( Int64(5).sign == Int64(1) )
+      unitTest assert( Int64(0).sign == Int64(0) )
+      unitTest assert( Int64(-5).sign == Int64(-1) )
+
+    method to_hex_character->Character
+      return Int32(this).to_hex_character
+
+    method to->Object
+      return Boxed<<Int64>>(this)
+
+    method to->String
+      return StringBuilder().print( this )->String
+
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||16} )
+      if (octal)  return to_octal_string( select{digits||22} )
+      if (binary) return to_binary_string( select{digits||64} )
+      return this
+
+    method to->Value
+      return Value( Real64(this) )
+
+    method to_digit->Character [macro]
+      (this->Int32).to_digit
+
+    method to_binary_string( digits=64:Int32 )->String
+      return print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_string( digits=16:Int32 )->String
+      return print_in_power2_base( 16, digits, StringBuilder() )->String
+
+    method to_octal_string( digits=22:Int32 )->String
+      return print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Int64
+      if (this & 0xC000000000000000 or not this) return this
+      local p2 = 1 : Int64
+      while (p2 < this) p2 = p2 :<<: 1
+      return p2
+endClass
+
+class Int32 [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Int32
+      return value->Int32
+
+    method create( value:Real32 )->Int32
+      return value->Int32
+
+    method create( value:Int64 )->Int32
+      return value->Int32
+
+    method create( value:Int32 )->Int32
+      return value
+
+    method create( value:Character )->Int32
+      return value->Int32
+
+    method create( value:Byte )->Int32
+      return value->Int32
+
+    method create( value:Logical )->Int32
+      return select{ value:1 || 0 }
+
+  METHODS
+    method abs->Int32
+      if (this >= 0) return this
+      else           return -this
+
+    method real_bits->Real32
+      $if ("C++")
+        native "return *((RogueReal32*)&$this);"
+      $endIf
+
+    method clamped( &low=null:Int32?, &high=null:Int32? )->Int32
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method hash_code->Int32
+      return this
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Int32>>( this )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Int32 )->Int32
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Int32 )->Int32
+      return select{ this<=other:this || other }
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method to->Int64 [macro]
+      $if ("C++") native "((RogueInt64)$this)"
+
+    method to->Object
+      return Boxed<<Int32>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||8} )
+      if (octal)  return to_octal_string( select{digits||11} )
+      if (binary) return to_binary_string( select{digits||32} )
+      return this
+
+    method to->Value
+      return Value( this )
+
+    method to_digit->Character
+      if (this >= 0 and this <= 9)   return (this + '0')->Character
+      if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
+      return '0'
+
+    method to_binary_string( digits=32:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_character->Character
+      if (this < 0 or this > 35) return '0'
+      if (this <= 9) return Character( '0' + this )
+      return Character( 'A' + (this-10) )
+
+    method to_hex_string( digits=8:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+
+    method to_octal_string( digits=11:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Int32
+      if (this & 0xC0000000 or not this) return this
+      local p2 = 1
+      while (p2 < this) p2 = p2 :<<: 1
+      return p2
+
+    method maximum->Int32 [macro]
+      2147483647
+
+    method minimum->Int32 [macro]
+      native "(-2147483647 - 1)"
+
+    method sign->Int32
+      return select{ this>0:1 || this<0:-1 || 0 }
+
+      unitTest assert( 5.sign  == 1 )
+      unitTest assert( 0.sign  == 0 )
+      unitTest assert( -5.sign == -1 )
+endClass
+
+class Character [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Character
+      return value->Character
+
+    method create( value:Real32 )->Character
+      return value->Character
+
+    method create( value:Int64 )->Character
+      return value->Character
+
+    method create( value:Int32 )->Character
+      return value->Character
+
+    method create( value:Character )->Character
+      return value
+
+    method create( value:Byte )->Character
+      return value->Character
+
+    method create( value:Logical )->Character
+      return select{ value:1 || 0 }
+
+  METHODS
+    method clamped( &low=null:Character?, &high=null:Character? )->Character
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method digit_count->Int32
+      return 1
+
+    method hash_code->Int32
+      return this->Int32
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Character>>( this )
+
+    method is_alphanumeric->Logical
+      return (this >= '0' and this <= '9') or
+             (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
+    method is_identifier( &start, &allow_dollar )->Logical
+      if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
+      if (not start and (this >= '0' and this <= '9')) return true
+      if (allow_dollar and this == '$') return true
+      return false
+
+    method is_letter->Logical
+      return (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
+    method is_number( base=10:Int32 )->Logical
+      return to_number(base) != -1
+
+    method is_power_of_two->Logical
+      return this->Int32.is_power_of_two
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Character )->Character
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Character )->Character
+      return select{ this<=other:this || other }
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method to->Object
+      return Boxed<<Character>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->Value
+      return Value( this->String )
+
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||4} )
+      if (octal)  return to_octal_string( select{digits||6} )
+      if (binary) return to_binary_string( select{digits||16} )
+      return this
+
+    method to_binary_string( digits=16:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_string( digits=4:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+
+    method to_octal_string( digits=6:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Character
+      return this->Int32.to_power_of_two->Character
+
+    method to_number( base=10:Int32 )->Int32
+      local value : Int32
+      if (this >= '0' and this <= '9')     value = this - '0'
+      elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
+      elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')
+      else return -1
+
+      if (value < base) return value
+      else              return -1
+endClass
+
+class Byte [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Byte
+      return value->Byte
+
+    method create( value:Real32 )->Byte
+      return value->Byte
+
+    method create( value:Int64 )->Byte
+      return value->Byte
+
+    method create( value:Int32 )->Byte
+      return value->Byte
+
+    method create( value:Character )->Byte
+      return value->Byte
+
+    method create( value:Byte )->Byte
+      return value
+
+    method create( value:Logical )->Byte
+      return select{ value:1 || 0 }
+
+  METHODS
+    method clamped( &low=null:Byte?, &high=null:Byte? )->Byte
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method hash_code->Int32
+      return this->Int32
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Byte>>( this )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Byte )->Byte
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Byte )->Byte
+      return select{ this<=other:this || other }
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method signed->Int32
+      if (this <= 127) return this
+      return (this - 256)
+
+    method to->Object
+      return Boxed<<Byte>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||2} )
+      if (octal)  return to_octal_string( select{digits||3} )
+      if (binary) return to_binary_string( select{digits||8} )
+      return this
+
+    method to->Value
+      return Value( this->Int32 )
+
+    method to_binary_string( digits=8:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_character->Character
+      return Int32(this).to_hex_character
+
+    method to_hex_string( digits=2:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+
+    method to_octal_string( digits=3:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Byte
+      return this->Int32.to_power_of_two->Byte
+endClass
+
+class Logical [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Logical
+      return value != 0
+
+    method create( value:Real32 )->Logical
+      return value != 0
+
+    method create( value:Int64 )->Logical
+      return value != 0
+
+    method create( value:Int32 )->Logical
+      return value != 0
+
+    method create( value:Character )->Logical
+      return value != 0
+
+    method create( value:Byte )->Logical
+      return value != 0
+
+    method create( value:Logical )->Logical
+      return value
+
+  METHODS
+    method digit_count->Int32
+      if (this) return 4  # "true"
+      else      return 5  # "false"
+
+    method hash_code->Int32
+      if (this) return 1
+      else      return 0
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Logical>>( this )
+
+    method to->Object
+      return Boxed<<Logical>>(this)
+
+    method to->String
+      return "" + this
+
+    method to->Value
+      return Value( this )
+endClass
+
