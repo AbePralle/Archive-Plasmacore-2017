@@ -1,0 +1,31 @@
+class Global : PrintWriter<<global_output_buffer>> [essential singleton]
+  PROPERTIES
+    standard_output = Console : PrintWriter
+    global_output_buffer      = StringBuilder()
+    exit_functions : Function()[]
+
+  METHODS
+    method init
+      on_exit( function flush )
+
+    method call_exit_functions [essential]
+      # Called by the native layer when the program is ending normally or exiting
+      # due to a System.exit(Int32) call.
+
+      # Ensure these functions won't be called multiple times
+      local functions = exit_functions
+      exit_functions = null
+
+      if (functions)
+        forEach (fn in functions) fn()
+      endIf
+
+    method on_exit( fn:Function() )
+      ensure exit_functions
+      exit_functions.add( fn )
+
+    method write( buffer:StringBuilder )->this
+      standard_output.write( buffer ).flush
+      return this
+endClass
+

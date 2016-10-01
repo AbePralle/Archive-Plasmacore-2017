@@ -1,0 +1,66 @@
+class Exception [essential]
+  PROPERTIES
+    message     : String
+    stack_trace = StackTrace(1)
+
+  METHODS
+    method init( message ) [essential]
+
+    method init [essential]
+      message = type_name
+
+    method display [essential]
+      local builder = StringBuilder()
+      builder.println @|===============================================================================
+      builder.println type_name
+      builder.println message.word_wrapped(79,",").joined
+      if (stack_trace.entries.count)
+        builder.println
+        builder.println stack_trace->String.trimmed
+      endIf
+      builder.println @|===============================================================================
+      println builder
+
+    method to->String [essential]
+      return message
+
+    method format->String [essential]
+      local st = stack_trace->String
+      if (st is null) st = "No stack trace"
+      st = st.trimmed
+      if (st.count) st = "\n" + st
+      return select{ this:this->String || "Unknown" } + st
+endClass
+
+class Error : Exception;
+
+class AssertionError : Error
+  METHODS
+    method init( assertion:String )
+      if (assertion.count) message = "Assertion failed:  $." (assertion)
+      else                 message = "Assertion failed."
+endClass
+
+class RequirementError : Error
+  METHODS
+    method init( requirement:String )
+      if (requirement.count) message = "Requirement failed:  $." (requirement)
+      else                   message = "Requirement failed."
+endClass
+
+class UnsupportedOperationError : Error
+  METHODS
+    method init
+      message = "Unsupported operation."
+
+    method init( operation_name:String )
+      message = "Unsupported operation: $." (operation_name)
+endClass
+
+class OutOfBoundsError : Error
+  METHODS
+    method init( index:Int32, limit:Int32 )
+      init( "Index $ is out of bounds ($..$)." (index,0,limit-1) )
+endClass
+
+class IOError : Error;

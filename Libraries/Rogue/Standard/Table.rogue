@@ -1,0 +1,1009 @@
+class Table<<$KeyType,$ValueType>>
+  PROPERTIES
+    count           : Int32
+    bin_mask        : Int32
+    cur_entry_index : Int32
+    bins            : Array<<TableEntry<<$KeyType,$ValueType>>>>
+    first_entry     : TableEntry<<$KeyType,$ValueType>>
+    last_entry      : TableEntry<<$KeyType,$ValueType>>
+    cur_entry       : TableEntry<<$KeyType,$ValueType>>
+
+    sort_function   : Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical)
+    # Optional function which, if defined, is used to place each entry into the correct position
+    # as entries are added or redefined.
+
+  METHODS
+    method init
+      init( 16 )
+
+    method init( bin_count:Int32 )
+      local bins_power_of_2 = 1
+      while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
+      bin_count = bins_power_of_2
+      bin_mask = bin_count - 1
+
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bin_count )
+
+    method init( other:Table<<$KeyType,$ValueType>> )
+      bin_mask = other.bin_mask
+      ensure bins( other.bins.count )
+      add( other )
+
+    method add( other:Table<<$KeyType,$ValueType>> )->this
+      local cur = other.first_entry
+      while (cur)
+        this[ cur.key ] = cur.value
+        cur = cur.next_entry
+      endWhile
+      return this
+
+    method at( index:Int32 )->$ValueType
+      contingent
+        necessary (count)
+
+        if (not cur_entry)
+          if (index <= count/2) cur_entry = first_entry; cur_entry_index = 0
+          else                  cur_entry = last_entry;  cur_entry_index = count - 1
+        endIf
+
+        while (cur_entry_index < index)
+          ++cur_entry_index
+          cur_entry = cur_entry.next_entry
+          necessary (cur_entry)
+        endWhile
+
+        while (cur_entry_index > index)
+          --cur_entry_index
+          cur_entry = cur_entry.previous_entry
+          necessary (cur_entry)
+        endWhile
+
+        return cur_entry.value
+
+      unsatisfied
+        local default_value : $ValueType
+        return default_value
+
+      endContingent
+
+    method clear
+      forEach (i of bins) bins[i] = null
+      first_entry = null
+      last_entry = null
+      cur_entry = null
+      count = 0
+
+    method cloned->Table<<$KeyType,$ValueType>>
+      return Table<<$KeyType,$ValueType>>( this )
+
+    method contains( key:$KeyType )->Logical
+      return find(key)?
+
+    method contains( query:Function($ValueType)->(Logical) )->Logical
+      return first( query ).exists
+
+    method count( query:Function(Value)->(Logical) )->Int32
+      local result = 0
+      local cur = first_entry
+      while (cur)
+        if (query(cur.value)) ++result
+        cur = cur.next_entry
+      endWhile
+      return result
+
+    method entries( list=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
+      # Returns a list of table entries.
+      ensure list( count )
+      list.reserve( count )
+
+      local cur = first_entry
+      while (cur)
+        list.add( cur )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
+    method is_empty->Logical
+      return (count == 0)
+
+    method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
+      local hash = key.hash_code
+      local entry = bins[ hash & bin_mask ]
+
+      while (entry)
+        if (entry.hash == hash and entry.key == key) return entry
+        entry = entry.adjacent_entry
+      endWhile
+
+      return null
+
+    method first->$ValueType
+      if (first_entry)
+        return first_entry.value
+      else
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+    method first( query:Function($ValueType)->(Logical) )->$ValueType?
+      local cur = first_entry
+      while (cur)
+        if (query(cur.value)) return cur.value
+        cur = cur.next_entry
+      endWhile
+      return null
+
+    method get( key:$KeyType )->$ValueType
+      local entry = find( key )
+      if (entry)
+        return entry.value
+      else
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+    method get( query:Function($ValueType)->(Logical) )->$ValueType[]
+      local result = $ValueType[]
+      local cur = first_entry
+      while (cur)
+        if (query(cur.value)) result.add( cur.value )
+        cur = cur.next_entry
+      endWhile
+      return result
+
+    method keys( list=null:$KeyType[] )->$KeyType[]
+      # Returns a list of table keys.
+      ensure list( count )
+      list.reserve( count )
+
+      local cur = first_entry
+      while (cur)
+        list.add( cur.key )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
+    method locate( query:Function($ValueType)->(Logical) )->$KeyType[]
+      local result = $KeyType[]
+      local cur = first_entry
+      while (cur)
+        if (query(cur.value)) result.add( cur.key )
+        cur = cur.next_entry
+      endWhile
+      return result
+
+    method print_to( buffer:StringBuilder )->StringBuilder
+      buffer.print( '{' )
+      local cur = first_entry
+      local i = 0
+      while (cur)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( cur.key )
+        buffer.print( ':' )
+        buffer.print( cur.value )
+        cur = cur.next_entry
+        ++i
+      endWhile
+      buffer.print( '}' )
+      return buffer
+
+    method remove( key:$KeyType )->$ValueType
+      local entry = find( key )
+      if (not entry)
+        local default_zero_value : $ValueType
+        return default_zero_value
+      endIf
+      remove( entry )
+      return entry.value
+
+    method remove( query:Function($ValueType)->(Logical) )->$ValueType[]
+      # Returns the list of values that pass the query function while removing
+      # them from this table.
+      local result = $ValueType[]
+      local cur = first_entry
+      while (cur)
+        local next_entry = cur.next_entry
+        if (query(cur.value))
+          result.add( cur.value )
+          remove( cur )
+        endIf
+        cur = next_entry
+      endWhile
+      return result
+
+    method remove( entry:TableEntry<<$KeyType,$ValueType>> )->TableEntry<<$KeyType,$ValueType>>
+      assert (find(entry.key) is entry)
+      --count
+      cur_entry = null
+
+      # Remove from bin
+      local hash = entry.hash
+      local index = hash & bin_mask
+      local cur = bins[ index ]
+      if (cur is entry)
+        bins[ index ] = cur.adjacent_entry
+      else
+        while (cur.adjacent_entry is not entry) cur = cur.adjacent_entry
+        cur.adjacent_entry = cur.adjacent_entry.adjacent_entry
+      endIf
+
+      _unlink( entry )
+
+      return entry
+
+
+    method set( key:$KeyType, value:$ValueType )->this
+      local entry = find( key )
+      if (entry)
+        entry.value = value
+        if (sort_function) _adjust_entry_order( entry )
+        return this
+      endIf
+
+      if (count >= bins.count) _grow()
+
+      local hash = key.hash_code
+      local index = hash & bin_mask
+
+      # Add to the correct bin
+      ensure entry( key, value, hash )
+      entry.adjacent_entry = bins[ index ]
+      bins[index] = entry
+
+      _place_entry_in_order( entry )
+
+      ++count
+      return this
+
+    method set_sort_function( @sort_function )->this
+      return sort( sort_function )
+
+    method sort( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical) )->this
+      if (count <= 1) return this
+
+      local list = entries
+      list.sort( compare_fn )
+      forEach (i in 0..<(list.count-1))
+        list[i].next_entry       = list[i+1]
+        list[i+1].previous_entry = list[i]
+      endForEach
+      first_entry = list.first
+      last_entry = list.last
+      first_entry.previous_entry = null
+      last_entry.next_entry = null
+
+      return this
+
+    method sorted( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical) ) ...
+        ->Table<<$KeyType,$ValueType>>
+      return cloned.sort( compare_fn )
+
+    method to->String
+      return print_to( StringBuilder() )->String
+
+    method to->Value
+      local result = @{}
+      local cur = first_entry
+      while (cur)
+        result[ cur.key->String ] = Value( cur.value )
+        cur = cur.next_entry
+      endWhile
+      return result
+
+    method to->ValueTable
+      return this->Value
+
+    method values( list=null:$ValueType[] )->$ValueType[]
+      # Returns a list of table keys.
+      ensure list( count )
+      list.reserve( count )
+
+      local cur = first_entry
+      while (cur)
+        list.add( cur.value )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
+    method reader->TableReader<<$KeyType,$ValueType>>
+      return TableReader<<$KeyType,$ValueType>>(this)
+
+    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
+      return TableKeyReader<<$KeyType,$ValueType>>(this)
+
+    method value_reader->TableValueReader<<$KeyType,$ValueType>>
+      return TableValueReader<<$KeyType,$ValueType>>(this)
+
+    method _adjust_entry_order( entry:TableEntry<<$KeyType,$ValueType>> )
+      if (first_entry is last_entry) return # still in order, only one entry
+
+      if (entry is first_entry)
+        if (sort_function(entry,entry.next_entry)) return  # still in order
+      elseIf (entry is last_entry)
+        if (sort_function(entry.previous_entry,entry)) return  # still in order
+      else
+        if (sort_function(entry.previous_entry,entry) and sort_function(entry,entry.next_entry))
+          return  # still in order
+        endIf
+      endIf
+
+      # Not in order - unlink and then re-place
+      _unlink( entry )
+      _place_entry_in_order( entry )
+
+    method _place_entry_in_order( entry:TableEntry<<$KeyType,$ValueType>> )
+      if (first_entry)
+        # Use the sort_function comparator if it exists
+        if (sort_function)
+          if (sort_function(entry,first_entry))
+            # New entry comes before existing first entry
+            entry.next_entry = first_entry
+            first_entry.previous_entry = entry
+            first_entry = entry
+          elseIf (sort_function(last_entry,entry))
+            # New entry goes after existing last entry
+            last_entry.next_entry = entry
+            entry.previous_entry = last_entry
+            last_entry = entry
+          else
+            # New entry goes somewhere in the middle
+            local cur = first_entry
+            while (cur.next_entry)
+              if (sort_function(entry,cur.next_entry))
+                # Insert entry between cur and cur.next_entry
+                entry.previous_entry = cur
+                entry.next_entry = cur.next_entry
+                entry.next_entry.previous_entry = entry
+                cur.next_entry = entry
+                escapeWhile
+              endIf
+              cur = cur.next_entry
+            endWhile
+          endIf
+        else
+          # No sort function; place at the end of the order list
+          last_entry.next_entry = entry
+          entry.previous_entry = last_entry
+          last_entry = entry
+        endIf
+      else
+        # This is the first entry
+        first_entry = entry
+        last_entry = entry
+      endIf
+
+    method _unlink( entry:TableEntry<<$KeyType,$ValueType>> )
+      if (entry is first_entry)
+        if (entry is last_entry)
+          first_entry = null
+          last_entry = null
+        else
+          first_entry = entry.next_entry
+          first_entry.previous_entry = null
+        endIf
+
+      elseIf (entry is last_entry)
+        last_entry = entry.previous_entry
+        last_entry.next_entry = null
+
+      else
+        entry.previous_entry.next_entry = entry.next_entry
+        entry.next_entry.previous_entry = entry.previous_entry
+
+      endIf
+
+    method _grow
+      # Grow by a factor of two
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bins.count * 2 )
+      bin_mask = (bin_mask :<<: 1) | 1
+
+      local cur = first_entry
+      while (cur)
+        local index = cur.hash & bin_mask
+        cur.adjacent_entry = bins[index]
+        bins[index] = cur
+        cur = cur.next_entry
+      endWhile
+
+endClass
+
+class TableEntry<<$KeyType,$ValueType>>
+  PROPERTIES
+    key               : $KeyType
+    value             : $ValueType
+    adjacent_entry    : TableEntry<<$KeyType,$ValueType>>  # next entry in bin - same hash code after masking
+    next_entry        : TableEntry<<$KeyType,$ValueType>>  # next entry in order - could be totally different hash
+    previous_entry    : TableEntry<<$KeyType,$ValueType>>  # previous entry in order
+    hash              : Int32
+
+  METHODS
+    method init( _key:$KeyType, _value:$ValueType, _hash:Int32 )
+      key = _key
+      value = _value
+      hash = _hash
+
+    method to->String
+      return "($ $:$)" (type_name, key, value)
+endClass
+
+
+class TableReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
+  PROPERTIES
+    table     : Table<<$KeyType,$ValueType>>
+    cur_entry : TableEntry<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      cur_entry = table.first_entry
+
+    method has_another->Logical
+      return cur_entry?
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return cur_entry
+
+    method read->TableEntry<<$KeyType,$ValueType>>
+      local result = cur_entry
+      cur_entry = cur_entry.next_entry
+      ++@position
+      return result
+endClass
+
+
+class TableKeyReader<<$KeyType,$ValueType>> : Reader<<$KeyType>>
+  PROPERTIES
+    table     : Table<<$KeyType,$ValueType>>
+    cur_entry : TableEntry<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      cur_entry = table.first_entry
+
+    method has_another->Logical
+      return cur_entry?
+
+    method peek->$KeyType
+      return cur_entry.key
+
+    method read->$KeyType
+      local result = cur_entry.key
+      cur_entry = cur_entry.next_entry
+      ++@position
+      return result
+endClass
+
+
+class TableValueReader<<$KeyType,$ValueType>> : Reader<<$ValueType>>
+  PROPERTIES
+    table     : Table<<$KeyType,$ValueType>>
+    cur_entry : TableEntry<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      cur_entry = table.first_entry
+
+    method has_another->Logical
+      return cur_entry?
+
+    method peek->$ValueType
+      return cur_entry.value
+
+    method read->$ValueType
+      local result = cur_entry.value
+      cur_entry = cur_entry.next_entry
+      ++@position
+      return result
+endClass
+
+class StringTable<<$ValueType>> : Table<<String,$ValueType>>
+  # Adds support for StringBuilder keys.
+  METHODS
+    method contains( key:StringBuilder )->Logical
+      return find_key( key )?
+
+    method find( key:StringBuilder )->TableEntry<<String,$ValueType>>
+      local key_string = find_key( key )
+      if (not key_string) return null
+      return find( key_string )
+
+    method find_key( key:StringBuilder )->String
+      local len  = key.count
+      local hash = key.hash_code
+
+      local cur = first_entry
+      while (cur)
+        local k = cur.key
+        if (k.hash_code == hash and k.count == len and k == key) return k
+        cur = cur.next_entry
+      endWhile
+
+      return null
+
+    method get( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return get( key_string )
+
+    method remove( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return remove( key_string )
+
+    method set( key:StringBuilder, value:$ValueType )->this
+      local key_string = find_key( key )
+      if (not key_string) return this
+      set( key_string, value )
+      return this
+
+endClass
+
+#{
+class Table<<$KeyType,$ValueType>>
+  PROPERTIES
+    bin_mask : Int32
+    bins     : Array<<TableEntry<<$KeyType,$ValueType>>>>
+    count    : Int32
+    keys     : $KeyType[]
+
+  METHODS
+    method init
+      init( 16 )
+
+    method init( unordered:Logical )
+      init( 16, unordered )
+
+    method init( bin_count:Int32, &unordered )
+      local bins_power_of_2 = 1
+      while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
+      bin_count = bins_power_of_2
+      bin_mask = bin_count - 1
+
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bin_count )
+      if (not unordered) keys = $KeyType[]
+
+    method init( other:Table<<$KeyType,$ValueType>> )
+      bin_mask = other.bin_mask
+      bins = other.bins.cloned
+      if (other.@keys) keys = other.@keys.cloned
+      count = other.count
+
+    method add( other:Table<<$KeyType,$ValueType>> )->Table<<$KeyType,$ValueType>>
+      forEach (entry in other.entry_reader)
+        this[ entry.key ] = entry.value
+      endForEach
+      return this
+
+    method at( index:Int32 )->$ValueType
+      if (@keys) return this[ @keys[index] ]
+
+      local reader = value_reader
+      forEach (0..<index) reader.read
+      return reader.read
+
+    method clear
+      forEach (i of bins) bins[i] = null
+      if (@keys) @keys.clear
+      count = 0
+
+    method cloned->Table<<$KeyType,$ValueType>>
+      return Table<<$KeyType,$ValueType>>( this )
+
+    method contains( key:$KeyType )->Logical
+      return find(key)
+
+    method count( query:Function(Value)->(Logical) )->Int32
+      local result = 0
+      forEach (v in value_reader)
+        if (query(v)) ++result
+      endForEach
+      return result
+
+    method is_empty->Logical
+      return count == 0
+
+    method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
+      local hash = key.hash_code
+      local entry = bins[ hash & bin_mask ]
+
+      while (entry)
+        if (entry.hash == hash and entry.key == key) return entry
+        entry = entry.next_entry
+      endWhile
+
+      return null
+
+    method first->$ValueType
+      if (not count)
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+      if (@keys) return this[ @keys[0] ]
+
+      forEach (first_entry in bins)
+        if (first_entry) return first_entry.value
+      endForEach
+
+      local default_value : $ValueType
+      return default_value
+
+    method first( query:Function($ValueType)->(Logical) )->$ValueType?
+      forEach (value in value_reader)
+        if (query(value)) return value
+      endForEach
+      return null
+
+    method get( key:$KeyType )->$ValueType
+      local entry = find( key )
+      if (entry)
+        return entry.value
+      else
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+    method get( query:Function($ValueType)->(Logical) )->$ValueType[]
+      local result = $ValueType[]
+      forEach (value in value_reader)
+        if (query(value)) result.add( value )
+      endForEach
+      return result
+
+    method keys->$KeyType[]
+      if (@keys) return @keys
+
+      local result = $KeyType[]( count )
+      forEach (key in key_reader)
+        result.add( key )
+      endForEach
+      return result
+
+    method locate( query:Function($ValueType)->(Logical) )->$KeyType[]
+      local result = $KeyType[]
+      forEach (entry in entry_reader)
+        if (query(entry.value)) result.add( entry.key )
+      endForEach
+      return result
+
+    method remove( query:Function($ValueType)->(Logical) )->$ValueType[]
+      # Returns the list of values that pass the query function while removing
+      # them from this table.
+      local remove_keys = locate( query )
+      local result = $ValueType[]
+      forEach (k in remove_keys)
+        result.add( remove(k) )
+      endForEach
+      return result
+
+    method remove( key:$KeyType )->$ValueType
+      local hash = key.hash_code
+      local index = hash & bin_mask
+      local entry = bins[ index ]
+
+      if (not entry)
+        local default_zero_value : $ValueType
+        return default_zero_value
+      endIf
+
+      --count
+      if (@keys) @keys.remove( key )
+
+      if (entry.hash == hash and entry.key == key)
+        # First item in hash bin
+        bins[index] = entry.next_entry
+        return entry.value
+      endIf
+
+      local next_entry = entry.next_entry
+      while (next_entry)
+        # Later item in hash bin
+        if (next_entry.hash == hash and next_entry.key == key)
+          local result = next_entry.value
+          entry.next_entry = next_entry.next_entry
+          return result
+        endIf
+        entry = next_entry
+        next_entry = entry.next_entry
+      endWhile
+
+      local default_zero_value : $ValueType
+      return default_zero_value
+
+    method set( key:$KeyType, value:$ValueType )->this
+      local hash = key.hash_code
+      local index = hash & bin_mask
+      local entry = bins[ index ]
+
+      while (entry)
+        if (entry.hash == hash and entry.key == key)
+          entry.value = value
+          return this
+        endIf
+        entry = entry.next_entry
+      endWhile
+
+      if (count >= bins.count)
+        _grow()
+        index = hash & bin_mask
+        entry = bins[ index ]
+      endIf
+
+      entry = TableEntry<<$KeyType,$ValueType>>( key, value, hash )
+      entry.next_entry = bins[ index ]
+      bins[index] = entry
+
+      ++count
+      if (@keys) @keys.add( key )
+      return this
+
+    method to->String
+      return print_to( StringBuilder() )->String
+
+    method to->Value
+      local result = @{}
+      forEach (entry in entry_reader)
+        result[ entry.key->String ] = Value( entry.value )
+      endForEach
+      return result
+
+    method to->ValueTable
+      return this->Value
+
+    method print_to( buffer:StringBuilder )->StringBuilder
+      buffer.print( '{' )
+      forEach (entry at i in entry_reader)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( entry.key )
+        buffer.print( ':' )
+        buffer.print( entry.value )
+      endForEach
+      buffer.print( '}' )
+      return buffer
+
+    method values->$ValueType[]
+      local result = $ValueType[]( count )
+      forEach (value in value_reader)
+        result.add( value )
+      endForEach
+      return result
+
+    method entry_reader->TableEntryReader<<$KeyType,$ValueType>>
+      if (@keys) return TableEntryReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedEntryReader<<$KeyType,$ValueType>>(this)
+
+    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
+      if (@keys) return TableKeyReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedKeyReader<<$KeyType,$ValueType>>(this)
+
+    method value_reader->TableValueReader<<$KeyType,$ValueType>>
+      if (@keys) return TableValueReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedValueReader<<$KeyType,$ValueType>>(this)
+
+    method _grow
+      # Grow by a factor of two
+      local old_bins = bins
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bins.count * 2 )
+      bin_mask = (bin_mask :<<: 1) | 1
+
+      forEach (bin in old_bins)
+        local entry = bin
+        while (entry is not null)
+          local next = entry.next_entry
+
+          local index = entry.hash & bin_mask
+          entry.next_entry = bins[index]
+          bins[index] = entry
+
+          entry = next
+        endWhile
+      endForEach
+
+endClass
+
+class TableEntryReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return table.find(table.@keys[@position])
+
+    method read->TableEntry<<$KeyType,$ValueType>>
+      local r = peek()
+      @position++
+      return r
+endClass
+
+
+class TableKeyReader<<$KeyType, $ValueType>> : Reader<<$KeyType>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->$KeyType
+      return table.@keys[@position]
+
+    method read->$KeyType
+      local r = peek()
+      @position++
+      return r
+endClass
+
+
+class TableValueReader<<$KeyType, $ValueType>> : Reader<<$ValueType>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->$ValueType
+      return table.find(table.@keys[@position]).value
+
+    method read->$ValueType
+      local r = peek()
+      @position++
+      return r
+endClass
+
+class TableUnsortedEntryReader<<$KeyType,$ValueType>> : TableEntryReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table      : Table<<$KeyType,$ValueType>>
+    cur_bindex = -1
+    cur_entry  : TableEntry<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      advance
+
+    method advance
+      if (cur_entry)
+        cur_entry = cur_entry.next_entry
+        if (cur_entry) return
+      endIf
+
+      forEach (i in cur_bindex+1..<table.bins.count)
+        cur_entry = table.bins[i]
+        if (cur_entry)
+          cur_bindex = i
+          return
+        endIf
+      endForEach
+
+    method has_another->Logical
+      return cur_entry?
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return cur_entry
+
+    method read->TableEntry<<$KeyType,$ValueType>>
+      local result = cur_entry
+      advance
+      return result
+endClass
+
+class TableUnsortedKeyReader<<$KeyType, $ValueType>> : TableKeyReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table        : Table<<$KeyType,$ValueType>>
+    entry_reader : TableUnsortedEntryReader<<$KeyType,$ValueType>>
+
+  METHODS
+    method init( table )
+      ensure entry_reader( table )
+
+    method has_another->Logical
+      return entry_reader.has_another
+
+    method peek->$KeyType
+      return entry_reader.peek.key
+
+    method read->$KeyType
+      return entry_reader.read.key
+endClass
+
+class TableUnsortedValueReader<<$KeyType, $ValueType>> : TableValueReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table        : Table<<$KeyType,$ValueType>>
+    entry_reader : TableUnsortedEntryReader<<$KeyType,$ValueType>>
+
+  METHODS
+    method init( table )
+      ensure entry_reader( table )
+
+    method has_another->Logical
+      return entry_reader.has_another
+
+    method peek->$ValueType
+      return entry_reader.peek.value
+
+    method read->$ValueType
+      return entry_reader.read.value
+endClass
+
+
+class TableEntry<<$KeyType,$ValueType>>
+  PROPERTIES
+    key        : $KeyType
+    value      : $ValueType
+    next_entry : TableEntry<<$KeyType,$ValueType>>
+    hash       : Int32
+
+  METHODS
+    method init( _key:$KeyType, _value:$ValueType, _hash:Int32 )
+      key = _key
+      value = _value
+      hash = _hash
+
+    method to->String
+      return "($ $:$)" (type_name, key, value)
+endClass
+
+
+class StringTable<<$ValueType>> : Table<<String,$ValueType>>
+  # Adds support for StringBuilder keys.
+  METHODS
+    method contains( key:StringBuilder )->Logical
+      return find_key( key )?
+
+    method find( key:StringBuilder )->TableEntry<<String,$ValueType>>
+      local key_string = find_key( key )
+      if (not key_string) return null
+      return find( key_string )
+
+    method find_key( key:StringBuilder )->String
+      local len  = key.count
+      local hash = key.hash_code
+      forEach (k in key_reader)
+        if (k.hash_code == hash and k.count == len and k == key) return k
+      endForEach
+      return null
+
+    method get( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return get( key_string )
+
+    method remove( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return remove( key_string )
+
+    method set( key:StringBuilder, value:$ValueType )->this
+      local key_string = find_key( key )
+      if (not key_string) return this
+      set( key_string, value )
+      return this
+
+endClass
+}#

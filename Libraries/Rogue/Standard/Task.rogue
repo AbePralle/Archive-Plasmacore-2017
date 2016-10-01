@@ -1,0 +1,84 @@
+#------------------------------------------------------------------------------
+# Task
+#------------------------------------------------------------------------------
+class Task
+  DEPENDENCIES
+    $essential TaskManager
+
+  METHODS
+    method start->Task
+      if (update) TaskManager.add( this )
+      return this
+
+    method update->Logical
+      return false  # return "true" to continue the task next time
+endClass
+
+
+class TaskWithResult<<$ResultType>> : Task
+  PROPERTIES
+    result : $ResultType
+
+  METHODS
+    method finish->$ResultType
+      # Synchronously runs task until completion.  You can call
+      # "await task" instead of "task.finish" to allow it to finish
+      # concurrently.
+      while (update) noAction
+      return result
+endClass
+
+
+#------------------------------------------------------------------------------
+# TaskManager
+#------------------------------------------------------------------------------
+class TaskManager [singleton]
+  PROPERTIES
+    active_list = Task[]
+    update_list = Task[]
+
+  METHODS
+    method add( task:Task )->TaskManager
+      active_list.add( task )
+      return this
+
+    method await_all( tasks:Task[] ) [task]
+      local still_waiting = true
+      while (still_waiting)
+        still_waiting = false
+        local i = tasks.count - 1
+        while (i >= 0)
+          local task = tasks[i]
+          local active = false
+          try
+            active = task.update
+          catch (ex:Exception)
+            println "Uncaught exception in task: " + ex
+          endTry
+          if (active) still_waiting = true
+          else        tasks.remove_at(i)
+          --i
+        endWhile
+        if (still_waiting) yield
+      endWhile
+
+    method update->Logical [essential]
+      update_list.add( active_list )
+      active_list.clear
+      forEach (task at i in update_list)
+        try
+          if (task.update)
+            # Active tasks stay in the list
+            active_list.add( task )
+          endIf
+        catch (ex:Exception)
+          # task is implicitly removed from list
+          println "Uncaught exception in task: " + ex
+        endTry
+      endForEach
+
+      update_list.clear
+
+      return active_list.count
+endClass
+

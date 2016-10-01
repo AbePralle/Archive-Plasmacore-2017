@@ -15,7 +15,7 @@ Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript Build.rogue $(ROGUE_LIBRARIES)
-	roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	Programs/Mac/roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:

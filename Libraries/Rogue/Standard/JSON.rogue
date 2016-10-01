@@ -1,0 +1,267 @@
+class JSON
+  GLOBAL PROPERTIES
+    buffer = StringBuilder()
+
+  GLOBAL METHODS
+    method load( file:File )->Value
+      if (not file or not file.exists) return UndefinedValue
+      return parse( file.load_as_string )
+
+    method load_list( file:File )->Value
+      if (not file or not file.exists) return @[]
+      return parse_list( file.load_as_string )
+
+    method load_table( file:File )->Value
+      if (not file or not file.exists) return @{}
+      return parse_table( file.load_as_string )
+
+    method parse( json:String )->Value
+      try
+        return parse_value( ParseReader(json) )
+      catch (JSONParseError)
+        return UndefinedValue
+      endTry
+
+    method parse_list( json:String )->ValueList
+      local list = parse(json) as ValueList
+      if (list) return list
+      return ValueList()
+
+    method parse_table( json:String )->ValueTable
+      local table = parse(json) as ValueTable
+      if (table) return table
+      return ValueTable()
+
+    method parse_value( reader:ParseReader )->Value
+      _consume_spaces_and_eols( reader )
+
+      if (not reader.has_another) return UndefinedValue
+
+      local ch = reader.peek
+      if (ch == '{') return parse_table( reader )
+      if (ch == '[') return parse_list( reader )
+
+      if (ch == '-')               return parse_number( reader )
+      if (ch >= '0' and ch <= '9') return parse_number( reader )
+
+      if (ch == '"' or ch == '\'')
+        local result = parse_string( reader )
+        if (result.count == 0) return StringValue.empty_string
+
+        local first_ch = result[ 0 ]
+        if (first_ch == 't' and result == "true")  return LogicalValue.true_value
+        if (first_ch == 'f' and result == "false") return LogicalValue.false_value
+        if (first_ch == 'n' and result == "null")  return NullValue
+
+        return StringValue( result )
+
+      elseIf (next_is_identifier(reader))
+        local result = parse_identifier( reader )
+        if (result.count == 0) return StringValue.empty_string
+
+        local first_ch = result[ 0 ]
+        if (first_ch == 't' and result == "true")  return LogicalValue.true_value
+        if (first_ch == 'f' and result == "false") return LogicalValue.false_value
+        if (first_ch == 'n' and result == "null")  return NullValue
+
+        return StringValue( result )
+      else
+        return UndefinedValue
+      endIf
+
+    method parse_table( reader:ParseReader )->Value
+      _consume_spaces_and_eols( reader )
+
+      if (not reader.consume('{')) return UndefinedValue
+
+      _consume_spaces_and_eols( reader )
+
+      local table = ValueTable()
+      if (reader.consume('}')) return table
+
+      local prev_pos = reader.position
+      local first = true
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!='}' and reader.position>prev_pos))
+        first = false
+        prev_pos = reader.position
+
+        _consume_spaces_and_eols( reader )
+
+        if (next_is_identifier(reader))
+          local key = parse_identifier( reader )
+          _consume_spaces_and_eols( reader )
+
+          if (key.count)
+            if (reader.consume(':'))
+              _consume_spaces_and_eols( reader )
+              local value = parse_value( reader )
+              table.set( key, value )
+            else
+              table.set( key, true )
+            endIf
+            _consume_spaces_and_eols( reader )
+          endIf
+        endIf
+      endWhile
+
+      if (not reader.consume('}')) throw JSONParseError( "'}' expected." )
+
+      return table
+
+    method parse_list( reader:ParseReader )->Value
+      _consume_spaces_and_eols( reader )
+
+      if (not reader.consume('[')) return UndefinedValue
+
+      _consume_spaces_and_eols( reader )
+
+      local list = ValueList()
+      if (reader.consume(']')) return list
+
+      local prev_pos = reader.position
+      local first = true
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!=']' and reader.position>prev_pos))
+        first = false
+        prev_pos = reader.position
+        _consume_spaces_and_eols( reader )
+        if (reader.peek == ']') escapeWhile
+        list.add( parse_value( reader ) )
+        _consume_spaces_and_eols( reader )
+      endWhile
+
+      if (not reader.consume(']')) throw JSONParseError( "']' expected." )
+
+      return list
+
+    method parse_string( reader:ParseReader )->String
+      _consume_spaces_and_eols( reader )
+
+      local terminator = '"'
+      if     (reader.consume( '"' ))  terminator = '"'
+      elseIf (reader.consume( '\'' )) terminator = '\''
+
+      if (not reader.has_another) return ""
+
+      buffer.clear
+      local ch = reader.read
+      while (reader.has_another and ch != terminator)
+        if (ch == '\\')
+          ch = reader.read
+          if (ch == 'b')     buffer.print( '\b' )
+          elseIf (ch == 'f') buffer.print( '\f' )
+          elseIf (ch == 'n') buffer.print( '\n' )
+          elseIf (ch == 'r') buffer.print( '\r' )
+          elseIf (ch == 't') buffer.print( '\t' )
+          elseIf (ch == 'u') println "parsing hex quad"; buffer.print( parse_hex_quad( reader ) )
+          else               buffer.print( ch )
+        else
+          buffer.print( ch )
+        endIf
+        ch = reader.read
+      endWhile
+
+      return buffer->String.consolidated
+
+    method hex_character_to_value( ch:Character )->Int32 [macro]
+      ch.to_number
+
+    method parse_hex_quad( reader:ParseReader )->Character
+      local code = 0
+      forEach (i in 1..4)
+        if (reader.has_another)
+          code = (code :<<: 4) | hex_character_to_value( reader.read )
+        endIf
+      endForEach
+      return code->Character
+
+    method parse_identifier( reader:ParseReader )->String
+      _consume_spaces_and_eols( reader )
+
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        return parse_string( reader )
+      else
+        buffer.clear
+        local finished = false
+        while (not finished and reader.has_another)
+          if (ch.is_identifier(&allow_dollar))
+            reader.read
+            buffer.print( ch->Character )
+            ch = reader.peek
+          else
+            finished = true
+          endIf
+        endWhile
+
+        if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
+        return buffer->String.consolidated
+      endIf
+
+    method next_is_identifier( reader:ParseReader )->Logical
+      local ch = reader.peek
+      if (ch.is_identifier(&start,&allow_dollar)) return true
+      return (ch == '"' or ch == '\'')
+
+    method parse_number( reader:ParseReader )->Value
+      _consume_spaces_and_eols( reader )
+
+      local sign = 1.0
+      if (reader.consume( '-' ))
+        sign = -1.0
+        _consume_spaces_and_eols( reader )
+      endIf
+
+      local n = 0.0
+      local ch = reader.peek
+      while (reader.has_another and ch >= '0' and ch <= '9')
+        reader.read
+        n = n * 10 + (ch - '0')
+        ch = reader.peek
+      endWhile
+
+      local is_real = false
+
+      if (reader.consume( '.' ))
+        is_real = true
+        local decimal = 0.0
+        local power = 0.0
+        ch = reader.peek
+        while (reader.has_another and ch >= '0' and ch <= '9')
+          reader.read
+          decimal = decimal * 10 + (ch - '0')
+          power += 1.0
+          ch = reader.peek
+        endWhile
+        n += decimal / (10.0 ^ power)
+      endIf
+
+      if (reader.consume( 'e' ) or reader.consume( 'E' ))
+        local negexp = false
+        if (not reader.consume('+') and reader.consume('-')) negexp = true
+
+        local power = 0.0
+        ch = reader.peek
+        while (reader.has_another and ch >= '0' and ch <= '9')
+          reader.read
+          power = power * 10.0 + (ch - '0')
+          ch = reader.peek
+        endWhile
+
+        if (negexp) n /= 10 ^ power
+        else        n *= 10 ^ power
+      endIf
+
+      n = n * sign
+
+      return Real64Value( n )
+
+    method save( value:Value, file:File, &formatted )->Logical
+      return value.save( file, &formatted )
+
+    method _consume_spaces_and_eols( reader:ParseReader )->ParseReader
+      while (reader.consume_spaces or reader.consume_eols) noAction
+      return reader
+
+endClass
+
+class JSONParseError( message ) : Error;

@@ -1,0 +1,890 @@
+class String
+  GLOBAL METHODS
+    method create( utf8:Byte[] )->String [macro]
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )'
+
+    method create( utf8:Byte[], i1:Int32, count:Int32 )->String [macro]
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )'
+
+    method create( characters:Character[] )->String [macro]
+      $if ("C++") native 'RogueString_create_from_characters( $characters )'
+
+    method create( characters:StringBuilder )->String
+      return create( characters.utf8 )
+
+    method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
+      return create( characters.utf8, i1, count )
+
+    method operator==( a:String, b:String )->Logical
+      if (a is null) return (b is null)
+      else           return a.operator==( b )
+
+    method operator==( a:String, b:StringBuilder )->Logical
+      if (b is null) return (a is null)
+      else           return b.operator==( a )
+
+    method operator<>( a:String, b:String )->Int32
+      if (a is null)
+        if (b is null) return  0
+        else           return -1
+      else
+        return a.operator<>( b )
+      endIf
+
+    method operator+( st:String, value:Byte )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Character )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Int32 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Logical )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Int64 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Object )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Real64 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Real32 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:String )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator*( st:String, value:Int32 )->String
+      if (st is null) return null
+      return st.operator*( value )
+
+    method operator*( count:Int32, string:String )->String
+      if (string is null) return null
+      return string.operator*( count )
+
+
+  METHODS
+    method after( index:Int32 )->String
+      # Returns the substring of this string that occurs after
+      # the given index.
+      #
+      # Equivalent to `from(index+1)`.
+      return from(index+1)
+
+    method after_any( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( i.value+1 )
+      else          return this
+
+    method after_any( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( i.value+st.count )
+      else          return this
+
+    method after_first( ch:Character )->String
+      local i = locate( ch )
+      if (i.exists) return from( i.value+1 )
+      else          return ""
+
+    method after_first( st:String )->String
+      local i = locate( st )
+      if (i.exists) return from( i.value+st.count )
+      else          return ""
+
+    method after_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( i.value+1 )
+      else          return ""
+
+    method after_last( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( i.value+st.count )
+      else          return ""
+
+    method before( index:Int32 )->String
+      # Returns the substring of this string that occur before
+      # the given index.
+      #
+      # Equivalent to ''leftmost(index)''.
+      return from(0,index-1)
+
+    method before_first( ch:Character )->String
+      local i = locate( ch )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_first( st:String )->String
+      local i = locate( st )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_last( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method begins_with( ch:Character )->Logical
+      return (count and this[0] == ch)
+
+    method begins_with( other:String )->Logical
+      local other_count = other.count
+      return (count >= other_count and contains_at(other,0))
+
+    method byte( byte_index:Int32 )->Byte [macro]
+      native( "$this->utf8[ $byte_index ]" )
+
+    method byte_count->Int32 [macro]
+      native( "$this->byte_count" )
+
+    method capitalized->String
+      if (count == 0) return this
+      local ch = this[0]
+      if (ch < 'a' or ch > 'z') return this
+
+      return (ch + ('A'-'a'))->Character + this.from( 1 )
+
+    method clipped( &left=0:Int32, &right=0:Int32 )->String
+      return from( left, count-(right+1) )
+
+    method consolidated->String
+      return StringConsolidationTable[ this ]
+
+    method contains( ch:Character )->Logical
+      return locate(ch)?
+
+    method contains( substring:String )->Logical
+      return locate(substring)?
+
+    method contains_at( substring:String, at_index:Int32 )->Logical
+      if (at_index < 0) return false
+
+      $if ("C++")
+        native @|RogueInt32 offset = RogueString_set_cursor( $this, $at_index );
+                |RogueInt32 other_count = $substring->byte_count;
+                |if (offset + other_count > $this->byte_count) return false;
+                |
+                |return (0 == memcmp($this->utf8 + offset, $substring->utf8, other_count));
+      $endIf
+
+
+    method count->Int32 [macro]
+      $if ("C++") native '$this->character_count'
+
+    method ends_with( ch:Character )->Logical
+      return (count > 0 and this[count-1] == ch)
+
+    method ends_with( other:String )->Logical
+      local other_count = other.count
+      return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
+
+    method from( i1:Int32 )->String
+      return from( i1, count-1 )
+
+    method from( i1:Int32, i2:Int32 )->String
+      if (i1 < 0)          i1 = 0
+      elseIf (i2 >= count) i2 = count - 1
+
+      if (i1 > i2) return ""
+
+      if (i1 == i2) return ""+this[i1]
+
+      $if ("C++")
+        native @|RogueInt32 byte_i1 = RogueString_set_cursor( $this, $i1 );
+                |RogueInt32 byte_limit = RogueString_set_cursor( $this, $i2+1 );
+                |int new_count = (byte_limit - byte_i1);
+                |RogueString* result = RogueString_create_with_byte_count( new_count );
+                |memcpy( result->utf8, $this->utf8+byte_i1, new_count );
+                |return RogueString_validate( result );
+      $endIf
+
+    method from_first( ch:Character )->String
+      local i = locate( ch )
+      if (not i) return ""
+      return from( i.value )
+
+    method from_first( st:String )->String
+      local i = locate( st )
+      if (not i) return ""
+      return from( i.value )
+
+    method from_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( i.value )
+      else          return ""
+
+    method from_last( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( i.value )
+      else          return ""
+
+    method get( index:Int32 )->Character [macro]
+      $if ("C++") native 'RogueString_character_at($this,$index)'
+
+    method hash_code->Int32
+      $if ("C++") return native('$this->hash_code')->Int32
+
+    method indented( spaces:Int32 )->String
+      local lines = split( '\n' )
+      local builder = StringBuilder( count + lines.count*2 )
+      forEach (line in lines)
+        if (builder.count) builder.println
+        if (spaces> 0)      builder.print( " ".times(spaces) ).print( line )
+        elseIf (spaces < 0) builder.print( line.rightmost(spaces) )
+      endForEach
+      return builder->String
+
+    method is_ascii->Logical [macro]
+      # Returns 'true' if all character codes in this string are in the range 0..127.
+      native( "$this->is_ascii" )
+
+    method last->Character
+      return this[ count-1 ]
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      if (count >= spaces) return this
+
+      local buffer = StringBuilder( spaces )
+      buffer.print( this )
+      forEach (count..<spaces) buffer.print( fill )
+
+      return buffer->String
+
+    method leftmost( n:Int32 )->String
+      if (n >= 0) return from( 0, n-1 )
+      else        return from( 0, (count + n) - 1 )
+
+    method leftmost_common_substring_count( other:String )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      forEach (i in 0..<max)
+        if (this[i] != other[i]) return i
+      endForEach
+      return max
+
+    method locate( ch:Character, optional_i1=null:Int32? )->Int32?
+      local i = 0
+      local limit = count
+      if (optional_i1.exists) i = optional_i1.value
+      while (i < limit)
+        if (this[i] == ch) return i
+        ++i
+      endWhile
+      return null
+
+    method locate( other:String, optional_i1=null:Int32? )->Int32?
+      local other_count = other.count
+      if (other_count == 1) return locate( other[0], optional_i1 )
+
+      local this_limit = (count - other_count) + 1
+      if (other_count == 0 or this_limit <= 0) return null
+
+      local i1 : Int32
+      if (optional_i1)
+        i1 = optional_i1.value - 1
+        if (i1 < -1) i1 = -1
+      else
+        i1 = -1
+      endIf
+
+      while (native("++$i1")->Int32 < this_limit)
+        if (contains_at(other,i1)) return i1
+      endWhile
+
+      return null
+
+    method locate_last( ch:Character, starting_index=null:Int32? )->Int32?
+      local i = count - 1
+      if (starting_index.exists) i = starting_index.value
+      while (i >= 0)
+        if (this[i] == ch) return i
+        --i
+      endWhile
+      return null
+
+    method locate_last( other:String, starting_index=null:Int32? )->Int32?
+      local other_count = other.count
+      if (other_count == 1) return locate_last( other[0], starting_index )
+
+      local this_limit = (count - other_count) + 1
+      if (other_count == 0 or this_limit <= 0) return null
+
+      local i : Int32
+      if (starting_index)
+        i = starting_index.value + 1
+        if (i > this_limit) i = this_limit
+      else
+        i = this_limit
+      endIf
+
+      while (native("--$i")->Int32 >= 0)
+        if (contains_at(other,i)) return i
+      endWhile
+
+      return null
+
+    method matches_wildcard_pattern( wildcard_pattern:String )->Logical
+      # Determines whether or not this string matches the given
+      # Unix/Dos-style ''wildcard pattern''.  ''wildcard_pattern'' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # * * - matches zero or more characters of this string.
+      # * ? - matches any one character of this string.
+      #
+      # Example:
+      #
+      #   local String st = "img_01.png"
+      #   println( st.matches_wildcard_pattern("*.png") )  # true
+      #   println( st.matches_wildcard_pattern("img_??.png") )  # true
+      local c = count
+      if (c == 0 and wildcard_pattern.count == 0) return true
+      if (wildcard_pattern.count == 0) return false
+
+      local remaining_pattern = wildcard_pattern.from( 1 )
+      local ch = wildcard_pattern[0]
+      which (ch)
+        case '*':
+          forEach (n in 0..c)
+            if (from(n).matches_wildcard_pattern(remaining_pattern)) return true
+          endForEach
+
+        case '?':
+          if (c == 0) return false
+          return from(1).matches_wildcard_pattern( remaining_pattern )
+
+        others:
+          if (c == 0) return false
+          if (ch == this[0])
+            return from(1).matches_wildcard_pattern( remaining_pattern )
+          endIf
+      endWhich
+      return false
+
+    method operator+( value:Byte )->String [macro]
+      this + value->Int32
+
+    method operator+( value:Character )->String
+      return StringBuilder().print( this ).print( value )->String
+
+    method operator+( value:Int32 )->String
+      return StringBuilder().print( this ).print( value )->String
+
+    method operator==( value:String )->Logical
+      if (value is null) return false
+      if (this.hash_code != value.hash_code or this.count != value.count) return false
+      return (native("(0==memcmp($this->utf8,$value->utf8,$this->byte_count))")->Logical)
+
+    method operator==( value:StringBuilder )->Logical
+      if (value is null) return false
+      return (value == this)  # invoke the existing operator== method on value
+
+    method operator<>( other:String )->Int32
+      if (other is null) return 1
+      $if ("C++")
+        native @|if ($this == $other) return 0;
+                |
+                |RogueInt32 other_count = $other->byte_count;
+                |RogueInt32 limit = $this->byte_count;
+                |
+                |int result;
+                |if (limit == other_count)
+                |{
+                |  // Strings are same length
+                |  result = memcmp( $this->utf8, $other->utf8, limit );
+                |  if (result == 0) return 0;
+                |}
+                |else
+                |{
+                |  // Strings differ in length.  Compare the part that matches first.
+                |  if (limit > other_count) limit = other_count;
+                |  result = memcmp( $this->utf8, $other->utf8, limit );
+                |  if (result == 0)
+                |  {
+                |    // Equal so far - the shorter string comes before the longer one.
+                |    if (limit == other_count) return 1;
+                |    return -1;
+                |  }
+                |}
+                |if (result < 0) return -1;
+                |else            return 1;
+      $endIf
+
+    method operator+( value:Logical )->String
+      if (value) return this + "true"
+      else       return this + "false"
+
+    method operator+( value:Int64 )->String
+      return StringBuilder().print( this ).print( value )->String
+
+    method operator+( value:Object )->String
+      if (value) return this + value->String
+      else       return this + "null"
+
+    method operator+( value:Real64 )->String
+      return StringBuilder().print( this ).print( value )->String
+
+    method operator+( value:Real32 )->String [macro]
+      this + value->Real64
+
+    method operator+( value:String )->String
+      if (value is null) return this + "null"
+      if (count == 0) return value
+      if (value.count == 0) return this
+      return StringBuilder().print( this ).print( value )->String
+
+    method operator*( value:Int32 )->String [macro]
+      this.times( value )
+
+    method pluralized( quantity:Int32 )->String
+      # Returns a pluralized form of this string.
+      #
+      # This string may be of the form "singlar" or "singlar/plural",
+      # where both singular and plural parts may contain a "#"
+      # to indicate where the given ''quantity'' should be inserted.
+      #
+      # If the string only contains the "singular" part, first a
+      # substring of the form "(s)" or "(es)" (etc.) is looked for.
+      # If that exists, it is included in the result if the string
+      # is plural and omitted if the string is singular.
+      #
+      # If there is no "(s)" (etc.) then either "s" or "es" is
+      # inserted after the last letter - "es" is used only when the
+      # last letter is an "s" already.
+      #
+      # Examples:
+      #
+      #   "cat".pluralized(1)   # returns: cat
+      #   "cat".pluralized(2)   # returns: cats
+      #   "My # glass.".pluralized(1)  # returns: My 1 glass.
+      #   "My # glass.".pluralized(2)  # returns: My 2 glasses.
+      #   "a thief./# thieves".pluralized(1)   # returns: a thief.
+      #   "a thief./# thieves".pluralized(40)  # returns: 40 thieves.
+      #   "# match(es) found".pluralized(1)    # returns: 1 match found
+      #   "# match(es) found".pluralized(0)    # returns: 0 matches found
+      local st = this.replacing( "#", ""+quantity )
+
+      if (st.contains('/'))
+        if (quantity == 1) return st.before_first( '/' )
+        else               return st.after_last( '/' )
+
+      else
+        local alt1 = st.locate('(')
+        if (alt1.exists)
+          local alt2 = st.locate(')',alt1.value+1)
+          if (not alt2.exists) return this
+
+          if (quantity == 1)
+            return st.before(alt1.value) + st.after(alt2.value)
+          endIf
+
+          # plural
+          return "$$$" (st.before(alt1.value),st.from(alt1.value+1,alt2.value-1),st.after(alt2.value))
+        else
+          if (quantity == 1) return st
+
+          # plural
+          local index = 0
+          local i = st.count
+          while (i > 0)
+            --i
+            if (st[i].is_letter) index = i; escapeWhile
+          endWhile
+
+          if (st[index] == 's') return "$es$" (st.before(index+1),st.after(index))
+          else                  return "$s$" (st.before(index+1),st.after(index))
+        endIf
+
+      endIf
+
+    method reader->StringReader
+      return StringReader( this )
+
+    method replacing( look_for:Character, replace_with:Character )->String
+      if (not contains(look_for)) return this
+
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch == look_for) result.print( replace_with )
+        else                   result.print( ch )
+      endForEach
+      return result->String
+
+    method replacing( look_for:Character, replace_with:String )->String
+      # Returns a modified string where all instances of
+      # ''look_for'' are replaced with ''replace_with''.
+      if (not contains(look_for)) return this
+
+      local buffer = StringBuilder(count*2)
+      forEach (ch in this)
+        if (ch == look_for) buffer.print( replace_with )
+        else                buffer.print( ch )
+      endForEach
+
+      return buffer->String
+
+    method replacing( look_for:String, replace_with:String )->String
+      # Returns a modified string where all instances of
+      # ''look_for'' are replaced with ''replace_with''.
+      local st = this
+      local i = st.locate(look_for)
+      if (not i.exists) return st
+
+      local buffer = StringBuilder( count*2 )
+      while (i.exists)
+        buffer.print( st.before(i.value) )
+        buffer.print( replace_with )
+        st = st.from( i.value + look_for.count )
+        i = st.locate(look_for)
+      endWhile
+      buffer.print( st )
+      return buffer->String
+
+    method reversed->String
+      local buffer = StringBuilder(count)
+      forEach (ch in this step -1)
+        buffer.print( ch )
+      endForEach
+      return buffer->String
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      if (count >= spaces) return this
+
+      local buffer = StringBuilder( spaces )
+      forEach (count..<spaces) buffer.print( fill )
+      buffer.print( this )
+
+      return buffer->String
+
+    method rightmost( n:Int32 )->String
+      local this_count = count
+      if (n < 0) return from( -n, this_count-1 )
+      else       return from( this_count-n, this_count-1 )
+
+    method rightmost_common_substring_count( other:String )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      local this_i =  count - 1
+      local other_i = other.count - 1
+      forEach (i in 0..<max)
+        if (this[this_i] != other[other_i]) return i
+        --this_i
+        --other_i
+      endForEach
+      return max
+
+    method split( separator:Character )->String[]
+      local result = String[]
+
+      local i1 = 0
+      local i2 = locate( separator, i1 )
+      while (i2.exists)
+        result.add( from(i1,i2.value-1) )
+        i1 = i2.value + 1
+        i2 = locate( separator, i1 )
+      endWhile
+
+      result.add( from(i1) )
+
+      return result
+
+    method split( separator:String )->String[]
+      local result = String[]
+      local separator_count = separator.count
+
+      local i1 = 0
+      local i2 = locate( separator, i1 )
+      while (i2.exists)
+        result.add( from(i1,i2.value-1) )
+        i1 = i2.value + separator_count
+        i2 = locate( separator, i1 )
+      endWhile
+
+      result.add( from(i1) )
+
+      return result
+
+    method split->String[]
+      # Splits the string on whitespace
+
+      local result = String[]
+      local start = -1
+      local current = 0
+      forEach (ch in this)
+        which (ch)
+          case ' ', '\t', '\n':
+            if start >= 0
+              result.add( this.from(start, current-1) )
+              start = -1
+            endIf
+          others:
+            if start < 0
+              start = current
+            endIf
+          endWhich
+        current++
+      endForEach
+
+      if start >= 0
+        result.add( this.from(start, current-1) )
+      endIf
+
+      return result
+
+    method join( substrings:String[] )->String
+      return join( substrings.reader )
+
+    method join( substrings:Reader<<String>> )->String
+      local result = StringBuilder()
+      local first = true
+      forEach (s in substrings)
+        if (not first) result.print(this)
+        first = false
+        result.print( s )
+      endForEach
+      return result->String
+
+    method substring( i1:Int32, n:Int32 )->String
+      return from( i1, i1+(n-1) )
+
+    method times( n:Int32 )->String
+      if (n <= 0) return ""
+      if (n == 1) return this
+
+      local builder = StringBuilder( count * n )
+      forEach (1..n) builder.print( this )
+
+      return builder->String
+
+    method to->Byte[]
+      local result = Byte[]( byte_count )
+      forEach (i in 0..<byte_count) result.add( this.byte(i) )
+      return result
+
+    method to->Character[]
+      local result = Character[]( count )
+      forEach (ch in this) result.add( ch )
+      return result
+
+    method to->Int32 [macro]
+      native( "strtol( (char*)$this->utf8, 0, 10 )" )
+
+    method to->Object
+      return this
+
+    method to->Real64 [macro]
+      native( "strtod( (char*)$this->utf8, 0 )" )
+
+    method to->String
+      return this
+
+    method to->Value
+      return Value( this )
+
+    method to_lowercase->String
+      local has_uc = false
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') has_uc = true; escapeForEach
+      endForEach
+
+      if (not has_uc) return this
+
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') result.print( ((ch-'A')+'a')->Character )
+        else                         result.print( ch )
+      endForEach
+      return result->String
+
+    method to_uppercase->String
+      local has_lc = false
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'a') has_lc = true; escapeForEach
+      endForEach
+
+      if (not has_lc) return this
+
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'z') result.print( ((ch-'a')+'A')->Character )
+        else                         result.print( ch )
+      endForEach
+      return result->String
+
+    method to_utf8->Byte[] [macro]
+      this->Byte[]
+
+    method trimmed->String
+      # Trim white spaces on both ends
+      local i1 = 0
+      local i2 = count - 1
+
+      while (i1 <= i2)
+        if     (this[i1] <= ' ') ++i1
+        elseIf (this[i2] <= ' ') --i2
+        else                     escapeWhile
+      endWhile
+
+      if (i1 > i2) return ""
+      if (i1 == 0 and i2 == count-1) return this
+      return from( i1, i2 )
+
+    method up_to_first( ch:Character )->String
+      local i = locate( ch )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_first( st:String )->String
+      local i = locate( st )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_last( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method word_wrapped( width:Int32, allow_break_after=null:String )->String[]
+      # Returns a word-wrapped version of this string as a list of lines.
+      # Existing newlines characters will cause a new line to begin
+      # immediately.  Spaces immediately following existing newline
+      # characters are preserved.
+      return word_wrapped( width, StringBuilder(), allow_break_after )->String.split('\n')
+
+    method word_wrapped( width:Int32, buffer:StringBuilder, allow_break_after=null:String )->StringBuilder
+      # Prints a word-wrapped version of this string to the given
+      # StringBuilder.  Existing newlines characters will cause a new line to
+      # begin immediately.  Spaces immediately following existing newline
+      # characters are preserved.
+      local i1, i2 : Int32
+      local len = count
+
+      if (len == 0) return buffer
+
+      local needs_newline = false
+      while (i2 < len)
+
+        # find first \n, last space, or last break-after character
+        while ((i2-i1) < width and i2 < len and this[i2] != '\n') i2++
+
+        if ((i2-i1) == width)
+          # No \n in allowed width
+          if (i2 >= len)
+            # The rest of the text will fit as-is.
+            i2 = len
+          elseIf (this[i2] != '\n')
+            # Look for the last space within the given width
+            while (this[i2]!=' ' and i2>i1) i2--
+
+            if (i2 == i1)
+              # Not found - move cursor to end and look for the last break-after
+              # character.
+              i2 = i1 + width
+              if (allow_break_after)
+                while (i2 > i1 and not allow_break_after.contains(this[i2-1]) and i2>i1) i2--
+                if (i2 == i1)
+                  # Could not find a break - just use the first 'width' characters.
+                  i2 = i1 + width
+                endIf
+              endIf
+            endIf
+          endIf
+        endIf
+
+        if (needs_newline)
+          buffer.println
+        endIf
+        forEach (i in i1..(i2-1)) buffer.print( this[i] )
+        needs_newline = true
+
+        if (i2 == len)
+          return buffer
+        else
+          which (this[i2])
+            case ' ':
+              # Discard trailing spaces
+              while (i2<len and this[i2]==' ') i2++
+
+              if (i2<len and this[i2]=='\n') i2++
+
+            case '\n':
+              i2++
+          endWhich
+          i1 = i2
+        endIf
+      endWhile
+
+      return buffer
+
+endClass
+
+class StringReader : Reader<<Character>>
+  PROPERTIES
+    position   : Int32
+    count      : Int32
+    string     : String
+
+  METHODS
+    method init( string )
+      if (string) count = string.count
+
+    method has_another->Logical
+      return (position < count)
+
+    method has_another( n:Int32 )->Logical
+      return (position + n <= count)
+
+    method peek->Character
+      if (position == count) return 0
+      return string[ position ]
+
+    method read->Character
+      ++position
+      return string[ position - 1 ]
+
+    method reset->this
+      seek( 0 )
+      return this
+
+    method seek( pos:Int32 )->this
+      if (pos < 0) pos = 0
+      elseIf (pos > count) pos = count
+      position = pos
+      return this
+endClass
+
+
+class StringConsolidationTable : StringTable<<String>> [singleton]
+  # Used by the consolidated() method to map equivalent strings to the same
+  # string object.  Reduces memory usage and allows the use of the 'is' test
+  # rather than the '==' test.  Similar to Java's intern() method.
+  METHODS
+    method get( st:String )->String
+      local result = prior.get( st )
+      if (result) return result
+      this[ st ] = st
+      return st
+
+    method get( buffer:StringBuilder )->String
+      local result = prior.get( buffer )
+      if (result) return result
+
+      result = buffer->String
+      this[ result ] = result
+      return result
+endClass
+
+
