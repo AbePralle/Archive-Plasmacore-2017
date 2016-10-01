@@ -90,12 +90,13 @@ class PlasmacoreViewController : GLKViewController
 
   override func glkView( _ view:GLKView, drawIn rect:CGRect)
   {
-    let m = PlasmacoreMessage( type:"Display.render" )
-
     let scale = UIScreen.main.scale
     let display_width  = Int( view.bounds.size.width * scale )
     let display_height = Int( view.bounds.size.height * scale )
 
+    if (display_width == 0 || display_height == 0) { return }
+
+    let m = PlasmacoreMessage( type:"Display.render" )
     m.set( name:"display_name",   value:name )
     m.set( name:"display_width",  value:Int(display_width) )
     m.set( name:"display_height", value:Int(display_height) )

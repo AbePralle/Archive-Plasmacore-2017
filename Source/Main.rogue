@@ -19,7 +19,7 @@ class MainView : View
       endIf
 
     method on_draw
-      Display.clear( Color.BLUE )
+      #Display.clear( Color.BLUE )
       image.draw
 
     method on_update
