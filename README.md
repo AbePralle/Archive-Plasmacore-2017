@@ -5,6 +5,8 @@
 
 ## Supported Platforms
 
+Currently the Plasmacore toolchain only runs on MacOS and only supports an iOS compile target.
+
 Platform | Notes
 ---------|--------------------------------------
 iOS      | No sound or virtual keyboard support.
@@ -16,7 +18,22 @@ Other platforms will eventually be supported.
 
 There is some Rogue documentation here: [https://github.com/AbePralle/Rogue/wiki](https://github.com/AbePralle/Rogue/wiki)
 
-There is not yet any Plasmacore documentation.  You can manually browse the `Libraries/Rogue/Plasmacore` files.  A sample project is coming soon.
+There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.  A sample project is coming soon.
+
+
+## Bootstrap Script
+
+To bootstrap a new Plasmacore-based project, save the following script as `Makefile` in your project folder and then type `make` on the command line.  The script will `git clone` the latest Plasmacore repo in a temporary folder and copy all the files into the current folder.  The bootstrap `Makefile` will be overwritten by the Plasmacore `Makefile`.  Note: each line after `bootstrap:` must start with a `[TAB]`, not just spaces.
+
+
+    bootstrap:
+      @[ -e Source ]    && echo "ERROR: Source/ folder exists; aborting bootstrap to prevent possible overwrite." && exit 1 || true
+      @[ -e Platforms ] && echo "ERROR: Platforms/ folder exists; aborting bootstrap to prevent possible overwrite." && exit 1 || true
+      @[ ! -e Bootstrap/Plasmacore ] && echo "Cloning Plasmacore master branch into Bootstrap/Plasmacore/" && mkdir -p Bootstrap && cd Bootstrap && git clone git@github.com:AbePralle/Plasmacore.git || true
+      rm -rf Bootstrap/Plasmacore/.git
+      @rsync -a --out-format="Copying %n%L" Bootstrap/Plasmacore/* .
+      rm -rf Bootstrap
+      @echo "Done!"
 
 
 ## Starting a New Project
