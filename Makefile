@@ -1,3 +1,5 @@
+PLASMACORE_VERSION = v0.1.0
+
 ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
 ios: override TARGET := iOS
@@ -43,11 +45,21 @@ prepare_update:
 	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore master branch into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone git@github.com:AbePralle/Plasmacore.git || true
 	@echo "Pulling latest Build/Update/Plasmacore/"
 	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git pull
-	@rsync -a --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile Makefile
+	@rsync -a --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile .
 	@make -f Makefile continue_update
 
 continue_update:
 	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildCore.rogue .
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/am .
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/AssetManager .
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/FreeType   Libraries
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/HarfBuzz   Libraries
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageIO    Libraries
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Plasmacore Libraries
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Standard Libraries/Rogue
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Plasmacore Libraries/Rogue
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Programs/Mac/roguec Programs/Mac
+	@echo "Updated to Plasmacore $(PLASMACORE_VERSION)"
 
 	@#mkdir -p Build/Update
 	@#https://github.com/AbePralle/Rogue
