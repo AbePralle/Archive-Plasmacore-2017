@@ -33,13 +33,13 @@ clean_am:
 
 xclean: clean clean_harfbuzz clean_am
 
-update: run_local_mk git_plasmacore
+update: run_local_mk prepare_update
 
 run_local_mk:
 	@# Run the local makefile if it exists
 	@[ -f Local.mk ] && make -f Local.mk update || true
 
-git_plasmacore:
+prepare_update:
 	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore master branch into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone git@github.com:AbePralle/Plasmacore.git || true
 	@echo "Pulling latest Build/Update/Plasmacore/"
 	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git pull
@@ -47,7 +47,7 @@ git_plasmacore:
 	@make -f Makefile continue_update
 
 continue_update:
-	echo "hi"
+	@rsync -a --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildCore.rogue .
 
 	@#mkdir -p Build/Update
 	@#https://github.com/AbePralle/Rogue
