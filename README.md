@@ -6,7 +6,7 @@
 ## Supported Platforms
 
 Platform | Notes
-=========|======================================
+---------|--------------------------------------
 iOS      | No sound or virtual keyboard support.
 
 Other platforms will eventually be supported.
