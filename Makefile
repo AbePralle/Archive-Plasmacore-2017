@@ -6,7 +6,7 @@ all: build run compile_images
 
 ios: build run compile_images
 
-build: update Build/BuildScript/buildscript
+build: Build/BuildScript/buildscript
 
 compile_images:
 	./am compile iOS
@@ -33,9 +33,24 @@ clean_am:
 
 xclean: clean clean_harfbuzz clean_am
 
-update:
+update: run_local_mk git_plasmacore
+
+run_local_mk:
 	@# Run the local makefile if it exists
 	@[ -f Local.mk ] && make -f Local.mk update || true
+
+git_plasmacore:
+	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore master branch into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone git@github.com:AbePralle/Plasmacore.git || true
+	@echo "Pulling latest Build/Update/Plasmacore/"
+	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git pull
+	@rsync -a --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile Makefile
+	@make -f Makefile continue_update
+
+continue_update:
+	echo "hi"
+
+	@#mkdir -p Build/Update
+	@#https://github.com/AbePralle/Rogue
 
 #------------------------------------------------------------------------------
 # Sample optional Local.mk file - do not commit to repo
