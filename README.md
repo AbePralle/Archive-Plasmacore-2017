@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.1.0
-- October 2, 2016
+- v0.1.1
+- October 3, 2016
 
 
 ## Supported Platforms
