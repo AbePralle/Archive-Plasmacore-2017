@@ -4,29 +4,25 @@ Display( "Main" ).view = MainView()
 
 class MainView : View
   PROPERTIES
-    image = Image( "General/BeerMe.jpg" )
 
   METHODS
     method on_start
-      Display.scale_to_fit( image.size )
-      image.position = Display.center
-      change_state( MainViewState() )
+      change_state( InitialState() )
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)
-        image.position = e.position
         trace e.position
       endIf
 
     method on_draw
-      #Display.clear( Color.BLUE )
-      image.draw
+      Display.clear( Color.BLUE )
 
     method on_update
+      # Called 60 times a second
 endClass
 
 
-class MainViewState : State<<MainView>>
+class InitialState : State<<MainView>>
   METHODS
     method after_draw
       # This happens after the current view's on_draw()
@@ -34,4 +30,7 @@ class MainViewState : State<<MainView>>
     method on_draw
       # This happens before the current view's on_draw()
 
+    method on_update
+      # Called 60 times a second
 endClass
+
