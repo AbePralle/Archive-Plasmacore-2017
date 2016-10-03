@@ -21,24 +21,18 @@ There is some Rogue documentation here: [https://github.com/AbePralle/Rogue/wiki
 There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.  A sample project is coming soon.
 
 
-## Bootstrap Script
+## Bootstrap Command
 
-To bootstrap a new Plasmacore-based project, save the following script as `Makefile` in your project folder and then type `make` on the command line.  The script will `git clone` the latest Plasmacore repo in a temporary folder and copy all the files into the current folder.  The bootstrap `Makefile` will be overwritten by the Plasmacore `Makefile`.  Note: each line after `bootstrap:` must start with a `[TAB]`, not just spaces.
+To bootstrap a new Plasmacore-based project, open a Terminal in your new project folder and copy and paste the following command:
 
+    curl -O https://raw.githubusercontent.com/AbePralle/Plasmacore/master/Bootstrap.mk && make -f Bootstrap.mk
 
-    bootstrap:
-      @[ -e Source ]    && echo "ERROR: Source/ folder exists; aborting bootstrap to prevent possible overwrite." && exit 1 || true
-      @[ -e Platforms ] && echo "ERROR: Platforms/ folder exists; aborting bootstrap to prevent possible overwrite." && exit 1 || true
-      @[ ! -e Bootstrap/Plasmacore ] && echo "Cloning Plasmacore master branch into Bootstrap/Plasmacore/" && mkdir -p Bootstrap && cd Bootstrap && git clone git@github.com:AbePralle/Plasmacore.git || true
-      rm -rf Bootstrap/Plasmacore/.git
-      @rsync -a --out-format="Copying %n%L" Bootstrap/Plasmacore/* .
-      rm -rf Bootstrap
-      @echo "Done!"
+The command will fetch a bootstrap makefile which in turn will `git clone` the latest Plasmacore repo in a temporary folder and copy all the files into the current folder.
 
 
 ## Starting a New Project
 
-1.  Clone the Plasmacore repo and either delete the `.git` folder or copy everything except the `.git` folder into a new folder.
+1.  Run the bootstrap command or manually clone the Plasmacore repo and copy everything except the `.git` folder into your project folder.
 2.  At the command line run `make ios`.  The first build will take a while as intermediate files are compiled.
 3.  Open `Platforms/iOS/iOS-Project.xcodeproj` in Xcode and run on the simulator or a device.  You should see a blue screen.
 4.  Edit `Source/Main.rogue` and add more game code.
