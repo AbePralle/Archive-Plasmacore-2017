@@ -7,9 +7,9 @@
 
 Currently the Plasmacore toolchain only runs on MacOS and only supports an iOS compile target.
 
-Platform | Notes
----------|--------------------------------------
-iOS      | No sound or virtual keyboard support.
+Platform | Status | Notes
+---------|--------|---------------------------------------------
+iOS      | Alpha  | No sound or direct virtual keyboard support.
 
 Other platforms will eventually be supported.
 
