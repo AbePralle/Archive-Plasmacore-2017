@@ -25,6 +25,9 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
     method normalized->XYZ
       return this / magnitude
 
+    method operator==( other:XYZ )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z)
+
     method operator+( other:XYZ )->XYZ
       return XYZ( x+other.x, y+other.y, z+other.z )
 

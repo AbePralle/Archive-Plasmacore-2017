@@ -126,6 +126,9 @@ class XY( x:Real64, y:Real64 ) [compound]
     method normalized->XY [macro]
       XY( 1.0, this.radians )
 
+    method operator==( other:XY )->Logical
+      return (x == other.x) and (y == other.y)
+
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
 

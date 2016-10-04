@@ -51,7 +51,7 @@ class Color( argb:Int32 ) [compound]
     method red_byte->Int32
       return (argb :>>: 16) & 255
 
-    method times_alpha( a:Real64 )->Color
+    method with_opacity( a:Real64 )->Color
       return (Int32((argb:>>:24) * a):<<:24) | (argb & 0xffFFff)
 
     method to->String
@@ -130,15 +130,15 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
         others: return "[$,$,$,$]" (a,b,c,d)
       endWhich
 
-    method times_alpha( new_a:Real64 )->Colors
-      if (new_a == 1.0) return this
+    method with_opacity( opacity:Real64 )->Colors
+      if (opacity == 1.0) return this
 
       which (count)
         case 0: return this
-        case 1: return Colors( a.times_alpha(new_a), b, c, d, 1 )
-        case 2: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c, d, 2 )
-        case 3: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c.times_alpha(new_a), d, 3 )
-        case 4: return Colors( a.times_alpha(new_a), b.times_alpha(new_a), c.times_alpha(new_a), d.times_alpha(new_a), 4 )
+        case 1: return Colors( a.with_opacity(opacity), b, c, d, 1 )
+        case 2: return Colors( a.with_opacity(opacity), b.with_opacity(opacity), c, d, 2 )
+        case 3: return Colors( a.with_opacity(opacity), b.with_opacity(opacity), c.with_opacity(opacity), d, 3 )
+        case 4: return Colors( a.with_opacity(opacity), b.with_opacity(opacity), c.with_opacity(opacity), d.with_opacity(opacity), 4 )
         others: return this
       endWhich
 endClass
