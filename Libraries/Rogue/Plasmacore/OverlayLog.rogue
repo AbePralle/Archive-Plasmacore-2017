@@ -18,7 +18,6 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
     method draw
       local font = SystemFont
       font.load
-      local disp = Display
       local max = Display.height / font.height
       if (max_lines.exists and max_lines.value < max) max = max_lines.value
       while (lines.count > max) lines.remove_first

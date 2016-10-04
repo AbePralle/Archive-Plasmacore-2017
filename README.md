@@ -1,5 +1,5 @@
 # Plasmacore
-- v0.1.1
+- v0.1.2
 - October 3, 2016
 
 
@@ -48,3 +48,18 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 ## License
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
+## Change Log
+
+###v0.1.2 - October 3, 2016
+- [Image] `Image(existing:Image,subset:Box)` now works correctly even when the `existing` image hasn't been loaded yet.
+- [Image] Renamed `alpha` to `opacity` (controls master opacity, defaults to `1.0`).
+- [Image] Fixed `opacity` to work correctly with opaque images (was previously not enabling blending).
+- [Font]  Renamed `alpha` to `opacity`; opacity now actually applied to font drawing.
+- [TargetValue] Consolidated `TimeLimitedTargetValue` and `RateLimitedTargetValue` into single class `TargetValue`.
+- [XY] Added `operator==(XY)` to provide a better implementation than the current Rogue-generated default.
+
+###v0.1.1 - October 3, 2016
+- [Bootstrap] Added bootstrap mechanism detailed in README.
+
+###v0.1.0 - October 2, 2016
+- Initial release.

@@ -14,7 +14,7 @@ class Image
     anchor      = Anchor.CENTER : Anchor
     render_mode : RenderMode
     colors      = Colors(Color.WHITE) : Colors
-    alpha       = 1.0  # Master alpha; multiplies each color's alpha component
+    opacity     = 1.0  # Master opacity; multiplies each color's alpha component
 
     selected_shader : Shader
     # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
@@ -40,12 +40,11 @@ class Image
       anchor      = other.anchor
       render_mode = other.render_mode
       colors      = other.colors
-      alpha       = other.alpha
+      opacity     = other.opacity
 
     method init( other:Image, subset:Box )
       name        = other.name
-      image_info  = other.image_info  # may need to tweak
-      data        = other.data.cloned
+      image_info  = other.image_info
       position    = other.position
       z           = other.z
       size        = subset.@size
@@ -55,15 +54,21 @@ class Image
       anchor      = other.anchor
       render_mode = other.render_mode
       colors      = other.colors
-      alpha       = other.alpha
+      opacity     = other.opacity
 
-      local texture_data = data as TextureImageData
-      if (texture_data)
-        uv = subset + texture_data.uv1 * texture_data.texture.texture_size
-      else
-        # Program probably has a logical error if 'data' is not instanceOf TextureImageData
-        # but we'll try.
-        uv = subset
+      if (other.data)
+        data = other.data.cloned
+        local texture_data = data as TextureImageData
+        if (texture_data)
+          uv = subset + texture_data.uv1 * texture_data.texture.texture_size
+        else
+          # Program probably has a logical error if 'data' is not instanceOf TextureImageData
+          # but we'll try.
+          uv = subset
+        endIf
+      elseIf (image_info)
+        image_info = image_info.cloned
+        image_info//texture//bounds = (subset + Box(image_info//texture//bounds).position)->Value
       endIf
 
     method init( data )
@@ -137,14 +142,14 @@ class Image
       return false
 
     method prepare->Logical
-      if (alpha <= 0.0) return false
+      if (opacity <= 0.0) return false
 
       if (not load)
         println "Error loading " + select{ name || image_info->String }
         data = ColorFillImageData()
         colors = Colors( Color.WHITE )
         render_mode = RenderMode.OPAQUE_SHAPE
-        alpha = 0
+        opacity = 0
         return false
       endIf
 
@@ -152,10 +157,15 @@ class Image
         selected_shader = shader
       else
         # Use default shader
-        if (alpha < 1.0 or not colors.is_opaque_white)
+        if (opacity < 1.0 or not colors.is_opaque_white)
           selected_shader = TextureShaderWithColorMultiply
+          render_mode = RenderMode.ALPHA_IMAGE
         else
           selected_shader = TextureShader
+          local texture_data = data as TextureImageData
+          if (texture_data)
+            render_mode = select{ texture_data.texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+          endIf
         endIf
       endIf
 
@@ -166,7 +176,7 @@ class Image
       if (data) data = data.set( bitmap )
       size = bitmap.size
 
-    method set_alpha( @alpha )->this
+    method set_opacity( @opacity )->this
       return this
 
     method set_anchor( @anchor )->this
@@ -386,7 +396,7 @@ class ColorFillImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.fill_solid_quad( corners, image.colors.times_alpha(image.alpha), image.render_mode, image.selected_shader )
+      Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
@@ -434,7 +444,7 @@ class TextureImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-        Display.fill_textured_quad( texture, corners, image.colors.times_alpha(image.alpha),
+        Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
           Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
           image.render_mode, image.selected_shader )
 

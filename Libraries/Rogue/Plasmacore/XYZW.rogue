@@ -12,6 +12,9 @@ class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
       return XYZW( xyz.x, xyz.y, xyz.z, 1 )
 
   METHODS
+    method operator==( other:XYZW )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
+
     method to->String
       return "[$,$,$,$]" (x,y,z,w)
 

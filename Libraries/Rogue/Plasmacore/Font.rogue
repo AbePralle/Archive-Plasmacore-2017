@@ -14,7 +14,7 @@ class Font
     spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
 
     color          = Color.WHITE : Color
-    alpha          = 1.0
+    opacity        = 1.0
     shader         : Shader  # leave null for default
 
   METHODS
@@ -222,6 +222,7 @@ class FontData
           image.color = font.color
           image.shader = font.shader  # if null, default is used
           image.position = cursor + font_ch.offset
+          image.opacity = font.opacity
           image.draw
           cursor += font_ch.advance * font.scale + XY(font.spacing,0) * font.scale
         endIf

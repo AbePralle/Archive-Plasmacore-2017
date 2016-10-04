@@ -5,10 +5,17 @@ class TargetValue<<$DataType>>
     initial_value : $DataType
     target_value  : $DataType
     start_time    : Real64
+    duration      : Real64
+    progress_fn   : Function(Real64)->(Real64)
+    duration_fn   : Function($DataType)->(Real64)
 
   METHODS
-    method init( initial_value )
-      @target_value  = initial_value
+    method init( initial_value, duration, progress_fn=ProgressFn.LINEAR )
+      @target_value = initial_value
+      start_time = System.time
+
+    method init( initial_value, duration_fn, progress_fn=ProgressFn.LINEAR )
+      @target_value = initial_value
       start_time = System.time
 
     method delta->$DataType
@@ -19,6 +26,7 @@ class TargetValue<<$DataType>>
       initial_value = value
       @target_value = new_target_value
       start_time = System.time
+      if (duration_fn) duration = duration_fn( target_value - initial_value )
       return this
 
     method set_value( new_value:$DataType )->this
@@ -29,46 +37,7 @@ class TargetValue<<$DataType>>
       return this
 
     method value->$DataType
-      return @target_value
-
-endClass
-
-
-class RateLimitedTargetValue<<$DataType>> : TargetValue<<$DataType>>
-  PROPERTIES
-    rate : $DataType  # per second
-
-  METHODS
-    method init( initial_value, rate )
-      @target_value  = initial_value
-      start_time = System.time
-
-    method value->$DataType
-      local elapsed_time = (System.time - start_time)
-      if (target_value < initial_value)
-        local result = initial_value - (rate * elapsed_time)
-        if (result < target_value) result = target_value
-        return result
-      else
-        local result = initial_value + (rate * elapsed_time)
-        if (result > target_value) result = target_value
-        return result
-      endIf
-
-endClass
-
-
-class TimeLimitedTargetValue<<$DataType>> : TargetValue<<$DataType>>
-  PROPERTIES
-    duration    : Real64
-    progress_fn : Function(Real64)->(Real64)
-
-  METHODS
-    method init( initial_value, duration, progress_fn=ProgressFn.LINEAR )
-      @target_value = initial_value
-      start_time = System.time
-
-    method value->$DataType
+      if (duration == 0) return target_value
       local t = ((System.time - start_time) / duration).clamped( 0, 1 )
       if (t == 0) return initial_value
       if (t == 1) return target_value
@@ -76,20 +45,3 @@ class TimeLimitedTargetValue<<$DataType>> : TargetValue<<$DataType>>
 
 endClass
 
-
-class UpdateBasedTargetValue<<$DataType>> : TargetValue<<$DataType>>
-  PROPERTIES
-    value     : $DataType
-    update_fn : Function(UpdateBasedTargetValue<<$DataType>>)
-
-  METHODS
-    method init( initial_value, update_fn )
-      @target_value  = initial_value
-      start_time = System.time
-
-    method update
-      update_fn( this )
-
-    method value->$DataType
-      return @value
-endClass
