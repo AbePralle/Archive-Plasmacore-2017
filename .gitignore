@@ -1,6 +1,7 @@
 # Vim
 *.swp
 *.local
+DevUpdate.mk
 
 Test
 Local.mk

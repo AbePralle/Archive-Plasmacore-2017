@@ -2,6 +2,9 @@ module Plasmacore
 
 class ActionCmd
   GLOBAL METHODS
+    method create( fn:Function() )->ActionCmd
+      return ActionCmdCall( fn )
+
     method operator+( a:ActionCmd, b:ActionCmd )->ActionCmd
       if (not a) return b
       if (not b) return a
@@ -112,4 +115,13 @@ class ActionCmd
       return next
 endClass
 
+
 class ActionCmdWait( duration ) : ActionCmd;
+
+
+class ActionCmdCall( fn:Function() ) : ActionCmd
+  METHODS
+    method on_start
+      fn()
+endClass
+
