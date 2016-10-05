@@ -14,10 +14,6 @@ class TargetValue<<$DataType>>
       @target_value = initial_value
       start_time = System.time
 
-    method init( initial_value, duration_fn, progress_fn=ProgressFn.LINEAR )
-      @target_value = initial_value
-      start_time = System.time
-
     method delta->$DataType
       return target_value - value
 

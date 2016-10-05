@@ -51,6 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.1.2 - October 3, 2016
+- [ActionCmd] Added `ActionCmd(Function())` constructor that creates an action command that calls the given function when invoked.
 - [Image] `Image(existing:Image,subset:Box)` now works correctly even when the `existing` image hasn't been loaded yet.
 - [Image] Renamed `alpha` to `opacity` (controls master opacity, defaults to `1.0`).
 - [Image] Fixed `opacity` to work correctly with opaque images (was previously not enabling blending).

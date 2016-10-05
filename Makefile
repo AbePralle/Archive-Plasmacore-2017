@@ -35,11 +35,7 @@ clean_am:
 
 xclean: clean clean_harfbuzz clean_am
 
-update: run_local_mk prepare_update
-
-run_local_mk:
-	@# Run the local makefile if it exists
-	@[ -f Local.mk ] && make -f Local.mk update || true
+update: prepare_update
 
 prepare_update:
 	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore master branch into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone git@github.com:AbePralle/Plasmacore.git || true
