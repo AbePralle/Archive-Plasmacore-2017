@@ -12,7 +12,6 @@ class TargetValue<<$DataType>>
   METHODS
     method init( initial_value, duration, progress_fn=ProgressFn.LINEAR )
       @target_value = initial_value
-      start_time = System.time
 
     method delta->$DataType
       return target_value - value
@@ -29,14 +28,17 @@ class TargetValue<<$DataType>>
       if (initial_value == new_value and target_value == new_value) return this
       @initial_value = new_value
       @target_value = new_value
-      start_time = System.time
+      start_time = 0
       return this
 
     method value->$DataType
-      if (duration == 0) return target_value
+      if (duration == 0 or not start_time) return target_value
       local t = ((System.time - start_time) / duration).clamped( 0, 1 )
       if (t == 0) return initial_value
-      if (t == 1) return target_value
+      if (t == 1)
+        start_time = 0  # otherwise a duration change could start this moving again
+        return target_value
+      endIf
       return initial_value + (target_value - initial_value) * progress_fn(t)
 
 endClass
