@@ -2,6 +2,7 @@ $include "../Rogue/Plasmacore"
 using Plasmacore
 
 global help = @{}
+help//displayconfig = "Configure Displays"
 help//cd            = "Change Directory"
 help//ls            = "List Directory"
 help//platform      = "Change Platform"
@@ -363,6 +364,33 @@ class AssetManager [singleton]
       cur_group//name = new_name
       AssetManager.mark_group_modified
 
+    method clone_groups( search_string:String, replace_string:String )
+      forEach (group_name in group_names.cloned)
+        if (group_name.contains(search_string))
+          local new_group_name = group_name.replacing( search_string, replace_string )
+          if (not group_names.contains(new_group_name))
+            println "Cloning $ -> $" (group_name,new_group_name)
+            change_group( group_name )
+            clone_group( new_group_name )
+
+            # Perform search and replace on all asset names
+            forEach (key in cur_group//assets.keys)
+              local asset = cur_group//assets[ key ]
+              local asset_name = asset//filepath->String
+              if (asset_name.contains(search_string))
+                local new_asset_name = asset_name.replacing( search_string, replace_string )
+                if (not cur_group//assets.contains(new_asset_name))
+                  println "Renaming asset $ -> $" (short_asset_name(asset_name),short_asset_name(new_asset_name))
+                  asset//filepath = new_asset_name
+                  cur_group//assets[ new_asset_name ] = cur_group//assets.remove( asset_name )
+                endIf
+              endIf
+            endForEach
+          endIf
+        endIf
+      endForEach
+
+      #{
     method clone_groups( search_string:String, replace_string:String, scale_string:String )
       forEach (group_name in group_names.cloned)
         if (group_name.contains(search_string))
@@ -396,6 +424,7 @@ class AssetManager [singleton]
           endIf
         endIf
       endForEach
+      }#
 
     method short_asset_name( name:String )->String
       return name.after_first( "Assets/" ).after_any( "Images/" )
@@ -668,6 +697,9 @@ class AssetManager [singleton]
                  |  cloneplatform <new platform name>
                  |    Creates a copy of the current platform.
                  |
+                 |  displayconfig
+                 |    Display target configuration sub-menu for the current platform.
+                 |
                  |  all
                  |    List all groups and assets in current platform.
                  |
@@ -690,15 +722,10 @@ class AssetManager [singleton]
                  |  clonegroup <new group name>
                  |    Creates a copy of the current group.
                  |
-                 |  clonegroups <search text> <replace text> [<scale>]
+                 |  clonegroups <search text> <replace text>
                  |    Creates a copy of any group with a group name containing <search text>,
                  |    replacing <search text> in the group name and in all asset filepaths
-                 |    with <replace text>.  Scale can be a single number (such as 2 or 0.5)
-                 |    or a faction such as 1024/768.  If a scale is specified then shallow
-                 |    clones are made (where only group names change) and then all assets in a
-                 |    cloned group have a rescaling operation applied to them.  If no scale is
-                 |    specified then groups are deep cloned (where asset names and filepaths
-                 |    may change as well).
+                 |    with <replace text>.
                  |
                  |  add <files>
                  |    Add files from the current folder to the current group.  Use "*" to select
@@ -870,6 +897,7 @@ class Menu
       elseIf ("cloneplatform".begins_with(cmd) and cmd.count >= 6) cmd = "cloneplatform"
       elseIf ("clonegroup".begins_with(cmd) and cmd.count >= 6)    cmd = "clonegroup"
       elseIf ("compile".begins_with(cmd) and cmd.count >= 2)       cmd = "compile"
+      elseIf ("displayconfig".begins_with(cmd))                    cmd = "displayconfig"
       elseIf ("groups".begins_with(cmd))                           cmd = "group"
       elseIf ("inventory".begins_with(cmd))                        cmd = "inventory"
       elseIf ("mkgroup".begins_with(cmd))                          cmd = "mkgroup"
@@ -903,31 +931,26 @@ class Menu
             AssetManager.save_undo( "$ $"(cmd,args) )
             if (args.contains(' '))
               local individual_args = args.split( ' ' )
-              local search_string, replace_string, scale_string : String
+              local search_string, replace_string : String
               local stage = 1
               forEach (arg in individual_args)
                 if (arg.count)
                   which (stage)
                     case 1: search_string = arg.trimmed; ++stage
                     case 2: replace_string = arg.trimmed; ++stage
-                    case 3: scale_string = arg.trimmed; ++stage
-                    case 4
-                      println "Too many arguments to $ - expected 3 max." (cmd)
+                    case 3
+                      println "Too many arguments to $ - expected only 2." (cmd)
                       return null
                   endWhich
                 endIf
               endForEach
-              if (stage == 3)
-                println "Not enough arguments to $ - expected 2 or 3." (cmd)
+              if (stage == 2)
+                println "Not enough arguments to $ - expected 2." (cmd)
                 return null
               endIf
 
-              if (scale_string)
-                println "> Clone Groups *$* -> *$* with rescale:$" (search_string,replace_string,scale_string)
-              else
-                println "> Clone Groups *$* -> *$*" (search_string,replace_string)
-              endIf
-              AssetManager.clone_groups( search_string, replace_string, scale_string )
+              println "> Clone Groups *$* -> *$*" (search_string,replace_string)
+              AssetManager.clone_groups( search_string, replace_string )
             else
               println "> Clone Group $ -> $" (AssetManager.cur_group_name,args)
               AssetManager.clone_group( args )
@@ -963,6 +986,16 @@ class Menu
             println "No platforms exist."
             return null
           endIf
+
+        case "displayconfig"
+          if (not AssetManager.cur_platform_name)
+            println "No platforms exist."
+            return null
+          endIf
+
+          local substate = ConfigureDisplayTargets()
+          while (substate) substate = substate.execute
+          return null
 
         case "all"  # List All
           if (not AssetManager.cur_platform_name)
@@ -1503,6 +1536,92 @@ class Menu
 
 endClass
 
+class ConfigureDisplayTargets
+  METHODS
+    method execute->this
+      println "$ Display Targets" (AssetManager.cur_platform_name)
+      local has_any = false
+      forEach (target at i in AssetManager.cur_platform//display_targets)
+        println "$ $" (i,target//description)
+        has_any = true
+      endForEach
+      if (not has_any) println "  (None)"
+
+      println "-" * 79
+      println @|Each display target causes a unique set of images to be generated.
+      println "COMMANDS"
+      println "add <name> <true size> [<nominal size>]"
+      println "  Examples: add iPadRetina 1536x2048"
+      println "            add iPadPro    2048x2732 1536x2048"
+      println "rm  <name>"
+      print( ">>> " ).flush
+
+      local input = Console.read_line
+      if (input.contains('\e'))
+        # cancel anything with escape characters from arrow keys
+        return this
+      endIf
+
+      input = input.trimmed
+      if (input.count == 0) return null
+
+      if (input == "q") return null
+
+      #local args = input.after_first( ' ' )
+      input = input.before_first( ' ' )
+
+      if ("add".begins_with(input))
+        trace "TODO"
+        return this
+
+      elseIf ("remove".begins_with(input))
+        trace "TODO"
+        return this
+
+      else
+        println "ERROR: Invalid command " + input
+      endIf
+
+      return this
+
+    method parse_character_map( args:String )->ValueList
+      try
+        local map = @[]
+        args = args.trimmed
+        if (args.count)
+          local reader = ParseReader( args )
+          while (reader.has_another)
+            local value = JSON.parse_value( reader )
+            if (not value)
+              println "Syntax error in arguments."
+              return null
+            endIf
+            reader.consume_spaces
+            if (reader.consume('-'))
+              # low-high
+              local low = select{ value.is_string:value->String[0] || value->Int32 }
+              value = JSON.parse_value( reader )
+              local high = select{ value.is_string:value->String[0] || value->Int32 }
+              map.add( forEach in low..high )
+            else
+              # single
+              if (value.is_string) map.add( forEach in value->String )
+              else                 map.add( value->Int32 )
+            endIf
+            reader.consume_spaces
+          endWhile
+        else
+          map.add( forEach in 32..126 )
+        endIf
+
+        return map
+
+      catch (Error)
+        println "Syntax error in arguments."
+        return null
+      endTry
+endClass
+
 class ExamineImageAsset
   PROPERTIES
     index      : Int32
@@ -1545,7 +1664,7 @@ class ExamineImageAsset
         println ']'
       endIf
       println "-" * 79
-      println
+      println "COMMANDS"
       println "clear (clear operations)"
       println ''varfont ["character map" | 'character' | unicode | <low>-<high> ...]*''
       println "  Default mapping equivalent to: varfont 32-126 AKA varfont ' '-'~'"
@@ -1872,7 +1991,7 @@ class ImageCompiler
       if (not placements) return null
 
       if (not placements.count)
-        println "ERROR: Group does not contain any assets to compile."
+        println "ERROR: Group [$::$] does not contain any assets to compile." (AssetManager.cur_platform_name,AssetManager.cur_group_name)
         return null
       endIf
 

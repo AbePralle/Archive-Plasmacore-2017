@@ -51,12 +51,14 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.1.2 - October 3, 2016
+- [Bootstrap] Instead of copying all hidden files, now copies only `.gitattributes` and `.gitignore` and uses the `--ignore-existing` rsync option.
 - [ActionCmd] Added `ActionCmd(Function())` constructor that creates an action command that calls the given function when invoked.
 - [Image] `Image(existing:Image,subset:Box)` now works correctly even when the `existing` image hasn't been loaded yet.
 - [Image] Renamed `alpha` to `opacity` (controls master opacity, defaults to `1.0`).
 - [Image] Fixed `opacity` to work correctly with opaque images (was previously not enabling blending).
 - [Font]  Renamed `alpha` to `opacity`; opacity now actually applied to font drawing.
 - [TargetValue] Consolidated `TimeLimitedTargetValue` and `RateLimitedTargetValue` into single class `TargetValue`.
+- [TargetValue] A `start_time` of 0 now signals a finished state internally; once target value is reached then `start_time` is set to 0 to avoid subsequent duration changes "restarting" animation.
 - [XY] Added `operator==(XY)` to provide a better implementation than the current Rogue-generated default.
 
 ###v0.1.1 - October 3, 2016
