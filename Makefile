@@ -11,7 +11,7 @@ ios: build run compile_images
 build: Build/BuildScript/buildscript
 
 compile_images:
-	./am compile iOS
+	./icom iOS
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
@@ -30,10 +30,10 @@ clean:
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
 
-clean_am:
-	make -C Libraries/AssetManager clean
+clean_icom:
+	make -C Libraries/ImageCompiler clean
 
-xclean: clean clean_harfbuzz clean_am
+xclean: clean clean_harfbuzz clean_icom
 
 update: prepare_update
 
@@ -46,8 +46,8 @@ prepare_update:
 
 continue_update:
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildCore.rogue .
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/am .
-	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/AssetManager Libraries
+	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/icom .
+	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageCompiler Libraries
 	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/FreeType     Libraries
 	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/HarfBuzz     Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageIO      Libraries

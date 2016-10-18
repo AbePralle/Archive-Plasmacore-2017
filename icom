@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e  # stop on error
+make -C Libraries/ImageCompiler
+exec Libraries/ImageCompiler/Build/imagecompiler $@
+
