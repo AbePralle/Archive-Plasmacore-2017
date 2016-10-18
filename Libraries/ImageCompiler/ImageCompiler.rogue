@@ -12,7 +12,7 @@ try
                     |@ **/*font* varfont
                     |
                     |[Default]
-                    |set sheet_size:2048
+                    |imageSheetSize 2048
                     |group *
     writer.close
   endIf
@@ -53,16 +53,34 @@ endClass
 
 class ImageCompiler
   PROPERTIES
-    file       : File
-    platform   : String
-    commands   = Table<<String,Command[]>>()
-    files      = Table<<String,String>>()
-    attributes = @[]
+    file             : File
+    platform         : String
+    commands         = Table<<String,Command[]>>()
+    files            = @{}
+    attributes       = @[]
+    image_sheet_size = 2048
 
   METHODS
     method init( file, platform )
       organize_commands
       execute_global_commands
+      execute_platform_commands
+
+    method execute_global_commands
+      if (not commands.contains("Global")) return
+      (forEach in commands//Global).execute
+
+    method execute_platform_commands
+      local working_platform = select{ commands.contains(platform):platform || "Default" }
+      if (commands.contains(working_platform))
+        (forEach in commands[working_platform]).execute
+      else
+        if (platform != "Default")
+          println "IMAGE COMPILER WARNING: No configuration for platforms $ or Default in Assets/Images/ImageConfig.txt." (platform)
+        else
+          println "IMAGE COMPILER WARNING: No configuration for platform Default in Assets/Images/ImageConfig.txt."
+        endIf
+      endIf
 
     method organize_commands
       local category = "Global"
@@ -78,10 +96,6 @@ class ImageCompiler
           commands[ category ].add( Command(this,file.filepath,index+1,line) )
         endIf
       endForEach
-
-    method execute_global_commands
-      if (not commands.contains("Global")) return
-      (forEach in commands//Global).execute
 
     method strip_comments( text:String )->String
       if (not text.contains('#')) return text
@@ -145,8 +159,26 @@ class Command
     method execute
       if (consume("@"))
         local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
-        trace pattern
+        local info = @{ pattern:pattern, attributes:[] }
+        while (has_another)
+          local name = parse_string( "Attribute or [end of line] expected." )
+          local attribute = @{ name:name }
+          consume_whitespace
+          if (consume(':'))
+            attribute//value = parse_string( "Value expected." )
+          endIf
+          info//attributes.add( attribute )
+        endWhile
+        icom.attributes.add( info )
+        return
       endIf
+
+      local cmd = parse_string( "Command expected." )
+      which (cmd)
+        others
+          trace "TODO ", cmd
+      endWhich
+
 
     method has_another->Logical
       consume_whitespace
@@ -173,12 +205,33 @@ class Command
     method parse_string( expected:String )->String
       if (not has_another) throw error( expected )
       buffer.clear
-      while (reader.has_another)
-        local ch = reader.peek
-        if (ch == ' ') escapeWhile
-        buffer.print reader.read
-      endWhile
-      if (buffer.count == 0) throw error( expected )
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        # Quote-delimited
+        local quote_type = reader.read
+        while (reader.has_another)
+          ch = reader.read
+          which (ch)
+            case quote_type: return buffer->String
+            case '\\'
+              if (reader.has_another) buffer.print( reader.read )
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+        throw error( "String is missing closing ($)." (quote_type) )
+      else
+        while (reader.has_another)
+          ch = reader.peek
+          which (ch)
+            case ' ', ':', ','
+              escapeWhile
+            others
+              buffer.print reader.read
+          endWhich
+        endWhile
+        if (buffer.count == 0) throw error( expected )
+      endIf
       return buffer->String
 
     method to->String
