@@ -173,13 +173,13 @@ class JPEGEncoder
               |  int j = $this->jpeg_info.next_scanline;
               |  RogueInt32* pixels = $bitmap->pixels->data->as_int32s + j*$width - 1;
               |  int n = $width;
-              |  Byte*    dest = buffer;
+              |  RogueByte* dest = buffer;
               |  while (--n >= 0)
               |  {
               |    int color = *(++pixels);
-              |    dest[0] = (Byte) (color >> 16);
-              |    dest[1] = (Byte) (color >> 8);
-              |    dest[2] = (Byte) color;
+              |    dest[0] = (RogueByte) (color >> 16);
+              |    dest[1] = (RogueByte) (color >> 8);
+              |    dest[2] = (RogueByte) color;
               |    dest += 3;
               |  }
               |

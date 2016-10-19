@@ -31,6 +31,18 @@ catch (err:BuildError)
   System.exit 1
 endTry
 
+class Bitmaps : Table<<String,Bitmap>> [singleton]
+  METHODS
+    method get( name:String )->Bitmap
+      local bitmap = prior.get( name )
+      if (bitmap) return bitmap
+
+      bitmap = Bitmap( File(name) )
+      this[ name ] = bitmap
+
+      return bitmap
+endClass
+
 class BuildError( cmd:Command, message ) : Error
   METHODS
     method init( message )
@@ -41,7 +53,7 @@ class BuildError( cmd:Command, message ) : Error
       local bar = "=" * Console.width.or_smaller( 79 )
       builder.println bar
       if (cmd)
-        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (cmd.filepath,cmd.line)).word_wrapped(Console.width) )
+        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(Console.width) )
       else
         builder.println "IMAGE COMPILE ERROR"
       endIf
@@ -54,14 +66,16 @@ endClass
 class ImageCompiler
   PROPERTIES
     file             : File
+    file_timestamp   : Real64
     platform         : String
     commands         = Table<<String,Command[]>>()
-    files            = @{}
     attributes       = @[]
+    settings         = @{}
     image_sheet_size = 2048
 
   METHODS
     method init( file, platform )
+      file_timestamp = file.timestamp
       organize_commands
       execute_global_commands
       execute_platform_commands
@@ -127,16 +141,40 @@ endClass
 
 class Command
   PROPERTIES
-    icom     : ImageCompiler
-    filepath : String
-    line     : Int32
-    content  : String
-    reader   : ParseReader
-    buffer   = StringBuilder()
+    icom         : ImageCompiler
+    src_filepath : String
+    src_line     : Int32
+    content      : String
+    reader       : ParseReader
+    buffer       = StringBuilder()
 
   METHODS
-    method init( icom, filepath, line, content )
+    method init( icom, src_filepath, src_line, content )
       reader = ParseReader( content )
+
+    method collect_files( filepath:String )->String[]
+      local pattern = filepath
+      if (File.exists(filepath))
+        pattern = "**"
+      else
+        while (filepath.contains('*') or filepath.contains('?')) filepath = File.folder( filepath )
+        if (not File.exists(filepath)) throw error( ''No such file or folder "$".'' (filepath) )
+      endIf
+
+      local file_list = String[]
+
+      if (File.is_folder(filepath))
+        forEach (f in File.listing(filepath,&ignore_hidden,&recursive))
+          if (f.matches_wildcard_pattern(pattern)) file_list.add( f )
+        endForEach
+      else
+        file_list.add( filepath )
+      endIf
+
+      # Filter files
+      # TODO
+
+      return file_list
 
     method consume( ch:Character )->Logical
       return (reader.consume(ch))
@@ -175,6 +213,20 @@ class Command
 
       local cmd = parse_string( "Command expected." )
       which (cmd)
+        case "imageCopy"
+          local args = @{}
+          while (has_another)
+            local arg = parse_name_value
+            args[ arg//name ] = arg//value
+          endWhile
+          require_arg( args, "from" )
+          require_arg( args, "to" )
+          image_copy( args )
+
+        case "set"
+          local setting = parse_name_value
+          icom.settings[ setting//name ] = setting//value
+
         others
           trace "TODO ", cmd
       endWhich
@@ -183,6 +235,60 @@ class Command
     method has_another->Logical
       consume_whitespace
       return (reader.has_another)
+
+    method image_copy( args:@{} )
+      require_arg( args, "from" )
+      require_arg( args, "to" )
+      local from_filepath = args//from->String
+      local to_filepath   = args//to->String
+      if (not from_filepath.begins_with("Assets/Images/")) from_filepath = "Assets/Images/" + from_filepath
+      if (not to_filepath.begins_with("Assets/Images/"))   to_filepath = "Assets/Images/" + to_filepath
+
+      local files = collect_files( from_filepath )
+      forEach (src_filepath in files)
+        local dest_filepath = to_filepath + src_filepath.after_first( from_filepath )
+        contingent
+          necessary  (not File.is_folder(src_filepath))
+          sufficient (not File.exists(dest_filepath))
+
+          local dest_timestamp = File.timestamp( dest_filepath )
+          local src_timestamp = File.timestamp( src_filepath )
+          sufficient (src_timestamp > dest_timestamp)
+          sufficient (icom.file_timestamp > dest_timestamp)
+          escapeContingent
+
+        satisfied
+          image_copy( src_filepath, dest_filepath, args )
+
+        endContingent
+      endForEach
+
+    method image_copy( from_filepath:String, to_filepath:String, args:Value )
+      local attributes = @{}
+      forEach (attr in icom.attributes)
+        if (from_filepath.matches_wildcard_pattern(attr//pattern))
+          #trace from_filepath
+        endIf
+      endForEach
+      println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
+
+      local scale = parse_scale( args//scale )
+      if (scale == 1.0)
+        File.copy( from_filepath, to_filepath )
+      else
+        local bitmap = Bitmaps[ from_filepath ]
+        bitmap.resize( bitmap.width*scale, bitmap.height*scale )
+
+        local is_png = true
+        local lc = to_filepath.to_lowercase
+        if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
+
+        if (is_png)
+          File.save( to_filepath, bitmap.to_png_bytes )
+        else
+          File.save( to_filepath, bitmap.to_jpeg_bytes )
+        endIf
+      endIf
 
     method must_consume( ch:Character )->Logical
       if (consume(ch)) return true
@@ -201,6 +307,31 @@ class Command
       else
         throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
       endIf
+
+    method parse_name_value->Value
+      local name = parse_string( "Identifier or [end of line] expected." )
+      local name_value = @{ name:name }
+      consume_whitespace
+      if (consume(':'))
+        name_value//value = parse_string( "Value expected." )
+      endIf
+      return name_value
+
+    method parse_dimensions( text:String )->Value
+      local dims = text.split( "x" )
+      if (not dims.count)  throw error( ''Expected <width>x<height>, found "$".'' (text) )
+      if (dims.count == 1)
+        local size = dims.first->Int32
+        return @{ width:size, height:size }
+      else
+        return @{ width:dims[0]->Int32, height:dims[1]->Int32 }
+      endIf
+
+    method parse_scale( text:String )->Real64
+      if (not text) return 1.0
+      if (not text.contains('/')) return text->Real64
+      local parts = text.split( "/" )
+      return parts[0]->Real64 / parts[1]->Real64
 
     method parse_string( expected:String )->String
       if (not has_another) throw error( expected )
@@ -233,6 +364,9 @@ class Command
         if (buffer.count == 0) throw error( expected )
       endIf
       return buffer->String
+
+    method require_arg( args:@{}, name:String  )
+      if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
 
     method to->String
       return content
