@@ -37,6 +37,12 @@ class FileOptions( flags=0:Int32 ) [compound]
     method folders->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
 
+    method include_path->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
+
+    method includes_path->Logical [macro]
+      ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
+
     method is_limited->Logical [macro]
       (not (this.flags & FileOptions.FLAG_RECURSIVE))
 
@@ -78,7 +84,7 @@ class File
       if (not filepath) return null
 
       if (not exists(filepath))
-        local parent = path( filepath )
+        local parent = folder( filepath )
         if (parent.count == 0) parent = "."
         return "$/$" (absolute_filepath(parent),filename(filepath))
       endIf
@@ -163,11 +169,32 @@ class File
       endIf
       return return_value
 
+    method before_wildcard_pattern( filepath:String )->String
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File.folder( filepath )
+      endWhile
+      return filepath
+
     method character_reader( filepath:String )->UTF8Reader [macro]
       UTF8Reader( File.reader(filepath) )
 
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( File.writer(filepath) )
+
+    method copy( from_filepath:String, to_filepath:String )
+      if (File.is_folder(to_filepath))
+        to_filepath += "/" + File.filename(from_filepath)
+      else
+        local folder = File.folder( to_filepath )
+        File.create_folder( folder )
+      endIf
+
+      local reader = File.reader( from_filepath )
+      local writer = File.writer( to_filepath )
+
+      while (reader.has_another) writer.write( reader.read )
+
+      writer.close
 
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
@@ -180,7 +207,7 @@ class File
 
       # Check for the parent folder's existence and recursively create
       # that if necessary.
-      local parent = File.path( filepath )
+      local parent = File.folder( filepath )
       if (not create_folder(parent)) return false
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
@@ -214,6 +241,12 @@ class File
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
       return filepath.from( i.value+1 )
+
+    method folder( filepath:String )->String
+      local i = filepath.locate_last( '/' )
+      if (not i?) i = filepath.locate_last( '\\' )
+      if (not i?) return ""
+      return filepath.from( 0, i.value-1 )
 
     method is_folder( filepath:String )->Logical [essential]
       native @|if ( !$filepath ) return false;
@@ -262,7 +295,30 @@ class File
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
-      return listing( folder, options, "", String[] )
+      if (folder.contains('*') or folder.contains('?'))
+        local pattern = folder
+        folder = File.before_wildcard_pattern( folder )
+        if (folder == "") folder = "."; pattern = "./" + pattern
+        if (pattern.contains("**")) options = options.recursive
+        local filepaths = listing( folder, options.relative.include_path )
+        local filtered = String[]
+        forEach (filepath in filepaths)
+          if (File.matches_wildcard_pattern(filepath,pattern))
+            if (options.omitting_paths)
+              filtered.add( filepath.after_first(folder) )
+            elseIf (options.is_absolute)
+              filtered.add( File.absolute_filepath( filepath ) )
+            else
+              filtered.add( filepath )
+            endIf
+          endIf
+        endForEach
+        return filtered
+
+      else
+        return listing( folder, options, "", String[] )
+
+      endIf
 
     method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
       if (not options.omitting_paths)
@@ -362,14 +418,57 @@ class File
       infile.close
       return buffer->String
 
+    method matches_wildcard_pattern( filepath:String, pattern:String )->Logical
+      # Determines whether or not the given filepath matches the given
+      # semi-Unix/Dos-style 'wildcard pattern'.  'pattern' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # *  - Matches any number of characters but does not match '/' or '\'
+      # ** - Matches any number of characters including slashes
+      # ?  - Matches any one character except '/' and '\'
+      local c = filepath.count
+      if (pattern.count == 0) return (c == 0)
+
+      local remaining_pattern = pattern.from( 1 )
+      local ch = pattern[0]
+      which (ch)
+        case '*':
+          if (remaining_pattern.count and remaining_pattern[0] == '*')
+            # Double asterisk - match all characters including '/' and '\'
+            remaining_pattern = remaining_pattern.from( 1 )
+            forEach (n in 0..c)
+              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+            endForEach
+          else
+            # Single asterisk - match any characters except '/' and '\'
+            forEach (n in 0..<c)
+              ch = filepath[ n ]
+              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+              if (ch == '/' or ch == '\\') return false
+            endForEach
+            return matches_wildcard_pattern( "", remaining_pattern )
+          endIf
+
+        case '?':
+          if (c == 0) return false
+          ch = filepath[ 0 ]
+          if (ch == '/' or ch == '\\') return false
+          return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+
+        others:
+          if (c == 0) return false
+          if (ch == filepath[0])
+            return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+          endIf
+      endWhich
+      return false
+
     method options->FileOptions [macro]
       FileOptions()
 
     method path( filepath:String )->String
-      local i = filepath.locate_last( '/' )
-      if (not i?) i = filepath.locate_last( '\\' )
-      if (not i?) return ""
-      return filepath.from( 0, i.value-1 )
+      return folder( filepath )
 
     method reader( filepath:String )->FileReader
       return FileReader( filepath )
@@ -468,11 +567,17 @@ class File
     method absolute_filepath->String [macro]
       File.absolute_filepath( this.filepath )
 
+    method before_wildcard_pattern->String [macro]
+      File.before_wildcard_pattern( this.filepath )
+
     method character_reader->UTF8Reader [macro]
       UTF8Reader( this.reader )
 
     method character_writer->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( this.writer )
+
+    method copy( to_filepath:String ) [macro]
+      File.copy( this.filepath, to_filepath )
 
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
@@ -496,6 +601,9 @@ class File
     method filename->String
       return filename( filepath )
 
+    method folder->String [macro]
+      File.folder( this.filepath )
+
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
 
@@ -511,8 +619,11 @@ class File
     method load_as_string->String [macro]
       File.load_as_string( this.filepath )
 
+    method matches_wildcard_pattern( pattern:String )->Logical [macro]
+      File.matches_wildcard_pattern( this.filepath, pattern )
+
     method path->String [macro]
-      File.path( this.filepath )
+      File.folder( this.filepath )
 
     method reader->FileReader [macro]
       File.reader( this.filepath )
