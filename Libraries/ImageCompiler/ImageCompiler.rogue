@@ -165,7 +165,7 @@ class Command
 
       if (File.is_folder(filepath))
         forEach (f in File.listing(filepath,&ignore_hidden,&recursive))
-          if (f.matches_wildcard_pattern(pattern)) file_list.add( f )
+          if (File.matches_wildcard_pattern(f,pattern)) file_list.add( f )
         endForEach
       else
         file_list.add( filepath )
@@ -213,12 +213,11 @@ class Command
 
       local cmd = parse_string( "Command expected." )
       which (cmd)
-        case "imageCopy"
-          local args = @{}
-          while (has_another)
-            local arg = parse_name_value
-            args[ arg//name ] = arg//value
-          endWhile
+        case "group"
+          create_group
+
+        case "image_copy"
+          local args = parse_args
           require_arg( args, "from" )
           require_arg( args, "to" )
           image_copy( args )
@@ -231,6 +230,12 @@ class Command
           trace "TODO ", cmd
       endWhich
 
+    method create_group
+      local pattern = "Assets/Images/" + parse_string( "File pattern expected." )
+      #local args = parse_args
+trace pattern
+      local files = collect_files( pattern )
+trace (forEach in files)
 
     method has_another->Logical
       consume_whitespace
@@ -246,15 +251,25 @@ class Command
 
       local files = collect_files( from_filepath )
       forEach (src_filepath in files)
-        local dest_filepath = to_filepath + src_filepath.after_first( from_filepath )
+        local from_folder = from_filepath
+        if (from_folder.contains('*') or from_folder.contains('?'))
+          from_folder = File.folder( from_folder, &omit_wildcard_pattern )
+        endIf
+
+        local dest_filepath = to_filepath + src_filepath.after_first( from_folder )
+        local ext = src_filepath.after_last( "." ).to_lowercase
+
         contingent
           necessary  (not File.is_folder(src_filepath))
+          necessary  (ext == "png" or ext == "jpeg" or ext == "jpg")
           sufficient (not File.exists(dest_filepath))
 
+          necessary  (not args//missing_only)
           local dest_timestamp = File.timestamp( dest_filepath )
           local src_timestamp = File.timestamp( src_filepath )
           sufficient (src_timestamp > dest_timestamp)
           sufficient (icom.file_timestamp > dest_timestamp)
+
           escapeContingent
 
         satisfied
@@ -266,29 +281,129 @@ class Command
     method image_copy( from_filepath:String, to_filepath:String, args:Value )
       local attributes = @{}
       forEach (attr in icom.attributes)
-        if (from_filepath.matches_wildcard_pattern(attr//pattern))
-          #trace from_filepath
+        if (File.matches_wildcard_pattern(from_filepath,attr//pattern))
+          forEach (a in attr//attributes)
+            if (a//value) attributes[ a//name ]         = a//value
+            else          attributes[ a//name->String ] = true
+          endForEach
         endIf
       endForEach
+
       println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
 
-      local scale = parse_scale( args//scale )
+      local scale = parse_scale( args//rescale )
+      local resize_ipad = (args//resize == "ipad_pro_to_retina")
+      if (resize_ipad) scale = 0.75
+
       if (scale == 1.0)
         File.copy( from_filepath, to_filepath )
       else
         local bitmap = Bitmaps[ from_filepath ]
-        bitmap.resize( bitmap.width*scale, bitmap.height*scale )
+        local w = bitmap.width
+        local h = bitmap.height
 
-        local is_png = true
-        local lc = to_filepath.to_lowercase
-        if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
+        if (attributes//varfont)
+          local characters = extract_varfont_characters( bitmap )
+          print "  # character".pluralized( characters.count )
+          print " [$x$] -> " (w,h)
+          forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
+          bitmap = pack_varfont_characters( characters )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, to_filepath )
 
-        if (is_png)
-          File.save( to_filepath, bitmap.to_png_bytes )
+        elseIf (attributes//split)
+          local size = parse_dimensions( attributes//split )
+          local tiles_wide = size//width->Int32
+          local tiles_high = size//height->Int32
+          local tiles = bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
+          print "  $x$ tiles" (tiles_wide,tiles_high)
+          print " [$x$] -> " (w,h)
+          forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
+          bitmap = tiles_to_bitmap( tiles, tiles_wide, tiles_high )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, to_filepath )
+
         else
-          File.save( to_filepath, bitmap.to_jpeg_bytes )
+          local new_w = (w * scale)->Int32
+          local new_h = (h * scale)->Int32
+          if (resize_ipad)
+            if (w == 2732 and h == 2048)     new_w = 2048; new_h = 1536
+            elseIf (w == 2048 and h == 2732) new_w = 1536; new_h = 2048
+          endIf
+          bitmap.resize( new_w, new_h )
+          println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
+
+          save_bitmap( bitmap, to_filepath )
         endIf
       endIf
+
+    method bitmap_to_tiles( bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
+      local tiles = Bitmap[]
+      local w = bitmap.width / tiles_wide
+      local h = bitmap.height / tiles_high
+      forEach (j in 0..<tiles_high)
+        forEach (i in 0..<tiles_wide)
+          tiles.add( Bitmap(bitmap,Box(i*w,j*h,w,h)) )
+        endForEach
+      endForEach
+      return tiles
+
+    method tiles_to_bitmap( tiles:Bitmap[], tiles_wide:Int32, tiles_high:Int32 )->Bitmap
+      require (tiles.count == tiles_wide * tiles_high)
+      local w = tiles.first.width
+      local h = tiles.first.height
+      local bitmap = Bitmap( w*tiles_wide, h*tiles_high )
+      forEach (j in 0..<tiles_high)
+        forEach (i in 0..<tiles_wide)
+          tiles[ j*tiles_wide + i ].blit( bitmap, XY(i*w,j*h) )
+        endForEach
+      endForEach
+      return bitmap
+
+    method extract_varfont_characters( bitmap:Bitmap )->Bitmap[]
+      local characters = Bitmap[]
+      local x1 = 0
+      local w  = bitmap.width
+      local char_height = bitmap.height - 1
+
+      while (x1 < w)
+        local color = bitmap.get( x1, 0 )
+        local x_limit = x1 + 1
+        while (x_limit < w and bitmap.get(x_limit,0) == color) ++x_limit
+        characters.add( Bitmap(bitmap,Box(x1,1,x_limit-x1,char_height)) )
+        x1 = x_limit
+      endWhile
+
+      return characters
+
+    method pack_varfont_characters( characters:Bitmap[] )->Bitmap
+      require characters.count
+      local total_w = 0
+      total_w += (forEach in characters).width
+      local bitmap = Bitmap( total_w, characters.first.height + 1 )
+      local color = Color.RED
+      local x = 0
+      forEach (ch in characters)
+        bitmap.fill( Box(x,0,ch.width,1), color )
+        ch.blit( bitmap, XY(x,1) )
+        if (color == Color.RED) color = 0xFF00FF00
+        else                    color = Color.RED
+        x += ch.width
+      endForEach
+      return bitmap
+
+    method save_bitmap( bitmap:Bitmap, to_filepath:String )
+      local is_png = true
+      local lc = to_filepath.to_lowercase
+      if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
+
+      File.create_folder( File.folder(to_filepath) )
+      if (is_png)
+        File.save( to_filepath, bitmap.to_png_bytes )
+      else
+        File.save( to_filepath, bitmap.to_jpeg_bytes )
+      endIf
+
 
     method must_consume( ch:Character )->Logical
       if (consume(ch)) return true
@@ -307,6 +422,15 @@ class Command
       else
         throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
       endIf
+
+    method parse_args->@{}
+      local args = @{}
+      while (has_another)
+        local arg = parse_name_value
+        if (arg//value) args[ arg//name ]         = arg//value
+        else            args[ arg//name->String ] = true
+      endWhile
+      return args
 
     method parse_name_value->Value
       local name = parse_string( "Identifier or [end of line] expected." )
@@ -328,7 +452,7 @@ class Command
       endIf
 
     method parse_scale( text:String )->Real64
-      if (not text) return 1.0
+      if (text.count == 0) return 1.0
       if (not text.contains('/')) return text->Real64
       local parts = text.split( "/" )
       return parts[0]->Real64 / parts[1]->Real64
