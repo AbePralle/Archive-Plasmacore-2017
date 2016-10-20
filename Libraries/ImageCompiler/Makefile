@@ -1,6 +1,7 @@
 #AM_CCFLAGS     += -O3
 IMAGE_IO_CCFLAGS += -O3
 
+ROGUEC        = ../../Programs/Mac/roguec --libraries=../../Libraries/Rogue
 ROGUEC_FLAGS += --target="C++,Console"
 ROGUEC_FLAGS += --debug
 
@@ -124,7 +125,7 @@ $(HARFBUZZ_BUILD_FOLDER)/libharfbuzz.a:
 imagecompiler: $(BUILD_FOLDER)/imagecompiler
 
 $(BUILD_FOLDER)/imagecompiler: ImageCompiler.rogue $(ROGUE_LIBS) $(IMAGE_IO_OFILES)
-	roguec $(ROGUEC_FLAGS) ImageCompiler.rogue --main --output=$(BUILD_FOLDER)/ImageCompiler
+	$(ROGUEC) $(ROGUEC_FLAGS) ImageCompiler.rogue --main --output=$(BUILD_FOLDER)/ImageCompiler
 	@echo Compiling ImageCompiler...
 	@clang++ -Wall $(AM_CCFLAGS) -std=c++11 -fno-strict-aliasing $(BUILD_FOLDER)/ImageCompiler.cpp $(IMAGE_IO_OFILES) -o $(BUILD_FOLDER)/imagecompiler
 

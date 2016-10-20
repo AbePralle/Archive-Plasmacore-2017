@@ -75,6 +75,7 @@ class ImageCompiler
     image_sheet_size = 2048
     group_manifests  = @{}
     oldest_group_manifest_timestamp : Real64
+    even_odd         = true
 
   METHODS
     method init( file, platform )
@@ -344,8 +345,6 @@ class Command
         return
       endIf
 
-      println "Compiling group " + group_name
-
       local image_sheets = perform_layout( assets )
 
       # Build group manifest
@@ -354,6 +353,16 @@ class Command
       local textures = manifest.ensure_list( "textures" )
       forEach (sheet at index in image_sheets)
         sheet.filename = "$-$.png" (output_filename,index.right_justified(2,'0'))
+        print "  "
+        print sheet.filename
+        print " "
+        if (icom.even_odd)
+          forEach (1..(50 - sheet.filename.count)) print "."
+        else
+          forEach (1..(50 - sheet.filename.count)) print " "
+        endIf
+        icom.even_odd = not icom.even_odd
+        println " [$x$]" (sheet.width,sheet.height)
 
         textures.add(
         @{
