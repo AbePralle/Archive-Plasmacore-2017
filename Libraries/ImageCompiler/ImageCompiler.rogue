@@ -13,7 +13,7 @@ try
                     |
                     |[Default]
                     |imageSheetSize 2048
-                    |group *
+                    |group .
     writer.close
   endIf
 
@@ -26,7 +26,7 @@ try
     ImageCompiler( config_file, "Default" )
   endIf
 
-catch (err:BuildError)
+catch (err:Error)
   println err
   System.exit 1
 endTry
@@ -50,15 +50,16 @@ class BuildError( cmd:Command, message ) : Error
     method to->String
       local builder = StringBuilder()
 
-      local bar = "=" * Console.width.or_smaller( 79 )
+      local w = Console.width.or_smaller( 79 )
+      local bar = "=" * w
       builder.println bar
       if (cmd)
-        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(Console.width) )
+        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(w) )
       else
         builder.println "IMAGE COMPILE ERROR"
       endIf
       builder.println
-      builder.println message.word_wrapped( Console.width )
+      builder.println message.word_wrapped( w )
       builder.println bar
       return builder->String
 endClass
@@ -72,10 +73,16 @@ class ImageCompiler
     attributes       = @[]
     settings         = @{}
     image_sheet_size = 2048
+    group_manifests  = @{}
+    oldest_group_manifest_timestamp : Real64
 
   METHODS
     method init( file, platform )
+      println "Compiling images for platform " + platform
       file_timestamp = file.timestamp
+      group_manifests = @{}
+      oldest_group_manifest_timestamp = 0.0
+
       organize_commands
       execute_global_commands
       execute_platform_commands
@@ -171,10 +178,12 @@ class Command
         file_list.add( filepath )
       endIf
 
-      # Filter files
-      # TODO
+      local filtered_list = String[]
+      forEach (f in file_list)
+        if (not File.is_folder(f)) filtered_list.add( f )
+      endForEach
 
-      return file_list
+      return filtered_list
 
     method consume( ch:Character )->Logical
       return (reader.consume(ch))
@@ -198,15 +207,51 @@ class Command
       if (consume("@"))
         local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
         local info = @{ pattern:pattern, attributes:[] }
+        local characters : StringBuilder
         while (has_another)
           local name = parse_string( "Attribute or [end of line] expected." )
-          local attribute = @{ name:name }
           consume_whitespace
           if (consume(':'))
-            attribute//value = parse_string( "Value expected." )
+            local value = parse_string( "Value expected." )
+            if (name == "varfont")
+              ensure characters
+              characters.print( value )
+              local attribute = @{ name:name }
+              info//attributes.add( attribute )
+            elseIf (name == "characters")
+              ensure characters
+              characters.print( value )
+            elseIf (name == "unicode")
+              ensure characters
+              if (value.begins_with('['))
+                local ranges = value.after_first('[').before_last(']').replacing(',',' ').split(' ')
+                forEach (range in ranges)
+                  if (range.contains('-'))
+                    local parts = range.split( '-' )
+                    characters.print( parts.first->Int32->Character )
+                    characters.print( parts.last->Int32->Character )
+                  else
+                    characters.print( range->Int32->Character )
+                  endIf
+                endForEach
+              else
+                characters.print( value->Int32->Character )
+              endIf
+            else
+              local attribute = @{ name:name }
+              attribute//value = value
+              info//attributes.add( attribute )
+            endIf
+          else
+            local attribute = @{ name:name }
+            info//attributes.add( attribute )
           endIf
-          info//attributes.add( attribute )
         endWhile
+        if (characters)
+          forEach (attr in info//attributes)
+            if (attr//name == "varfont") attr//value = characters->String
+          endForEach
+        endIf
         icom.attributes.add( info )
         return
       endIf
@@ -231,11 +276,221 @@ class Command
       endWhich
 
     method create_group
-      local pattern = "Assets/Images/" + parse_string( "File pattern expected." )
+      local group_name = parse_string( "Folder or file pattern expected." )
+      if (group_name == ".")
+        create_group( "Images" )
+      elseIf (group_name.contains('?') or group_name.contains('*'))
+        forEach (filepath in File.listing("Assets/Images/"+group_name,&ignore_hidden))
+          create_group( filepath.after_first("Assets/") )
+        endForEach
+      else
+        create_group( "Images/" + group_name )
+      endIf
+
+    method create_group( group_name:String )
+      local pattern = group_name
+      group_name = File.before_wildcard_pattern( pattern )
+      local output_filename = group_name.replacing('/','-')
+      pattern = "Assets/" + pattern
+
+      local dest_folder = "Build/$/Assets/Images" (icom.platform)
+      File.create_folder( dest_folder )
+
+      local oldest_existing_timestamp = 0.0
+      forEach (filepath in File.listing("$/$*.png" (dest_folder,output_filename)))
+        local timestamp = File.timestamp( filepath )
+        if (oldest_existing_timestamp == 0.0 or oldest_existing_timestamp > timestamp)
+          oldest_existing_timestamp = timestamp
+        endIf
+      endForEach
+
+      local manifest_folder = "Build/$/Intermediate/ImageGroupManifests" (icom.platform)
+      File.create_folder( manifest_folder )
+      local manifest_filepath = "$/$.json" (manifest_folder,output_filename)
+      local manifest_timestamp = 0.0
+      if (File.exists(manifest_filepath)) manifest_timestamp = File.timestamp( manifest_filepath )
+      oldest_existing_timestamp = oldest_existing_timestamp.or_smaller( manifest_timestamp )
+
       #local args = parse_args
-trace pattern
       local files = collect_files( pattern )
-trace (forEach in files)
+
+      contingent
+        necessary (icom.file_timestamp < oldest_existing_timestamp)
+        forEach (filepath in files)
+          necessary (File.timestamp(filepath) < oldest_existing_timestamp)
+        endForEach
+
+        # No changes to group.  Load up cached group manifest so it can be written out
+        # with the platform manifest
+        icom.group_manifests[ group_name ] = JSON.load_table( manifest_filepath )
+        if (icom.oldest_group_manifest_timestamp == 0.0 or manifest_timestamp < icom.oldest_group_manifest_timestamp)
+          icom.oldest_group_manifest_timestamp = manifest_timestamp
+        endIf
+
+        return  # no changes to group
+      endContingent
+
+      local assets = Asset[]
+      forEach (filepath in files)
+        local ext = File.extension(filepath).to_lowercase
+
+        if (ext == "png" or ext == "jpeg" or ext == "jpg")
+          assets.add( create_asset_object(filepath) )
+        endIf
+      endForEach
+
+      if (not assets.count)
+        println "Skipping empty group " + group_name
+        return
+      endIf
+
+      println "Compiling group " + group_name
+
+      local image_sheets = perform_layout( assets )
+
+      # Build group manifest
+      local manifest = @{ name:group_name }
+
+      local textures = manifest.ensure_list( "textures" )
+      forEach (sheet at index in image_sheets)
+        sheet.filename = "$-$.png" (output_filename,index.right_justified(2,'0'))
+
+        textures.add(
+        @{
+          filename: sheet.filename,
+          size: { width:sheet.width, height:sheet.height }
+        } )
+
+      endForEach
+
+      local images = manifest.ensure_list( "images" )
+      forEach (asset in assets)
+        asset.collect_image_info( images )
+      endForEach
+
+      # Store group manifest
+      icom.group_manifests[ group_name ] = manifest
+      manifest_timestamp = System.time
+      if (icom.oldest_group_manifest_timestamp == 0.0 or manifest_timestamp < icom.oldest_group_manifest_timestamp)
+        icom.oldest_group_manifest_timestamp = manifest_timestamp
+      endIf
+
+      manifest.save( File(manifest_filepath), &formatted )
+
+
+    method perform_layout( assets:Asset[] )->ImageSheet[]
+      local placements = Placement[]
+      (forEach in assets).collect_placements( placements )
+
+      local max_w = select{ icom.settings//image_sheet_size->Int32 || 2048 }.to_power_of_two
+      local max_h = max_w
+
+      local sheets = ImageSheet[]
+      while (placements.count)
+        local sheet = perform_layout( placements, max_w, max_h )
+        if (not sheet)
+          local w = placements.first.width
+          local h = placements.first.height
+          local min_size = w.to_power_of_two.or_larger( h.to_power_of_two )
+          throw error( "$ ($x$) is too large to fit on a $x$ image sheet.  Use the 'set image_sheet_size WxH' directive " ...
+                  "to increase the group's maximum image sheet size to $x$ or greater." ...
+                  (placements.first.asset.filepath,w,h,max_w,max_h,min_size,min_size) )
+          return null
+        endIf
+        sheets.add( sheet )
+      endWhile
+
+      require sheets.count
+
+      # Try reducing the size of the last sheet by redoing the layout
+      local last_sheet = sheets.remove_last
+
+      loop
+        placements.clear.add( last_sheet.placements )
+        local better_fit = perform_layout( placements, last_sheet.width, last_sheet.height/2 )
+        if (better_fit and placements.count == 0)
+          last_sheet = better_fit
+          nextIteration
+        endIf
+
+        placements.clear.add( last_sheet.placements )
+        better_fit = perform_layout( placements, last_sheet.width/2, last_sheet.height )
+        if (better_fit and placements.count == 0)
+          last_sheet = better_fit
+          nextIteration
+        endIf
+
+        escapeLoop
+      endLoop
+
+      # Redo the last sheet layout one final time with the best dimensions - any failed
+      # attempts above have left the images positioned badly.
+      placements.clear.add( last_sheet.placements )
+      last_sheet = perform_layout( placements, last_sheet.width, last_sheet.height )
+
+      sheets.add( last_sheet )
+
+      return sheets
+
+    method perform_layout( placements:Placement[], max_width:Int32, max_height:Int32 )->ImageSheet
+      InsertionSort<<Placement>>.sort( placements,
+        function(a:Placement,b:Placement)->(Logical)
+          # 'a' should come before 'b' when:
+          if (a.height > b.height) return true
+          if (a.height < b.height) return false
+          # Heights are equal
+
+          return (a.width > b.width)
+        endFunction
+      )
+
+      local sheet = ImageSheet( max_width, max_height )
+      if (perform_layout(placements, -1, -1, max_width+2, max_height+2, sheet)) return sheet
+      else return null
+
+    method perform_layout( placements:Placement[], sx:Int32, sy:Int32, sw:Int32, sh:Int32, image_sheet:ImageSheet )->Logical
+      # Find the largest asset we can place (including a 1-pixel border around
+      # the edge), delete it from the list, and then recursively place any
+      # remaining placements we can.
+      forEach (placement in placements)
+        local w = (placement.width  + 2)->Int32
+        local h = (placement.height + 2)->Int32
+        if (w <= sw and h <= sh)
+          placement.x = sx+1
+          placement.y = sy+1
+          placements.remove( placement )
+          image_sheet.add_placement( placement )
+
+          # We've just placed 'A', now recursively fill areas 'B' and 'C':
+          #
+          # AAA|BBBBBB
+          # AAA|BBBBBB
+          # ---+------
+          # CCCCCCCCCC
+          # CCCCCCCCCC
+          # CCCCCCCCCC
+          perform_layout( placements, sx+w, sy,   sw-w, h,    image_sheet )   # B
+          perform_layout( placements, sx,   sy+h, sw,   sh-h, image_sheet )   # C
+
+          return true
+        endIf
+      endForEach
+
+      # Unable to place any
+      return false
+
+    method create_asset_object( filepath:String )->Asset
+      local attributes = @{}
+      forEach (attr in icom.attributes)
+        if (File.matches_wildcard_pattern(filepath,attr//pattern))
+          forEach (a in attr//attributes)
+            if (a//value) attributes[ a//name ]         = a//value
+            else          attributes[ a//name->String ] = true
+          endForEach
+        endIf
+      endForEach
+
+      return Asset( this, filepath, attributes )
 
     method has_another->Logical
       consume_whitespace
@@ -248,14 +503,9 @@ trace (forEach in files)
       local to_filepath   = args//to->String
       if (not from_filepath.begins_with("Assets/Images/")) from_filepath = "Assets/Images/" + from_filepath
       if (not to_filepath.begins_with("Assets/Images/"))   to_filepath = "Assets/Images/" + to_filepath
-
       local files = collect_files( from_filepath )
       forEach (src_filepath in files)
-        local from_folder = from_filepath
-        if (from_folder.contains('*') or from_folder.contains('?'))
-          from_folder = File.folder( from_folder, &omit_wildcard_pattern )
-        endIf
-
+        local from_folder = File.before_wildcard_pattern( from_filepath )
         local dest_filepath = to_filepath + src_filepath.after_first( from_folder )
         local ext = src_filepath.after_last( "." ).to_lowercase
 
@@ -264,11 +514,11 @@ trace (forEach in files)
           necessary  (ext == "png" or ext == "jpeg" or ext == "jpg")
           sufficient (not File.exists(dest_filepath))
 
-          necessary  (not args//missing_only)
           local dest_timestamp = File.timestamp( dest_filepath )
           local src_timestamp = File.timestamp( src_filepath )
           sufficient (src_timestamp > dest_timestamp)
-          sufficient (icom.file_timestamp > dest_timestamp)
+
+          #sufficient (icom.file_timestamp > dest_timestamp)
 
           escapeContingent
 
@@ -291,7 +541,7 @@ trace (forEach in files)
 
       println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
 
-      local scale = parse_scale( args//rescale )
+      local scale = Convert.parse_scale( args//rescale )
       local resize_ipad = (args//resize == "ipad_pro_to_retina")
       if (resize_ipad) scale = 0.75
 
@@ -303,23 +553,23 @@ trace (forEach in files)
         local h = bitmap.height
 
         if (attributes//varfont)
-          local characters = extract_varfont_characters( bitmap )
+          local characters = Convert.extract_varfont_characters( bitmap )
           print "  # character".pluralized( characters.count )
           print " [$x$] -> " (w,h)
           forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
-          bitmap = pack_varfont_characters( characters )
+          bitmap = Convert.pack_varfont_characters( characters )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
         elseIf (attributes//split)
-          local size = parse_dimensions( attributes//split )
+          local size = Convert.parse_dimensions( attributes//split )
           local tiles_wide = size//width->Int32
           local tiles_high = size//height->Int32
-          local tiles = bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
+          local tiles = Convert.bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
           print "  $x$ tiles" (tiles_wide,tiles_high)
           print " [$x$] -> " (w,h)
           forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
-          bitmap = tiles_to_bitmap( tiles, tiles_wide, tiles_high )
+          bitmap = Convert.tiles_to_bitmap( tiles, tiles_wide, tiles_high )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
@@ -337,6 +587,96 @@ trace (forEach in files)
         endIf
       endIf
 
+    method save_bitmap( bitmap:Bitmap, to_filepath:String )
+      local is_png = true
+      local lc = to_filepath.to_lowercase
+      if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
+
+      File.create_folder( File.folder(to_filepath) )
+      if (is_png)
+        File.save( to_filepath, bitmap.to_png_bytes )
+      else
+        File.save( to_filepath, bitmap.to_jpeg_bytes )
+      endIf
+
+
+    method must_consume( ch:Character )->Logical
+      if (consume(ch)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (ch,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (ch) )
+      endIf
+
+    method must_consume( text:String )->Logical
+      if (consume(text)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (text,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
+      endIf
+
+    method parse_args->@{}
+      local args = @{}
+      while (has_another)
+        local arg = parse_name_value
+        if (arg//value) args[ arg//name ]         = arg//value
+        else            args[ arg//name->String ] = true
+      endWhile
+      return args
+
+    method parse_name_value->Value
+      local name = parse_string( "Identifier or [end of line] expected." )
+      local name_value = @{ name:name }
+      consume_whitespace
+      if (consume(':'))
+        name_value//value = parse_string( "Value expected." )
+      endIf
+      return name_value
+
+    method parse_string( expected:String )->String
+      if (not has_another) throw error( expected )
+      buffer.clear
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        # Quote-delimited
+        local quote_type = reader.read
+        while (reader.has_another)
+          ch = reader.read
+          which (ch)
+            case quote_type: return buffer->String
+            case '\\'
+              if (reader.has_another) buffer.print( reader.read )
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+        throw error( "String is missing closing ($)." (quote_type) )
+      else
+        while (reader.has_another)
+          ch = reader.peek
+          which (ch)
+            case ' ', ':', ','
+              escapeWhile
+            others
+              buffer.print reader.read
+          endWhich
+        endWhile
+        if (buffer.count == 0) throw error( expected )
+      endIf
+      return buffer->String
+
+    method require_arg( args:@{}, name:String  )
+      if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
+
+    method to->String
+      return content
+endClass
+
+class Convert
+  GLOBAL METHODS
     method bitmap_to_tiles( bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
       local tiles = Bitmap[]
       local w = bitmap.width / tiles_wide
@@ -392,58 +732,8 @@ trace (forEach in files)
       endForEach
       return bitmap
 
-    method save_bitmap( bitmap:Bitmap, to_filepath:String )
-      local is_png = true
-      local lc = to_filepath.to_lowercase
-      if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
-
-      File.create_folder( File.folder(to_filepath) )
-      if (is_png)
-        File.save( to_filepath, bitmap.to_png_bytes )
-      else
-        File.save( to_filepath, bitmap.to_jpeg_bytes )
-      endIf
-
-
-    method must_consume( ch:Character )->Logical
-      if (consume(ch)) return true
-
-      if (reader.has_another)
-        throw error( ''Syntax error - expected "$", found "$".'' (ch,reader.peek) )
-      else
-        throw error( ''Syntax error - expected "$", found [end of line].'' (ch) )
-      endIf
-
-    method must_consume( text:String )->Logical
-      if (consume(text)) return true
-
-      if (reader.has_another)
-        throw error( ''Syntax error - expected "$", found "$".'' (text,reader.peek) )
-      else
-        throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
-      endIf
-
-    method parse_args->@{}
-      local args = @{}
-      while (has_another)
-        local arg = parse_name_value
-        if (arg//value) args[ arg//name ]         = arg//value
-        else            args[ arg//name->String ] = true
-      endWhile
-      return args
-
-    method parse_name_value->Value
-      local name = parse_string( "Identifier or [end of line] expected." )
-      local name_value = @{ name:name }
-      consume_whitespace
-      if (consume(':'))
-        name_value//value = parse_string( "Value expected." )
-      endIf
-      return name_value
-
     method parse_dimensions( text:String )->Value
       local dims = text.split( "x" )
-      if (not dims.count)  throw error( ''Expected <width>x<height>, found "$".'' (text) )
       if (dims.count == 1)
         local size = dims.first->Int32
         return @{ width:size, height:size }
@@ -457,94 +747,129 @@ trace (forEach in files)
       local parts = text.split( "/" )
       return parts[0]->Real64 / parts[1]->Real64
 
-    method parse_string( expected:String )->String
-      if (not has_another) throw error( expected )
-      buffer.clear
-      local ch = reader.peek
-      if (ch == '"' or ch == '\'')
-        # Quote-delimited
-        local quote_type = reader.read
-        while (reader.has_another)
-          ch = reader.read
-          which (ch)
-            case quote_type: return buffer->String
-            case '\\'
-              if (reader.has_another) buffer.print( reader.read )
-            others
-              buffer.print( ch )
-          endWhich
-        endWhile
-        throw error( "String is missing closing ($)." (quote_type) )
-      else
-        while (reader.has_another)
-          ch = reader.peek
-          which (ch)
-            case ' ', ':', ','
-              escapeWhile
-            others
-              buffer.print reader.read
-          endWhich
-        endWhile
-        if (buffer.count == 0) throw error( expected )
-      endIf
-      return buffer->String
-
-    method require_arg( args:@{}, name:String  )
-      if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
-
-    method to->String
-      return content
 endClass
 
 
-#{
-class Commands
+class Asset
   PROPERTIES
-    reader   : LineReader
-    buffer   = StringBuilder()
-    next_cmd : Cmd
+    cmd          : Command
+    filepath     : String
+    attributes   : @{}
+    placements   = Placement[]
+    type         = "TextureImage"
 
   METHODS
-    method init( file:File )
-      reader = LineReader( file )
-      if (reader.has_another)
+    method init( cmd, filepath, attributes )
+      local bitmap = Bitmaps[ filepath ]
 
-      #{
-    method consume_whitespace->Logical
-      local found_any = false
-      while (reader.has_another)
-        contingent
-          sufficient (reader.consume_spaces)
-          sufficient (reader.consume_eols)
-          sufficient (reader.consume('\t'))
-          if (reader.consume('#'))
-            while (reader.has_another and reader.peek != '\n') reader.read
-            sufficient
+      if (attributes//split)
+        # Split into tiles
+        type = "Image[]"
+        local size = Convert.parse_dimensions( attributes//split )
+        local tiles_wide = size//width->Int32
+        local tiles_high = size//height->Int32
+        local tiles = Convert.bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
+        placements.add( Placement( this, (forEach in tiles) ) )
+
+      elseIf (attributes//varfont)
+        type = "Font"
+        local characters = Convert.extract_varfont_characters( bitmap )
+        placements.add( Placement( this, (forEach in characters) ) )
+
+      else
+        # Standard image
+        placements.add( Placement( this, bitmap ) )
+
+      endIf
+
+    method collect_image_info( image_list:@[] )
+      local entry = @{ type:type, name:filepath.after_first("Assets/Images/") }
+
+      which (type)
+        case "TextureImage"
+          placements.first.collect_image_info( entry )
+
+        case "Image[]"
+          local images = entry.ensure_list( "images" )
+          images.add( (forEach in placements).collect_image_info( @{ type:"TextureImage" } ) )
+
+        case "Font"
+          local images = entry.ensure_list( "characters" )
+          local characters : String
+          if (attributes//varfont.is_string)
+            characters = attributes//varfont->String
+            if (characters.count != placements.count)
+              throw cmd.error( ''Font strip "$" contains $ characters but the varfont character mapping specifies $.''...
+                (filepath.after_first("Assets/Images/"),placements.count,characters.count) )
+            endIf
+          else
+            local buffer = StringBuilder()
+            buffer.print( (forEach in 32..126)->Character )
+            characters = buffer->String
+
+            if (characters.count != placements.count)
+              throw cmd.error( ''Font strip "$" contains $ characters but the default varfont character mapping specifies 95.''...
+                (filepath.after_first("Assets/Images/"),placements.count) )
+            endIf
           endIf
-          return found_any
 
-        satisfied
-          found_any = true
+          local unicode = characters.reader
+          images.add( (forEach in placements).collect_image_info( @{ type:"TextureImage", unicode:unicode.read->Int32 } ) )
 
-        endContingent
-      endWhile
-      }#
+        others
+          throw Error( "INTERNAL ERROR in Asset.collect_image_info(): Unhandled image type: " + type )
+      endWhich
 
-    method has_another->Logical
-      consume_whitespace
-      return reader.has_another
+      image_list.add( entry )
 
-    method parse_text->String
-      consume_whitespace
-      if (not reader.has_another) return ""
+    method collect_placements( list:Placement[] )
+      list.add( placements )
+endClass
 
-      buffer.clear
-      local ch = reader.read
-      buffer.print ch
-      while (reader.has_another)
-        local ch = reader.peek
-        if (ch == ' ' or ch == '\n')
+
+class Placement
+  PROPERTIES
+    asset          : Asset
+    bitmap         : Bitmap
+    x              : Int32
+    y              : Int32
+    width          : Int32
+    height         : Int32
+    display_width  : Int32
+    display_height : Int32
+    image_sheet    : ImageSheet
+
+  METHODS
+    method init( asset, bitmap )
+      width = bitmap.width
+      height = bitmap.height
+      display_width  = width
+      display_height = height
+
+    method collect_image_info( info:@{} )->@{}
+      info//display_size = @{ width:display_width, height:display_height }
+      info//texture =
+      @{
+        filename:image_sheet.filename,
+        bounds: { x:x, y:y, width:width, height:height }
+      }
+      return info
+endClass
+
+
+class ImageSheet
+  PROPERTIES
+    placements = Placement[]
+    width      : Int32
+    height     : Int32
+    filename   : String
+
+  METHODS
+    method init( width, height )
+
+    method add_placement( placement:Placement )
+      placements.add( placement )
+      placement.image_sheet = this
 
 endClass
 
-}#
