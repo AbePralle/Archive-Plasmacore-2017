@@ -2,6 +2,9 @@
 - v0.2.0
 - October 20, 2016
 
+## Requirements
+- Mac with Xcode and iOS SDK.
+- Plasmacore comes with an embedded copy of the Rogue language; you do not need to install Rogue separately.
 
 ## Supported Platforms
 
@@ -18,7 +21,9 @@ Other platforms will eventually be supported.
 
 There is some Rogue documentation here: [https://github.com/AbePralle/Rogue/wiki](https://github.com/AbePralle/Rogue/wiki)
 
-There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.  A sample project is coming soon.
+There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.
+
+A sample Plasmacore game project is available here: [https://github.com/AbePralle/PlasmacoreDemos](https://github.com/AbePralle/PlasmacoreDemos)
 
 
 ## Bootstrap Command
