@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.2.0
-- October 20, 2016
+- v0.2.1
+- October 21, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -54,6 +54,9 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.2.1 - October 21, 2016
+- [iOS Xcode Project] Added missing Swift files to iOS template project.
 
 ###v0.2.0 - October 20, 2016
 - [Image Compiler] Replaced complex Asset Manager (`AM`) with simple Image Compiler (`ICOM`) that works off the script `Assets/Images/ImageConfig.txt`.  ICOM will automatically create a default config script if that is missing.  ICOM is automatically run as part of the `make ios` build.

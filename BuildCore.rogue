@@ -24,9 +24,6 @@ endRoutine
 routine configure_ios_build_folder
   local output_folder = "Build/iOS/Source"
   File.create_folder( output_folder )
-
-  copy_newer( "RogueInterface.h",                   "Libraries/Plasmacore/Swift", output_folder )
-  copy_newer( "RogueInterface.mm",                  "Libraries/Plasmacore/Swift", output_folder )
 endRoutine
 
 
