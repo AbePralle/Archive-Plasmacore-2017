@@ -6,10 +6,34 @@ try
   if (not config_file.exists)
     File.create_folder( config_file.path )
     local writer = PrintWriter(config_file.writer)
-    writer.println @|# Default config file - customize as desired.
+    writer.println @|# Default image config file - customize as desired.
+                    |#
+                    |# PLATFORMS
+                    |#   [Global]  - Use this category for attributes and settings
+                    |#               that apply to all platforms.
+                    |#   [Default] - Used when specific platform isn't defined, e.g.
+                    |#               if [iOS] isn't defined then [Default] is used.
+                    |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                    |#
+                    |#
+                    |# COMMANDS
+                    |#   @ <file or pattern> [attributes...]  Set image attributes
+                    |#   set image_sheet_size:4096            Set max texture size
+                    |#   set display_scale:1/2                Images drawn half size etc.
+                    |#   group <folder or pattern>            Turn folders into groups
+                    |#   image_copy from:<folder> to:<folder> [resize:WxH | rescale:1/2]
+                    |#
+                    |# ATTTRIBUTES
+                    |#   @ ... resample <pixel width>x<pixel height>
+                    |#     Change pixel size but leave display size as it was.
+                    |#   @ ... split:<tiles-wide>x<tiles-high>
+                    |#   @ ... varfont
+                    |#   @ ... varfont:"Character Mapping"
+                    |#   @ ... varfont [characters:"ABC..." unicode:[32-126] ...]
+                    |#
                     |[Global]
-                    |@ **/*Font* varfont
-                    |@ **/*font* varfont
+                    |@ **Font* varfont
+                    |@ **font* varfont
                     |
                     |[Default]
                     |imageSheetSize 2048
@@ -73,20 +97,33 @@ class ImageCompiler
     attributes       = @[]
     settings         = @{}
     image_sheet_size = 2048
-    group_manifests  = @{}
-    oldest_group_manifest_timestamp : Real64
+    group_manifests  = @[]
+    newest_group_manifest_timestamp : Real64
     even_odd         = true
+    files_written    : Int32
 
   METHODS
     method init( file, platform )
-      println "Compiling images for platform " + platform
+      println "Compiling images for platform $..." (platform)
       file_timestamp = file.timestamp
-      group_manifests = @{}
-      oldest_group_manifest_timestamp = 0.0
+      group_manifests = @[]
+      newest_group_manifest_timestamp = 0.0
 
       organize_commands
       execute_global_commands
       execute_platform_commands
+
+      local manifest_filepath = "Build/$/Assets/Images/ImageManifest.json" (platform)
+      File.create_folder( File.folder(manifest_filepath) )
+      if (not File.exists(manifest_filepath) or File.timestamp(manifest_filepath) < newest_group_manifest_timestamp)
+        ++files_written
+        println "  Writing " + manifest_filepath
+        @{ groups:group_manifests }.save( File(manifest_filepath) )
+      endIf
+
+      if (not files_written)
+        println "Everything up to date."
+      endIf
 
     method execute_global_commands
       if (not commands.contains("Global")) return
@@ -207,6 +244,7 @@ class Command
     method execute
       if (consume("@"))
         local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
+        pattern = "Assets/Images/" + pattern
         local info = @{ pattern:pattern, attributes:[] }
         local characters : StringBuilder
         while (has_another)
@@ -260,7 +298,7 @@ class Command
       local cmd = parse_string( "Command expected." )
       which (cmd)
         case "group"
-          create_group
+          compile_group
 
         case "image_copy"
           local args = parse_args
@@ -276,19 +314,19 @@ class Command
           trace "TODO ", cmd
       endWhich
 
-    method create_group
+    method compile_group
       local group_name = parse_string( "Folder or file pattern expected." )
       if (group_name == ".")
-        create_group( "Images" )
+        compile_group( "Images" )
       elseIf (group_name.contains('?') or group_name.contains('*'))
         forEach (filepath in File.listing("Assets/Images/"+group_name,&ignore_hidden))
-          create_group( filepath.after_first("Assets/") )
+          compile_group( filepath.after_first("Assets/") )
         endForEach
       else
-        create_group( "Images/" + group_name )
+        compile_group( "Images/" + group_name )
       endIf
 
-    method create_group( group_name:String )
+    method compile_group( group_name:String )
       local pattern = group_name
       group_name = File.before_wildcard_pattern( pattern )
       local output_filename = group_name.replacing('/','-')
@@ -323,10 +361,8 @@ class Command
 
         # No changes to group.  Load up cached group manifest so it can be written out
         # with the platform manifest
-        icom.group_manifests[ group_name ] = JSON.load_table( manifest_filepath )
-        if (icom.oldest_group_manifest_timestamp == 0.0 or manifest_timestamp < icom.oldest_group_manifest_timestamp)
-          icom.oldest_group_manifest_timestamp = manifest_timestamp
-        endIf
+        icom.group_manifests.add( JSON.load_table( manifest_filepath ) )
+        icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
 
         return  # no changes to group
       endContingent
@@ -347,14 +383,16 @@ class Command
 
       local image_sheets = perform_layout( assets )
 
-      # Build group manifest
+      # Build group manifest while rendering image sheets
       local manifest = @{ name:group_name }
 
       local textures = manifest.ensure_list( "textures" )
       forEach (sheet at index in image_sheets)
         sheet.filename = "$-$.png" (output_filename,index.right_justified(2,'0'))
-        print "  "
-        print sheet.filename
+        local sheet_filepath = "Build/$/Assets/Images/$" (icom.platform,sheet.filename)
+        ++icom.files_written
+        print "  Writing "
+        print sheet_filepath
         print " "
         if (icom.even_odd)
           forEach (1..(50 - sheet.filename.count)) print "."
@@ -370,6 +408,8 @@ class Command
           size: { width:sheet.width, height:sheet.height }
         } )
 
+        File.save( sheet_filepath, sheet.render.to_png_bytes )
+
       endForEach
 
       local images = manifest.ensure_list( "images" )
@@ -378,11 +418,9 @@ class Command
       endForEach
 
       # Store group manifest
-      icom.group_manifests[ group_name ] = manifest
+      icom.group_manifests.add( manifest )
       manifest_timestamp = System.time
-      if (icom.oldest_group_manifest_timestamp == 0.0 or manifest_timestamp < icom.oldest_group_manifest_timestamp)
-        icom.oldest_group_manifest_timestamp = manifest_timestamp
-      endIf
+      icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
 
       manifest.save( File(manifest_filepath), &formatted )
 
@@ -778,16 +816,16 @@ class Asset
         local tiles_wide = size//width->Int32
         local tiles_high = size//height->Int32
         local tiles = Convert.bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
-        placements.add( Placement( this, (forEach in tiles) ) )
+        placements.add( Placement( this, (forEach in tiles), attributes ) )
 
       elseIf (attributes//varfont)
         type = "Font"
         local characters = Convert.extract_varfont_characters( bitmap )
-        placements.add( Placement( this, (forEach in characters) ) )
+        placements.add( Placement( this, (forEach in characters), attributes ) )
 
       else
         # Standard image
-        placements.add( Placement( this, bitmap ) )
+        placements.add( Placement( this, bitmap, attributes ) )
 
       endIf
 
@@ -840,6 +878,7 @@ class Placement
   PROPERTIES
     asset          : Asset
     bitmap         : Bitmap
+    attributes     : @{}
     x              : Int32
     y              : Int32
     width          : Int32
@@ -849,11 +888,25 @@ class Placement
     image_sheet    : ImageSheet
 
   METHODS
-    method init( asset, bitmap )
+    method init( asset, bitmap, attributes )
       width = bitmap.width
       height = bitmap.height
       display_width  = width
       display_height = height
+
+      if (attributes//resample)
+        local tx_size   = Convert.parse_dimensions( attributes//resample )
+        width  = tx_size//width->Int32
+        height = tx_size//height->Int32
+        bitmap = bitmap.resized( width, height )
+      endIf
+
+      local display_scale = asset.cmd.icom.settings//display_scale
+      if (display_scale)
+        local scale = Convert.parse_scale( display_scale )
+        display_width  = display_width * scale
+        display_height = display_height * scale
+      endIf
 
     method collect_image_info( info:@{} )->@{}
       info//display_size = @{ width:display_width, height:display_height }
@@ -863,6 +916,19 @@ class Placement
         bounds: { x:x, y:y, width:width, height:height }
       }
       return info
+
+    method render( to_bitmap:Bitmap )
+      local pos  = XY( x, y )
+      local size = XY( bitmap.width, bitmap.height )
+
+      bitmap.blit( to_bitmap, pos )
+
+      # Extend each edge 1 pixel to prevent rendering artifacts
+      to_bitmap.blit( Box(pos,size.x,1),                to_bitmap, pos - XY(0,1) )  # top
+      to_bitmap.blit( Box(pos+XY(0,size.y-1),size.x,1), to_bitmap, pos + size.yv )  # bottom
+
+      to_bitmap.blit( Box(pos-XY(0,1),1,size.y+2),         to_bitmap, pos-XY(1,1) )         # left
+      to_bitmap.blit( Box(pos+size.xv-XY(1,1),1,size.y+2), to_bitmap, pos+size.xv-XY(0,1) ) # right
 endClass
 
 
@@ -879,6 +945,11 @@ class ImageSheet
     method add_placement( placement:Placement )
       placements.add( placement )
       placement.image_sheet = this
+
+    method render->Bitmap
+      local bitmap = Bitmap( width, height, Color.BLUE )
+      (forEach in placements).render( bitmap )
+      return bitmap
 
 endClass
 
