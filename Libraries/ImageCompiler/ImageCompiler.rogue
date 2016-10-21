@@ -36,7 +36,7 @@ try
                     |@ **font* varfont
                     |
                     |[Default]
-                    |imageSheetSize 2048
+                    |set image_sheet_size:4096
                     |group .
     writer.close
   endIf
@@ -453,18 +453,22 @@ class Command
       local last_sheet = sheets.remove_last
 
       loop
-        placements.clear.add( last_sheet.placements )
-        local better_fit = perform_layout( placements, last_sheet.width, last_sheet.height/2 )
-        if (better_fit and placements.count == 0)
-          last_sheet = better_fit
-          nextIteration
-        endIf
+        if (last_sheet.height >= last_sheet.width)
+          placements.clear.add( last_sheet.placements )
+          local better_fit = perform_layout( placements, last_sheet.width, last_sheet.height/2 )
+          if (better_fit and placements.count == 0)
+            last_sheet = better_fit
+            nextIteration
+          endIf
 
-        placements.clear.add( last_sheet.placements )
-        better_fit = perform_layout( placements, last_sheet.width/2, last_sheet.height )
-        if (better_fit and placements.count == 0)
-          last_sheet = better_fit
-          nextIteration
+        else
+          placements.clear.add( last_sheet.placements )
+          local better_fit = perform_layout( placements, last_sheet.width/2, last_sheet.height )
+          if (better_fit and placements.count == 0)
+            last_sheet = better_fit
+            nextIteration
+          endIf
+
         endIf
 
         escapeLoop
@@ -588,7 +592,7 @@ class Command
 
       println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
 
-      local scale = Convert.parse_scale( args//rescale )
+      local scale = Convert.parse_scale( this, args//rescale )
       local resize_ipad = (args//resize == "ipad_pro_to_retina")
       if (resize_ipad) scale = 0.75
 
@@ -600,23 +604,26 @@ class Command
         local h = bitmap.height
 
         if (attributes//varfont)
-          local characters = Convert.extract_varfont_characters( bitmap )
+          local characters = Convert.extract_varfont_characters( this, bitmap )
           print "  # character".pluralized( characters.count )
           print " [$x$] -> " (w,h)
           forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
-          bitmap = Convert.pack_varfont_characters( characters )
+          bitmap = Convert.pack_varfont_characters( this, characters )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
         elseIf (attributes//split)
-          local size = Convert.parse_dimensions( attributes//split )
+          local size = Convert.parse_dimensions( this, attributes//split )
           local tiles_wide = size//width->Int32
           local tiles_high = size//height->Int32
-          local tiles = Convert.bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
+          if (tiles_wide * tiles_high == 0)
+            throw error( ''Illegal 'split' size of $x$ for "$".'' (tiles_wide,tiles_high,from_filepath) )
+          endIf
+          local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
           print "  $x$ tiles" (tiles_wide,tiles_high)
           print " [$x$] -> " (w,h)
           forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
-          bitmap = Convert.tiles_to_bitmap( tiles, tiles_wide, tiles_high )
+          bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
@@ -724,7 +731,7 @@ endClass
 
 class Convert
   GLOBAL METHODS
-    method bitmap_to_tiles( bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
+    method bitmap_to_tiles( cmd:Command, bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
       local tiles = Bitmap[]
       local w = bitmap.width / tiles_wide
       local h = bitmap.height / tiles_high
@@ -735,7 +742,7 @@ class Convert
       endForEach
       return tiles
 
-    method tiles_to_bitmap( tiles:Bitmap[], tiles_wide:Int32, tiles_high:Int32 )->Bitmap
+    method tiles_to_bitmap( cmd:Command, tiles:Bitmap[], tiles_wide:Int32, tiles_high:Int32 )->Bitmap
       require (tiles.count == tiles_wide * tiles_high)
       local w = tiles.first.width
       local h = tiles.first.height
@@ -747,7 +754,7 @@ class Convert
       endForEach
       return bitmap
 
-    method extract_varfont_characters( bitmap:Bitmap )->Bitmap[]
+    method extract_varfont_characters( cmd:Command, bitmap:Bitmap )->Bitmap[]
       local characters = Bitmap[]
       local x1 = 0
       local w  = bitmap.width
@@ -763,7 +770,7 @@ class Convert
 
       return characters
 
-    method pack_varfont_characters( characters:Bitmap[] )->Bitmap
+    method pack_varfont_characters( cmd:Command, characters:Bitmap[] )->Bitmap
       require characters.count
       local total_w = 0
       total_w += (forEach in characters).width
@@ -779,7 +786,7 @@ class Convert
       endForEach
       return bitmap
 
-    method parse_dimensions( text:String )->Value
+    method parse_dimensions( cmd:Command, text:String )->Value
       local dims = text.split( "x" )
       if (dims.count == 1)
         local size = dims.first->Int32
@@ -788,7 +795,7 @@ class Convert
         return @{ width:dims[0]->Int32, height:dims[1]->Int32 }
       endIf
 
-    method parse_scale( text:String )->Real64
+    method parse_scale( cmd:Command, text:String )->Real64
       if (text.count == 0) return 1.0
       if (not text.contains('/')) return text->Real64
       local parts = text.split( "/" )
@@ -812,15 +819,18 @@ class Asset
       if (attributes//split)
         # Split into tiles
         type = "Image[]"
-        local size = Convert.parse_dimensions( attributes//split )
+        local size = Convert.parse_dimensions( cmd, attributes//split )
         local tiles_wide = size//width->Int32
         local tiles_high = size//height->Int32
-        local tiles = Convert.bitmap_to_tiles( bitmap, tiles_wide, tiles_high )
+        if (tiles_wide * tiles_high == 0)
+          throw cmd.error( ''Illegal 'split' size of $x$ for "$".'' (tiles_wide,tiles_high,filepath) )
+        endIf
+        local tiles = Convert.bitmap_to_tiles( cmd, bitmap, tiles_wide, tiles_high )
         placements.add( Placement( this, (forEach in tiles), attributes ) )
 
       elseIf (attributes//varfont)
         type = "Font"
-        local characters = Convert.extract_varfont_characters( bitmap )
+        local characters = Convert.extract_varfont_characters( cmd, bitmap )
         placements.add( Placement( this, (forEach in characters), attributes ) )
 
       else
@@ -895,7 +905,7 @@ class Placement
       display_height = height
 
       if (attributes//resample)
-        local tx_size   = Convert.parse_dimensions( attributes//resample )
+        local tx_size   = Convert.parse_dimensions( asset.cmd, attributes//resample )
         width  = tx_size//width->Int32
         height = tx_size//height->Int32
         bitmap = bitmap.resized( width, height )
@@ -903,7 +913,7 @@ class Placement
 
       local display_scale = asset.cmd.icom.settings//display_scale
       if (display_scale)
-        local scale = Convert.parse_scale( display_scale )
+        local scale = Convert.parse_scale( asset.cmd, display_scale )
         display_width  = display_width * scale
         display_height = display_height * scale
       endIf
