@@ -37,7 +37,7 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 3.  Open `Platforms/iOS/iOS-Project.xcodeproj` in Xcode and run on the simulator or a device.  You should see a blue screen.
 4.  Edit `Source/Main.rogue` and add more game code.
 5.  Either run `make ios` again or just compile and run in Xcode again as a build phase automatically runs `make ios`.  If you get an error in Xcode and you can't tell what it is, run `make ios` on the command line and you will see the compiler error message.
-6.  Add images to Assets/Images and then run `./am` (Asset Manager).  In Asset Manager you should create a platform `iOS` and a group `General` (or any name).  In `am`, `cd Images` and then `add *`.  Those images will be available to your program the next time you compile.
+6.  Add images to Assets/Images and load them by name - `Image("img.png")`, `Font("SomeFont.png")`, etc.
 
 
 ## Updating an Existing Project
