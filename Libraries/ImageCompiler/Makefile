@@ -5,7 +5,6 @@ ROGUEC        = ../../Programs/Mac/roguec --libraries=../../Libraries/Rogue
 ROGUEC_FLAGS += --target="C++,Console"
 ROGUEC_FLAGS += --debug
 
-FREETYPE_FOLDER := freetype-2.6.3
 HARFBUZZ_FOLDER := harfbuzz-1.2.6
 PNG_FOLDER      := ImageIO/Source
 JPEG_FOLDER     := ImageIO/Source
