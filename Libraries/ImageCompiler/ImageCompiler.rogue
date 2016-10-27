@@ -21,7 +21,7 @@ try
                     |#   set image_sheet_size:4096            Set max texture size
                     |#   set display_scale:1/2                Images drawn half size etc.
                     |#   group <folder or pattern>            Turn folders into groups
-                    |#   image_copy from:<folder> to:<folder> [resize:WxH | rescale:1/2]
+                    |#   imageCopy from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
                     |#
                     |# ATTTRIBUTES
                     |#   @ ... resample <pixel width>x<pixel height>
@@ -300,7 +300,7 @@ class Command
         case "group"
           compile_group
 
-        case "image_copy"
+        case "imageCopy"
           local args = parse_args
           require_arg( args, "from" )
           require_arg( args, "to" )
@@ -311,7 +311,7 @@ class Command
           icom.settings[ setting//name ] = setting//value
 
         others
-          trace "TODO ", cmd
+          throw error( ''Syntax error - unknown command "$".'' (cmd) )
       endWhich
 
     method compile_group
@@ -552,6 +552,8 @@ class Command
       require_arg( args, "to" )
       local from_filepath = args//from->String
       local to_filepath   = args//to->String
+      if (from_filepath.begins_with("Images/")) from_filepath = "Assets/" + from_filepath
+      if (to_filepath.begins_with("Images/"))   to_filepath = "Assets/" + to_filepath
       if (not from_filepath.begins_with("Assets/Images/")) from_filepath = "Assets/Images/" + from_filepath
       if (not to_filepath.begins_with("Assets/Images/"))   to_filepath = "Assets/Images/" + to_filepath
       local files = collect_files( from_filepath )
@@ -592,11 +594,25 @@ class Command
 
       println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
 
-      local scale = Convert.parse_scale( this, args//rescale )
-      local resize_ipad = (args//resize == "ipad_pro_to_retina")
-      if (resize_ipad) scale = 0.75
+      local rescale = Convert.parse_scale( this, args//rescale )
 
-      if (scale == 1.0)
+      local resize = false
+      local from_size : XY
+      local to_size   : XY
+      if (args//resize)
+        local resize_dims = args//resize->String.split( "->" )
+        if (resize_dims.count == 2)
+          resize = true
+          from_size = Convert.parse_dimensions( this, resize_dims.first )
+          to_size   = Convert.parse_dimensions( this, resize_dims.last )
+          if (not args//rescale)
+            # Derive scale from resize args
+            rescale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
+          endIf
+        endIf
+      endIf
+
+      if (rescale == 1.0)
         File.copy( from_filepath, to_filepath )
       else
         local bitmap = Bitmaps[ from_filepath ]
@@ -607,7 +623,7 @@ class Command
           local characters = Convert.extract_varfont_characters( this, bitmap )
           print "  # character".pluralized( characters.count )
           print " [$x$] -> " (w,h)
-          forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
+          forEach (ch in characters) ch.resize( ch.width*rescale, ch.height*rescale )
           bitmap = Convert.pack_varfont_characters( this, characters )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
@@ -622,17 +638,17 @@ class Command
           local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
           print "  $x$ tiles" (tiles_wide,tiles_high)
           print " [$x$] -> " (w,h)
-          forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
+          forEach (tile in tiles) tile.resize( tile.width*rescale, tile.height*rescale )
           bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
         else
-          local new_w = (w * scale)->Int32
-          local new_h = (h * scale)->Int32
-          if (resize_ipad)
-            if (w == 2732 and h == 2048)     new_w = 2048; new_h = 1536
-            elseIf (w == 2048 and h == 2732) new_w = 1536; new_h = 2048
+          local new_w = (w * rescale)->Int32
+          local new_h = (h * rescale)->Int32
+          if (resize)
+            if (w == from_size.min and h == from_size.max)     new_w = to_size.min; new_h = to_size.max
+            elseIf (w == from_size.max and h == from_size.min) new_w = to_size.max; new_h = to_size.min
           endIf
           bitmap.resize( new_w, new_h )
           println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
