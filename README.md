@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.2.1
-- October 21, 2016
+- v0.2.2
+- October 26, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -54,6 +54,11 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.2.2 - October 26, 2016
+- [Image Compiler] Changed convention of Image Compiler to use `camelCase` commands with `serpent_case` arguments, like Rogue.
+- [Image Compiler] Added `resize:WxH->WxH` option to Image Compiler's `imageCopy` command.
+- [Image Compiler] Removed vestigial reference to 'freetype-2.6.3' folder in Image Compiler's Makefile.
 
 ###v0.2.1 - October 21, 2016
 - [iOS Xcode Project] Added missing Swift files to iOS template project.
