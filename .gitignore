@@ -2,6 +2,7 @@
 *.swp
 *.local
 DevUpdate.mk
+Publish.mk
 
 Test
 Local.mk
