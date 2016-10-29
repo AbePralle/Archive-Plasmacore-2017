@@ -55,6 +55,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.2.3 - October 29, 2016
+- [TargetValue] Changed original initializer to default to `ProgressFn.QUADRATIC` instead of `LINEAR`.
+- [TargetValue] Added new initializer `init(initial_value,duration_fn,progress_fn=ProgressFn.QUADRATIC)`.  `duration_fn` should be of type `Function($DataType)->(Real64)`, accepts a delta interval, and should return the desired duration for that interval.  The `TargetValue` will automatically adjust the duration as new target values are set, effectively allowing a rate-limited rather than time-based `TargetValue`.
+
 ###v0.2.2 - October 26, 2016
 - [Image Compiler] Changed convention of Image Compiler to use `camelCase` commands with `serpent_case` arguments, like Rogue.
 - [Image Compiler] Added `resize:WxH->WxH` option to Image Compiler's `imageCopy` command.

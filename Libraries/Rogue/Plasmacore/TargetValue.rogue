@@ -10,7 +10,10 @@ class TargetValue<<$DataType>>
     duration_fn   : Function($DataType)->(Real64)
 
   METHODS
-    method init( initial_value, duration, progress_fn=ProgressFn.LINEAR )
+    method init( initial_value, duration, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+      @target_value = initial_value
+
+    method init( initial_value, duration_fn, progress_fn=ProgressFn.QUADRATIC )
       @target_value = initial_value
 
     method delta->$DataType
