@@ -1,0 +1,570 @@
+$include "../Rogue/Plasmacore"
+using Plasmacore
+
+try
+  local config_file = File( "Assets/Sounds/SoundConfig.txt" )
+  if (not config_file.exists)
+    File.create_folder( config_file.path )
+    local writer = PrintWriter(config_file.writer)
+    writer.println @|# Default sound config file - customize as desired.
+                    |#
+                    |# PLATFORMS
+                    |#   [Global]  - Use this category for attributes and settings
+                    |#               that apply to all platforms.
+                    |#   [Default] - Used when specific platform isn't defined, e.g.
+                    |#               if [iOS] isn't defined then [Default] is used.
+                    |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                    |#
+                    |# COMMANDS
+                    |#   @ <file or pattern> [attributes...]  # Set sound attributes
+                    |#   include <file or pattern>            # Include file in build
+                    |#   copy from:<folder> to:<folder> [format:im4]
+                    |#
+                    |# ATTTRIBUTES
+                    |#   @ ... format:[ima4|mp3]
+                    |#     - ima4 is good for iOS and Mac sound effects
+                    |#     - mp3 is good for iOS and Mac music
+                    |
+                    |[Default]
+                    |include **
+                    |
+                    |[iOS]
+                    |@ **.wav format:ima4
+                    |include **
+    writer.close
+  endIf
+
+  local args = System.command_line_arguments
+  if (args.count)
+    SoundCompiler( config_file, (forEach in args) )
+  else
+    SoundCompiler( config_file, "Default" )
+  endIf
+
+catch (err:Error)
+  println err
+  System.exit 1
+endTry
+
+
+class BuildError( cmd:Command, message ) : Error
+  METHODS
+    method init( message )
+
+    method to->String
+      local builder = StringBuilder()
+
+      local w = Console.width.or_smaller( 79 )
+      local bar = "=" * w
+      builder.println bar
+      if (cmd)
+        builder.println( (''SOUND COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(w) )
+      else
+        builder.println "SOUND COMPILE ERROR"
+      endIf
+      builder.println
+      builder.println message.word_wrapped( w )
+      builder.println bar
+      return builder->String
+endClass
+
+
+class SoundCompiler
+  PROPERTIES
+    file             : File
+    platform         : String
+    commands         = Table<<String,Command[]>>()
+    attributes       = @[]
+    settings         = @{}
+    even_odd         = true
+    files_written    : Int32
+    all_sounds       : String[]
+    included_sounds  = Set<<String>>()
+
+  METHODS
+    method init( file, platform )
+      println "Compiling sounds for platform $..." (platform)
+
+      organize_commands
+      execute_global_commands
+      execute_platform_commands
+
+      # Automatically exclude SoundConfig.txt
+      included_sounds.remove( "Assets/Sounds/SoundConfig.txt" )
+
+      local dest_folder = "Build/$/" (platform)
+      forEach (filepath in included_sounds)
+        local attr = sound_attributes( filepath )
+        copy_sound( filepath, dest_folder + filepath, attr )
+      endForEach
+
+      if (not files_written)
+        println "Sounds up to date."
+      endIf
+
+    method copy_sound( from_filepath:String, to_filepath:String, attr:Value )
+      local cur_ext = File.extension( from_filepath )
+      local new_ext = cur_ext
+      local format : String
+      if (attr//format)
+        format = attr//format->String
+        which (format)
+          case "ima4": new_ext = "caf"
+        endWhich
+      endIf
+
+      if (cur_ext != new_ext)
+        to_filepath = to_filepath.leftmost( -(cur_ext.count+1) ) + ("." + new_ext)
+      endIf
+
+      if (not File.exists(to_filepath) or File.timestamp(to_filepath) < File.timestamp(from_filepath))
+        File.create_folder( File.folder(to_filepath) )
+
+
+        print   "  Writing "
+        println to_filepath
+        ++files_written
+
+        if (format and cur_ext != new_ext)
+          local buffer = StringBuilder()
+          buffer.print( "afconvert " )
+          which (format)
+            case "ima4": buffer.print( "-f caff -d 'ima4' " )
+          endWhich
+          buffer.print( from_filepath ).print( " " ).print( to_filepath )
+
+          local cmd = buffer->String
+
+          System.run( cmd )
+        else
+          File.copy( from_filepath, to_filepath )
+        endIf
+
+      endIf
+
+    method execute_global_commands
+      if (not commands.contains("Global")) return
+      (forEach in commands//Global).execute
+
+    method execute_platform_commands
+      local working_platform = select{ commands.contains(platform):platform || "Default" }
+      if (commands.contains(working_platform))
+        (forEach in commands[working_platform]).execute
+      else
+        if (platform != "Default")
+          println "SOUND COMPILER WARNING: No configuration for platforms $ or Default in Assets/Sounds/SoundConfig.txt." (platform)
+        else
+          println "SOUND COMPILER WARNING: No configuration for platform Default in Assets/Sounds/SoundConfig.txt."
+        endIf
+      endIf
+
+    method organize_commands
+      local category = "Global"
+
+      forEach (line at index in CommentStripper().process(file.load_as_string))
+        line = line.trimmed
+        if (line.count == 0) nextIteration
+        if (line.begins_with('['))
+          local after = line.after_first(']')
+          if (after.count) throw BuildError( Command(this,file.filepath,index+1,line), "Syntax error after ']'." )
+          category = line.after_first( '[' ).before_first( ']' ).trimmed
+        else
+          ensure commands[ category ]
+          commands[ category ].add( Command(this,file.filepath,index+1,line) )
+        endIf
+      endForEach
+
+    method sound_attributes( filepath:String )->Value
+      local result = @{}
+
+      forEach (def in attributes)
+        if (File.matches_wildcard_pattern(filepath,def//pattern->String))
+          forEach (attr in def//attributes)
+            result[ attr//name ] = attr//value
+          endForEach
+        endIf
+      endForEach
+
+      return result
+
+endClass
+
+
+class Command
+  PROPERTIES
+    icom         : SoundCompiler
+    src_filepath : String
+    src_line     : Int32
+    content      : String
+    reader       : ParseReader
+    buffer       = StringBuilder()
+
+  METHODS
+    method init( icom, src_filepath, src_line, content )
+      reader = ParseReader( content )
+
+    method collect_files( filepath:String )->String[]
+      local pattern = filepath
+      if (File.exists(filepath))
+        pattern = "**"
+      else
+        while (filepath.contains('*') or filepath.contains('?')) filepath = File.folder( filepath )
+        if (not File.exists(filepath)) throw error( ''No such file or folder "$".'' (filepath) )
+      endIf
+
+      local file_list = String[]
+
+      if (File.is_folder(filepath))
+        forEach (f in File.listing(filepath,&ignore_hidden,&recursive))
+          if (File.matches_wildcard_pattern(f,pattern)) file_list.add( f )
+        endForEach
+      else
+        file_list.add( filepath )
+      endIf
+
+      local filtered_list = String[]
+      forEach (f in file_list)
+        if (not File.is_folder(f)) filtered_list.add( f )
+      endForEach
+
+      return filtered_list
+
+    method consume( ch:Character )->Logical
+      return (reader.consume(ch))
+
+    method consume( text:String )->Logical
+      return (reader.consume(text))
+
+    method consume_whitespace->Logical
+      local found_any = false
+
+      while (reader.consume_spaces or reader.consume('\t'))
+        found_any = true
+      endWhile
+
+      return found_any
+
+    method error( message:String )->BuildError
+      return BuildError( this, message )
+
+    method execute
+      if (consume("@"))
+        local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
+        pattern = "Assets/Sounds/" + pattern
+        local info = @{ pattern:pattern, attributes:[] }
+        while (has_another)
+          local name = parse_string( "Attribute or [end of line] expected." )
+          consume_whitespace
+          if (consume(':'))
+            local value = parse_string( "Value expected." )
+            local attribute = @{ name:name }
+            attribute//value = value
+            info//attributes.add( attribute )
+          else
+            local attribute = @{ name:name }
+            info//attributes.add( attribute )
+          endIf
+        endWhile
+        icom.attributes.add( info )
+        return
+      endIf
+
+      local cmd = parse_string( "Command expected." )
+      which (cmd)
+        case "include"
+          include_sounds
+
+          #{
+        case "copy"
+          icom.all_sounds = null
+          local args = parse_args
+          require_arg( args, "from" )
+          require_arg( args, "to" )
+          copy_sounds( args )
+          }#
+
+        case "set"
+          local setting = parse_name_value
+          icom.settings[ setting//name ] = setting//value
+
+        others
+          throw error( ''Syntax error - unknown command "$".'' (cmd) )
+      endWhich
+
+    method include_sounds
+      if (not icom.all_sounds) icom.all_sounds = File.listing( "Assets/Sounds", &recursive, &ignore_hidden )
+
+      local pattern = parse_string( "Folder or file pattern expected." )
+      if (pattern == ".")
+        include_sounds( "Assets/Sounds/*" )
+      else
+        include_sounds( "Assets/Sounds/" + pattern )
+      endIf
+
+    method include_sounds( pattern:String )
+      if (pattern.contains('*') or pattern.contains('?'))
+        forEach (filepath in icom.all_sounds)
+          if (File.matches_wildcard_pattern(filepath,pattern))
+            icom.included_sounds.add( filepath )
+          endIf
+        endForEach
+      else
+        icom.included_sounds.add( pattern )
+      endIf
+
+    method has_another->Logical
+      consume_whitespace
+      return (reader.has_another)
+
+      #{
+    method copy_sounds( args:@{} )
+      require_arg( args, "from" )
+      require_arg( args, "to" )
+      local from_filepath = args//from->String
+      local to_filepath   = args//to->String
+      if (from_filepath.begins_with("Sounds/")) from_filepath = "Assets/" + from_filepath
+      if (to_filepath.begins_with("Sounds/"))   to_filepath = "Assets/" + to_filepath
+      if (not from_filepath.begins_with("Assets/Sounds/")) from_filepath = "Assets/Sounds/" + from_filepath
+      if (not to_filepath.begins_with("Assets/Sounds/"))   to_filepath = "Assets/Sounds/" + to_filepath
+      local files = collect_files( from_filepath )
+      forEach (src_filepath in files)
+        local from_folder = File.before_wildcard_pattern( from_filepath )
+        local dest_filepath = to_filepath + src_filepath.after_first( from_folder )
+        local ext = src_filepath.after_last( "." ).to_lowercase
+
+        contingent
+          necessary  (not File.is_folder(src_filepath))
+          necessary  (ext == "png" or ext == "jpeg" or ext == "jpg")
+          sufficient (not File.exists(dest_filepath))
+
+          local dest_timestamp = File.timestamp( dest_filepath )
+          local src_timestamp = File.timestamp( src_filepath )
+          sufficient (src_timestamp > dest_timestamp)
+
+
+          escapeContingent
+
+        satisfied
+          copy_sounds( src_filepath, dest_filepath, args )
+
+        endContingent
+      endForEach
+
+    method copy_sounds( from_filepath:String, to_filepath:String, args:Value )
+      local attributes = @{}
+      forEach (attr in icom.attributes)
+        if (File.matches_wildcard_pattern(from_filepath,attr//pattern))
+          forEach (a in attr//attributes)
+            if (a//value) attributes[ a//name ]         = a//value
+            else          attributes[ a//name->String ] = true
+          endForEach
+        endIf
+      endForEach
+
+      println "Sound Copy $ -> $" (from_filepath.after_first("Assets/Sounds/"),to_filepath.after_first("Assets/Sounds/"))
+
+      local rescale = Convert.parse_scale( this, args//rescale )
+
+      local resize = false
+      local from_size : XY
+      local to_size   : XY
+      if (args//resize)
+        local resize_dims = args//resize->String.split( "->" )
+        if (resize_dims.count == 2)
+          resize = true
+          from_size = Convert.parse_dimensions( this, resize_dims.first )
+          to_size   = Convert.parse_dimensions( this, resize_dims.last )
+          if (not args//rescale)
+            # Derive scale from resize args
+            rescale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
+          endIf
+        endIf
+      endIf
+
+      if (rescale == 1.0)
+        File.copy( from_filepath, to_filepath )
+      else
+        local bitmap = Bitmaps[ from_filepath ]
+        local w = bitmap.width
+        local h = bitmap.height
+
+        if (attributes//varfont)
+          local characters = Convert.extract_varfont_characters( this, bitmap )
+          print "  # character".pluralized( characters.count )
+          print " [$x$] -> " (w,h)
+          forEach (ch in characters) ch.resize( ch.width*rescale, ch.height*rescale )
+          bitmap = Convert.pack_varfont_characters( this, characters )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, to_filepath )
+
+        elseIf (attributes//split)
+          local size = Convert.parse_dimensions( this, attributes//split )
+          local tiles_wide = size//width->Int32
+          local tiles_high = size//height->Int32
+          if (tiles_wide * tiles_high == 0)
+            throw error( ''Illegal 'split' size of $x$ for "$".'' (tiles_wide,tiles_high,from_filepath) )
+          endIf
+          local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
+          print "  $x$ tiles" (tiles_wide,tiles_high)
+          print " [$x$] -> " (w,h)
+          forEach (tile in tiles) tile.resize( tile.width*rescale, tile.height*rescale )
+          bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, to_filepath )
+
+        else
+          local new_w = (w * rescale)->Int32
+          local new_h = (h * rescale)->Int32
+          if (resize)
+            if (w == from_size.min and h == from_size.max)     new_w = to_size.min; new_h = to_size.max
+            elseIf (w == from_size.max and h == from_size.min) new_w = to_size.max; new_h = to_size.min
+          endIf
+          bitmap.resize( new_w, new_h )
+          println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
+
+          save_bitmap( bitmap, to_filepath )
+        endIf
+      endIf
+      }#
+
+    method must_consume( ch:Character )->Logical
+      if (consume(ch)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (ch,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (ch) )
+      endIf
+
+    method must_consume( text:String )->Logical
+      if (consume(text)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (text,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
+      endIf
+
+    method parse_args->@{}
+      local args = @{}
+      while (has_another)
+        local arg = parse_name_value
+        if (arg//value) args[ arg//name ]         = arg//value
+        else            args[ arg//name->String ] = true
+      endWhile
+      return args
+
+    method parse_name_value->Value
+      local name = parse_string( "Identifier or [end of line] expected." )
+      local name_value = @{ name:name }
+      consume_whitespace
+      if (consume(':'))
+        name_value//value = parse_string( "Value expected." )
+      endIf
+      return name_value
+
+    method parse_string( expected:String )->String
+      if (not has_another) throw error( expected )
+      buffer.clear
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        # Quote-delimited
+        local quote_type = reader.read
+        while (reader.has_another)
+          ch = reader.read
+          which (ch)
+            case quote_type: return buffer->String
+            case '\\'
+              if (reader.has_another) buffer.print( reader.read )
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+        throw error( "String is missing closing ($)." (quote_type) )
+      else
+        while (reader.has_another)
+          ch = reader.peek
+          which (ch)
+            case ' ', ':', ','
+              escapeWhile
+            others
+              buffer.print reader.read
+          endWhich
+        endWhile
+        if (buffer.count == 0) throw error( expected )
+      endIf
+      return buffer->String
+
+    method require_arg( args:@{}, name:String  )
+      if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
+
+    method to->String
+      return content
+endClass
+
+
+class CommentStripper
+  PROPERTIES
+    reader        : StringReader
+    lines         = String[]
+    buffer        = StringBuilder()
+    comment_level : Int32
+
+  METHODS
+    method process( text:String )->String[]
+      reader = text.reader
+      while (reader.has_another) scan_next
+      if (buffer.count) lines.add( buffer->String )
+      return lines
+
+    method scan_next
+      local ch = reader.read
+      which (ch)
+        case '#'
+          if (reader.peek == '{')
+            # Multiline comment
+            reader.read  # '{'
+            ++comment_level
+          else
+            # Single line comment
+            while (reader.has_another and reader.peek != '\n') reader.read
+          endIf
+
+        case '}'
+          if (comment_level and reader.peek == '#')
+            reader.read
+            --comment_level
+          else
+            write( '}' )
+          endIf
+
+        case '"', '\''
+          # "string"
+          local quote_type = ch
+          write( ch )
+          while (reader.has_another)
+            ch = reader.read
+            write( ch )
+            which (ch)
+              case '\\':       write( reader.read ) # skip past next
+              case quote_type: escapeWhile
+            endWhich
+          endWhile
+
+        others
+          write( ch )
+
+      endWhich
+
+    method write( ch:Character )->this
+      if (ch == '\n')
+        lines.add( buffer->String )
+        buffer.clear
+      elseIf (comment_level == 0)
+        buffer.print( ch )
+      endIf
+
+      return this
+
+endClass
+
