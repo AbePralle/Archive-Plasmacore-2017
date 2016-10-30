@@ -101,6 +101,7 @@ class ImageCompiler
     newest_group_manifest_timestamp : Real64
     even_odd         = true
     files_written    : Int32
+    all_images       : String[]
 
   METHODS
     method init( file, platform )
@@ -298,9 +299,11 @@ class Command
       local cmd = parse_string( "Command expected." )
       which (cmd)
         case "group"
+          if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
           compile_group
 
         case "imageCopy"
+          icom.all_images = null
           local args = parse_args
           require_arg( args, "from" )
           require_arg( args, "to" )
@@ -317,20 +320,24 @@ class Command
     method compile_group
       local group_name = parse_string( "Folder or file pattern expected." )
       if (group_name == ".")
-        compile_group( "Images" )
-      elseIf (group_name.contains('?') or group_name.contains('*'))
-        forEach (filepath in File.listing("Assets/Images/"+group_name,&ignore_hidden))
-          compile_group( filepath.after_first("Assets/") )
-        endForEach
+        compile_group( "Assets/Images" )
       else
-        compile_group( "Images/" + group_name )
+        group_name = "Assets/Images/" + group_name
+        if (group_name.contains("*") or group_name.contains('?'))
+          forEach (filepath in icom.all_images)
+            if (File.matches_wildcard_pattern(filepath,group_name))
+              compile_group( filepath )
+            endIf
+          endForEach
+        else
+          compile_group( "Assets/Images/" + group_name )
+        endIf
       endIf
 
     method compile_group( group_name:String )
       local pattern = group_name
-      group_name = File.before_wildcard_pattern( pattern )
+      group_name = File.before_wildcard_pattern( pattern.after_first("Assets/") )
       local output_filename = group_name.replacing('/','-')
-      pattern = "Assets/" + pattern
 
       local dest_folder = "Build/$/Assets/Images" (icom.platform)
       File.create_folder( dest_folder )
@@ -354,7 +361,7 @@ class Command
       local files = collect_files( pattern )
 
       contingent
-        necessary (icom.file_timestamp < oldest_existing_timestamp)
+        #necessary (icom.file_timestamp < oldest_existing_timestamp)
         forEach (filepath in files)
           necessary (File.timestamp(filepath) < oldest_existing_timestamp)
         endForEach
@@ -366,6 +373,8 @@ class Command
 
         return  # no changes to group
       endContingent
+
+      println "Group " + group_name
 
       local assets = Asset[]
       forEach (filepath in files)
