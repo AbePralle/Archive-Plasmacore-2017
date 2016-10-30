@@ -21,7 +21,7 @@ try
                     |#   set image_sheet_size:4096            Set max texture size
                     |#   set display_scale:1/2                Images drawn half size etc.
                     |#   group <folder or pattern>            Turn folders into groups
-                    |#   imageCopy from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
+                    |#   copy from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
                     |#
                     |# ATTTRIBUTES
                     |#   @ ... resample <pixel width>x<pixel height>
@@ -123,7 +123,7 @@ class ImageCompiler
       endIf
 
       if (not files_written)
-        println "Everything up to date."
+        println "Images up to date."
       endIf
 
     method execute_global_commands
@@ -144,8 +144,9 @@ class ImageCompiler
 
     method organize_commands
       local category = "Global"
-      forEach (line at index in LineReader(file))
-        line = strip_comments( line.trimmed )
+
+      forEach (line at index in CommentStripper().process(file.load_as_string))
+        line = line.trimmed
         if (line.count == 0) nextIteration
         if (line.begins_with('['))
           local after = line.after_first(']')
@@ -156,31 +157,6 @@ class ImageCompiler
           commands[ category ].add( Command(this,file.filepath,index+1,line) )
         endIf
       endForEach
-
-    method strip_comments( text:String )->String
-      if (not text.contains('#')) return text
-
-      local in_string   = 0
-      local ignore_next = false
-      forEach (ch at index in text)
-        if (ignore_next)
-          ignore_next = false
-        else
-          if (in_string)
-            which (ch)
-              case '\\':      ignore_next = true
-              case in_string: in_string = 0
-            endWhich
-          else
-            which (ch)
-              case '"', '\'': in_string = ch
-              case '#': return text.leftmost( index )
-            endWhich
-          endIf
-        endIf
-      endForEach
-
-      return text
 
 endClass
 
@@ -302,7 +278,7 @@ class Command
           if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
           compile_group
 
-        case "imageCopy"
+        case "copy"
           icom.all_images = null
           local args = parse_args
           require_arg( args, "from" )
@@ -985,6 +961,71 @@ class ImageSheet
       local bitmap = Bitmap( width, height, Color.BLUE )
       (forEach in placements).render( bitmap )
       return bitmap
+
+endClass
+
+class CommentStripper
+  PROPERTIES
+    reader        : StringReader
+    lines         = String[]
+    buffer        = StringBuilder()
+    comment_level : Int32
+
+  METHODS
+    method process( text:String )->String[]
+      reader = text.reader
+      while (reader.has_another) scan_next
+      if (buffer.count) lines.add( buffer->String )
+      return lines
+
+    method scan_next
+      local ch = reader.read
+      which (ch)
+        case '#'
+          if (reader.peek == '{')
+            # Multiline comment
+            reader.read  # '{'
+            ++comment_level
+          else
+            # Single line comment
+            while (reader.has_another and reader.peek != '\n') reader.read
+          endIf
+
+        case '}'
+          if (comment_level and reader.peek == '#')
+            reader.read
+            --comment_level
+          else
+            write( '}' )
+          endIf
+
+        case '"', '\''
+          # "string"
+          local quote_type = ch
+          write( ch )
+          while (reader.has_another)
+            ch = reader.read
+            write( ch )
+            which (ch)
+              case '\\':       write( reader.read ) # skip past next
+              case quote_type: escapeWhile
+            endWhich
+          endWhile
+
+        others
+          write( ch )
+
+      endWhich
+
+    method write( ch:Character )->this
+      if (ch == '\n')
+        lines.add( buffer->String )
+        buffer.clear
+      elseIf (comment_level == 0)
+        buffer.print( ch )
+      endIf
+
+      return this
 
 endClass
 

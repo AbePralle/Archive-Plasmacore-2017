@@ -1,5 +1,5 @@
 # Plasmacore
-- v0.2.3
+- v0.3.0
 - October 29, 2016
 
 ## Requirements
@@ -54,6 +54,9 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.3.0 - October 30, 2016
+- [Image Compiler] Renamed `imageCopy` command to `copy`.
 
 ###v0.2.3 - October 29, 2016
 - [Image Compiler] Improved wildcard matching for `group` specifications.
