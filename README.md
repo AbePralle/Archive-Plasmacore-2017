@@ -56,6 +56,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.3.0 - October 30, 2016
+- [Sound Compiler] Added new Sound Compiler that works similar to the Image Compiler.  It is automatically invoked during an Xcode build or you can manually `./scom iOS` to run it.  It uses the `Assets/Sounds/SoundConfig.txt` build script, creating a default version necessary.
 - [Image Compiler] Renamed `imageCopy` command to `copy`.
 
 ###v0.2.3 - October 29, 2016
