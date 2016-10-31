@@ -22,7 +22,7 @@ class Window
     method call( method_name:String )
       Message( "Window.call" ).set("id",id).set("method_name",method_name).send
 
-    method clean_up
+    method on_cleanup
       close
 
     method close

@@ -46,7 +46,7 @@ routine compile( target:String )
   if (not need_compile(output_folder)) return
 
   local exe = "Programs/Mac/roguec"
-  if (System.run(''$ --target=C++,$ Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
+  if (System.run(''$ --target=C++,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
       (exe,target,output_folder)))
     System.exit 1
   endIf

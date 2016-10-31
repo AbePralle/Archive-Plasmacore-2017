@@ -14,7 +14,17 @@ class Texture
       local texture = Display.textures_by_name[ name ]
       if (texture) return texture.load
 
-      local filepath = Plasmacore.asset_filepath( name )
+      local asset_name = ""
+      if (not name.begins_with("Assets/"))
+        if (name.begins_with("Images/"))
+          asset_name = "Assets/"
+        else
+          asset_name = "Assets/Images/"
+        endIf
+      endIf
+      asset_name += name
+
+      local filepath = Plasmacore.asset_filepath( asset_name )
       if (filepath)
         texture = Display.textures_by_name[ filepath ]
         if (texture) return texture.load
@@ -23,7 +33,7 @@ class Texture
         texture = Texture( File(filepath) )
         Display.textures_by_name[ filepath ] = texture
       else
-        Log.println "File not found: " + name
+        Log.println "Image not found: " + name
         texture = Texture( Bitmap(1,1,Color.WHITE) )
       endIf
 
@@ -38,7 +48,7 @@ class Texture
     method init( bitmap:Bitmap )
       set( bitmap )
 
-    method clean_up
+    method on_cleanup
       unload
 
     method image_height->Int32 [macro]

@@ -1,6 +1,8 @@
 #include "RogueInterface.h"
 #include "RogueProgram.h"
 
+#import <AVFoundation/AVAudioPlayer.h>
+
 #include <cstdio>
 #include <cstring>
 using namespace std;
@@ -43,6 +45,29 @@ extern "C" RogueString* Plasmacore_find_asset( RogueString* filepath )
   if (ns_filepath == nil) return 0;
   return Plasmacore_ns_string_to_rogue_string( ns_filepath );
 }
+
+void* PlasmacoreSound_create( RogueString* filepath, bool is_music )
+{
+  NSString* ns_filepath = Plasmacore_rogue_string_to_ns_string( filepath );
+  AVAudioPlayer* player = [[AVAudioPlayer alloc] initWithContentsOfURL:[NSURL fileURLWithPath:ns_filepath] error:nil];
+  [player prepareToPlay];
+  return (void*) CFBridgingRetain( player );
+}
+
+void PlasmacoreSound_play( void* sound )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    [player play];
+  }
+}
+
+void PlasmacoreSound_delete( void* sound )
+{
+  if (sound) CFBridgingRelease( sound );
+}
+
 
 extern "C" void RogueInterface_configure()
 {

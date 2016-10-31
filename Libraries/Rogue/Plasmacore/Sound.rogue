@@ -1,0 +1,136 @@
+module Plasmacore
+
+class Sound
+  DEPENDENCIES
+    nativeHeader void* PlasmacoreSound_create( RogueString* filepath, bool is_music );
+    nativeHeader void PlasmacoreSound_play( void* sound );
+    nativeHeader void PlasmacoreSound_delete( void* sound );
+
+  PROPERTIES
+    name     : String
+    filepath : String
+    ids      = Int32[]
+    channels = 1
+    is_music : Logical
+
+  METHODS
+    method init( name, channels=1, is_music=false )
+      local asset_name = ""
+      if (not name.begins_with("Assets/"))
+        asset_name = "Assets/"
+        if (not name.begins_with("Sounds/")) asset_name += "Sounds/"
+      endIf
+
+      asset_name += name
+
+      filepath = find_sound( asset_name )
+      if (filepath)
+        if (not is_music)
+          which (File.extension(filepath))
+            case "mp3": is_music = true
+          endWhich
+        endIf
+
+        load
+
+      else
+        println "Sound not found:" + name
+      endIf
+
+    method find_sound( asset_name:String )->String
+      local filepath = Plasmacore.asset_filepath( asset_name )
+      if (filepath) return filepath
+
+      filepath = Plasmacore.asset_filepath( asset_name + ".caf" )
+      if (filepath) return filepath
+
+      filepath = Plasmacore.asset_filepath( asset_name + ".mp3" )
+      if (filepath) return filepath
+
+      filepath = Plasmacore.asset_filepath( asset_name + ".wav" )
+      if (filepath) return filepath
+
+      return null
+
+    method load
+      loop (channels)
+        ids.add( SoundManager.load(filepath,is_music) )
+      endLoop
+
+    method on_cleanup
+      unload
+
+    method play
+      # Play the next channel in rotation
+      local n = ids.count
+      if (n)
+        SoundManager[ ids.first ].play
+        if (n > 1) ids.add( ids.remove_first )
+      endIf
+
+    method unload
+      forEach (id in ids)
+        SoundManager.unload( id )
+      endForEach
+      ids.clear
+endClass
+
+
+class SoundManager [singleton]
+  PROPERTIES
+    sound_data            = SoundData[]
+    free_sound_data_slots = Int32[]
+
+  METHODS
+    method init
+      sound_data.add( null )  # Prevent '0' from being a valid id
+
+    method get( id:Int32 )->SoundData
+      if (id < 0 or id >= sound_data.count) return null
+      return sound_data[ id ]
+
+    method load( filepath:String, is_music:Logical )->Int32
+      local id : Int32
+
+      local data = SoundData( filepath, is_music )
+
+      if (free_sound_data_slots.count)
+        id = free_sound_data_slots.remove_last
+        sound_data[ id ] = data
+      else
+        id = sound_data.count
+        sound_data.add( data )
+      endIf
+
+      return id
+
+    method unload( id:Int32 )
+      if (id < 0 or id >= sound_data.count) return
+
+      local data = sound_data[ id ]
+      sound_data[ id ] = null
+      free_sound_data_slots.add( id )
+
+      if (data) data.unload
+
+endClass
+
+
+class SoundData
+  PROPERTIES
+    filepath : String
+    is_music : Logical
+    native "void* player;"
+
+  METHODS
+    method init( filepath, is_music )
+      native @|$this->player = PlasmacoreSound_create( $filepath, $is_music );
+
+    method play
+      native @|PlasmacoreSound_play( $this->player );
+
+    method unload
+      native @|PlasmacoreSound_delete( $this->player );
+              |$this->player = 0;
+endClass
+
