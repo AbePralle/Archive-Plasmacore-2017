@@ -33,6 +33,7 @@ $include "Quaternion.rogue"
 $include "RenderMode.rogue"
 $include "Rotation.rogue"
 $include "Shader.rogue"
+$include "Sound.rogue"
 $include "Sprite.rogue"
 $include "State.rogue"
 $include "SystemFont.rogue"
@@ -105,10 +106,7 @@ class Plasmacore [essential singleton]
     method asset_filepath( name:String )->String
       if (File.exists(name)) return name   # already correct
 
-      local filepath = native( "Plasmacore_find_asset( $name )" )->String
-      if (filepath) return filepath
-
-      name = "Assets/Images/" + name
+      # may return null
       return native( "Plasmacore_find_asset( $name )" )->String
 
     method cache_folder->String

@@ -23,6 +23,8 @@ endClass
 
 
 class InitialState : State<<MainView>>
+  PROPERTIES
+
   METHODS
     method on_start
       # Called when this state becomes the active state
@@ -30,6 +32,8 @@ class InitialState : State<<MainView>>
 
     method after_draw
       # This happens after the current view's on_draw()
+
+    method on( e:PointerEvent )
 
     method on_draw
       # This happens before the current view's on_draw()

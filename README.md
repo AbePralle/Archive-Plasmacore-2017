@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.3.0
-- October 29, 2016
+- v0.3.0 Develop
+- October 30, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -55,8 +55,11 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.3.0 - October 30, 2016
+###v0.3.0 - October 31, 2016
 - [Sound Compiler] Added new Sound Compiler that works similar to the Image Compiler.  It is automatically invoked during an Xcode build or you can manually `./scom iOS` to run it.  It uses the `Assets/Sounds/SoundConfig.txt` build script, creating a default version necessary.
+- [Sound] Added `Sound` class.  Create a sound with `Sound(name:String,[channels=1:Int32])`.  `name` should be a filename in `Assets/Sounds/`; you can omit `Assets/Sounds/` as well as the extension.  `channels` is the number of times that sound can play concurrently - each additional number ends up creating a new sound player underneath so don't use more than 1 channel if you don't need to.
+- [Sound] Call `Sound.play()` to play a sound.  Additional sound API calls will be added later.
+- [AVFoundation Framework] You must manually add the `AVFoundation` framework to any existing projects.
 - [Image Compiler] Renamed `imageCopy` command to `copy`.
 
 ###v0.2.3 - October 29, 2016

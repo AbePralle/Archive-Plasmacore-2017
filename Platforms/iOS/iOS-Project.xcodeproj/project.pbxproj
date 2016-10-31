@@ -81,6 +81,7 @@
 		30CFCB941DBA6AE3002641EF /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB911DBA6AE3002641EF /* PlasmacoreMessage.swift */; };
 		30CFCB951DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB921DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift */; };
 		30CFCB981DBA6B23002641EF /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB971DBA6B23002641EF /* RogueInterface.mm */; };
+		30D332FD1DC7C96F00FC235A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30D332FC1DC7C96F00FC235A /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -201,6 +202,7 @@
 		30CFCB921DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "PlasmacoreViewController-iOS.swift"; path = "../../Libraries/Plasmacore/Swift/PlasmacoreViewController-iOS.swift"; sourceTree = "<group>"; };
 		30CFCB961DBA6B23002641EF /* RogueInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueInterface.h; path = ../../Libraries/Plasmacore/Swift/RogueInterface.h; sourceTree = "<group>"; };
 		30CFCB971DBA6B23002641EF /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = ../../Libraries/Plasmacore/Swift/RogueInterface.mm; sourceTree = "<group>"; };
+		30D332FC1DC7C96F00FC235A /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +210,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30D332FD1DC7C96F00FC235A /* AVFoundation.framework in Frameworks */,
 				30361E751D9A243000A33B99 /* libz.tbd in Frameworks */,
 				30361DE61D9A238D00A33B99 /* libImageIO.a in Frameworks */,
 			);
@@ -344,6 +347,7 @@
 		30361E731D9A243000A33B99 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				30D332FC1DC7C96F00FC235A /* AVFoundation.framework */,
 				30361E741D9A243000A33B99 /* libz.tbd */,
 			);
 			name = Frameworks;

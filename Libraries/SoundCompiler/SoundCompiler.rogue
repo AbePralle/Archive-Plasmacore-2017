@@ -18,7 +18,6 @@ try
                     |# COMMANDS
                     |#   @ <file or pattern> [attributes...]  # Set sound attributes
                     |#   include <file or pattern>            # Include file in build
-                    |#   copy from:<folder> to:<folder> [format:im4]
                     |#
                     |# ATTTRIBUTES
                     |#   @ ... format:[ima4|mp3]
