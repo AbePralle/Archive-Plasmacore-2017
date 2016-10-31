@@ -54,18 +54,85 @@ void* PlasmacoreSound_create( RogueString* filepath, bool is_music )
   return (void*) CFBridgingRetain( player );
 }
 
-void PlasmacoreSound_play( void* sound )
+void PlasmacoreSound_delete( void* sound )
+{
+  if (sound) CFBridgingRelease( sound );
+}
+
+double PlasmacoreSound_duration( void* sound )
 {
   if (sound)
   {
     AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    return (double) player.duration;
+  }
+  else
+  {
+    return 0.0;
+  }
+}
+
+bool PlasmacoreSound_is_playing( void* sound )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    return player.playing;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+void PlasmacoreSound_pause( void* sound )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    [player pause];
+  }
+}
+
+double PlasmacoreSound_position( void* sound )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    return (double) player.currentTime;
+  }
+  else
+  {
+    return 0.0;
+  }
+}
+
+void PlasmacoreSound_play( void* sound, bool repeating )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    player.numberOfLoops = repeating ? -1 : 0;
     [player play];
   }
 }
 
-void PlasmacoreSound_delete( void* sound )
+void PlasmacoreSound_set_position( void* sound, double to_time )
 {
-  if (sound) CFBridgingRelease( sound );
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    player.currentTime = (NSTimeInterval) to_time;
+  }
+}
+
+void PlasmacoreSound_set_volume( void* sound, double volume )
+{
+  if (sound)
+  {
+    AVAudioPlayer* player = (__bridge AVAudioPlayer*) sound;
+    player.volume = (float) volume;
+  }
 }
 
 

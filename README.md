@@ -1,5 +1,5 @@
 # Plasmacore
-- v0.3.0
+- v0.3.1
 - October 31, 2016
 
 ## Requirements
@@ -54,6 +54,26 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.3.1 - October 31, 2016
+- [Sound] Added `Sound.duration()->Real64` that returns the duration in seconds.
+- [Sound] Added `Sound.is_finished()->Logical` that returns `true` if a sound is not playing and not paused.
+- [Sound] Added `Sound.is_playing()->Logical`.
+- [Sound] Added `Sound.is_repeating:Logical`.
+- [Sound] Added `Sound.pause()` that stop a sound without rewinding it.  `play()` or `resume()` will play the sound again.
+- [Sound] Added `Sound.play(is_repeating:Logical)` in addition to `Sound.play()`.
+- [Sound] Added `Sound.position:Real64` that specifies a sound's playback position in seconds.
+- [Sound] Added `Sound.resume()` that resumes playing a sound only if it has been previously paused.
+- [Sound] Added `Sound.set_volume(Real64)` that accepts an argument between 0.0 and 1.0.
+- [Sound] Added `Sound.stop()` that stops a sound and rewinds it to the beginning.
+- [SoundGroup] Created new `SoundGroup` class to manage a set of related sounds, like multiple copies of a single sound effect or multiple variations of a sound.
+- [SoundGroup] Added constructor `SoundGroup.init(sound_name:String,channels=1:Int32,&is_music)`.
+- [SoundGroup] Added constructor `SoundGroup.init(&random,&random_order,&autoplay)`.  The `&random` flag picks a sound randomly each time.  `&random_order` is similar but it plays all sounds in a random order before repeating any of them, reshuffling each time before another pass.  `&autoplay` automatically plays another sound when each sound is finished - note `SoundGroup.play()` must be called once to start the process.
+- [SoundGroup] Added `SoundGroup.add(Sound)` which adds another sound to the group.
+- [SoundGroup] Added `SoundGroup.play()` that plays the next sound from the group.
+- [SoundGroup] Added `SoundGroup.pause()` that pauses all sounds in the group.
+- [SoundGroup] Added `SoundGroup.resume()` that resumes all paused sounds in the group.
+- [SoundGroup] Added `SoundGroup.stop()` that halts playback of the group.
 
 ###v0.3.0 - October 31, 2016
 - [Sound Compiler] Added new Sound Compiler that works similar to the Image Compiler.  It is automatically invoked during an Xcode build or you can manually `./scom iOS` to run it.  It uses the `Assets/Sounds/SoundConfig.txt` build script, creating a default version necessary.
