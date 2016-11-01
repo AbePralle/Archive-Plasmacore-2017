@@ -55,6 +55,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.3.2 - October 31, 2016
+- [Image System] Removed kludgy `Plasmacore.default_asset_folder` in favor of a global property `Image.search_paths:String[]`.  Modify the paths as you like by adding e.g. `iPadRetina` to the `search_paths` list, allowing `Image("Name.png")` to be used rather than `Image("iPadRetina/Name.png")` etc.
+- [Image System] Any path-shortened form of an image can now be used to load the image.  For example, `Image("iOS/BG.png")` can now be loaded as `Image("BG.png")`.
+
 ###v0.3.1 - October 31, 2016
 - [Sound] Added `Sound.duration()->Real64` that returns the duration in seconds.
 - [Sound] Added `Sound.is_finished()->Logical` that returns `true` if a sound is not playing and not paused.
