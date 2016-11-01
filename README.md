@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.3.1
-- October 31, 2016
+- v0.3.2
+- November 1, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -55,7 +55,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.3.2 - October 31, 2016
+###v0.3.2 - November 1, 2016
+- [Display] Added `Display.clipping_region:Box?` which sets up the "scissor test" that clips any drawn images to the given bounds.  Assign a valid box to define and enable the clipping region or `null` to disable it.
 - [Image System] Removed kludgy `Plasmacore.default_asset_folder` in favor of a global property `Image.search_folders:String[]`.  Modify the folders as you like by adding e.g. `iPadRetina` to the `search_folders` list, allowing `Image("Name.png")` to be used rather than `Image("iPadRetina/Name.png")` etc.
 - [Image System] Any path-shortened form of an image can now be used to load the image.  For example, `Image("iOS/BG.png")` can now be loaded as `Image("BG.png")`.
 
