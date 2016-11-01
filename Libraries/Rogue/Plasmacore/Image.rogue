@@ -1,6 +1,9 @@
 module Plasmacore
 
 class Image
+  GLOBAL PROPERTIES
+    search_paths = String[]
+
   PROPERTIES
     name        : String
     image_info  : Value    # all the info necessary to load the image
@@ -22,7 +25,7 @@ class Image
 
   METHODS
     method init( name )
-      init( Plasmacore.image_info_lookup[ name ] )
+      init( Plasmacore.find_image_info( name ) )
 
     method init( image_info )
       size = XY( image_info//display_size )

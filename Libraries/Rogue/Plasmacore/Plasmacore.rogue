@@ -49,8 +49,6 @@ module Plasmacore
 
 class Plasmacore [essential singleton]
   PROPERTIES
-    default_asset_folder    = ""
-
     next_resource_id        = 1
     display_view_types      = StringTable<<TypeInfo>>()
     global_update_callback  : Function()
@@ -134,11 +132,23 @@ class Plasmacore [essential singleton]
       endIf
       return result
 
-      #method find_image_group_info( name:String )->Value
-      #return image_group_info_lookup[ name ]
-
     method find_image_info( name:String )->Value
-      return image_info_lookup[ name ]
+      local info = NullValue
+
+      # Attempt with search paths first before falling back to base name
+      forEach (search_path at index in Image.search_paths)
+        Image.search_paths[ index ] = File.ensure_ends_with_separator( search_path )
+      endForEach
+
+      forEach (search_path in Image.search_paths)
+        info = image_info_lookup[ search_path + name ]
+        if (info) return info
+      endForEach
+
+      info = image_info_lookup[ name ]
+      if (info) return info
+
+      return NullValue
 
     method global_update
       global_update_timer.update
@@ -146,34 +156,35 @@ class Plasmacore [essential singleton]
         if (global_update_callback) global_update_callback()
       endWhile
 
-    method index_assets
+    method index_image_assets
       image_info_lookup = @{}
+
+      # Full filepath
       forEach (group_info in Plasmacore.image_manifest["groups"])
         forEach (image_info in group_info["images"])
           local name = image_info["name"]->String
           image_info_lookup[ name ] = image_info
-          if (name.begins_with(default_asset_folder))
-            image_info_lookup[ name.after_first(default_asset_folder) ] = image_info
-          endIf
-          image_info_lookup[ File.filename(name) ] = image_info
+        endForEach
+      endForEach
+
+      # For A/B/C.png, add B/C.png and C.png as separate entries as long as they
+      # do not conflict with any existing entry.
+      forEach (group_info in Plasmacore.image_manifest["groups"])
+        forEach (image_info in group_info["images"])
+          local name = image_info["name"]->String
+          while (name.contains('/'))
+            name = name.after_first( '/' )
+            if (not image_info_lookup.contains(name)) image_info_lookup[ name ] = image_info
+          endWhile
         endForEach
       endForEach
 
     method load_image_manifest
-      image_manifest = ValueTable.load( asset_file("ImageManifest.json") )
-      index_assets
+      image_manifest = ValueTable.load( asset_file("Assets/Images/ImageManifest.json") )
+      index_image_assets
 
     method on_global_update( global_update_callback )
       noAction
-
-    method set_default_asset_folder( folder:String )->this
-      if (not folder) folder = ""
-      if (default_asset_folder == folder) return this
-
-      if (folder.count) folder = File.ensure_ends_with_separator( folder )
-      @default_asset_folder = folder
-      index_assets
-      return this
 
 endClass
 

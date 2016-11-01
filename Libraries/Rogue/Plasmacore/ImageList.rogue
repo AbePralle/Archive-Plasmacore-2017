@@ -8,7 +8,7 @@ augment Image[]
 
   METHODS
     method init( name )
-      init( Plasmacore.image_info_lookup[ name ] )
+      init( Plasmacore.find_image_info( name ) )
 
     method init( image_info )
       local image_type = image_info["type"]->String

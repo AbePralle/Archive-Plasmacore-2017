@@ -168,7 +168,7 @@ class FontData
       if (entry) return entry.value
 
       local loader = FontLoaders[ name ]
-      local font_data = select{ loader:loader(name) || FontData(name, Plasmacore.image_info_lookup[name]) }
+      local font_data = select{ loader:loader(name) || FontData(name, Plasmacore.find_image_info(name)) }
       Display.font_data_by_name[ name ] = font_data
 
       return font_data
