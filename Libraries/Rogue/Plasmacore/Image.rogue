@@ -2,7 +2,7 @@ module Plasmacore
 
 class Image
   GLOBAL PROPERTIES
-    search_paths = String[]
+    search_folders = String[]
 
   PROPERTIES
     name        : String

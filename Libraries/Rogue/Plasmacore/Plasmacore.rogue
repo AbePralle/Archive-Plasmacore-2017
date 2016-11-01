@@ -136,11 +136,11 @@ class Plasmacore [essential singleton]
       local info = NullValue
 
       # Attempt with search paths first before falling back to base name
-      forEach (search_path at index in Image.search_paths)
-        Image.search_paths[ index ] = File.ensure_ends_with_separator( search_path )
+      forEach (search_path at index in Image.search_folders)
+        Image.search_folders[ index ] = File.ensure_ends_with_separator( search_path )
       endForEach
 
-      forEach (search_path in Image.search_paths)
+      forEach (search_path in Image.search_folders)
         info = image_info_lookup[ search_path + name ]
         if (info) return info
       endForEach

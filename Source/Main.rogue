@@ -29,10 +29,6 @@ class InitialState : State<<MainView>>
     method on_start
       # Called when this state becomes the active state
       println "Hello World"
-      Image.search_paths.add( "iPadRetina" )
-      local img = Image[]( "Cards/Classic/Cards.png" )
-      trace img.count
-      if (img.count) trace img.first.size
 
     method after_draw
       # This happens after the current view's on_draw()
