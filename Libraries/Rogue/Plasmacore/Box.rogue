@@ -76,6 +76,9 @@ $endIf
     method intersects( other:Box )->Logical
       return (this & other).width?
 
+    method operator==( other:Box )->Logical
+      return (position == other.position and size == other.size)
+
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
 

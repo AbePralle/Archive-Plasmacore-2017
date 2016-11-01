@@ -16,6 +16,11 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       return this
 
     method draw
+      if (not lines.count) return
+
+      local original_region = Display.clipping_region
+      Display.clipping_region = null
+
       local font = SystemFont
       font.load
       local max = Display.height / font.height
@@ -36,6 +41,8 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       forEach (line at j in lines)
         font.draw( line, XY(0,j*font.height) )
       endForEach
+
+      Display.clipping_region = original_region
 
     method update
       if (timer.is_expired) lines.clear
