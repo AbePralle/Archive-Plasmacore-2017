@@ -45,6 +45,7 @@ class Display [singleton]
     # parallel to the camera axis.  Reset to Display.center at the beginning
     # of every draw.
 
+    clipping_region    : Box?
 
     background_color = Color.BLACK : Color
 
@@ -587,6 +588,42 @@ class Display [singleton]
         size = true_size
       endIf
       projection_mode.update
+      return this
+
+    method set_clipping_region( new_clipping_region:Box? )->this
+      if (new_clipping_region.exists == clipping_region.exists)
+        # Avoid rendering cached content if the clipping region is unchanged
+        if (not new_clipping_region.exists) return this
+
+        if (new_clipping_region.value == clipping_region.value) return this
+      endIf
+
+      render
+      @clipping_region = new_clipping_region
+
+      if (clipping_region.exists)
+        local box = clipping_region.value & Display.bounds
+        if (box.size.x == 0) @clipping_region = null
+        else                 @clipping_region = box
+      endIf
+
+      if (clipping_region.exists)
+        local scale = true_size / size
+        local box = clipping_region.value
+        local pos = box.position * scale
+        local size = box.size * scale
+
+        local w = size.x->Int32
+        local h = size.y->Int32
+        local x = pos.x->Int32
+        local y = (true_size.y - (pos.y + h))->Int32
+
+        native @|glEnable( GL_SCISSOR_TEST );
+                |glScissor( $x, $y, $w, $h );
+      else
+        native @|glDisable( GL_SCISSOR_TEST );
+      endIf
+
       return this
 
     method set_primitive_type( primitive_type:Int32 )->this
