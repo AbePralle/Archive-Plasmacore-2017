@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.3.2
-- November 1, 2016
+- v0.3.3
+- November 3, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -54,6 +54,9 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.3.3 - November 3, 2016
+- [Rogue] Updated to Rogue v1.1.2.
 
 ###v0.3.2 - November 1, 2016
 - [Display] Added `Display.clipping_region:Box?` which sets up the "scissor test" that clips any drawn images to the given bounds.  Assign a valid box to define and enable the clipping region or `null` to disable it.
