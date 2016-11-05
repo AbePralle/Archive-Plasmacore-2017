@@ -635,7 +635,7 @@ class Command
             if (w == from_size.min and h == from_size.max)     new_w = to_size.min; new_h = to_size.max
             elseIf (w == from_size.max and h == from_size.min) new_w = to_size.max; new_h = to_size.min
           endIf
-          bitmap.resize( new_w, new_h )
+          bitmap = bitmap.resized( new_w, new_h )
           println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
 
           save_bitmap( bitmap, to_filepath )

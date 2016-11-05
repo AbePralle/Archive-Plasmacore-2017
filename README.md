@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.3.3
-- November 3, 2016
+- v0.3.4
+- November 4, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -54,6 +54,9 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.3.4 - November 4, 2016
+- [Image Compiler] Fixed bug where the same image being copied+resized more than once starts with the original image each time.
 
 ###v0.3.3 - November 3, 2016
 - [Rogue] Updated to Rogue v1.1.2.
