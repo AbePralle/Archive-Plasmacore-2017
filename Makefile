@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.3.5.0
+PLASMACORE_VERSION = v0.3.5
 
 ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
