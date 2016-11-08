@@ -80,10 +80,14 @@ class Plasmacore [essential singleton]
           endIf
         endFunction )
 
+        MessageManager.add_listener( "Application.start", (m)=>(forEach in Plasmacore.displays).on_app_start )
+        MessageManager.add_listener( "Application.stop",  (m)=>(forEach in Plasmacore.displays).on_app_stop )
+        MessageManager.add_listener( "Application.save",  (m)=>(forEach in Plasmacore.displays).on_app_save )
+
         MessageManager.add_listener( "Display.render",
-        function(m:Message)
-          Display( m.string("display_name") ).render( XY(m.int32("display_width"),m.int32("display_height")) )
-        endFunction )
+          function(m:Message)
+            Display( m.string("display_name") ).render( XY(m.int32("display_width"),m.int32("display_height")) )
+          endFunction )
 
         MessageManager.add_listener( "Display.on_pointer_event",
           function(m:Message)

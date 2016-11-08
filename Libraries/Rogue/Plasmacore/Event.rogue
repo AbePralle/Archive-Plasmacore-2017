@@ -9,11 +9,8 @@ class Event
       this.is_consumed = true
 endClass
 
-class DrawEvent : Event [singleton]
-endClass
-
-class UpdateEvent : Event [singleton]
-endClass
+class DrawEvent   : Event [singleton];
+class UpdateEvent : Event [singleton];
 
 class KeyEvent : Event
   PROPERTIES

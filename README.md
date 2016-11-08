@@ -55,6 +55,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.3.5 - November 7, 2016
+- [App Lifecycle] Added State/View `on_app_start/stop/save` methods based on global `Application.start/stop/save` events.  Timers and such should be stopped and started with those methods.  `save()` is called when the app may or may not resume execution and should save its state.
+
 ###v0.3.4 - November 4, 2016
 - [Image Compiler] Fixed bug where the same image being copied+resized more than once starts with the original image each time.
 
