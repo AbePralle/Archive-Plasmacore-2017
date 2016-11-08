@@ -18,7 +18,13 @@ class Box( position:XY, size:XY ) [compound]
       return Box( XY(0,0), size )
 
     method create( value:Value )->Box
-      if (value.contains("position"))
+      if (value.is_list)
+        if (value.count == 2)
+          return Box( XY(value) )
+        else
+          return Box( value[0]->Real64, value[1]->Real64, value[2]->Real64, value[3]->Real64 )
+        endIf
+      elseIf (value.contains("position"))
         return Box( XY(value//position), XY(value//size) )
       else
         return Box( value//x->Real64, value//y->Real64, value//width->Real64, value//height->Real64 )
