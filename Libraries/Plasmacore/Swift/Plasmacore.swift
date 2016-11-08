@@ -18,6 +18,29 @@ class Plasmacore
     }
   }
 
+  class func onLaunch()
+  {
+    singleton.start()   // Sends Application.launch message automatically on first start
+  }
+
+  class func onStop()
+  {
+    singleton.stop()
+    PlasmacoreMessage( type:"Application.stop" ).send()
+  }
+
+  class func onStart()
+  {
+    PlasmacoreMessage( type:"Application.start" ).send()
+    singleton.start()
+  }
+
+  class func onSave()
+  {
+    singleton.stop()
+    PlasmacoreMessage( type:"Application.save" ).send()
+  }
+
   var is_configured = false
   var is_launched   = false
 

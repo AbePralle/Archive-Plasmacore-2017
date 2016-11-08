@@ -30,6 +30,12 @@ class State
     method after( e:UpdateEvent )
       after_update
 
+    method after_app_start
+
+    method after_app_stop
+
+    method after_app_save
+
     method after_draw
 
     method after_update
@@ -76,6 +82,21 @@ class State
 
       after( e )
 
+    method handle_app_start
+      on_app_start
+      view.handle_app_start
+      after_app_start
+
+    method handle_app_stop
+      on_app_stop
+      view.handle_app_stop
+      after_app_stop
+
+    method handle_app_save
+      on_app_save
+      view.handle_app_save
+      after_app_save
+
     method load_another_asset->Real64
       return view.load_another_asset
 
@@ -92,13 +113,11 @@ class State
     method on( e:UpdateEvent )
       on_update
 
-    method push_state( new_state:State )
-      view.push_state( new_state )
+    method on_app_start
 
-    method queue_state( new_state:State )
-      if (not view) view = Display.view
-      if (not new_state.view) new_state.view = view
-      view.queue_state( new_state )
+    method on_app_stop
+
+    method on_app_save
 
     method on_draw
 
@@ -113,6 +132,14 @@ class State
     method on_suspend
 
     method on_update
+
+    method push_state( new_state:State )
+      view.push_state( new_state )
+
+    method queue_state( new_state:State )
+      if (not view) view = Display.view
+      if (not new_state.view) new_state.view = view
+      view.queue_state( new_state )
 
     method set_view( @view )->this
       return this
