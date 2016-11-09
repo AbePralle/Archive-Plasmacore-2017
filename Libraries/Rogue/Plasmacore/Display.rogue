@@ -37,6 +37,7 @@ class Display [singleton]
 
     size                : XY
     true_size           : XY
+    viewport_size       : XY
     target_display_size : XY?
     display_scale       : Real64
 
@@ -421,7 +422,7 @@ class Display [singleton]
       transform_modified = true
       return this
 
-    method render( true_size )
+    method render( true_size, viewport_size )
       Display = this  # set the singleton reference to be this display
 
       clear_transforms
@@ -474,7 +475,7 @@ class Display [singleton]
         return
       endIf
 
-      native @|glViewport( 0, 0, (int)$true_size.x, (int)$true_size.y );
+      native @|glViewport( 0, 0, (int)$viewport_size.x, (int)$viewport_size.y );
               |glEnable( GL_CULL_FACE );
               |glFrontFace( GL_CCW );
               |glCullFace( GL_BACK );

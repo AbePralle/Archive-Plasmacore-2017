@@ -1,11 +1,10 @@
 # Vim
 *.swp
 *.local
-DevUpdate.mk
-Publish.mk
 
 Test
-Local.mk
+Update.mk
+Publish.mk
 
 # Mac
 .DS_Store

@@ -57,6 +57,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ###v0.4.0 - November 8, 2016
 - [Box] Creating a `Box` from a `Value` with `Box(Value)` now works with value lists - `Box(@[3,4])` is equivalent to `Box(&size=XY(3,4))` and `Box(@[1,2,3,4])` is equivalent to `Box(&position=XY(1,2),&size=XY(3,4))`.
+- [iOS] Now displays correctly on iPhone Plus - glViewport needs physical pixels (1080x1920) while the rest of the rendering system needs the internal display buffer size (1242x2208).
 
 ###v0.3.5 - November 7, 2016
 - [App Lifecycle] Added State/View `on_app_start/stop/save` methods based on global `Application.start/stop/save` events.  Timers and such should be stopped and started with those methods.  `save()` is called when the app may or may not resume execution and should save its state.
