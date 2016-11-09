@@ -86,7 +86,9 @@ class Plasmacore [essential singleton]
 
         MessageManager.add_listener( "Display.render",
           function(m:Message)
-            Display( m.string("display_name") ).render( XY(m.int32("display_width"),m.int32("display_height")) )
+            local display_size = XY( m.int32("display_width"),m.int32("display_height") )
+            local viewport_size = XY( m.int32("viewport_width"),m.int32("viewport_height") )
+            Display( m.string("display_name") ).render( display_size, viewport_size )
           endFunction )
 
         MessageManager.add_listener( "Display.on_pointer_event",

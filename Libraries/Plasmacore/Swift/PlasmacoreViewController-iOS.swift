@@ -100,6 +100,10 @@ class PlasmacoreViewController : GLKViewController
     m.set( name:"display_name",   value:name )
     m.set( name:"display_width",  value:Int(display_width) )
     m.set( name:"display_height", value:Int(display_height) )
+
+    // viewport size only differs from display size on the iPhone Plus physical device (not simulator)
+    m.set( name:"viewport_width",  value:Int(UIScreen.main.nativeBounds.width))
+    m.set( name:"viewport_height", value:Int(UIScreen.main.nativeBounds.height))
     m.send()
   }
 
