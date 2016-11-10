@@ -425,6 +425,11 @@ class Display [singleton]
     method render( true_size, viewport_size )
       Display = this  # set the singleton reference to be this display
 
+      # Ensure viewport min/max ordering matches true size ordering
+      if ((true_size.x <= true_size.y) xor (viewport_size.x <= viewport_size.y))
+        viewport_size = XY( viewport_size.y, viewport_size.x )
+      endIf
+
       clear_transforms
       perspective_center = center
 
