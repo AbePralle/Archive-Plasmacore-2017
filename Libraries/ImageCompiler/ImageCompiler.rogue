@@ -390,7 +390,7 @@ class Command
         textures.add(
         @{
           filename: sheet.filename,
-          size: { width:sheet.width, height:sheet.height }
+          size:[sheet.width,sheet.height]
         } )
 
         File.save( sheet_filepath, sheet.render.to_png_bytes )
@@ -920,11 +920,11 @@ class Placement
       endIf
 
     method collect_image_info( info:@{} )->@{}
-      info//display_size = @{ width:display_width, height:display_height }
+      info//display_size = @[ display_width, display_height ]
       info//texture =
       @{
         filename:image_sheet.filename,
-        bounds: { x:x, y:y, width:width, height:height }
+        bounds:[x,y,width,height]
       }
       return info
 
