@@ -114,16 +114,33 @@ class ImageCompiler
       execute_global_commands
       execute_platform_commands
 
-      local manifest_filepath = "Build/$/Assets/Images/ImageManifest.json" (platform)
-      File.create_folder( File.folder(manifest_filepath) )
-      if (not File.exists(manifest_filepath) or File.timestamp(manifest_filepath) < newest_group_manifest_timestamp)
-        ++files_written
-        println "  Writing " + manifest_filepath
-        @{ groups:group_manifests }.save( File(manifest_filepath) )
-      endIf
+      write_image_index
 
       if (not files_written)
         println "Images up to date."
+      endIf
+
+    method write_image_index
+      local index_folder = "Build/$/Assets/Images/" (platform)
+      File.create_folder( index_folder )
+
+      local index_filepath = index_folder + "ImageIndex.json"
+
+      if (not File.exists(index_filepath) or File.timestamp(index_filepath) < newest_group_manifest_timestamp)
+        ++files_written
+        println "  Writing " + index_filepath
+
+        local index = @{ groups:[] }
+        forEach (group in group_manifests)
+          local g = @{ filename:group//name->String.replacing('/','-') + ".json" }
+          index//groups.add( g )
+          local images = g.ensure_list( "images" )
+          forEach (img in group//images)
+            images.add( img//name )
+          endForEach
+        endForEach
+
+        index.compressed.save( File(index_filepath) )
       endIf
 
     method execute_global_commands
@@ -326,7 +343,7 @@ class Command
         endIf
       endForEach
 
-      local manifest_folder = "Build/$/Intermediate/ImageGroupManifests" (icom.platform)
+      local manifest_folder = "Build/$/Assets/Images" (icom.platform)
       File.create_folder( manifest_folder )
       local manifest_filepath = "$/$.json" (manifest_folder,output_filename)
       local manifest_timestamp = 0.0
@@ -344,7 +361,7 @@ class Command
 
         # No changes to group.  Load up cached group manifest so it can be written out
         # with the platform manifest
-        icom.group_manifests.add( JSON.load_table( manifest_filepath ) )
+        icom.group_manifests.add( JSON.load_table( manifest_filepath ).decompressed )
         icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
 
         return  # no changes to group
@@ -379,12 +396,15 @@ class Command
         print "  Writing "
         print sheet_filepath
         print " "
+        #{
         if (icom.even_odd)
           forEach (1..(50 - sheet.filename.count)) print "."
         else
           forEach (1..(50 - sheet.filename.count)) print " "
         endIf
         icom.even_odd = not icom.even_odd
+        }#
+        forEach (1..(50 - sheet.filename.count)) print ' '
         println " [$x$]" (sheet.width,sheet.height)
 
         textures.add(
@@ -397,6 +417,10 @@ class Command
 
       endForEach
 
+      print "  Writing "
+      print manifest_filepath
+      println
+
       local images = manifest.ensure_list( "images" )
       forEach (asset in assets)
         asset.collect_image_info( images )
@@ -407,7 +431,7 @@ class Command
       manifest_timestamp = System.time
       icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
 
-      manifest.save( File(manifest_filepath), &formatted )
+      manifest.compressed.save( File(manifest_filepath) )
 
 
     method perform_layout( assets:Asset[] )->ImageSheet[]

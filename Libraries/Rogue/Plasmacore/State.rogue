@@ -30,12 +30,6 @@ class State
     method after( e:UpdateEvent )
       after_update
 
-    method after_app_start
-
-    method after_app_stop
-
-    method after_app_save
-
     method after_draw
 
     method after_update
@@ -82,21 +76,6 @@ class State
 
       after( e )
 
-    method handle_app_start
-      on_app_start
-      view.handle_app_start
-      after_app_start
-
-    method handle_app_stop
-      on_app_stop
-      view.handle_app_stop
-      after_app_stop
-
-    method handle_app_save
-      on_app_save
-      view.handle_app_save
-      after_app_save
-
     method load_another_asset->Real64
       return view.load_another_asset
 
@@ -112,12 +91,6 @@ class State
 
     method on( e:UpdateEvent )
       on_update
-
-    method on_app_start
-
-    method on_app_stop
-
-    method on_app_save
 
     method on_draw
 

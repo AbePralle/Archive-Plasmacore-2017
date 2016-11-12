@@ -27,12 +27,6 @@ class View
 
     method after( e:UpdateEvent )
 
-    method after_app_start
-
-    method after_app_stop
-
-    method after_app_save
-
     method change_state( new_state:State )
       local cur = new_state
       while (cur.next_state) cur = cur.next_state
@@ -122,21 +116,6 @@ class View
 
       after( e )
 
-    method handle_app_start
-      on_app_start
-      # TODO: ui.handle_app_start
-      after_app_start
-
-    method handle_app_stop
-      on_app_stop
-      # TODO: ui.handle_app_stop
-      after_app_stop
-
-    method handle_app_save
-      on_app_save
-      # TODO: ui.handle_app_save
-      after_app_save
-
     method load_another_asset->Real64
       if (loaded_asset_count and loaded_asset_count == total_asset_count) return 1.0
 
@@ -173,12 +152,6 @@ class View
 
     method on( e:UpdateEvent )
       on_update
-
-    method on_app_start
-
-    method on_app_stop
-
-    method on_app_save
 
     method on_start
 

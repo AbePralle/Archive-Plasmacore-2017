@@ -142,9 +142,11 @@ class MessageManager [essential singleton]
           list.discard( 0, n )
         endIf
 
+        #{
         if (not handled)
           println "Unhandled message " + incoming_message.type
         endIf
+        }#
       endWhile
 
       Plasmacore.global_update

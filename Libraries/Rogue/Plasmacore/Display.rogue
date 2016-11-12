@@ -57,7 +57,7 @@ class Display [singleton]
     view_transforms      = Matrix[]
     object_transforms    = Matrix[]
 
-    transform_modified        : Logical
+    transform_modified            : Logical
     view_transform_modified       : Logical
     object_transform_modified     : Logical
 
@@ -377,18 +377,6 @@ class Display [singleton]
       image_group_list.add( group )
       return group
       }#
-
-    method on_app_start
-      activate_view_and_state
-      view.state.handle_app_start
-
-    method on_app_stop
-      activate_view_and_state
-      view.state.handle_app_stop
-
-    method on_app_save
-      activate_view_and_state
-      view.state.handle_app_save
 
     method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)
