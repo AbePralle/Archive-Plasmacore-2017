@@ -55,6 +55,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.4.1 - November 13, 2016
+- [Rogue] Updated Rogue to v1.1.3.
+
 ###v0.4.0 - November 12, 2016
 - [Plasmacore] Image compiler meta-info output format and corresponding Plasmacore image info loading system reworked for massive savings.  File sizes are reduced by half and runtime object counts are reduced by a factor of 10.
 - [Box] Creating a `Box` from a `Value` with `Box(Value)` now works with value lists - `Box(@[3,4])` is equivalent to `Box(&size=XY(3,4))` and `Box(@[1,2,3,4])` is equivalent to `Box(&position=XY(1,2),&size=XY(3,4))`.
