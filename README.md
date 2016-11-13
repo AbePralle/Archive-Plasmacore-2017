@@ -1,5 +1,5 @@
 # Plasmacore
-- v0.4.1
+- v0.4.2
 - November 13, 2016
 
 ## Requirements
