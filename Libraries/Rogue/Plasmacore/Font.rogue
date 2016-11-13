@@ -3,7 +3,7 @@ module Plasmacore
 class Font
   PROPERTIES
     name           : String
-    image_info     : Value
+    image_info     : ImageInfo
 
     data           : FontData
     options        : @{}
@@ -155,7 +155,7 @@ endClass
 class FontData
   PROPERTIES
     name             : String
-    image_info       : Value
+    image_info       : ImageInfo
     exists           : Logical
     is_loaded        : Logical
     height           : Int32
@@ -176,9 +176,9 @@ class FontData
   METHODS
     method init( name, image_info )
       if (image_info)
-        require (image_info["type"] == "Font")
-        forEach (character_info in image_info["characters"])
-          local ch = FontCharacter( Character(character_info//unicode->Int32), Image(character_info) )
+        require (image_info.type == ImageInfo.TYPE_FONT)
+        forEach (character_info in image_info.images)
+          local ch = FontCharacter( character_info.unicode, Image(character_info) )
           height = height.or_larger( ch.image.size.y )
           require (ch.unicode >= 0)
           if (ch.unicode < 128)

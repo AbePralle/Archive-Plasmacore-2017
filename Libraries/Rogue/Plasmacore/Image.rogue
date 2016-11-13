@@ -6,7 +6,7 @@ class Image
 
   PROPERTIES
     name        : String
-    image_info  : Value    # all the info necessary to load the image
+    image_info  : ImageInfo
     data        : ImageData
     position    : XY
     z           = 1.0
@@ -28,7 +28,7 @@ class Image
       init( Plasmacore.find_image_info( name ) )
 
     method init( image_info )
-      size = XY( image_info//display_size )
+      size = image_info.display_size
 
     method init( other:Image )
       name        = other.name
@@ -71,7 +71,7 @@ class Image
         endIf
       elseIf (image_info)
         image_info = image_info.cloned
-        image_info//texture//bounds = (subset + Box(image_info//texture//bounds).position)->Value
+        image_info.texture_bounds = subset + image_info.texture_bounds.position
       endIf
 
     method init( data )
@@ -105,9 +105,9 @@ class Image
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       if (not image_info) return
 
-      which (image_info["type"]->String)
-        case "TextureImage"
-          texture_names[ image_info//texture//filename->String ] = true
+      which (image_info.type)
+        case ImageInfo.TYPE_TEXTURE_IMAGE
+          texture_names[ image_info.texture_filename ] = true
       endWhich
 
     method draw
@@ -131,13 +131,11 @@ class Image
 
       if (not image_info) return false
 
-      local image_type = image_info[ "type" ]->String
-      which (image_type)
-        case "TextureImage"
-          local texture_info = image_info//texture
-          local texture = Texture( texture_info//filename->String )
+      which (image_info.type)
+        case ImageInfo.TYPE_TEXTURE_IMAGE
+          local texture = Texture( image_info.texture_filename )
           data = TextureImageData( texture )
-          uv = Box( texture_info//bounds )
+          uv = image_info.texture_bounds
           render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
       endWhich
@@ -148,7 +146,7 @@ class Image
       if (opacity <= 0.0) return false
 
       if (not load)
-        println "Error loading " + select{ name || image_info->String }
+        println "Error loading " + select{ name || image_info.name }
         data = ColorFillImageData()
         colors = Colors( Color.WHITE )
         render_mode = RenderMode.OPAQUE_SHAPE

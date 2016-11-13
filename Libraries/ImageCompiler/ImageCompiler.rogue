@@ -132,7 +132,7 @@ class ImageCompiler
 
         local index = @{ groups:[] }
         forEach (group in group_manifests)
-          local g = @{ filename:group//name->String.replacing('/','-') + ".json" }
+          local g = @{ filepath:"Assets/Images/$.json" (group//name->String.replacing('/','-')) }
           index//groups.add( g )
           local images = g.ensure_list( "images" )
           forEach (img in group//images)

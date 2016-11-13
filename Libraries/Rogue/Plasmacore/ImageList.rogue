@@ -3,7 +3,7 @@ module Plasmacore
 augment Image[]
   PROPERTIES
     name       : String
-    image_info : Value
+    image_info : ImageInfo
     is_loaded  : Logical
 
   METHODS
@@ -11,11 +11,10 @@ augment Image[]
       init( Plasmacore.find_image_info( name ) )
 
     method init( image_info )
-      local image_type = image_info["type"]->String
-      which (image_type)
-        case "Image[]"
-          forEach (frame_info in image_info["images"])
-            add( Image(frame_info) )
+      which (image_info.type)
+        case ImageInfo.TYPE_IMAGE_LIST
+          forEach (info in image_info.images)
+            add( Image(info) )
           endForEach
       endWhich
 
