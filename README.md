@@ -55,6 +55,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.4.2 - November 13, 2016
+- [Rogue] Fixed fatal compile error bug in 0.4.1 release.
+
 ###v0.4.1 - November 13, 2016
 - [Rogue] Updated Rogue to v1.1.3.
 
