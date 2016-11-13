@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.3.5
-- November 7, 2016
+- v0.4.0
+- November 12, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -55,7 +55,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.4.0 - November 8, 2016
+###v0.4.0 - November 12, 2016
+- [Plasmacore] Image compiler meta-info output format and corresponding Plasmacore image info loading system reworked for massive savings.  File sizes are reduced by half and runtime object counts are reduced by a factor of 10.
 - [Box] Creating a `Box` from a `Value` with `Box(Value)` now works with value lists - `Box(@[3,4])` is equivalent to `Box(&size=XY(3,4))` and `Box(@[1,2,3,4])` is equivalent to `Box(&position=XY(1,2),&size=XY(3,4))`.
 - [iOS] Now displays correctly on iPhone Plus - glViewport needs physical pixels (1080x1920) while the rest of the rendering system needs the internal display buffer size (1242x2208).
 
