@@ -53,6 +53,10 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 ## License
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
+
+###v0.4.4 - November 14, 2016
+- [iOS Project] An `Application.save` message now gets sent on `applicationWillResignActive` instead of `applicationDidEnterBackground` and `applicationWillTerminate`.
+
 ## Change Log
 
 ###v0.4.3 - November 13, 2016
