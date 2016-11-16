@@ -323,7 +323,7 @@ class Command
             endIf
           endForEach
         else
-          compile_group( "Assets/Images/" + group_name )
+          compile_group( group_name )
         endIf
       endIf
 
