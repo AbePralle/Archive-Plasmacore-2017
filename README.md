@@ -1,5 +1,5 @@
 # Plasmacore
-- v0.4.4
+- v0.4.5
 - November 15, 2016
 
 ## Requirements
@@ -12,7 +12,7 @@ Currently the Plasmacore toolchain only runs on MacOS and only supports an iOS c
 
 Platform | Status | Notes
 ---------|--------|---------------------------------------------
-iOS      | Alpha  | No sound or direct virtual keyboard support.
+iOS      | Alpha  | No virtual keyboard support.
 
 Other platforms will eventually be supported.
 
