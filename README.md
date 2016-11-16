@@ -53,6 +53,8 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 ## License
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
+###v0.4.5 - November 15, 2016
+- [Image Compiler] A non-"." image group that does not have a wildcard in the path now compiles correctly.
 
 ###v0.4.4 - November 15, 2016
 - [iOS Project] An `Application.save` message now gets sent on `applicationWillResignActive` instead of `applicationDidEnterBackground` and `applicationWillTerminate`.
