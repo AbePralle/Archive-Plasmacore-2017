@@ -2,15 +2,70 @@ module Plasmacore
 
 class TargetValue<<$DataType>>
   PROPERTIES
+    target_value : $DataType
+
+  METHODS
+    method set_target_value( @target_value )->this
+      return this
+
+    method set_value( @target_value )->this
+      return this
+
+    method value->$DataType
+      return target_value
+endClass
+
+class AcceleratedValue<<$DataType>> : TargetValue<<$DataType>>
+  PROPERTIES
+    value        : $DataType
+    velocity     = 0.0
+    acceleration = 0.05
+    threshold    = 0.001
+    timer        = UpdateTimer()
+
+  METHODS
+    method init( @target_value, acceleration=0.05, threshold=0.001 )
+
+    method set_value( @value )->this
+      velocity = 0
+      return this
+
+    method value->$DataType
+      if (@value == @target_value) return @value
+
+      timer.update
+      while (timer.tick)
+        local delta = @target_value - @value
+        if (delta.abs < threshold)
+          @value = @target_value
+          velocity = 0
+          return @value
+        else
+          delta *= acceleration
+          if (not velocity) velocity = delta.sign * threshold
+          velocity /= acceleration
+          if (delta.abs > velocity.abs)
+            @value += velocity
+          else
+            @value += delta
+            velocity = delta
+          endIf
+        endIf
+      endWhile
+
+      return @value
+endClass
+
+class EasedValue<<$DataType>> : TargetValue<<$DataType>>
+  PROPERTIES
     initial_value : $DataType
-    target_value  : $DataType
     start_time    : Real64
     duration      : Real64
     progress_fn   : Function(Real64)->(Real64)
     duration_fn   : Function($DataType)->(Real64)
 
   METHODS
-    method init( initial_value, duration, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+    method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
       @target_value = initial_value
 
     method init( initial_value, duration_fn, progress_fn=ProgressFn.QUADRATIC )
