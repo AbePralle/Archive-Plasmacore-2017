@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.4.7 - November 24, 2016
+- [Image] Added `original_size` property that tracks the image's original display size.
+
 ###v0.4.6 - November 24, 2016
 - [Plasmacore] Fixed `Display.clipping_region` to work on iPhone Plus with regular and zoomed displays.
 

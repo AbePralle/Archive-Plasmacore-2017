@@ -5,19 +5,20 @@ class Image
     search_folders = String[]
 
   PROPERTIES
-    name        : String
-    image_info  : ImageInfo
-    data        : ImageData
-    position    : XY
-    z           = 1.0
-    size        : XY
-    scale       = XY(1,1)
-    rotation    : Rotation
-    shader      : Shader
-    anchor      = Anchor.CENTER : Anchor
-    render_mode : RenderMode
-    colors      = Colors(Color.WHITE) : Colors
-    opacity     = 1.0  # Master opacity; multiplies each color's alpha component
+    name          : String
+    image_info    : ImageInfo
+    data          : ImageData
+    position      : XY
+    z             = 1.0
+    size          : XY
+    original_size : XY
+    scale         = XY(1,1)
+    rotation      : Rotation
+    shader        : Shader
+    anchor        = Anchor.CENTER : Anchor
+    render_mode   : RenderMode
+    colors        = Colors(Color.WHITE) : Colors
+    opacity       = 1.0  # Master opacity; multiplies each color's alpha component
 
     selected_shader : Shader
     # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
@@ -29,35 +30,38 @@ class Image
 
     method init( image_info )
       size = image_info.display_size
+      original_size = size
 
     method init( other:Image )
-      name        = other.name
-      image_info  = other.image_info
-      data        = other.data
-      position    = other.position
-      z           = other.z
-      size        = other.@size
-      scale       = other.scale
-      rotation    = other.rotation
-      shader      = other.shader
-      anchor      = other.anchor
-      render_mode = other.render_mode
-      colors      = other.colors
-      opacity     = other.opacity
+      name          = other.name
+      image_info    = other.image_info
+      data          = other.data
+      position      = other.position
+      z             = other.z
+      size          = other.@size
+      original_size = other.@original_size
+      scale         = other.scale
+      rotation      = other.rotation
+      shader        = other.shader
+      anchor        = other.anchor
+      render_mode   = other.render_mode
+      colors        = other.colors
+      opacity       = other.opacity
 
     method init( other:Image, subset:Box )
-      name        = other.name
-      image_info  = other.image_info
-      position    = other.position
-      z           = other.z
-      size        = subset.@size
-      scale       = other.scale
-      rotation    = other.rotation
-      shader      = other.shader
-      anchor      = other.anchor
-      render_mode = other.render_mode
-      colors      = other.colors
-      opacity     = other.opacity
+      name          = other.name
+      image_info    = other.image_info
+      position      = other.position
+      z             = other.z
+      size          = subset.@size
+      original_size = other.original_size * (size / other.size)
+      scale         = other.scale
+      rotation      = other.rotation
+      shader        = other.shader
+      anchor        = other.anchor
+      render_mode   = other.render_mode
+      colors        = other.colors
+      opacity       = other.opacity
 
       if (other.data)
         data = other.data.cloned
@@ -83,6 +87,7 @@ class Image
       init( TextureImageData(texture) )
       render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
       size = texture.image_size
+      original_size = size
 
     method add( child:Image )->this
       if (data) data.add( child )
@@ -176,6 +181,7 @@ class Image
     method set( bitmap:Bitmap )
       if (data) data = data.set( bitmap )
       size = bitmap.size
+      original_size = size
 
     method set_opacity( @opacity )->this
       return this
@@ -282,6 +288,8 @@ routine ColorFillImage( color:Color, size=Displays.size:XY )->Image
   result.colors = Colors( color )
   result.shader = ColorShader
   result.render_mode = select{ color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+  result.size = size
+  result.original_size = size
   return result
 endRoutine
 
@@ -290,6 +298,8 @@ routine ColorFillImage( colors:Colors, size=Displays.size:XY )->Image
   result.colors = colors
   result.shader = ColorShader
   result.render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+  result.size = size
+  result.original_size = size
   return result
 endRoutine
 
@@ -297,6 +307,7 @@ routine TextureImage( texture:Texture )->Image
   local result = Image( TextureImageData(texture) )
   result.render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
   result.size = texture.image_size
+  result.original_size = size
   return result
 endRoutine
 
