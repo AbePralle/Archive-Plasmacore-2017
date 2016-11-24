@@ -10,10 +10,6 @@
 
 Currently the Plasmacore toolchain only runs on MacOS and only supports an iOS compile target.
 
-Platform | Status | Notes
----------|--------|---------------------------------------------
-iOS      | Alpha  | No virtual keyboard support.
-
 Other platforms will eventually be supported.
 
 
@@ -53,14 +49,17 @@ The command will fetch a bootstrap makefile which in turn will `git clone` the l
 ## License
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
+## Change Log
+
+###v0.4.6 - November 24, 2016
+- [Plasmacore] Fixed `Display.clipping_region` to work on iPhone Plus with regular and zoomed displays.
+
 ###v0.4.5 - November 15, 2016
 - [Image Compiler] A non-"." image group that does not have a wildcard in the path now compiles correctly.
 
 ###v0.4.4 - November 15, 2016
 - [iOS Project] An `Application.save` message now gets sent on `applicationWillResignActive` instead of `applicationDidEnterBackground` and `applicationWillTerminate`.
 - [Rogue] Updated to Rogue v1.1.4
-
-## Change Log
 
 ###v0.4.3 - November 13, 2016
 - [Rogue] Fixed bug in `Value.to_json()` where `false` would print as `null`.

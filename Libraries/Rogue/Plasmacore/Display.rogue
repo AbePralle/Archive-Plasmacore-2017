@@ -614,7 +614,7 @@ class Display [singleton]
       endIf
 
       if (clipping_region.exists)
-        local scale = true_size / size
+        local scale = viewport_size / size
         local box = clipping_region.value
         local pos = box.position * scale
         local size = box.size * scale
@@ -622,7 +622,7 @@ class Display [singleton]
         local w = size.x->Int32
         local h = size.y->Int32
         local x = pos.x->Int32
-        local y = (true_size.y - (pos.y + h))->Int32
+        local y = (viewport_size.y - (pos.y + h))->Int32
 
         native @|glEnable( GL_SCISSOR_TEST );
                 |glScissor( $x, $y, $w, $h );
