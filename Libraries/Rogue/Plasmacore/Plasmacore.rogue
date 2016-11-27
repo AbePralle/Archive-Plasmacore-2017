@@ -83,7 +83,12 @@ class Plasmacore [essential singleton]
         MessageManager.add_listener( "Display.render",
           function(m:Message)
             local display_size = XY( m.int32("display_width"),m.int32("display_height") )
-            local viewport_size = XY( m.int32("viewport_width"),m.int32("viewport_height") )
+            local viewport_size : XY
+            if (m.contains("viewport_width"))
+              viewport_size = XY( m.int32("viewport_width"),m.int32("viewport_height") )
+            else
+              viewport_size = display_size
+            endIf
             Display( m.string("display_name") ).render( display_size, viewport_size )
           endFunction )
 
