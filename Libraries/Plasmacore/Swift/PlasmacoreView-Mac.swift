@@ -39,7 +39,7 @@ class PlasmacoreView: NSOpenGLView
     guard let pixelFormat = NSOpenGLPixelFormat(attributes: attributes) else { return }
     self.pixelFormat = pixelFormat
 
-    guard let context = NSOpenGLContext(format: pixelFormat, shareContext: nil) else { return }
+    guard let context = NSOpenGLContext(format: pixelFormat, share: nil) else { return }
     self.openGLContext = context
   }
 
@@ -53,8 +53,8 @@ class PlasmacoreView: NSOpenGLView
     if ( !super.becomeFirstResponder() ) { return false }
     configure()
     let m = PlasmacoreMessage( type:"Display.focus_gained" )
-    m.set( "window_id", value:windowID )
-    m.set( "display_name", value:name )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
     m.send()
     return true
   }
@@ -80,55 +80,52 @@ class PlasmacoreView: NSOpenGLView
     NSLog( "PlasmacoreView \(name) created in Window \(windowID)\n" )
   }
 
-  override func drawRect( area:NSRect )
+  override func draw( _ area:NSRect )
   {
-    super.drawRect( area )
+    super.draw( area )
     configure()
 
     guard let context = self.openGLContext else { return }
 
     context.makeCurrentContext()
-    CGLLockContext( context.CGLContextObj )
+    CGLLockContext( context.cglContextObj! )
 
 
     let display_width  = Int(bounds.width)
     let display_height = Int(bounds.height)
-    Starbright_begin_draw( renderer_id, Int32(display_width), Int32(display_height) )
 
     let m = PlasmacoreMessage( type:"Display.render" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "width",  value:display_width )
-    m.set( "height", value:display_height )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"display_width",  value:display_width )
+    m.set( name:"display_height", value:display_height )
     m.send()
 
-    Starbright_end_draw( renderer_id )
-
-    CGLFlushDrawable( context.CGLContextObj )
-    CGLUnlockContext( context.CGLContextObj )
+    CGLFlushDrawable( context.cglContextObj! )
+    CGLUnlockContext( context.cglContextObj! )
 
     startDisplayLink()
   }
 
-  override func flagsChanged( event:NSEvent )
+  override func flagsChanged( with event:NSEvent )
   {
     let newFlags = event.modifierFlags.rawValue
     let modified = keyModifierFlags ^ newFlags
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue, keycode:Keycode.CAPS_LOCK )
 
-    handleModifiedKey( modified, mask:NSEventModifierFlags.AlphaShiftKeyMask.rawValue, keycode:Keycode.CAPS_LOCK )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue|2, keycode:Keycode.LEFT_SHIFT )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue|4, keycode:Keycode.RIGHT_SHIFT )
 
-    handleModifiedKey( modified, mask:NSEventModifierFlags.ShiftKeyMask.rawValue|2, keycode:Keycode.LEFT_SHIFT )
-    handleModifiedKey( modified, mask:NSEventModifierFlags.ShiftKeyMask.rawValue|4, keycode:Keycode.RIGHT_SHIFT )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.control.rawValue|1,      keycode:Keycode.LEFT_CONTROL )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.control.rawValue|0x2000, keycode:Keycode.RIGHT_CONTROL )
 
-    handleModifiedKey( modified, mask:NSEventModifierFlags.ControlKeyMask.rawValue|1,      keycode:Keycode.LEFT_CONTROL )
-    handleModifiedKey( modified, mask:NSEventModifierFlags.ControlKeyMask.rawValue|0x2000, keycode:Keycode.RIGHT_CONTROL )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.option.rawValue|0x20, keycode:Keycode.LEFT_ALT )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.option.rawValue|0x40, keycode:Keycode.RIGHT_ALT )
 
-    handleModifiedKey( modified, mask:NSEventModifierFlags.AlternateKeyMask.rawValue|0x20, keycode:Keycode.LEFT_ALT )
-    handleModifiedKey( modified, mask:NSEventModifierFlags.AlternateKeyMask.rawValue|0x40, keycode:Keycode.RIGHT_ALT )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.command.rawValue|0x08, keycode:Keycode.LEFT_OS )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.command.rawValue|0x10, keycode:Keycode.RIGHT_OS )
 
-    handleModifiedKey( modified, mask:NSEventModifierFlags.CommandKeyMask.rawValue|0x08, keycode:Keycode.LEFT_OS )
-    handleModifiedKey( modified, mask:NSEventModifierFlags.CommandKeyMask.rawValue|0x10, keycode:Keycode.RIGHT_OS )
-
-    handleModifiedKey( modified, mask:NSEventModifierFlags.NumericPadKeyMask.rawValue, keycode:Keycode.NUMPAD_ENTER )
+    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.numericPad.rawValue, keycode:Keycode.NUMPAD_ENTER )
 
     keyModifierFlags = newFlags
   }
@@ -138,15 +135,16 @@ class PlasmacoreView: NSOpenGLView
     configure()
     if ((modified & mask) == mask)
     {
-      let m = PlasmacoreMessage( type:"Display.key_event" )
-      m.set( "window_id", value:windowID ).set( "display_name", value:name )
-      m.set( "is_press", value:(keyModifierFlags & mask) == 0 )
-      m.set( "keycode", value:keycode )
+      let m = PlasmacoreMessage( type:"Display.on_key_event" )
+      m.set( name:"window_id", value:windowID )
+      m.set( name:"display_name", value:name )
+      m.set( name:"is_press", value:(keyModifierFlags & mask) == 0 )
+      m.set( name:"keycode", value:keycode )
       m.send()
     }
   }
 
-  override func keyDown( event:NSEvent )
+  override func keyDown( with event:NSEvent )
   {
     configure()
     let syscode = Int( event.keyCode & 0x7f )
@@ -158,17 +156,18 @@ class PlasmacoreView: NSOpenGLView
     // Have keycodes < 32 or == 127 pass through as Unicode.
     if (keycode < 32 || keycode == 127) { unicode = keycode; }
 
-    let m = PlasmacoreMessage( type:"Display.key_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "is_press", value:true )
-    m.set( "unicode", value:unicode )
-    m.set( "keycode", value:keycode )
-    m.set( "syscode", value:syscode )
-    m.set( "is_repeat", value:event.ARepeat )
+    let m = PlasmacoreMessage( type:"Display.on_key_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"is_press", value:true )
+    m.set( name:"unicode", value:unicode )
+    m.set( name:"keycode", value:keycode )
+    m.set( name:"syscode", value:syscode )
+    m.set( name:"is_repeat", value:event.isARepeat )
     m.send()
   }
 
-  override func keyUp( event:NSEvent )
+  override func keyUp( with event:NSEvent )
   {
     configure()
     let syscode = Int( event.keyCode & 0x7f )
@@ -180,66 +179,71 @@ class PlasmacoreView: NSOpenGLView
     // Have keycodes < 32 or == 127 pass through as Unicode.
     if (keycode < 32 || keycode == 127) { unicode = keycode; }
 
-    let m = PlasmacoreMessage( type:"Display.key_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "is_press", value:false )
-    m.set( "unicode", value:unicode )
-    m.set( "keycode", value:keycode )
-    m.set( "syscode", value:syscode )
+    let m = PlasmacoreMessage( type:"Display.on_key_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"is_press", value:false )
+    m.set( name:"unicode", value:unicode )
+    m.set( name:"keycode", value:keycode )
+    m.set( name:"syscode", value:syscode )
     m.send()
   }
 
-  override func mouseDown( event:NSEvent )
+  override func mouseDown( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from:nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:1 )  // 1=press
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
-    m.set( "button", value:0 )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:1 )  // 1=press
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
+    m.set( name:"button", value:0 )
     m.send()
   }
 
-  override func mouseDragged( event:NSEvent )
+  override func mouseDragged( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:0 )  // 0=move
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:0 )  // 0=move
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
-  override func mouseMoved( event:NSEvent )
+  override func mouseMoved( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:0 )  // 0=move
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:0 )  // 0=move
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
-  override func mouseUp( event:NSEvent )
+  override func mouseUp( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:2 )  // 2=release
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
-    m.set( "button", value:0 )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:2 )  // 2=release
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
+    m.set( name:"button", value:0 )
     m.send()
   }
 
@@ -247,9 +251,9 @@ class PlasmacoreView: NSOpenGLView
   {
     guard let window = window else { return }
 
-    if (window.visible)
+    if (window.isVisible)
     {
-      drawRect( self.bounds )
+      draw( self.bounds )
     }
     else
     {
@@ -259,8 +263,7 @@ class PlasmacoreView: NSOpenGLView
 
   override func prepareOpenGL()
   {
-    self.openGLContext?.setValues( [1], forParameter:.GLCPSwapInterval )
-    renderer_id = Starbright_create_renderer()
+    self.openGLContext?.setValues( [1], for:NSOpenGLCPSwapInterval )
   }
 
   func startDisplayLink()
@@ -268,11 +271,12 @@ class PlasmacoreView: NSOpenGLView
     if (displayLink !== nil) { return }
 
     // Locally defined callback
-    func callback( displayLink:CVDisplayLink, _ now:UnsafePointer<CVTimeStamp>,
-        _ output_time:UnsafePointer<CVTimeStamp>, _ input_flags:CVOptionFlags, _ output_flags:UnsafeMutablePointer<CVOptionFlags>,
-        _ view_pointer:UnsafeMutablePointer<Void>) -> CVReturn
+    func callback( displayLink:CVDisplayLink, now:UnsafePointer<CVTimeStamp>,
+        output_time:UnsafePointer<CVTimeStamp>, input_flags:CVOptionFlags, output_flags:UnsafeMutablePointer<CVOptionFlags>,
+        view_pointer:UnsafeMutableRawPointer?) -> CVReturn
     {
-      let view = unsafeBitCast( view_pointer, PlasmacoreView.self )
+      guard let view_pointer = view_pointer else { return kCVReturnSuccess }
+      let view = unsafeBitCast( view_pointer, to:PlasmacoreView.self )
 
       // Ensure only one callback happens at a time
       objc_sync_enter( view ); defer { objc_sync_exit(view) }   // @synchronized (view)
@@ -283,52 +287,55 @@ class PlasmacoreView: NSOpenGLView
     }
 
     CVDisplayLinkCreateWithActiveCGDisplays( &displayLink )
-    CVDisplayLinkSetOutputCallback( displayLink!, callback, UnsafeMutablePointer<Void>(unsafeAddressOf(self)) )
+    CVDisplayLinkSetOutputCallback( displayLink!, callback, UnsafeMutableRawPointer(mutating: Unmanaged.passUnretained(self).toOpaque()) )
     CVDisplayLinkStart( displayLink! )
   }
 
-  override func rightMouseDown( event:NSEvent )
+  override func rightMouseDown( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:1 )  // 1=press
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
-    m.set( "button", value:1 )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:1 )  // 1=press
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
+    m.set( name:"button", value:1 )
     m.send()
   }
 
-  override func rightMouseDragged( event:NSEvent )
+  override func rightMouseDragged( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:0 )  // 0=move
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:0 )  // 0=move
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
     m.send()
   }
 
-  override func rightMouseUp( event:NSEvent )
+  override func rightMouseUp( with event:NSEvent )
   {
     configure()
-    let point = convertPoint( event.locationInWindow, fromView: nil )
+    let point = convert( event.locationInWindow, from: nil )
 
     let m = PlasmacoreMessage( type:"Display.pointer_event" )
-    m.set( "window_id", value:windowID ).set( "display_name", value:name )
-    m.set( "type", value:2 )  // 2=release
-    m.set( "x", value:Double(point.x) )
-    m.set( "y", value:Double(bounds.size.height - point.y) )
-    m.set( "button", value:1 )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"type", value:2 )  // 2=release
+    m.set( name:"x", value:Double(point.x) )
+    m.set( name:"y", value:Double(bounds.size.height - point.y) )
+    m.set( name:"button", value:1 )
     m.send()
   }
 
-  override func scrollWheel( event:NSEvent )
+  override func scrollWheel( with event:NSEvent )
   {
     configure()
     let dx = event.deltaX
@@ -337,10 +344,11 @@ class PlasmacoreView: NSOpenGLView
     if (dx >= 0.0001 || dx <= -0.0001 || dy >= 0.0001 || dy <= -0.0001)
     {
       let m = PlasmacoreMessage( type:"Display.pointer_event" )
-      m.set( "window_id", value:windowID ).set( "display_name", value:name )
-      m.set( "type", value:3 )  // 3=scroll
-      m.set( "dx", value:Double(dx) )
-      m.set( "dy", value:Double(dy) )
+      m.set( name:"window_id", value:windowID )
+      m.set( name:"display_name", value:name )
+      m.set( name:"type", value:3 )  // 3=scroll
+      m.set( name:"dx", value:Double(dx) )
+      m.set( name:"dy", value:Double(dy) )
       m.send()
     }
   }

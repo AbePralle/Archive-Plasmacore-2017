@@ -1,12 +1,16 @@
-PLASMACORE_VERSION = v0.4.7
+PLASMACORE_VERSION = v0.5.0.0
 
 ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
 ios: override TARGET := iOS
 
+mac: override TARGET := Mac
+
 all: build run compile_images compile_sounds
 
 ios: build run compile_images compile_sounds
+
+mac: build run compile_images compile_sounds
 
 build: Build/BuildScript/buildscript
 
@@ -19,7 +23,7 @@ compile_sounds:
 Build/BuildScript:
 	mkdir -p Build/BuildScript
 
-Build/BuildScript/buildscript: Build/BuildScript Build.rogue $(ROGUE_LIBRARIES)
+Build/BuildScript/buildscript: Build/BuildScript Build.rogue BuildCore.rogue $(ROGUE_LIBRARIES)
 	Programs/Mac/roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 

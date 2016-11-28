@@ -1,15 +1,15 @@
-routine standard_build
+routine get_platform->String
   local target = "help"
   if (System.command_line_arguments.count == 1) target = System.command_line_arguments.first
 
   try
     which (target)
-      case "iOS"
-        configure_ios_build_folder
-        compile( target )
+      case "iOS", "Mac"
+        noAction
+
       others
         println @|USAGE
-                 |  make ios
+                 |  make [ios | mac]
         System.exit 1
     endWhich
 
@@ -18,11 +18,22 @@ routine standard_build
     System.exit 1
   endTry
 
+  return target
+
 endRoutine
 
+routine standard_build( target:String )
+  try
+    configure_build_folder( target )
+    compile( target )
+  catch (err:Error)
+    println err
+    System.exit 1
+  endTry
+endRoutine
 
-routine configure_ios_build_folder
-  local output_folder = "Build/iOS/Source"
+routine configure_build_folder( target:String )
+  local output_folder = "Build/$/Source" (target)
   File.create_folder( output_folder )
 endRoutine
 
@@ -46,10 +57,11 @@ routine compile( target:String )
   if (not need_compile(output_folder)) return
 
   local exe = "Programs/Mac/roguec"
-  if (System.run(''$ --target=C++,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
-      (exe,target,output_folder)))
-    System.exit 1
-  endIf
+  local cmd = ''$ --target=C++,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
+      (exe,target,output_folder)
+
+  println cmd
+  if (System.run(cmd)) System.exit 1
 
 endRoutine
 
@@ -63,7 +75,8 @@ routine need_compile( output_folder:String )->Logical
   local dependencies = File.listing( "Libraries/Rogue", &recursive, &absolute )
   dependencies.add( File.listing("Source", &recursive, &absolute) )
   dependencies.add( "Makefile" )
-  dependencies.add( "Go.rogue" )
+  dependencies.add( "Build.rogue" )
+  dependencies.add( "BuildCore.rogue" )
 
   local timestamp = File.timestamp(output_h).or_smaller( File.timestamp(output_cpp) )
   forEach (dependency in dependencies)

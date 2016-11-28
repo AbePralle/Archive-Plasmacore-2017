@@ -51,6 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.5.0 - November 24, 2016
+- [Mac] Added Mac project.
+- [OverlayLog] Overlay text now never scales below 1.0.
+
 ###v0.4.7 - November 24, 2016
 - [Image] Added `original_size` property that tracks the image's original display size.
 

@@ -103,16 +103,16 @@ class Plasmacore
     )
 
     #if os(OSX)
-    addMessageHandler( "Window.create", handler:
+    addMessageHandler( type:"Window.create", handler:
       {
         (m:PlasmacoreMessage) in
-        let name = m.getString( "name" )
+        let name = m.getString( name:"name" )
         var className = name
-        if let bundleID = NSBundle.mainBundle().bundleIdentifier
+        if let bundleID = Bundle.main.bundleIdentifier
         {
           if let dotIndex = Plasmacore.lastIndexOf( bundleID, lookFor:"." )
           {
-            className = "\(bundleID.substringFromIndex(bundleID.startIndex.advancedBy(dotIndex+1))).\(name)"
+            className = "\(bundleID.substring( from:bundleID.index(bundleID.startIndex,offsetBy:dotIndex+1))).\(name)"
           }
         }
 
@@ -136,15 +136,15 @@ class Plasmacore
           controller = NSWindowController( windowNibName:name )
         }
 
-        Plasmacore.singleton.resources[ m.getInt32("id") ] = controller
+        Plasmacore.singleton.resources[ m.getInt32(name:"id") ] = controller
         NSLog( "Controller window:\(controller.window)" )
       }
     )
 
-    addMessageHandler( "Window.show", handler:
+    addMessageHandler( type:"Window.show", handler:
       {
         (m:PlasmacoreMessage) in
-          let window_id = m.getInt32( "id" )
+          let window_id = m.getInt32( name:"id" )
           if let window = Plasmacore.singleton.resources[ window_id ] as? NSWindowController
           {
             window.showWindow( self )
@@ -181,9 +181,9 @@ class Plasmacore
     is_launched = true
 
     RogueInterface_launch()
-    var m = PlasmacoreMessage( type:"Application.launch" )
+    let m = PlasmacoreMessage( type:"Application.launch" )
 #if os(OSX)
-    m.set( "is_window_based", value:true )
+  m.set( name:"is_window_based", value:true )
 #endif
     m.send()
     return self
