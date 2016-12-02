@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.4.7
-- November 24, 2016
+- v0.5.0
+- December 1, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
@@ -8,9 +8,9 @@
 
 ## Supported Platforms
 
-Currently the Plasmacore toolchain only runs on MacOS and only supports an iOS compile target.
+Currently the Plasmacore toolchain only runs on MacOS and supports Mac and iOS compile targets.
 
-Other platforms will eventually be supported.
+Other platforms and targets will eventually be supported.
 
 
 ## Documentation and Resources
@@ -51,9 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.5.0 - November 24, 2016
+###v0.5.0 - December 1, 2016
 - [Mac] Added Mac project.
 - [OverlayLog] Overlay text now never scales below 1.0.
+- [Makefile] Changed `make update` to use HTTPS instead of SSH for the `git clone` operation.
 
 ###v0.4.7 - November 24, 2016
 - [Image] Added `original_size` property that tracks the image's original display size.
