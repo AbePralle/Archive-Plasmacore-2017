@@ -56,21 +56,16 @@ class Component : SupportsTheme<<Theme>>
 
       return this
 
-    method after( e:DrawEvent )
-
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
 
-    method after( e:UpdateEvent )
+    method after_draw
+
+    method after_update
 
     method bounds->Box
       return Box( position, size )
-
-    method dispatch( e:DrawEvent )
-      if (children)
-        forEach (child in children) child.handle( e )
-      endIf
 
     method dispatch( e:KeyEvent )
       if (children)
@@ -82,19 +77,15 @@ class Component : SupportsTheme<<Theme>>
         forEach (child in children) child.handle( e )
       endIf
 
-    method dispatch( e:UpdateEvent )
+    method dispatch_draw
       if (children)
-        forEach (child in children) child.handle( e )
+        forEach (child in children) child.handle_draw
       endIf
 
-    method handle( e:DrawEvent )
-      on( e )
-      if (e.is_consumed) return
-
-      dispatch( e )
-      if (e.is_consumed) return
-
-      after( e )
+    method dispatch_update
+      if (children)
+        forEach (child in children) child.handle_update
+      endIf
 
     method handle( e:KeyEvent )
       on( e )
@@ -114,15 +105,15 @@ class Component : SupportsTheme<<Theme>>
 
       after( e )
 
-    method handle( e:UpdateEvent )
-      # Overridden in Panel
-      on( e )
-      if (e.is_consumed) return
+    method handle_draw
+      on_draw
+      dispatch_draw
+      after_draw
 
-      dispatch( e )
-      if (e.is_consumed) return
-
-      after( e )
+    method handle_update
+      on_update
+      dispatch_update
+      after_update
 
     method maximum_height->Real64
       return fixed_size.y
@@ -136,14 +127,14 @@ class Component : SupportsTheme<<Theme>>
     method minimum_width->Real64
       return fixed_size.x
 
-    method on( e:DrawEvent )
-      theme.invoke_draw( this )
-
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
-    method on( e:UpdateEvent )
+    method on_draw
+      theme.invoke_draw( this )
+
+    method on_update
 
     method operator+( other:Component )->Component
       return HorizontalLayoutGrid().add( this ).add( other )

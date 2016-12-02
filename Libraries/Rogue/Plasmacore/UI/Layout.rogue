@@ -8,19 +8,15 @@ class Layout : Component
   METHODS
     method init( content_anchor=Anchor.CENTER )
 
-    method handle( e:UpdateEvent )
+    method handle_update
       if (needs_layout)
         needs_layout = false
         perform_layout( bounds )
       endIf
 
-      on( e )
-      if (e.is_consumed) return
-
-      dispatch( e )
-      if (e.is_consumed) return
-
-      after( e )
+      on_update
+      dispatch_update
+      after_update
 
     method perform_layout( bounds:Box )
       if (content_anchor.exists)

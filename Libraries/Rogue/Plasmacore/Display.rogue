@@ -105,16 +105,13 @@ class Display [singleton]
       view.display = this
       view.state.view = view
 
+      # On any new views and states: call on_start, ensure on_update has been called once
+      # before any later drawing, and repeat the process if the view or state changes during
+      # the process.
       loop
         if (not view.is_active)
           view.is_active = true
           view.on_start
-          nextIteration
-        endIf
-
-        if (view.needs_first_update)
-          view.needs_first_update = false
-          view.on( UpdateEvent.init_object )
           nextIteration
         endIf
 
@@ -124,9 +121,32 @@ class Display [singleton]
           nextIteration
         endIf
 
+        local cur_state = view.state
+        if (not cur_state.previous_display_size.exists or cur_state.previous_display_size.value != Display.size)
+          # Will also call handle_resize on the view
+          cur_state.handle_resize
+          cur_state.previous_display_size = Display.size
+          nextIteration
+        endIf
+
+        # Corner case: if the state didn't need a resize but the view still does
+        if (not view.previous_display_size.exists or view.previous_display_size.value != Display.size)
+          view.handle_resize
+          view.previous_display_size = Display.size
+          nextIteration
+        endIf
+
         if (view.state.needs_first_update)
+          # Will also update the view
           view.state.needs_first_update = false
-          view.state.on( UpdateEvent.init_object )
+          view.state.handle_update
+          nextIteration
+        endIf
+
+        # Corner case: if the state didn't need a first update but the view does
+        if (view.needs_first_update)
+          view.needs_first_update = false
+          view.handle_update
           nextIteration
         endIf
 
@@ -431,11 +451,11 @@ class Display [singleton]
 
       while (update_timer.tick)
         activate_view_and_state
-        view.state.handle( UpdateEvent.init_object )
+        view.state.handle_update
       endWhile
 
       activate_view_and_state
-      view.state.handle( DrawEvent.init_object )
+      view.state.handle_draw
 
       OverlayLog.update
       OverlayLog.draw

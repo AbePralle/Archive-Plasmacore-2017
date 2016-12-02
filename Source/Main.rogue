@@ -17,6 +17,9 @@ class MainView : View
     method on_draw
       Display.clear( Color.BLUE )
 
+    method on_resize
+      # Called when the Display.size changes
+
     method on_update
       # Called 60 times a second
 endClass
@@ -37,6 +40,9 @@ class InitialState : State<<MainView>>
 
     method on_draw
       # This happens before the current view's on_draw()
+
+    method on_resize
+      # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second

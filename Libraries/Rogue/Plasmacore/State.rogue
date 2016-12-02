@@ -9,28 +9,25 @@ class State
       return a
 
   PROPERTIES
-    view               : View
+    view                  : View
 
-    is_active          : Logical
-    needs_first_update = true
+    is_active             : Logical
+    needs_first_update    = true
+    previous_display_size : XY?
 
-    next_state         : State
-    prior_state        : State
+    next_state            : State
+    prior_state           : State
 
   METHODS
     method init( view=null )
-
-    method after( e:DrawEvent )
-      after_draw
 
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
 
-    method after( e:UpdateEvent )
-      after_update
-
     method after_draw
+
+    method after_resize
 
     method after_update
 
@@ -39,15 +36,6 @@ class State
 
     method exit_state
       view.exit_state
-
-    method handle( e:DrawEvent )
-      on( e )
-      if (e.is_consumed) return
-
-      view.handle( e )
-      if (e.is_consumed) return
-
-      after( e )
 
     method handle( e:KeyEvent )
       on( e )
@@ -67,14 +55,29 @@ class State
 
       after( e )
 
-    method handle( e:UpdateEvent )
-      on( e )
-      if (e.is_consumed) return
+    method handle_draw
+      on_draw
+      view.handle_draw
+      after_draw
 
-      view.handle( e )
-      if (e.is_consumed) return
+    method handle_resize
+      on_resize
 
-      after( e )
+      local cur_view = view
+      if (not cur_view.previous_display_size.exists or cur_view.previous_display_size.value != Display.size)
+        cur_view.handle_resize
+        cur_view.previous_display_size = Display.size
+      endIf
+
+      after_resize
+
+    method handle_update
+      on_update
+
+      view.needs_first_update = false
+      view.handle_update
+
+      after_update
 
     method load_another_asset->Real64
       return view.load_another_asset
@@ -82,25 +85,21 @@ class State
     method load_assets
       view.load_assets
 
-    method on( e:DrawEvent )
-      on_draw
-
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
-    method on( e:UpdateEvent )
-      on_update
-
     method on_draw
-
-    method on_start
 
     method on_finish
 
     method on_prepare
 
+    method on_resize
+
     method on_resume
+
+    method on_start
 
     method on_suspend
 

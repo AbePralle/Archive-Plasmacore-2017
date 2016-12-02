@@ -3,29 +3,32 @@ using  Plasmacore::UI
 
 class View
   PROPERTIES
-    state              = State(this)
+    state                 = State(this)
 
-    display            : Display
-    is_active          : Logical
-    needs_first_update = true
+    display               : Display
+    is_active             : Logical
+    needs_first_update    = true
+    previous_display_size : XY?
 
-    ui        = Layout() : Component
+    ui        = Layout()  : Component
 
-    loaded_asset_count : Int32
-    total_asset_count  : Int32
+    loaded_asset_count    : Int32
+    total_asset_count     : Int32
 
   METHODS
     method add( child:Component, options=null:ValueTable )->this
       ui.add( child, options )
       return this
 
-    method after( e:DrawEvent )
-
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
 
-    method after( e:UpdateEvent )
+    method after_draw
+
+    method after_resize
+
+    method after_update
 
     method change_state( new_state:State )
       local cur = new_state
@@ -48,8 +51,6 @@ class View
       this.on_finish
       this.is_active = false
       display.view = new_view
-
-    method on_draw
 
     method exit_state
       local new_state : State
@@ -80,15 +81,6 @@ class View
         state.on_start
       endIf
 
-    method handle( e:DrawEvent )
-      on( e )
-      if (e.is_consumed) return
-
-      ui.handle( e )
-      if (e.is_consumed) return
-
-      after( e )
-
     method handle( e:KeyEvent )
       on( e )
       if (e.is_consumed) return
@@ -107,14 +99,20 @@ class View
 
       after( e )
 
-    method handle( e:UpdateEvent )
-      on( e )
-      if (e.is_consumed) return
+    method handle_draw
+      on_draw
+      ui.handle_draw
+      after_draw
 
-      ui.handle( e )
-      if (e.is_consumed) return
+    method handle_resize
+      on_resize
+      #ui.handle_resize
+      after_resize
 
-      after( e )
+    method handle_update
+      on_update
+      ui.handle_update
+      after_update
 
     method load_another_asset->Real64
       if (loaded_asset_count and loaded_asset_count == total_asset_count) return 1.0
@@ -143,25 +141,25 @@ class View
         Log.println "Loading assets $/$ ($%)" (loaded_asset_count,total_asset_count,(progress*100).format(0))
       endWhile
 
-    method on( e:DrawEvent )
-      on_draw
-
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
 
-    method on( e:UpdateEvent )
-      on_update
-
-    method on_start
+    method on_draw
 
     method on_finish
 
     method on_prepare
 
+    method on_resize
+
     method on_resume
 
+    method on_start
+
     method on_suspend
+
+    method on_update
 
     method push_state( new_state:State )
       new_state.prior_state = state
@@ -176,7 +174,5 @@ class View
       local cur = state
       while (cur.next_state) cur = cur.next_state
       cur.next_state = new_state
-
-    method on_update
 endClass
 

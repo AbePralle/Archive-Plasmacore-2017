@@ -51,6 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.5.1 - December 2, 2016
+- [Plasmacore] Added `on_resize()` and `after_resize()` to `View` and `State`, called before `update` and `draw` events when the Display.size has changed.
+- [Plasmacore] Improved and streamlined the update and draw event API, removing the `on(UpdateEvent)->on_update` chain in favor of calling `on_update` directly; same with `on_draw`.
+
 ###v0.5.0 - December 1, 2016
 - [Mac] Added Mac project.
 - [OverlayLog] Overlay text now never scales below 1.0.
