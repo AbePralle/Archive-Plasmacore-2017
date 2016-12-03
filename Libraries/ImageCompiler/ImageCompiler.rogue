@@ -462,22 +462,23 @@ class Command
       local last_sheet = sheets.remove_last
 
       loop
-        if (last_sheet.height >= last_sheet.width)
-          placements.clear.add( last_sheet.placements )
-          local better_fit = perform_layout( placements, last_sheet.width, last_sheet.height/2 )
-          if (better_fit and placements.count == 0)
-            last_sheet = better_fit
-            nextIteration
-          endIf
+        # Determine order of attempting w/2,h and w,h/2
+        local scale_1 = XY(0.5,1)
+        if (last_sheet.height >= last_sheet.width) scale_1 = scale_1.yx
+        local scale_2 = scale_1.yx
 
-        else
-          placements.clear.add( last_sheet.placements )
-          local better_fit = perform_layout( placements, last_sheet.width/2, last_sheet.height )
-          if (better_fit and placements.count == 0)
-            last_sheet = better_fit
-            nextIteration
-          endIf
+        placements.clear.add( last_sheet.placements )
+        local better_fit = perform_layout( placements, last_sheet.width*scale_1.x, last_sheet.height*scale_1.y )
+        if (better_fit and placements.count == 0)
+          last_sheet = better_fit
+          nextIteration
+        endIf
 
+        placements.clear.add( last_sheet.placements )
+        better_fit = perform_layout( placements, last_sheet.width*scale_2.x, last_sheet.height*scale_2.y )
+        if (better_fit and placements.count == 0)
+          last_sheet = better_fit
+          nextIteration
         endIf
 
         escapeLoop
@@ -985,6 +986,9 @@ class ImageSheet
       local bitmap = Bitmap( width, height, Color.BLUE )
       (forEach in placements).render( bitmap )
       return bitmap
+
+    method size->XY
+      return XY( width, height )
 
 endClass
 
