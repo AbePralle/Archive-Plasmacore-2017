@@ -41,7 +41,7 @@ try
   endIf
 
 catch (err:BuildError)
-  Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
+  Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
   println err
   System.exit 1
 
@@ -53,19 +53,19 @@ catch (err:Error)
 endTry
 
 
-class BuildError( cmd:Command, message ) : Error
+class BuildError : Error
   PROPERTIES
+    cmd      : Command
     filepath : String
     line     : Int32
 
   METHODS
+    method init( cmd, message )
+      filepath = cmd.src_filepath
+      line = cmd.src_line
+
     method init( message )
-      if (cmd)
-        filepath = cmd.src_filepath
-        line = cmd.src_line
-      else
-        filepath = "ImageCompiler"
-      endIf
+      filepath = "ImageCompiler"
 
     method to->String
       local builder = StringBuilder()
