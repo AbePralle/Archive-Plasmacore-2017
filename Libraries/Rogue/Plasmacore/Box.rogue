@@ -71,6 +71,10 @@ $if not "Console"
     method fill( color:Color )->this
       Display.fill( this, color )
       return this
+
+    method fill( colors:Colors )->this
+      Display.fill( this, colors )
+      return this
 $endIf
 
     method floor->Box

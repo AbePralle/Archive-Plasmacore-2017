@@ -89,6 +89,22 @@ class Image
       size = texture.image_size
       original_size = size
 
+    method init( _color:Color, _size=Display.size:XY )
+      data = ColorFillImageData()
+      colors = Colors( _color )
+      shader = ColorShader
+      render_mode = select{ _color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+      size = _size
+      original_size = _size
+
+    method init( _colors:Colors, _size=Display.size:XY )
+      data = ColorFillImageData()
+      colors = _colors
+      shader = ColorShader
+      render_mode = select{ _colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
+      size = _size
+      original_size = _size
+
     method add( child:Image )->this
       if (data) data.add( child )
       return this
@@ -282,38 +298,6 @@ class CompositeImage : Image
       init( XY(w,h) )
 endClass
 }#
-
-routine ColorFillImage( color:Color, size=Displays.size:XY )->Image
-  local result = Image( ColorFillImageData() )
-  result.colors = Colors( color )
-  result.shader = ColorShader
-  result.render_mode = select{ color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
-  result.size = size
-  result.original_size = size
-  return result
-endRoutine
-
-routine ColorFillImage( colors:Colors, size=Displays.size:XY )->Image
-  local result = Image( ColorFillImageData() )
-  result.colors = colors
-  result.shader = ColorShader
-  result.render_mode = select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
-  result.size = size
-  result.original_size = size
-  return result
-endRoutine
-
-routine TextureImage( texture:Texture )->Image
-  local result = Image( TextureImageData(texture) )
-  result.render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-  result.size = texture.image_size
-  result.original_size = size
-  return result
-endRoutine
-
-routine TextureImage( bitmap:Bitmap )->Image
-  return TextureImage( Texture(bitmap) )
-endRoutine
 
 
 class ImageData

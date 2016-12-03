@@ -51,6 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.5.3 - December 3, 2016
+- [Image] Added constructors for `Image(Color,[size=Display.size:XY])` and `Image(Colors,[XY])`.
+- [Box] Added `Box.fill(Colors)` to complement existing `Box.fill(Color)`.
+
 ###v0.5.2 - December 2, 2016
 - [Mac Project] Added missing `Build/Mac/Assets` folder reference to Mac Project.
 
