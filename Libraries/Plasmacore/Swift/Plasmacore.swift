@@ -41,6 +41,17 @@ class Plasmacore
     PlasmacoreMessage( type:"Application.save" ).send()
   }
 
+  @discardableResult
+  class func addMessageListener( type:String, listener:@escaping ((PlasmacoreMessage)->Void) )->Int
+  {
+    return singleton.instanceAddMessageListener( type: type, listener: listener )
+  }
+
+  class func removeMessageListener( _ listenerID:Int )
+  {
+    singleton.instanceRemoveMessageListener( listenerID )
+  }
+
   var is_configured = false
   var is_launched   = false
 
@@ -65,7 +76,7 @@ class Plasmacore
   }
 
   @discardableResult
-  func addMessageListener( type:String, listener:@escaping ((PlasmacoreMessage)->Void) )->Int
+  func instanceAddMessageListener( type:String, listener:@escaping ((PlasmacoreMessage)->Void) )->Int
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
@@ -92,7 +103,7 @@ class Plasmacore
     if (is_configured) { return self }
     is_configured = true
 
-    addMessageListener( type: "<reply>", listener:
+    instanceAddMessageListener( type: "<reply>", listener:
       {
         (m:PlasmacoreMessage) in
           if let info = Plasmacore.singleton.reply_listeners.removeValue( forKey: m.message_id )
@@ -103,7 +114,7 @@ class Plasmacore
     )
 
     #if os(OSX)
-    addMessageListener( type:"Window.create", listener:
+    instanceAddMessageListener( type:"Window.create", listener:
       {
         (m:PlasmacoreMessage) in
         let name = m.getString( name:"name" )
@@ -141,7 +152,7 @@ class Plasmacore
       }
     )
 
-    addMessageListener( type:"Window.show", listener:
+    instanceAddMessageListener( type:"Window.show", listener:
       {
         (m:PlasmacoreMessage) in
           let window_id = m.getInt32( name:"id" )
@@ -205,7 +216,7 @@ class Plasmacore
     return self
   }
 
-  func removeMessageListener( _ listenerID:Int )
+  func instanceRemoveMessageListener( _ listenerID:Int )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 

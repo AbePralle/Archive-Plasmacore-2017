@@ -61,6 +61,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Rogue] Added appropriate `Desktop` or `Mobile` target to each compile for use with conditional compilation directives.  E.g. `$if ("Mobile") ...`.
 - [Rogue] Updated to Rogue v1.1.11.
 - [Swift] Renamed `PlasmacoreMessageHandler` to `PlasmacoreMessageListener` to match Rogue-side name.
+- [Swift] Converted `Plasmacore.singleton.addMessageListener(...)` to `Plasmacore.addMessageListner(...)`; same for `removeMessageListener`.
 
 ###v0.5.2 - December 2, 2016
 - [Mac Project] Added missing `Build/Mac/Assets` folder reference to Mac Project.
