@@ -40,13 +40,24 @@ try
     SoundCompiler( config_file, "Default" )
   endIf
 
-catch (err:Error)
+catch (err:BuildError)
+  Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
   println err
   System.exit 1
+
+catch (err:Error)
+  Console.error.println "SoundCompiler:0: error:$" (err.message)
+  println err
+  System.exit 1
+
 endTry
 
 
 class BuildError( cmd:Command, message ) : Error
+  PROPERTIES
+    filepath : String
+    line     : Int32
+
   METHODS
     method init( message )
 
@@ -57,8 +68,11 @@ class BuildError( cmd:Command, message ) : Error
       local bar = "=" * w
       builder.println bar
       if (cmd)
+        filepath = cmd.src_filepath
+        line = cmd.src_line
         builder.println( (''SOUND COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(w) )
       else
+        filepath = "SoundCompiler"
         builder.println "SOUND COMPILE ERROR"
       endIf
       builder.println
