@@ -1,0 +1,13 @@
+module Plasmacore
+
+augment System
+  GLOBAL METHODS
+    method is_desktop->Logical
+      $if ("Desktop") return true
+      $else           return false
+
+    method is_mobile->Logical
+      $if ("Mobile") return true
+      $else          return false
+endAugment
+

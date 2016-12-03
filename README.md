@@ -57,6 +57,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Box] Added `Box.fill(Colors)` to complement existing `Box.fill(Color)`.
 - [Plasmacore] Removed `Plasmacore.launch_window_name`.
 - [ImageCompiler] Fixed bug that in some cases prevented image sheets from being reduced in pixel size as much as possible.
+- [System] Augmented `System` class with global methods `System.is_desktop()->Logical` and `System.is_mobile()->Logical`.
 - [Rogue] Added appropriate `Desktop` or `Mobile` target to each compile for use with conditional compilation directives.  E.g. `$if ("Mobile") ...`.
 - [Rogue] Updated to Rogue v1.1.11.
 

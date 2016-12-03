@@ -8,6 +8,7 @@ $include "Box.rogue"
 $include "Color.rogue"
 $include "JPEG.rogue"
 $include "PNG.rogue"
+$include "System.rogue"
 $include "XY.rogue"
 
 $if not "Console"
