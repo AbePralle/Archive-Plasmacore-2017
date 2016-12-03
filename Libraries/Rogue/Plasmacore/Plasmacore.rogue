@@ -53,7 +53,6 @@ class Plasmacore [essential singleton]
     display_view_types      = StringTable<<TypeInfo>>()
     global_update_callback  : Function()
     global_update_timer     = UpdateTimer()
-    launch_window_name      : String
     displays                = StringTable<<Display>>()
 
     #image_group_info_lookup = @{}
@@ -69,39 +68,28 @@ class Plasmacore [essential singleton]
 
       load_image_index
 
-      MessageManager.add_listener( "Application.launch",
+      MessageManager.add_listener( "Display.render",
         function(m:Message)
-          if (m.logical("is_window_based"))
-            if (Plasmacore.launch_window_name)
-              Window( Plasmacore.launch_window_name ).show
-            else
-              Console.println "Launch note: Plasmacore.launch_window_name not set for a window-based application."
-            endIf
+          local display_size = XY( m.int32("display_width"),m.int32("display_height") )
+          local viewport_size : XY
+          if (m.contains("viewport_width"))
+            viewport_size = XY( m.int32("viewport_width"),m.int32("viewport_height") )
+          else
+            viewport_size = display_size
           endIf
+          Display( m.string("display_name") ).render( display_size, viewport_size )
         endFunction )
 
-        MessageManager.add_listener( "Display.render",
-          function(m:Message)
-            local display_size = XY( m.int32("display_width"),m.int32("display_height") )
-            local viewport_size : XY
-            if (m.contains("viewport_width"))
-              viewport_size = XY( m.int32("viewport_width"),m.int32("viewport_height") )
-            else
-              viewport_size = display_size
-            endIf
-            Display( m.string("display_name") ).render( display_size, viewport_size )
-          endFunction )
-
-        MessageManager.add_listener( "Display.on_pointer_event",
-          function(m:Message)
-            local display = Display( m.string("display_name") )
-            local scale = display.display_scale
-            local pos   = XY( m.int32("x"), m.int32("y") ) * scale
-            local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
-            local e = PointerEvent( m.int32("type"), pos, delta,
-              m.int32("index"), m.int32("id") )
-            display.handle( e )
-          endFunction )
+      MessageManager.add_listener( "Display.on_pointer_event",
+        function(m:Message)
+          local display = Display( m.string("display_name") )
+          local scale = display.display_scale
+          local pos   = XY( m.int32("x"), m.int32("y") ) * scale
+          local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
+          local e = PointerEvent( m.int32("type"), pos, delta,
+            m.int32("index"), m.int32("id") )
+          display.handle( e )
+        endFunction )
 
     method asset_file( name:String )->File
       local filepath = asset_filepath( name )
