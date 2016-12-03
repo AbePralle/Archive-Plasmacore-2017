@@ -44,7 +44,7 @@ class Plasmacore
   var is_configured = false
   var is_launched   = false
 
-  var nextHandlerID = 1
+  var nextListenerID = 1
   var idleUpdateFrequency = 0.5
 
   var pending_message_data = [UInt8]()
@@ -53,9 +53,9 @@ class Plasmacore
   var is_sending = false
   var update_requested = false
 
-  var handlers = [String:[PlasmacoreMessageHandler]]()
-  var handlers_by_id = [Int:PlasmacoreMessageHandler]()
-  var reply_handlers = [Int:PlasmacoreMessageHandler]()
+  var listeners = [String:[PlasmacoreMessageListener]]()
+  var listeners_by_id = [Int:PlasmacoreMessageListener]()
+  var reply_listeners = [Int:PlasmacoreMessageListener]()
   var resources = [Int:AnyObject]()
 
   var update_timer : Timer?
@@ -65,25 +65,25 @@ class Plasmacore
   }
 
   @discardableResult
-  func addMessageHandler( type:String, handler:@escaping ((PlasmacoreMessage)->Void) )->Int
+  func addMessageListener( type:String, listener:@escaping ((PlasmacoreMessage)->Void) )->Int
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
-    let info = PlasmacoreMessageHandler( handlerID:nextHandlerID, type:type, callback:handler )
-    nextHandlerID += 1
+    let info = PlasmacoreMessageListener( listenerID:nextListenerID, type:type, callback:listener )
+    nextListenerID += 1
 
-    handlers_by_id[ info.handlerID ] = info
-    if handlers[ type ] != nil
+    listeners_by_id[ info.listenerID ] = info
+    if listeners[ type ] != nil
     {
-      handlers[ type ]!.append( info )
+      listeners[ type ]!.append( info )
     }
     else
     {
-      var list = [PlasmacoreMessageHandler]()
+      var list = [PlasmacoreMessageListener]()
       list.append( info )
-      handlers[ type ] = list
+      listeners[ type ] = list
     }
-    return info.handlerID
+    return info.listenerID
   }
 
   @discardableResult
@@ -92,10 +92,10 @@ class Plasmacore
     if (is_configured) { return self }
     is_configured = true
 
-    addMessageHandler( type: "<reply>", handler:
+    addMessageListener( type: "<reply>", listener:
       {
         (m:PlasmacoreMessage) in
-          if let info = Plasmacore.singleton.reply_handlers.removeValue( forKey: m.message_id )
+          if let info = Plasmacore.singleton.reply_listeners.removeValue( forKey: m.message_id )
           {
             info.callback( m )
           }
@@ -103,7 +103,7 @@ class Plasmacore
     )
 
     #if os(OSX)
-    addMessageHandler( type:"Window.create", handler:
+    addMessageListener( type:"Window.create", listener:
       {
         (m:PlasmacoreMessage) in
         let name = m.getString( name:"name" )
@@ -141,7 +141,7 @@ class Plasmacore
       }
     )
 
-    addMessageHandler( type:"Window.show", handler:
+    addMessageListener( type:"Window.show", listener:
       {
         (m:PlasmacoreMessage) in
           let window_id = m.getInt32( name:"id" )
@@ -205,20 +205,20 @@ class Plasmacore
     return self
   }
 
-  func removeMessageHandler( _ handlerID:Int )
+  func removeMessageListener( _ listenerID:Int )
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
-    if let handler = handlers_by_id[ handlerID ]
+    if let listener = listeners_by_id[ listenerID ]
     {
-      handlers_by_id.removeValue( forKey: handlerID )
-      if let handler_list = handlers[ handler.type ]
+      listeners_by_id.removeValue( forKey: listenerID )
+      if let listener_list = listeners[ listener.type ]
       {
-        for i in 0..<handler_list.count
+        for i in 0..<listener_list.count
         {
-          if (handler_list[i] === handler)
+          if (listener_list[i] === listener)
           {
-            handlers[ handler.type ]!.remove( at: i );
+            listeners[ listener.type ]!.remove( at: i );
             return;
           }
         }
@@ -246,8 +246,8 @@ class Plasmacore
   {
     objc_sync_enter( self ); defer { objc_sync_exit(self) }   // @synchronized (self)
 
-    reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( handlerID:nextHandlerID, type:"<reply>", callback:callback )
-    nextHandlerID += 1
+    reply_listeners[ m.message_id ] = PlasmacoreMessageListener( listenerID:nextListenerID, type:"<reply>", callback:callback )
+    nextListenerID += 1
     send( m )
   }
 
@@ -334,11 +334,11 @@ class Plasmacore
 
           let m = PlasmacoreMessage( data:message_data )
           //NSLog( "Received message type \(m.type)" )
-          if let handler_list = handlers[ m.type ]
+          if let listener_list = listeners[ m.type ]
           {
-            for handler in handler_list
+            for listener in listener_list
             {
-              handler.callback( m )
+              listener.callback( m )
             }
           }
         }
@@ -369,15 +369,15 @@ class Plasmacore
   }
 }
 
-class PlasmacoreMessageHandler
+class PlasmacoreMessageListener
 {
-  var handlerID : Int
+  var listenerID : Int
   var type      : String
   var callback  : ((PlasmacoreMessage)->Void)
 
-  init( handlerID:Int, type:String, callback:@escaping ((PlasmacoreMessage)->Void) )
+  init( listenerID:Int, type:String, callback:@escaping ((PlasmacoreMessage)->Void) )
   {
-    self.handlerID = handlerID
+    self.listenerID = listenerID
     self.type = type
     self.callback = callback
   }
