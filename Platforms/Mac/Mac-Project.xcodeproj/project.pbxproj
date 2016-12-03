@@ -78,6 +78,7 @@
 		30F185B61DEB6642002FE6D4 /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30F185B21DEB6642002FE6D4 /* RogueInterface.mm */; };
 		30F185B91DEBBEA1002FE6D4 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30F185B71DEBBEA1002FE6D4 /* RogueProgram.cpp */; };
 		30F185BB1DEBBEE5002FE6D4 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30F185BA1DEBBEE5002FE6D4 /* AVFoundation.framework */; };
+		30F185C21DF2AC08002FE6D4 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30F185C11DF2AC08002FE6D4 /* Assets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -174,6 +175,7 @@
 		30F185B71DEBBEA1002FE6D4 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../Build/Mac/Source/RogueProgram.cpp; sourceTree = "<group>"; };
 		30F185B81DEBBEA1002FE6D4 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../Build/Mac/Source/RogueProgram.h; sourceTree = "<group>"; };
 		30F185BA1DEBBEE5002FE6D4 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		30F185C11DF2AC08002FE6D4 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../Build/Mac/Assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,6 +221,7 @@
 		30F185071DEB5F3D002FE6D4 /* Mac-Project */ = {
 			isa = PBXGroup;
 			children = (
+				30F185C11DF2AC08002FE6D4 /* Assets */,
 				30F185081DEB5F3D002FE6D4 /* AppDelegate.swift */,
 				30F1850A1DEB5F3D002FE6D4 /* Assets.xcassets */,
 				30F1850C1DEB5F3D002FE6D4 /* MainMenu.xib */,
@@ -429,6 +432,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30F1850B1DEB5F3D002FE6D4 /* Assets.xcassets in Resources */,
+				30F185C21DF2AC08002FE6D4 /* Assets in Resources */,
 				30F1850E1DEB5F3D002FE6D4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -719,6 +723,7 @@
 				30F1851B1DEB60C9002FE6D4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
