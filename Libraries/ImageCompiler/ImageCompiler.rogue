@@ -81,6 +81,12 @@ class BuildError( cmd:Command, message ) : Error
 
   METHODS
     method init( message )
+      if (cmd)
+        filepath = cmd.src_filepath
+        line = cmd.src_line
+      else
+        filepath = "ImageCompiler"
+      endIf
 
     method to->String
       local builder = StringBuilder()
@@ -89,11 +95,8 @@ class BuildError( cmd:Command, message ) : Error
       local bar = "=" * w
       builder.println bar
       if (cmd)
-        filepath = cmd.src_filepath
-        line = cmd.src_line
         builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (filepath,line)).word_wrapped(w) )
       else
-        filepath = "ImageCompiler"
         builder.println "IMAGE COMPILE ERROR"
       endIf
       builder.println
