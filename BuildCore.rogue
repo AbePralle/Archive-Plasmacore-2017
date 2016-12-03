@@ -57,12 +57,23 @@ routine compile( target:String )
   if (not need_compile(output_folder)) return
 
   local exe = "Programs/Mac/roguec"
-  local cmd = ''$ --target=C++,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
-      (exe,target,output_folder)
+  local cmd = ''$ --target=C++,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
+  (exe,target,mobile_or_desktop(target),output_folder)
 
   println cmd
   if (System.run(cmd)) System.exit 1
 
+endRoutine
+
+
+routine mobile_or_desktop( target:String )->String
+  which (target)
+    case "Windows", "Mac", "Linux", "Unix"
+      return "Desktop"
+
+    others
+      return "Mobile"
+  endWhich
 endRoutine
 
 routine need_compile( output_folder:String )->Logical
