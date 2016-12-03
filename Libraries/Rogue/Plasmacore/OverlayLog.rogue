@@ -9,7 +9,7 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
 
   METHODS
     method init
-      Global.standard_output = this
+      Global.console = this
 
     method clear->this
       lines.clear

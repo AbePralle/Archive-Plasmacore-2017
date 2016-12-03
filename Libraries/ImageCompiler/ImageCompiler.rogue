@@ -50,9 +50,16 @@ try
     ImageCompiler( config_file, "Default" )
   endIf
 
-catch (err:Error)
+catch (err:BuildError)
+  Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
   println err
   System.exit 1
+
+catch (err:Error)
+  Console.error.println "ImageCompiler:0: error:$" (err.message)
+  println err
+  System.exit 1
+
 endTry
 
 class Bitmaps : Table<<String,Bitmap>> [singleton]
@@ -68,6 +75,10 @@ class Bitmaps : Table<<String,Bitmap>> [singleton]
 endClass
 
 class BuildError( cmd:Command, message ) : Error
+  PROPERTIES
+    filepath : String
+    line     : Int32
+
   METHODS
     method init( message )
 
@@ -78,8 +89,11 @@ class BuildError( cmd:Command, message ) : Error
       local bar = "=" * w
       builder.println bar
       if (cmd)
-        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (cmd.src_filepath,cmd.src_line)).word_wrapped(w) )
+        filepath = cmd.src_filepath
+        line = cmd.src_line
+        builder.println( (''IMAGE COMPILE ERROR in "$" line $'' (filepath,line)).word_wrapped(w) )
       else
+        filepath = "ImageCompiler"
         builder.println "IMAGE COMPILE ERROR"
       endIf
       builder.println

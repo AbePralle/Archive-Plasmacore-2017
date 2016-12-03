@@ -52,10 +52,12 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.5.3 - December 3, 2016
+- [Rogue] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.
 - [Image] Added constructors for `Image(Color,[size=Display.size:XY])` and `Image(Colors,[XY])`.
 - [Box] Added `Box.fill(Colors)` to complement existing `Box.fill(Color)`.
 - [Plasmacore] Removed `Plasmacore.launch_window_name`.
 - [ImageCompiler] Fixed bug that in some cases prevented image sheets from being reduced in pixel size as much as possible.
+- [Rogue] Updated to Rogue v1.1.11.
 
 ###v0.5.2 - December 2, 2016
 - [Mac Project] Added missing `Build/Mac/Assets` folder reference to Mac Project.
