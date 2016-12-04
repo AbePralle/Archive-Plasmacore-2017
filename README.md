@@ -58,6 +58,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Plasmacore] Removed `Plasmacore.launch_window_name`.
 - [ImageCompiler] Fixed bug that in some cases prevented image sheets from being reduced in pixel size as much as possible.
 - [System] Augmented `System` class with global methods `System.is_desktop()->Logical` and `System.is_mobile()->Logical`.
+- [Colors] Removed ambiguous constructor `Colors(Color*4)` that was already covered by `Colors(Color*4,Int32=4)`.
 - [Rogue] Added appropriate `Desktop` or `Mobile` target to each compile for use with conditional compilation directives.  E.g. `$if ("Mobile") ...`.
 - [Rogue] Updated to Rogue v1.1.11.
 - [Swift] Renamed `PlasmacoreMessageHandler` to `PlasmacoreMessageListener` to match Rogue-side name.

@@ -77,9 +77,6 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
     method create( a:Color, b:Color, c:Color )->Colors
       return Colors( a, b, c, Color(0), 3 )
 
-    method create( a:Color, b:Color, c:Color, d:Color )->Colors
-      return Colors( a, b, c, d, 4 )
-
     method create( color:Int32 )->Colors
       return Colors( Color(color), Color(color), Color(color), Color(color), 4 )
 
