@@ -53,6 +53,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ###v0.5.3 - December 3, 2016
 - [Rogue] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.
+- [XY] Fixed error in `XY.magnitude()` (was incorrectly made into a `[macro]`).
 - [Image] Added constructors for `Image(Color,[size=Display.size:XY])` and `Image(Colors,[XY])`.
 - [Box] Added `Box.fill(Colors)` to complement existing `Box.fill(Color)`.
 - [Plasmacore] Removed `Plasmacore.launch_window_name`.

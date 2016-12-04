@@ -99,8 +99,8 @@ class XY( x:Real64, y:Real64 ) [compound]
     method is_zero->Logical
       return x == 0 and y == 0
 
-    method magnitude->Real64 [macro]
-      Math.sqrt( x*x + y*y )
+    method magnitude->Real64
+      return Math.sqrt( x*x + y*y )
 
     method magnitude_squared->Real64
       return x*x + y*y
