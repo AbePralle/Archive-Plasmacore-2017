@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.5.4 - December 6, 2016
+- [Message] Added helper methods for sending and receiving JSON-encoded `Value` objects using the message passing system: Message.send(name,Value), .value(name), .table(name), and .list(name).
+
 ###v0.5.3 - December 4, 2016
 - [Rogue] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.
 - [XY] Fixed error in `XY.magnitude()` (was incorrectly made into a `[macro]`).

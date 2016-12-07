@@ -60,33 +60,33 @@ class MessageManager [essential singleton]
 
     method add_listener( type:String, listener:Function(Message), &once )
       local table = select{ once:one_time_listeners || listeners }
-      local list = table[ type ]
-      if (not list)
-        list = Function(Message)[]
-        table[ type ] = list
+      local _list = table[ type ]
+      if (not _list)
+        _list = Function(Message)[]
+        table[ type ] = _list
       endIf
-      list.add( listener )
+      _list.add( listener )
 
     method remove_listener( type:String, listener:Function(Message) )
-      local list = listeners[ type ]
-      if (list) list.remove( listener )
-      list = one_time_listeners[ type ]
-      if (list) list.remove( listener )
+      local _list = listeners[ type ]
+      if (_list) _list.remove( listener )
+      _list = one_time_listeners[ type ]
+      if (_list) _list.remove( listener )
 
     method remove_listeners( type:String )
-      local list = listeners[ type ]
-      if (list) list.clear
-      list = one_time_listeners[ type ]
-      if (list) list.clear
+      local _list = listeners[ type ]
+      if (_list) _list.clear
+      _list = one_time_listeners[ type ]
+      if (_list) _list.clear
 
     method set_listener( type:String, listener:Function(Message), &once )
       local table = select{ once:one_time_listeners || listeners }
-      local list = table[ type ]
-      if (not list)
-        list = Function(Message)[]
-        table[ type ] = list
+      local _list = table[ type ]
+      if (not _list)
+        _list = Function(Message)[]
+        table[ type ] = _list
       endIf
-      list.clear.add( listener )
+      _list.clear.add( listener )
 
     method consolidated_type_name( name:String )->String
       local consolidated = message_type_lookup[ name ]
@@ -128,18 +128,18 @@ class MessageManager [essential singleton]
         incoming_message.init( io_reader )
         local handled = false
 
-        local list = listeners[ incoming_message.type ]
-        if (list)
+        local _list = listeners[ incoming_message.type ]
+        if (_list)
           handled = true
-          forEach (listener in list step -1) listener( incoming_message )
+          forEach (listener in _list step -1) listener( incoming_message )
         endIf
 
-        list = one_time_listeners[ incoming_message.type ]
-        if (list)
+        _list = one_time_listeners[ incoming_message.type ]
+        if (_list)
           handled = true
-          local n = list.count
-          forEach (listener in list step -1) listener( incoming_message )
-          list.discard( 0, n )
+          local n = _list.count
+          forEach (listener in _list step -1) listener( incoming_message )
+          _list.discard( 0, n )
         endIf
 
         #{
@@ -374,29 +374,45 @@ class Message
 
       return bytes
 
-    method set( name:String, value:String )->this
+    method value( name:String, default=UndefinedValue:Value )->Value
+      local json = string( name, null as String )
+      if (not json) return default
+
+      return JSON.parse( json )
+
+    method list( name:String, default=UndefinedValue:Value )->Value
+      local result = value( name )
+      if (result.is_list) return result
+      else                return default
+
+    method table( name:String, default=UndefinedValue:Value )->Value
+      local result = value( name )
+      if (result.is_table) return result
+      else                 return default
+
+    method set( name:String, _value:String )->this
       writer.write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( value )
+      writer.write_int32x( Message.DATA_TYPE_STRING ).write_string( _value )
       return this
 
-    method set( name:String, value:Real64 )->this
+    method set( name:String, _value:Real64 )->this
       writer.write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( value )
+      writer.write_int32x( Message.DATA_TYPE_REAL64 ).write_real64( _value )
       return this
 
-    method set( name:String, value:Int64 )->this
+    method set( name:String, _value:Int64 )->this
       writer.write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( value )
+      writer.write_int32x( Message.DATA_TYPE_INT64 ).write_int64x( _value )
       return this
 
-    method set( name:String, value:Int32 )->this
+    method set( name:String, _value:Int32 )->this
       writer.write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( value )
+      writer.write_int32x( Message.DATA_TYPE_INT32 ).write_int32x( _value )
       return this
 
-    method set( name:String, value:Logical )->this
+    method set( name:String, _value:Logical )->this
       writer.write_string( name )
-      writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( value )
+      writer.write_int32x( Message.DATA_TYPE_LOGICAL ).write_logical( _value )
       return this
 
     method set( name:String, bytes:Byte[] )->this
@@ -404,6 +420,9 @@ class Message
       writer.write_int32x( Message.DATA_TYPE_BYTES ).write_int32x( bytes.count )
       forEach (b in bytes) writer.write_byte( b )
       return this
+
+    method set( name:String, _value:Value )->this
+      return set( name, _value.to_json )
 
     method send
       MessageManager.send( this )
