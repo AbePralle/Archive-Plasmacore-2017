@@ -1,6 +1,6 @@
 # Plasmacore
-- v0.5.3
-- December 4, 2016
+- v0.5.5
+- December 8, 2016
 
 ## Requirements
 - Mac with Xcode and iOS SDK.
