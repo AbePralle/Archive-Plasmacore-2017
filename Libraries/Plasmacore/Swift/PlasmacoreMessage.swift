@@ -81,6 +81,20 @@ class PlasmacoreMessage
     }
     return [UInt8]()
   }
+    
+  func getDictionary( name:String, default_value:String="" )->[String:AnyObject]?
+  {
+    let jsonString = getString(name: name, default_value: default_value)
+    if let data = jsonString.data(using: String.Encoding.utf8) {
+        do {
+            return try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject]
+        } catch let error as NSError {
+            print(error)
+        }
+    }
+    return nil
+  
+  }
 
   func getInt32( name:String, default_value:Int=0 )->Int
   {
