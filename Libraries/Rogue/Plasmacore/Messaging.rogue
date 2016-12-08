@@ -429,7 +429,17 @@ class Message
       sent = true
 
     method send_rsvp( callback:Function(Message) )
+      # This form of send_rsvp waits for the native layer to reply() directly to this
+      # message.
       MessageManager.send_rsvp( this, callback )
+      sent = true
+
+    method send_rsvp( response_message_type:String, callback:Function(Message) )
+      # Rather than awaiting a reply to this specific message, this form of send_rsvp
+      # installs a global one-time message listener that calls the given callback
+      # when a new message (not a reply) of the given response type comes through.
+      add_message_listener( response_message_type, callback, &once )
+      MessageManager.send( this )
       sent = true
 
     # INTERNAL USE ------------------------------------------------------------

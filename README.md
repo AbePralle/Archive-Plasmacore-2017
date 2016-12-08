@@ -54,6 +54,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.5.5 - December 8, 2016
 - [OverlayLog] Fixed overlay log messages to be single spaced instead of double spaced.
 - [Swift] Added `PlasmacoreMessage.getDictionary(name:String)`.
+- [Messaging] Added `Message.send_rsvp(response_message_type:String,callback:Function(Message))`.  Rather than awaiting a formal reply to this specific message like `Message.send_rsvp(callback)` does, this version installs a global one-time message listener to call the callback; the listener is not actually associated with this message at all.
 - [Rogue] Updated to Rogue v1.1.12.
 - [Makefile] Created variables `REPO` and `BRANCH` that can be overridden during an update, e.g. `make update BRANCH=develop`.
 
