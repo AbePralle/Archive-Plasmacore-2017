@@ -1,4 +1,8 @@
-PLASMACORE_VERSION = v0.5.5.0
+PLASMACORE_VERSION = v0.5.5.1
+
+# Repo and branch to update from - override with e.g. make update BRANCH=develop
+REPO = https://github.com/AbePralle/Plasmacore.git
+BRANCH = master
 
 ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
@@ -48,9 +52,9 @@ xclean: clean clean_harfbuzz clean_icom clean_scom
 update: prepare_update
 
 prepare_update:
-	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore master branch into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone https://github.com/AbePralle/Plasmacore.git || true
+	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone $(REPO) || true
 	@echo "Pulling latest Build/Update/Plasmacore/"
-	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git pull
+	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git checkout $(BRANCH) && git pull
 	@rsync -a -c --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile .
 	@make -f Makefile continue_update
 

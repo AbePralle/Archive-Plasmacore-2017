@@ -54,6 +54,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.5.5 - December 8, 2016
 - [Swift] Added `PlasmacoreMessage.getDictionary(name:String)`.
 - [Rogue] Updated to Rogue v1.1.12.
+- [Makefile] Created variables `REPO` and `BRANCH` that can be overridden during an update, e.g. `make update BRANCH=develop`.
 
 ###v0.5.4 - December 6, 2016
 - [Message] Added helper methods for sending and receiving JSON-encoded `Value` objects using the message passing system: Message.send(name,Value), .value(name), .table(name), and .list(name).
