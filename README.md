@@ -52,6 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.5.5 - December 8, 2016
+- [OverlayLog] Fixed overlay log messages to be single spaced instead of double spaced.
 - [Swift] Added `PlasmacoreMessage.getDictionary(name:String)`.
 - [Rogue] Updated to Rogue v1.1.12.
 - [Makefile] Created variables `REPO` and `BRANCH` that can be overridden during an update, e.g. `make update BRANCH=develop`.

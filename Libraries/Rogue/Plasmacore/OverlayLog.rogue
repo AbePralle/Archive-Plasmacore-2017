@@ -48,6 +48,8 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       if (timer.is_expired) lines.clear
 
     method write( buffer:StringBuilder )->this
+      if (buffer.count == 0) return this  # flush operation
+
       timer.restart
       Console.write( buffer )  # echo the message to the console
       if (buffer.contains('\n'))
