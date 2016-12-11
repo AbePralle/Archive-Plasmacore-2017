@@ -4,19 +4,19 @@ COMPILE = $(CXX) -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 all: build run
 
-build: Build/RGB/rgb
+build: Build/BuildScript/buildscript
 
 clean:
 	rm -rf Build
 
-Build/RGB/rgb: Build/RGB/RGB.cpp
-	cd Build/RGB && $(COMPILE) RGB.cpp -o rgb
+Build/BuildScript/buildscript: Build/BuildScript/BuildScript.cpp
+	cd Build/BuildScript && $(COMPILE) BuildScript.cpp -o buildscript
 
-Build/RGB/RGB.cpp: RGB.rogue Makefile
-	@mkdir -p Build/RGB
-	../../Programs/macOS/roguec --main --libraries=../Rogue RGB.rogue --output=Build/RGB --define=COMPILER_INVOCATION:"\"$(COMPILE)\""
+Build/BuildScript/BuildScript.cpp: BuildScript.rogue Makefile
+	@mkdir -p Build/BuildScript
+	../../Programs/macOS/roguec --main --libraries=../Rogue BuildScript.rogue --output=Build/BuildScript --define=COMPILER_INVOCATION:"\"$(COMPILE)\""
 
 run:
-	chmod u+x Build/RGB/rgb
-	Build/RGB/rgb
+	chmod u+x Build/BuildScript/buildscript
+	Build/BuildScript/buildscript
 

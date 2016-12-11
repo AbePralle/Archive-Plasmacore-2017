@@ -19,16 +19,16 @@ macos: build run compile_images compile_sounds
 build: Build/BuildScript/buildscript
 
 compile_images:
-	./icom $(TARGET)
+	env TARGET=$(TARGET) ./icom $(TARGET)
 
 compile_sounds:
-	./scom $(TARGET)
+	./scom env TARGET=$(TARGET) $(TARGET)
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript Build.rogue BuildCore.rogue $(ROGUE_LIBRARIES)
-	Programs/macOS/roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	Programs/macOS/roguec Build.rogue BuildCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:

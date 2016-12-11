@@ -456,7 +456,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "env -i PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin HOME=$HOME make -C ../.. macos\n";
+			shellScript = "env -i PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin HOME=$HOME IDE=true make -C ../.. macos\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

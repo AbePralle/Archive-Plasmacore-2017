@@ -15,15 +15,24 @@ try
   if (0 != System.run(cmd)) System.exit( 1 )
 
 catch (err:Error)
-  println "ERROR: " + err
+  if ($defined(IDE)) println err
+  else               println "ERROR: " + err
   System.exit( 1 )
 
 endTry
+
+routine require_command_line
+  if ($defined(IDE))
+    throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
+    ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
+  endIf
+endRoutine
 
 
 routine install_brew
   if (0 == System.run("which brew >& /dev/null")) return
 
+  require_command_line
   println "Installing brew"
   if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
     local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -39,6 +48,7 @@ endRoutine
 routine install_library( library_name:String )
   if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
 
+  require_command_line
   if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
     throw Error( "Missing required library '$'." (library_name) )
   endIf
@@ -52,13 +62,13 @@ endRoutine
 routine library_location( library_name:String )->String
   install_library( library_name )
 
-  if (0 != System.run("brew list $ > .rgb.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+  if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
-  local reader = File.line_reader( ".rgb.temp" )
+  local reader = File.line_reader( ".build.temp" )
   forEach (line in reader)
     if (line.contains("/include/"))
       reader.close
-      File.delete( ".rgb.temp" )
+      File.delete( ".build.temp" )
       return line.before_first( "/include/" )
     endIf
   endForEach
