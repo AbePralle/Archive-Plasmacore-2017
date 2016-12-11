@@ -37,7 +37,7 @@ endRoutine
 
 
 routine install_library( library_name:String )
-  if (0 == System.run( "brew list $ >& /dev/null" (library_name) ) ) return
+  if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
 
   if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
     throw Error( "Missing required library '$'." (library_name) )

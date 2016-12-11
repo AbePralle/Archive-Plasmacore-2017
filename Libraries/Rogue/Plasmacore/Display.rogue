@@ -10,7 +10,7 @@ class Display [singleton]
         #define glClearDepth glClearDepthf
       endNativeHeader
 
-    $elseIf "Mac"
+    $elseIf "macOS"
       nativeHeader #include <OpenGL/gl.h>
     $endIf
 

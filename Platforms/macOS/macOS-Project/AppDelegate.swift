@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Mac-Project
+//  macOS-Project
 //
 //  Created by Abraham Pralle on 11/27/16.
 //  Copyright © 2016 Plasmaworks. All rights reserved.

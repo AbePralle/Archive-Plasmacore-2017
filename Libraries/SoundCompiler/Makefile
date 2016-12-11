@@ -1,6 +1,6 @@
 BUILD_FOLDER := Build
 
-ROGUEC        = ../../Programs/Mac/roguec --libraries=../../Libraries/Rogue
+ROGUEC        = ../../Programs/macOS/roguec --libraries=../../Libraries/Rogue
 ROGUEC_FLAGS += --target="C++,Console"
 ROGUEC_FLAGS += --debug
 

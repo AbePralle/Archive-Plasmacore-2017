@@ -8,13 +8,13 @@ ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
 ios: override TARGET := iOS
 
-mac: override TARGET := Mac
+macos: override TARGET := macOS
 
 all: build run compile_images compile_sounds
 
 ios: build run compile_images compile_sounds
 
-mac: build run compile_images compile_sounds
+macos: build run compile_images compile_sounds
 
 build: Build/BuildScript/buildscript
 
@@ -28,7 +28,7 @@ Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript Build.rogue BuildCore.rogue $(ROGUE_LIBRARIES)
-	Programs/Mac/roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	Programs/macOS/roguec Build.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
@@ -70,7 +70,7 @@ continue_update:
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Plasmacore   Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Standard Libraries/Rogue
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Plasmacore Libraries/Rogue
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Programs/Mac/roguec Programs/Mac
+	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Programs/macOS/roguec Programs/macOS
 	@echo "Updated to Plasmacore $(PLASMACORE_VERSION)"
 
 

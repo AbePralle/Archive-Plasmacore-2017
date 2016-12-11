@@ -36,7 +36,7 @@ class JPEGDecoder
               |}
               |
               |jpeg_mem_src( &$this->jpeg_info, $encoded_bytes->data->as_bytes, $encoded_bytes->count );
-              |jpeg_read_header( &$this->jpeg_info, TRUE );
+              |jpeg_read_header( &$this->jpeg_info, (boolean) true );
               |
               |jpeg_start_decompress( &$this->jpeg_info );
               |

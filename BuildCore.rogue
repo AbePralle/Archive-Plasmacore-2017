@@ -4,12 +4,12 @@ routine get_platform->String
 
   try
     which (target)
-      case "iOS", "Mac"
+      case "iOS", "macOS"
         noAction
 
       others
         println @|USAGE
-                 |  make [ios | mac]
+                 |  make [ios | macos]
         System.exit 1
     endWhich
 
@@ -56,7 +56,7 @@ routine compile( target:String )
 
   if (not need_compile(output_folder)) return
 
-  local exe = "Programs/Mac/roguec"
+  local exe = "Programs/macOS/roguec"
   local cmd = ''$ --target=C++,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
   (exe,target,mobile_or_desktop(target),output_folder)
 
@@ -68,7 +68,7 @@ endRoutine
 
 routine mobile_or_desktop( target:String )->String
   which (target)
-    case "Windows", "Mac", "Linux", "Unix"
+    case "Windows", "macOS", "Linux", "Unix"
       return "Desktop"
 
     others

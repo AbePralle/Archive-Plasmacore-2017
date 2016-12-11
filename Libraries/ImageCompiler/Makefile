@@ -14,7 +14,7 @@ Build/RGB/rgb: Build/RGB/RGB.cpp
 
 Build/RGB/RGB.cpp: RGB.rogue Makefile
 	@mkdir -p Build/RGB
-	../../Programs/Mac/roguec --main --libraries=../Rogue RGB.rogue --output=Build/RGB --define=COMPILER_INVOCATION:"\"$(COMPILE)\""
+	../../Programs/macOS/roguec --main --libraries=../Rogue RGB.rogue --output=Build/RGB --define=COMPILER_INVOCATION:"\"$(COMPILE)\""
 
 run:
 	chmod u+x Build/RGB/rgb
