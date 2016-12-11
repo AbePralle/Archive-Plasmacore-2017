@@ -1,6 +1,7 @@
 try
   install_brew
   #trace library_location( "libjpeg" )
+  if (not needs_compile) escapeTry
   if (0 != System.run( ''roguec ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
 
   local png_folder = library_location( "libpng" )
@@ -20,6 +21,12 @@ catch (err:Error)
   System.exit( 1 )
 
 endTry
+
+routine needs_compile->Logical
+  if (File.is_newer_than("ImageCompiler.rogue","Build/ImageCompiler.cpp")) return true
+  if (File.is_newer_than("Makefile","Build/ImageCompiler.cpp")) return true
+  return false
+endRoutine
 
 routine require_command_line
   if ($defined(IDE))

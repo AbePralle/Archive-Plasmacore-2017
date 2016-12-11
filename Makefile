@@ -6,6 +6,8 @@ BRANCH = master
 
 ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
+.PHONY: build
+
 ios: override TARGET := iOS
 
 macos: override TARGET := macOS
