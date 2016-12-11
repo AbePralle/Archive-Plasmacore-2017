@@ -1,0 +1,70 @@
+try
+  install_brew
+  #trace library_location( "libjpeg" )
+  if (0 != System.run( ''roguec ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
+
+  local png_folder = library_location( "libpng" )
+  local jpeg_folder = library_location( "libjpeg" )
+  local cmd = ''cd Build && $ ImageCompiler.cpp ''...
+      ''-I "$/include" -L "$/lib" ''...
+      ''-I "$/include" -L "$/lib" ''...
+      ''-lpng -ljpeg ''...
+      ''-o imagecompiler ''...
+      (COMPILER_INVOCATION,png_folder,png_folder,jpeg_folder,jpeg_folder)
+  println cmd
+  if (0 != System.run(cmd)) System.exit( 1 )
+
+catch (err:Error)
+  println "ERROR: " + err
+  System.exit( 1 )
+
+endTry
+
+
+routine install_brew
+  if (0 == System.run("which brew >& /dev/null")) return
+
+  println "Installing brew"
+  if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+    local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    println cmd
+    if (0 == System.run(cmd)) return
+    throw Error( "Failed to install Homebrew." )
+  endIf
+
+  throw Error( "Missing required dependency 'brew' (Homebrew)." )
+endRoutine
+
+
+routine install_library( library_name:String )
+  if (0 == System.run( "brew list $ >& /dev/null" (library_name) ) ) return
+
+  if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
+    throw Error( "Missing required library '$'." (library_name) )
+  endIf
+
+  local cmd = "brew install $" (library_name)
+  println cmd
+  if (0 != System.run(cmd)) throw Error( "Failed to install library '$'." (library_name) )
+endRoutine
+
+
+routine library_location( library_name:String )->String
+  install_library( library_name )
+
+  if (0 != System.run("brew list $ > .rgb.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  local reader = File.line_reader( ".rgb.temp" )
+  forEach (line in reader)
+    if (line.contains("/include/"))
+      reader.close
+      File.delete( ".rgb.temp" )
+      return line.before_first( "/include/" )
+    endIf
+  endForEach
+
+  throw Error( "Library not installed: '$'." (library_name) )
+
+endRoutine
+
+
