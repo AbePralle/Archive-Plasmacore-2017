@@ -18,10 +18,11 @@ try
                     |#
                     |# COMMANDS
                     |#   @ <file or pattern> [attributes...]  Set image attributes
-                    |#   set image_sheet_size:4096            Set max texture size
-                    |#   set display_scale:1/2                Images drawn half size etc.
-                    |#   group <folder or pattern>            Turn folders into groups
-                    |#   copy from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
+                    |#   set    image_sheet_size:4096         Set max texture size
+                    |#   set    display_scale:1/2             Images drawn half size etc.
+                    |#   group  <folder or pattern>           Turn folders into groups
+                    |#   create image:<filepath> font:<font-name> height:<pixels> [characters:"ABC..." unicode:[32..126] ...]
+                    |#   copy   from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
                     |#
                     |# ATTTRIBUTES
                     |#   @ ... resample <pixel width>x<pixel height>
@@ -29,7 +30,7 @@ try
                     |#   @ ... split:<tiles-wide>x<tiles-high>
                     |#   @ ... varfont
                     |#   @ ... varfont:"Character Mapping"
-                    |#   @ ... varfont [characters:"ABC..." unicode:[32-126] ...]
+                    |#   @ ... varfont [characters:"ABC..." unicode:[32..126] ...]
                     |#
                     |[Global]
                     |@ **Font* varfont
@@ -274,7 +275,7 @@ class Command
             elseIf (name == "unicode")
               ensure characters
               if (value.begins_with('['))
-                local ranges = value.after_first('[').before_last(']').replacing(',',' ').split(' ')
+                local ranges = value.after_first('[').before_last(']').replacing(',',' ').replacing("..","-").split(' ')
                 forEach (range in ranges)
                   if (range.contains('-'))
                     local parts = range.split( '-' )
@@ -311,6 +312,11 @@ class Command
         case "group"
           if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
           compile_group
+
+        case "create"
+          local args = parse_args
+          local image_name = require_arg( args, "image" )
+          create_image( image_name, args )
 
         case "copy"
           icom.all_images = null
@@ -574,6 +580,54 @@ class Command
       consume_whitespace
       return (reader.has_another)
 
+    method create_image( image_name:String, args:Value )
+      if (image_name.begins_with("Images/")) image_name = "Assets/" + image_name
+      if (not image_name.begins_with("Assets/Images/")) image_name = "Assets/Images/" + image_name
+
+      local folder_name = File.folder( image_name )
+      if (not File.is_folder( folder_name ))
+        File.create_folder( folder_name )
+      endIf
+
+      if (File.exists(image_name)) return
+
+      # Clear image filename cache
+      icom.all_images = null
+
+      local font_name = require_arg( args, "font" )->String
+      local height = require_arg( args, "height" )->Int32
+
+      local unicode = Int32[]
+      if (args.contains("characters"))
+        forEach (ch in args//characters->String) unicode.add( Int32(ch) )
+      endIf
+      if (args.contains("unicode"))
+        forEach (code in args//unicode) unicode.add( code )
+      endIf
+
+      # Remove duplicates
+      unicode.sort( (a,b)=>(a<b) )
+      local previous = -1
+      forEach (code in rewriter=unicode.rewriter)
+        if (code != previous) rewriter.write( code )
+        previous = code
+      endForEach
+
+      if (unicode.count == 0)
+        forEach (code in 32..126) unicode.add( code )
+      endIf
+
+      println "Generating $-character font strip from $, $ pixels high" (unicode.count,font_name,height)
+
+      local font_face = FreeTypeFace( this, font_name, height )
+      local characters = font_face.render( unicode )
+
+      local bitmap = Convert.pack_varfont_characters( this, characters )
+      print "  -> "
+      print image_name
+      println " [$x$]" (bitmap.width,bitmap.height)
+      save_bitmap( bitmap, image_name )
+
     method image_copy( args:@{} )
       require_arg( args, "from" )
       require_arg( args, "to" )
@@ -719,8 +773,12 @@ class Command
       local args = @{}
       while (has_another)
         local arg = parse_name_value
-        if (arg//value) args[ arg//name ]         = arg//value
-        else            args[ arg//name->String ] = true
+        if (args.contains(arg//name))
+          if (arg//value) args[ arg//name ] = args[ arg//name ] + arg//value
+        else
+          if (arg//value) args[ arg//name ]         = arg//value
+          else            args[ arg//name->String ] = true
+        endIf
       endWhile
       return args
 
@@ -729,9 +787,34 @@ class Command
       local name_value = @{ name:name }
       consume_whitespace
       if (consume(':'))
-        name_value//value = parse_string( "Value expected." )
+        local value = parse_string( "Value expected." )
+        if (value.begins_with('[') and value.ends_with(']'))
+          name_value//value = unicode_range_to_list( value )
+        else
+          name_value//value = value
+        endIf
       endIf
       return name_value
+
+    method unicode_range_to_list( range:String )->Value
+      local parts = range.leftmost(-1).rightmost(-1).trimmed.replacing(',',' ').replacing("..","-").split(' ')
+      local list = @[]
+      forEach (part in parts)
+        if (part.contains('-'))
+          local first_st  = part.before_first( '-' )
+          local last_st = part.after_first( '-' )
+          if (first_st.count == 0) first_st = "0"
+          if (last_st.count == 0)  last_st = "0"
+          local first_ch = select{ first_st.is_integer:first_st->Int32 || first_st[0]->Int32 }
+          local last_ch = select{ last_st.is_integer:last_st->Int32 || last_st[0]->Int32 }
+          forEach (ch in first_ch..last_ch) list.add( ch )
+        elseIf (part.is_integer)
+          list.add( part->Int32 )
+        elseIf (part.count)
+          list.add( part[0]->Int32 )
+        endIf
+      endForEach
+      return list
 
     method parse_string( expected:String )->String
       if (not has_another) throw error( expected )
@@ -751,6 +834,22 @@ class Command
           endWhich
         endWhile
         throw error( "String is missing closing ($)." (quote_type) )
+
+      elseIf (ch == '[')
+        # Bracket-delimited
+        buffer.print( reader.read ) # '['
+        while (reader.has_another)
+          ch = reader.read
+          which (ch)
+            case ']': return buffer.print( ']' )->String
+            case '\\'
+              if (reader.has_another) buffer.print( reader.read )
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+        throw error( "Value is missing closing ]." )
+
       else
         while (reader.has_another)
           ch = reader.peek
@@ -765,8 +864,9 @@ class Command
       endIf
       return buffer->String
 
-    method require_arg( args:@{}, name:String  )
+    method require_arg( args:@{}, name:String  )->Value
       if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
+      return args[ name ]
 
     method to->String
       return content
@@ -1071,6 +1171,138 @@ class CommentStripper
       endIf
 
       return this
+
+endClass
+
+class FreeTypeFace
+  DEPENDENCIES
+    nativeHeader
+      #include <ft2build.h>
+      #include FT_FREETYPE_H
+    endNativeHeader
+
+    nativeCode
+      FT_Library Plasmacore_freetype_library;
+    endNativeCode
+
+  PROPERTIES
+    pixel_height : Int32
+    ft_height    : Int32
+    native "FT_Face ft_face;"
+
+  METHODS
+    method init( cmd:Command, name:String, pixel_height )
+      ft_height = pixel_height
+
+      local filepath = "Assets/Fonts/" + name
+      if (not File.exists(filepath)) filepath = "/Library/Fonts/" + name
+      if (not File.exists(filepath)) filepath = "/System/Library/Fonts/" + name
+      if (not File.exists(filepath)) throw BuildError( cmd, "Unable to find font: " + name )
+
+      if (not native("Plasmacore_freetype_library")->Logical)
+        # Initialize FreeType library
+        if (native("FT_Init_FreeType(&Plasmacore_freetype_library)")->Int32)
+          throw BuildError( cmd, "FreeType library failed to initialize." )
+        endIf
+        on_exit( () => native "FT_Done_FreeType( Plasmacore_freetype_library );" )
+      endIf
+
+      if (native("FT_New_Face( Plasmacore_freetype_library, (char*)$filepath->utf8, 0, &$this->ft_face )")->Int32)
+        throw BuildError( cmd, "Error loading $." (name) )
+      endIf
+
+    method render( unicode:Int32[] )->Bitmap[]
+      local max_offset = 0  # note: "max" values are more negative
+
+      loop
+        contingent
+          native "FT_Set_Pixel_Sizes( $this->ft_face, 0, $ft_height );"
+
+          sufficient (ft_height <= 8)
+
+          # FT does not guarantee rendered characters within our pixel_height.  Therefore
+          # we make one or more passes to find the true bounds at the current pixel_height
+          # and reduce if necessary.
+          local max_height = 0
+          max_offset = 0
+          forEach (code in unicode)
+            if (0 == native("FT_Load_Char( $this->ft_face, $code, FT_LOAD_RENDER )")->Int32)
+              local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+              local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+              max_height = max_height.or_larger( h )
+              max_offset = max_offset.or_smaller( offset )
+            endIf
+          endForEach
+
+          necessary (max_height <= pixel_height)
+
+          # Check each character one more time, ensuring that once the delta between the character
+          # offset and the max offset is taken into account, the adjusted height still does not
+          # exceed our max height.
+          forEach (code in unicode)
+            if (0 == native("FT_Load_Char( $this->ft_face, $code, FT_LOAD_RENDER )")->Int32)
+              local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+              local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+              necessary (h + offset <= pixel_height + max_offset)
+            endIf
+          endForEach
+
+        satisfied
+          escapeLoop
+
+        unsatisfied
+          --ft_height
+
+        endContingent
+      endLoop
+
+      # Actually render character bitmaps.
+      local bitmaps = Bitmap[]( unicode.count )
+      forEach (code in unicode)
+        if (native("FT_Load_Char( $this->ft_face, $code, FT_LOAD_RENDER )")->Int32)
+          bitmaps.add( Bitmap(1,pixel_height,Color(0x00FFffFF)) )
+        else
+          local w        = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
+          local h        = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+          local offset_x = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_left" )->Int32
+          local offset_y = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+          local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32 / 64
+          #local advance_y = native( "(RogueInt32)$this->ft_face->glyph->advance.y" )->Int32 / 64
+          if ((offset_y - max_offset) + h > pixel_height)
+            trace "ERROR: font character exceeds max height."
+            h = pixel_height - (offset_y - max_offset)
+          endIf
+
+          if (w > 0)
+            local pitch = native( "(RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
+            native "RogueByte* src = (RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
+            local bmp = Bitmap( w, pixel_height, Color(0x00FFffFF) )
+            local src_i = 0
+            local dest_i = (offset_y - max_offset) * w
+            local column_skip = pitch - w
+            forEach (j in 1..h)
+              forEach (i in 1..w)
+                local a = native( "(RogueInt32)(src[$src_i++])" )->Int32
+                bmp.pixels[dest_i] = Color(255,255,255,a)
+                ++dest_i
+              endForEach
+              src_i += column_skip
+            endForEach
+            if (advance_x > w)
+              local padded_bmp = Bitmap( advance_x, pixel_height, Color(0x00FFffFF) )
+              bmp.blit( padded_bmp, XY(-offset_x,0) )
+              bitmaps.add( padded_bmp )
+            else
+              bitmaps.add( bmp )
+            endIf
+
+          else
+            bitmaps.add( Bitmap(advance_x,pixel_height,Color(0x00FFffFF)) )
+          endIf
+        endIf
+      endForEach
+
+      return bitmaps
 
 endClass
 

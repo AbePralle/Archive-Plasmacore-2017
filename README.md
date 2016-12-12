@@ -51,6 +51,11 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.6.0 - December 8, 2016
+- [ImageCompiler] Added command to generate font strip images from local or system fonts.  Syntax: `create image:<image_name.png> font:<"Font Name.ttf"> height:<pixels> [characters:"ABC..." unicode:[32-127] ...]`.  The image compiler will find the font by searching folders in the following order: `Assets/Fonts/`, `/Library/Fonts/`, `/System/Library/Fonts/`.
+- [ImageCompiler] Moved Image Compiler off of vendored (local) PNG, JPEG, and FreeType libraries.  Now uses Brew-installed versions of those libraries.  Added companion `Libraries/ImageCompiler/BuildScript.rogue` to automatically manage the Brew-installed libraries during build.
+- [BuildScript] Renamed `Build.rogue` to `BuildScript.rogue` and `BuildCore.rogue` to `BuildScriptCore.rogue`.
+
 ###v0.5.5 - December 8, 2016
 - [OverlayLog] Fixed overlay log messages to be single spaced instead of double spaced.
 - [Swift] Added `PlasmacoreMessage.getDictionary(name:String)`.

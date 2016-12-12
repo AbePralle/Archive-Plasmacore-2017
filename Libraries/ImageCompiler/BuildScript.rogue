@@ -1,17 +1,18 @@
 try
-  install_brew
-  #trace library_location( "libjpeg" )
   if (not needs_compile) escapeTry
+
+  install_brew
   if (0 != System.run( ''roguec ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
 
   local png_folder = library_location( "libpng" )
   local jpeg_folder = library_location( "libjpeg" )
+  local freetype_folder = library_location( "freetype" )
   local cmd = ''cd Build && $ ImageCompiler.cpp ''...
-      ''-I "$/include" -L "$/lib" ''...
-      ''-I "$/include" -L "$/lib" ''...
-      ''-lpng -ljpeg ''...
+      ''-I "$/include" -L "$/lib" -lpng ''...
+      ''-I "$/include" -L "$/lib" -ljpeg ''...
+      ''-I "$/include/freetype2" -L "$/lib" -lfreetype ''...
       ''-o imagecompiler ''...
-      (COMPILER_INVOCATION,png_folder,png_folder,jpeg_folder,jpeg_folder)
+      (COMPILER_INVOCATION,png_folder,png_folder,jpeg_folder,jpeg_folder,freetype_folder,freetype_folder)
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )
 
@@ -22,11 +23,14 @@ catch (err:Error)
 
 endTry
 
+
 routine needs_compile->Logical
-  if (File.is_newer_than("ImageCompiler.rogue","Build/ImageCompiler.cpp")) return true
-  if (File.is_newer_than("Makefile","Build/ImageCompiler.cpp")) return true
+  if (File.is_newer_than("ImageCompiler.rogue","Build/imagecompiler")) return true
+  if (File.is_newer_than("Makefile","Build/imagecompiler")) return true
+  if (File.is_newer_than("BuildScript.rogue","Build/imagecompiler")) return true
   return false
 endRoutine
+
 
 routine require_command_line
   if ($defined(IDE))
