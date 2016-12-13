@@ -3,6 +3,10 @@
 
 #import <AVFoundation/AVAudioPlayer.h>
 
+#if defined(ROGUE_PLATFORM_IOS)
+  #import <UIKit/UIKit.h>
+#endif
+
 #include <cstdio>
 #include <cstring>
 using namespace std;
@@ -44,6 +48,36 @@ extern "C" RogueString* Plasmacore_find_asset( RogueString* filepath )
   NSString* ns_filepath = [[NSBundle mainBundle] pathForResource:ns_name ofType:nil];
   if (ns_filepath == nil) return 0;
   return Plasmacore_ns_string_to_rogue_string( ns_filepath );
+}
+
+RogueClassPlasmacore__Bitmap* Plasmacore_decode_image( RogueByte* bytes, RogueInt32 count )
+{
+  NSData* data = [NSData dataWithBytesNoCopy:bytes length:count freeWhenDone:NO];
+#if defined(ROGUE_PLATFORM_IOS)
+  CGImageRef bitmap_image = [UIImage imageWithData:data].CGImage;
+#else
+  CGImageRef bitmap_image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+#endif
+  
+  if(bitmap_image)
+  {
+    // Get the width and height of the image
+    RogueInt32 width = (RogueInt32)CGImageGetWidth(bitmap_image);
+    RogueInt32 height = (RogueInt32)CGImageGetHeight(bitmap_image);
+    RogueClassPlasmacore__Bitmap* bitmap = RoguePlasmacore__Bitmap__create__Int32_Int32( width, height );
+
+    // Uses the bitmap creation function provided by the Core Graphics framework.
+    CGContextRef gc = CGBitmapContextCreate((GLubyte*)bitmap->pixels->data->as_int32s, width, height, 8, width * 4,
+                                            CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
+    CGContextDrawImage(gc, CGRectMake(0.0, 0.0, (CGFloat)width, (CGFloat)height), bitmap_image);
+    CGContextRelease(gc);
+    return bitmap;
+  }
+  else
+  {
+    return NULL;
+  }
+
 }
 
 void* PlasmacoreSound_create( RogueString* filepath, bool is_music )
