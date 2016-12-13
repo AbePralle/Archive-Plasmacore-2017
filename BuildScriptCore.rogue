@@ -54,11 +54,14 @@ endRoutine
 routine compile( target:String )
   local output_folder = "Build/$/Source" (target)
 
-  if (not need_compile(output_folder)) return
+  if (not need_compile(target,output_folder)) return
+
+  local language = "C++"
+  if (target == "macOS" or target == "iOS") language = "C++,ObjC"
 
   local exe = "Programs/macOS/roguec"
-  local cmd = ''$ --target=C++,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
-  (exe,target,mobile_or_desktop(target),output_folder)
+  local cmd = ''$ --target=$,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
+  (exe,language,target,mobile_or_desktop(target),output_folder)
 
   println cmd
   if (System.run(cmd)) System.exit 1
@@ -76,9 +79,12 @@ routine mobile_or_desktop( target:String )->String
   endWhich
 endRoutine
 
-routine need_compile( output_folder:String )->Logical
+routine need_compile( target:String, output_folder:String )->Logical
+  local extension = "cpp"
+  if (target == "macOS" or target == "iOS") extension = "mm"
+
   local output_h   = "$/RogueProgram.h" (output_folder)
-  local output_cpp = "$/RogueProgram.cpp" (output_folder)
+  local output_cpp = "$/RogueProgram.$" (output_folder,extension)
 
   if (not File.exists(output_h))   return true
   if (not File.exists(output_cpp)) return true

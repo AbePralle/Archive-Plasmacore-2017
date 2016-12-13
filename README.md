@@ -2,8 +2,8 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.6.0
-Date      | December 12, 2016
+Version   | v0.6.1
+Date      | December 13, 2016
 Platforms | macOS
 Targets   | macOS, iOS
 
@@ -50,6 +50,10 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.6.1 - December 13, 2016
+- [Rogue] Rogue program now compiles to `.mm` for iOS and macOS which allows inline ObjectiveC to be used in addition to inline C++.  See `Libraries/Rogue/Plasmacore/iOS.rogue` for an example.
+- [iOS] Added `iOS` class with global method `status_bar_height()->Int32` (pixels).
 
 ###v0.6.0 - December 12, 2016
 - [ImageCompiler] Added command to generate font strip images from local or system fonts.  Syntax: `create image:<image_name.png> font:<"Font Name.ttf"> height:<pixels> [characters:"ABC..." unicode:[32-127] ...]`.  The image compiler will find the font by searching folders in the following order: `Assets/Fonts/`, `/Library/Fonts/`, `/System/Library/Fonts/`.

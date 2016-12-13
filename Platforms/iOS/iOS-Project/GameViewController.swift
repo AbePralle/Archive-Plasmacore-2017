@@ -7,6 +7,6 @@
 import GLKit
 import OpenGLES
 
-class GameViewController: PlasmacoreViewController {
-
+class GameViewController: PlasmacoreViewController
+{
 }

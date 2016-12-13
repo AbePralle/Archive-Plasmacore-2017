@@ -13,8 +13,8 @@
 		30361DCF1D9A224D00A33B99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30361DCE1D9A224D00A33B99 /* Assets.xcassets */; };
 		30361DD21D9A224D00A33B99 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 30361DD01D9A224D00A33B99 /* LaunchScreen.storyboard */; };
 		30361E751D9A243000A33B99 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 30361E741D9A243000A33B99 /* libz.tbd */; };
-		30361E831D9B4AE100A33B99 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30361E7D1D9B4AE100A33B99 /* RogueProgram.cpp */; };
 		30361E861D9B507000A33B99 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30361E851D9B507000A33B99 /* Assets */; };
+		30845F771E009E1A00B14D0F /* RogueProgram.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30845F761E009E1A00B14D0F /* RogueProgram.mm */; };
 		30CFCB931DBA6AE3002641EF /* Plasmacore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB901DBA6AE3002641EF /* Plasmacore.swift */; };
 		30CFCB941DBA6AE3002641EF /* PlasmacoreMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB911DBA6AE3002641EF /* PlasmacoreMessage.swift */; };
 		30CFCB951DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30CFCB921DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift */; };
@@ -32,9 +32,9 @@
 		30361DD31D9A224D00A33B99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		30361E741D9A243000A33B99 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		30361E771D9B4AE100A33B99 /* iOS-Project-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iOS-Project-Bridging-Header.h"; sourceTree = "<group>"; };
-		30361E7D1D9B4AE100A33B99 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../Build/iOS/Source/RogueProgram.cpp; sourceTree = "<group>"; };
 		30361E7E1D9B4AE100A33B99 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../Build/iOS/Source/RogueProgram.h; sourceTree = "<group>"; };
 		30361E851D9B507000A33B99 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../Build/iOS/Assets; sourceTree = "<group>"; };
+		30845F761E009E1A00B14D0F /* RogueProgram.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueProgram.mm; path = ../../Build/iOS/Source/RogueProgram.mm; sourceTree = "<group>"; };
 		30CFCB901DBA6AE3002641EF /* Plasmacore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Plasmacore.swift; path = ../../Libraries/Plasmacore/Swift/Plasmacore.swift; sourceTree = "<group>"; };
 		30CFCB911DBA6AE3002641EF /* PlasmacoreMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlasmacoreMessage.swift; path = ../../Libraries/Plasmacore/Swift/PlasmacoreMessage.swift; sourceTree = "<group>"; };
 		30CFCB921DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "PlasmacoreViewController-iOS.swift"; path = "../../Libraries/Plasmacore/Swift/PlasmacoreViewController-iOS.swift"; sourceTree = "<group>"; };
@@ -100,12 +100,12 @@
 		30361E761D9B4ABE00A33B99 /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
+				30845F761E009E1A00B14D0F /* RogueProgram.mm */,
 				30CFCB961DBA6B23002641EF /* RogueInterface.h */,
 				30CFCB971DBA6B23002641EF /* RogueInterface.mm */,
 				30CFCB901DBA6AE3002641EF /* Plasmacore.swift */,
 				30CFCB911DBA6AE3002641EF /* PlasmacoreMessage.swift */,
 				30CFCB921DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift */,
-				30361E7D1D9B4AE100A33B99 /* RogueProgram.cpp */,
 				30361E7E1D9B4AE100A33B99 /* RogueProgram.h */,
 				30361E771D9B4AE100A33B99 /* iOS-Project-Bridging-Header.h */,
 			);
@@ -206,11 +206,11 @@
 			files = (
 				30361DCA1D9A224D00A33B99 /* GameViewController.swift in Sources */,
 				30361DC41D9A224D00A33B99 /* AppDelegate.swift in Sources */,
-				30361E831D9B4AE100A33B99 /* RogueProgram.cpp in Sources */,
 				30CFCB981DBA6B23002641EF /* RogueInterface.mm in Sources */,
 				30CFCB951DBA6AE3002641EF /* PlasmacoreViewController-iOS.swift in Sources */,
 				30CFCB931DBA6AE3002641EF /* Plasmacore.swift in Sources */,
 				30CFCB941DBA6AE3002641EF /* PlasmacoreMessage.swift in Sources */,
+				30845F771E009E1A00B14D0F /* RogueProgram.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

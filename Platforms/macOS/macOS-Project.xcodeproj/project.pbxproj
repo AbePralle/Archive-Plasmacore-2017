@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		30845F791E00A33700B14D0F /* RogueProgram.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30845F781E00A33700B14D0F /* RogueProgram.mm */; };
 		30F185091DEB5F3D002FE6D4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F185081DEB5F3D002FE6D4 /* AppDelegate.swift */; };
 		30F1850B1DEB5F3D002FE6D4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30F1850A1DEB5F3D002FE6D4 /* Assets.xcassets */; };
 		30F1850E1DEB5F3D002FE6D4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30F1850C1DEB5F3D002FE6D4 /* MainMenu.xib */; };
@@ -17,10 +18,10 @@
 		30F185B61DEB6642002FE6D4 /* RogueInterface.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30F185B21DEB6642002FE6D4 /* RogueInterface.mm */; };
 		30F185BB1DEBBEE5002FE6D4 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30F185BA1DEBBEE5002FE6D4 /* AVFoundation.framework */; };
 		30F185CA1DFD0843002FE6D4 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 30F185C91DFD0843002FE6D4 /* Assets */; };
-		30F185CD1DFD0859002FE6D4 /* RogueProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30F185CB1DFD0859002FE6D4 /* RogueProgram.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		30845F781E00A33700B14D0F /* RogueProgram.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueProgram.mm; path = ../../Build/macOS/Source/RogueProgram.mm; sourceTree = "<group>"; };
 		30F185051DEB5F3D002FE6D4 /* macOS-Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "macOS-Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		30F185081DEB5F3D002FE6D4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		30F1850A1DEB5F3D002FE6D4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -35,7 +36,6 @@
 		30F185B21DEB6642002FE6D4 /* RogueInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RogueInterface.mm; path = ../../Libraries/Plasmacore/Swift/RogueInterface.mm; sourceTree = "<group>"; };
 		30F185BA1DEBBEE5002FE6D4 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		30F185C91DFD0843002FE6D4 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../../Build/macOS/Assets; sourceTree = "<group>"; };
-		30F185CB1DFD0859002FE6D4 /* RogueProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RogueProgram.cpp; path = ../../Build/macOS/Source/RogueProgram.cpp; sourceTree = "<group>"; };
 		30F185CC1DFD0859002FE6D4 /* RogueProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RogueProgram.h; path = ../../Build/macOS/Source/RogueProgram.h; sourceTree = "<group>"; };
 		30F185CE1DFD0C00002FE6D4 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		30F185D01DFD0C10002FE6D4 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -99,7 +99,7 @@
 		30F185AD1DEB61ED002FE6D4 /* Plasmacore */ = {
 			isa = PBXGroup;
 			children = (
-				30F185CB1DFD0859002FE6D4 /* RogueProgram.cpp */,
+				30845F781E00A33700B14D0F /* RogueProgram.mm */,
 				30F185CC1DFD0859002FE6D4 /* RogueProgram.h */,
 				30F185AE1DEB6642002FE6D4 /* Plasmacore.swift */,
 				30F185AF1DEB6642002FE6D4 /* PlasmacoreMessage.swift */,
@@ -204,8 +204,8 @@
 				30F185091DEB5F3D002FE6D4 /* AppDelegate.swift in Sources */,
 				30F185B61DEB6642002FE6D4 /* RogueInterface.mm in Sources */,
 				30F185B51DEB6642002FE6D4 /* PlasmacoreView-macOS.swift in Sources */,
+				30845F791E00A33700B14D0F /* RogueProgram.mm in Sources */,
 				30F185B31DEB6642002FE6D4 /* Plasmacore.swift in Sources */,
-				30F185CD1DFD0859002FE6D4 /* RogueProgram.cpp in Sources */,
 				30F185B41DEB6642002FE6D4 /* PlasmacoreMessage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
