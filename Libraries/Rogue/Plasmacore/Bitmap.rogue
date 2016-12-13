@@ -4,6 +4,10 @@ class Bitmap
   GLOBAL PROPERTIES
     resize_row_buffer = Int32[]
 
+  GLOBAL METHODS
+    method create( width:Int32, height:Int32 )->Bitmap
+      return Bitmap( width, height, Color.BLACK )
+
   PROPERTIES
     width    : Int32
     height   : Int32
@@ -15,7 +19,7 @@ class Bitmap
     method init( _size:XY, color=Color.BLACK:Color ) [essential]
       init( _size.x, _size.y, color )
 
-    method init( width, height, color=Color.BLACK:Color ) [essential]
+    method init( width, height, color:Color ) [essential]
       init( width, height, Color[]( width*height, color ) )
 
     method init( file:File )

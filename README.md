@@ -2,24 +2,17 @@
 - v0.5.5
 - December 8, 2016
 
-## Requirements
-- Mac with Xcode and iOS SDK.
+          | Current Release
+----------|-----------------------
+Version   | v0.5.5
+Date      | December 8, 2016
+Platforms | macOS
+Targets   | macOS, iOS
+
+
+## Notes
+- Requires a Mac with Xcode and the iOS SDK.
 - Plasmacore comes with an embedded copy of the Rogue language; you do not need to install Rogue separately.
-
-## Supported Platforms
-
-Currently the Plasmacore toolchain only runs on MacOS and supports Mac and iOS compile targets.
-
-Other platforms and targets will eventually be supported.
-
-
-## Documentation and Resources
-
-There is some Rogue documentation here: [https://github.com/AbePralle/Rogue/wiki](https://github.com/AbePralle/Rogue/wiki)
-
-There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.
-
-A sample Plasmacore game project is available here: [https://github.com/AbePralle/PlasmacoreDemos](https://github.com/AbePralle/PlasmacoreDemos)
 
 
 ## Bootstrap Command
@@ -29,6 +22,15 @@ To bootstrap a new Plasmacore-based project, open a Terminal in your new project
     curl -O https://raw.githubusercontent.com/AbePralle/Plasmacore/master/Bootstrap.mk && make -f Bootstrap.mk
 
 The command will fetch a bootstrap makefile which in turn will `git clone` the latest Plasmacore repo in a temporary folder and copy all the files into the current folder.
+
+
+## Documentation and Resources
+
+There is some Rogue documentation here: [https://github.com/AbePralle/Rogue/wiki](https://github.com/AbePralle/Rogue/wiki)
+
+There is no Plasmacore documentation yet.  You can manually browse the `Libraries/Rogue/Plasmacore` files.
+
+A sample Plasmacore game project is available here: [https://github.com/AbePralle/PlasmacoreDemos](https://github.com/AbePralle/PlasmacoreDemos)
 
 
 ## Starting a New Project
@@ -55,6 +57,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [ImageCompiler] Added command to generate font strip images from local or system fonts.  Syntax: `create image:<image_name.png> font:<"Font Name.ttf"> height:<pixels> [characters:"ABC..." unicode:[32-127] ...]`.  The image compiler will find the font by searching folders in the following order: `Assets/Fonts/`, `/Library/Fonts/`, `/System/Library/Fonts/`.
 - [ImageCompiler] Moved Image Compiler off of vendored (local) PNG, JPEG, and FreeType libraries.  Now uses Brew-installed versions of those libraries.  Added companion `Libraries/ImageCompiler/BuildScript.rogue` to automatically manage the Brew-installed libraries during build.
 - [BuildScript] Renamed `Build.rogue` to `BuildScript.rogue` and `BuildCore.rogue` to `BuildScriptCore.rogue`.
+- [Bitmap] Converted `Bitmap(width:Int32,height:Int32)` to be a global constructor to make it easy to call from the native layer.
 
 ###v0.5.5 - December 8, 2016
 - [OverlayLog] Fixed overlay log messages to be single spaced instead of double spaced.
