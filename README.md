@@ -1,11 +1,9 @@
 # Plasmacore
-- v0.5.5
-- December 8, 2016
 
           | Current Release
 ----------|-----------------------
-Version   | v0.5.5
-Date      | December 8, 2016
+Version   | v0.6.0
+Date      | December 12, 2016
 Platforms | macOS
 Targets   | macOS, iOS
 
