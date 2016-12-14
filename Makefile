@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.6.1
+PLASMACORE_VERSION = v0.6.2
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -24,7 +24,7 @@ compile_images:
 	env TARGET=$(TARGET) ./icom $(TARGET)
 
 compile_sounds:
-	./scom env TARGET=$(TARGET) $(TARGET)
+	env TARGET=$(TARGET) ./scom $(TARGET)
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
