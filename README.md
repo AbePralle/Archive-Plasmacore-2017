@@ -53,6 +53,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ###v0.6.3 - December 14, 2016
 - [Build System] Fixed IDE flag to be passed properly to roguec from Makefile and BuildScriptCore.rogue.
+- [Build System] Fixed ImageCompiler BuildScript to use project `roguec` instead of global `roguec`.
 
 ###v0.6.2 - December 13, 2016
 - Fixed command line error invoking the Sound Compiler.
