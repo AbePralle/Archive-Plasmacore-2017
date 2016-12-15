@@ -51,6 +51,12 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.6.3 - December 14, 2016
+- [Build System] Fixed IDE flag to be passed properly to roguec from Makefile and BuildScriptCore.rogue.
+
+###v0.6.2 - December 13, 2016
+- Fixed command line error invoking the Sound Compiler.
+
 ###v0.6.1 - December 13, 2016
 - [Rogue] Rogue program now compiles to `.mm` for iOS and macOS which allows inline ObjectiveC to be used in addition to inline C++.  See `Libraries/Rogue/Plasmacore/iOS.rogue` for an example.
 - [iOS] Added `iOS` class with global method `status_bar_height()->Int32` (pixels).
