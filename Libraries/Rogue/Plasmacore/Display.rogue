@@ -688,7 +688,7 @@ class Display [singleton]
 
     method set_state( new_state:State )->this
       # Sets the state of this Display's current view.
-      view.state = new_state
+      view.@state = new_state
       return this
 
     method set_view( @view )->this

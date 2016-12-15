@@ -34,6 +34,9 @@ class State
     method change_state( new_state:State )
       view.change_state( new_state )
 
+    method change_view( new_view:View )
+      view.change_view( new_view )
+
     method exit_state
       view.exit_state
 

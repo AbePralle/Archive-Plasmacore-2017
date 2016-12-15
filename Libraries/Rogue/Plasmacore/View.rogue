@@ -40,7 +40,7 @@ class View
       new_state.on_prepare
       state.on_finish
       state.is_active = false
-      state = new_state
+      @state = new_state
       state.view = this
       state.is_active = true
       state.on_start
@@ -72,10 +72,10 @@ class View
 
       if (state.next_state)
         new_state.prior_state = state.prior_state
-        state = new_state
+        @state = new_state
         state.on_start
       elseIf (state.prior_state)
-        state = new_state
+        @state = new_state
         state.on_resume
       else
         state.on_start
@@ -165,7 +165,7 @@ class View
       new_state.prior_state = state
       state.is_active = false
       state.on_suspend
-      state = new_state
+      @state = new_state
       state.view = this
       state.is_active = true
       state.on_start
@@ -174,5 +174,10 @@ class View
       local cur = state
       while (cur.next_state) cur = cur.next_state
       cur.next_state = new_state
+
+    method set_state( new_state:State )->this
+      change_state( new_state )
+      return this
+
 endClass
 
