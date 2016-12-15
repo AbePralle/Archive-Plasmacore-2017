@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.6.2
+PLASMACORE_VERSION = v0.6.3.0
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -8,6 +8,15 @@ ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
 .PHONY: build
 
+ifeq ($(IDE),true)
+  ROGUEC_IDE_FLAG = --define=IDE
+  BUILDSCRIPT_IDE_FLAG = --ide
+else
+  ROGUEC_IDE_FLAG =
+  BUILDSCRIPT_IDE_FLAG =
+endif
+
+
 ios: override TARGET := iOS
 
 macos: override TARGET := macOS
@@ -15,6 +24,7 @@ macos: override TARGET := macOS
 all: build run compile_images compile_sounds
 
 ios: build run compile_images compile_sounds
+	echo $(IS_DEFINED)
 
 macos: build run compile_images compile_sounds
 
@@ -30,11 +40,11 @@ Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCore.rogue $(ROGUE_LIBRARIES)
-	Programs/macOS/roguec BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	Programs/macOS/roguec $(ROGUEC_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
-	Build/BuildScript/buildscript $(TARGET)
+	Build/BuildScript/buildscript $(TARGET) $(BUILDSCRIPT_IDE_FLAG)
 
 clean:
 	rm -rf Build

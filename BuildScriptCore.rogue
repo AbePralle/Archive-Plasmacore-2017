@@ -1,6 +1,20 @@
+class BuildConfig [singleton]
+  PROPERTIES
+    ide_flag : Logical
+endClass
+
+
 routine get_platform->String
   local target = "help"
-  if (System.command_line_arguments.count == 1) target = System.command_line_arguments.first
+
+  forEach (arg in System.command_line_arguments)
+    which (arg)
+      case "--ide"
+        BuildConfig.ide_flag = true
+      others
+        target = arg
+    endWhich
+  endForEach
 
   try
     which (target)
@@ -61,7 +75,8 @@ routine compile( target:String )
 
   local exe = "Programs/macOS/roguec"
   local cmd = ''$ --target=$,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
-  (exe,language,target,mobile_or_desktop(target),output_folder)
+    (exe,language,target,mobile_or_desktop(target),output_folder)
+    if (BuildConfig.ide_flag) cmd += " --define=IDE"
 
   println cmd
   if (System.run(cmd)) System.exit 1
