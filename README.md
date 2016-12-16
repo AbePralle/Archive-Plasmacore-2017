@@ -2,8 +2,8 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.6.3
-Date      | December 15, 2016
+Version   | v0.6.4
+Date      | December 16, 2016
 Platforms | macOS
 Targets   | macOS, iOS
 
@@ -52,7 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.6.4 - December 16, 2016
-- [Libraries] Deleted now-unused FreeType and Harfbuzz libraries.
+- [Libraries] Deleted now-unused embedded FreeType and HarfBuzz libraries.
 
 ###v0.6.3 - December 15, 2016
 - [Build System] Fixed IDE flag to be passed properly to roguec from Makefile and BuildScriptCore.rogue.
