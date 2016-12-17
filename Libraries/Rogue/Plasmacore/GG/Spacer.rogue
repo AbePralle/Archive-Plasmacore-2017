@@ -1,0 +1,11 @@
+module Plasmacore::GG
+
+class Spacer : Component
+  PROPERTIES
+    size : XY
+
+  METHODS
+    method init( size )
+
+endClass
+

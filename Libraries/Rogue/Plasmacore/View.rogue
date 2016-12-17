@@ -1,5 +1,4 @@
 module Plasmacore
-using  Plasmacore::UI
 
 class View
   PROPERTIES
@@ -10,16 +9,10 @@ class View
     needs_first_update    = true
     previous_display_size : XY?
 
-    ui        = Layout()  : Component
-
     loaded_asset_count    : Int32
     total_asset_count     : Int32
 
   METHODS
-    method add( child:Component, options=null:ValueTable )->this
-      ui.add( child, options )
-      return this
-
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
@@ -85,8 +78,7 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      ui.handle( e )
-      if (e.is_consumed) return
+      <<ui_hook>>
 
       after( e )
 
@@ -94,24 +86,23 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      ui.handle( e )
-      if (e.is_consumed) return
+      <<ui_hook>>
 
       after( e )
 
     method handle_draw
       on_draw
-      ui.handle_draw
+      <<ui_hook>>
       after_draw
 
     method handle_resize
       on_resize
-      #ui.handle_resize
+      <<ui_hook>>
       after_resize
 
     method handle_update
       on_update
-      ui.handle_update
+      <<ui_hook>>
       after_update
 
     method load_another_asset->Real64

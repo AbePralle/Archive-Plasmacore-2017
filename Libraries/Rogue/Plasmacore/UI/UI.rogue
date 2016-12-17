@@ -7,3 +7,44 @@ $include "LayoutGrid.rogue"
 $include "Panel.rogue"
 $include "Spacer.rogue"
 $include "Theme.rogue"
+
+augment Display
+  PROPERTIES
+    ui_theme    = Theme() # Default theme
+
+  METHODS
+    method render( true_size, viewport_size )
+      <<ui_hook>>
+      view.ui.update_layout( Box(size) )
+endAugment
+
+augment View
+  PROPERTIES
+    ui        = Layout()  : Component
+
+  METHODS
+    method add( child:Component, options=null:ValueTable )->this
+      ui.add( child, options )
+      return this
+
+    method handle( e:KeyEvent )
+      <<ui_hook>>
+      ui.handle( e )
+      if (e.is_consumed) return
+
+    method handle( e:PointerEvent )
+      <<ui_hook>>
+      ui.handle( e )
+      if (e.is_consumed) return
+
+    method handle_draw
+      <<ui_hook>>
+      ui.handle_draw
+
+    method handle_resize
+      <<ui_hook>>
+
+    method handle_update
+      <<ui_hook>>
+      ui.handle_update
+endAugment

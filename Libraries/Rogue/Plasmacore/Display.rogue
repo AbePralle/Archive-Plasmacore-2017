@@ -1,5 +1,4 @@
 module Plasmacore
-using  Plasmacore::UI
 
 class Display [singleton]
   DEPENDENCIES
@@ -80,7 +79,6 @@ class Display [singleton]
     font_data_by_name  = StringTable<<FontData>>()
 
     system_font : Font
-    ui_theme    = Theme() # Default theme
 
   GLOBAL METHODS
     method create( name:String )->Display
@@ -445,7 +443,7 @@ class Display [singleton]
 
       activate_view_and_state
 
-      view.ui.update_layout( Box(size) )
+      <<ui_hook>>
 
       update_timer.update
 

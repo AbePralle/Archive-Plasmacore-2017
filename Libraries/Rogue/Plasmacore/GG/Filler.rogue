@@ -1,0 +1,17 @@
+module Plasmacore::GG
+
+class Filler : Component
+  PROPERTIES
+    size   : XY
+    weight : Real64
+
+  METHODS
+    method init( weight=1.0 )
+
+    method is_filler->Logical
+      return true
+
+    method weight->Real64
+      return @weight
+endClass
+

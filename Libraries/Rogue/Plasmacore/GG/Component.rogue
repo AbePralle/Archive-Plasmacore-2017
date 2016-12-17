@@ -1,0 +1,90 @@
+module Plasmacore::GG
+
+class Component [abstract]
+  PROPERTIES
+    bounds   : Box
+
+  METHODS
+    method add( component:Component, options=null:Value )->this
+      throw UnsupportedOperationError( "$.add(Component,[Value])"(type_name) )
+
+    method after( e:KeyEvent )
+
+    method after( e:PointerEvent )
+
+    method after_draw
+
+    method after_update
+
+    method dispatch( e:KeyEvent )
+
+    method dispatch( e:PointerEvent )
+
+    method dispatch_draw
+
+    method dispatch_update
+
+    method handle( e:KeyEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle_draw
+      on_draw
+      dispatch_draw
+      after_draw
+
+    method handle_resize
+
+    method handle_update
+      on_update
+      dispatch_update
+      after_update
+
+    method is_filler->Logical
+      return false
+
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method on_draw
+
+    method on_update
+
+    method operator+( right_component:Component )->Component
+      return HorizontalLayout().add( this ).add( right_component )
+
+    method operator/( bottom_component:Component )->Component
+      return VerticalLayout().add( this ).add( bottom_component )
+
+    method position->XY
+      return bounds.position
+
+    method set_content_anchor( anchor:Anchor )->this
+      throw UnsupportedOperationError()
+
+    method set_position( pos:XY )->this
+      bounds = Box( pos, bounds.size )
+      return this
+
+    method update_layout( bounds )
+      #(forEach in components).update_layout  # TODO: measure then lay out
+
+    method weight->Real64
+      return 1.0
+
+endClass

@@ -7,7 +7,7 @@ class Color( argb:Int32 ) [compound]
     BROWN       = Color( 0xff802a2a )
     CYAN        = Color( 0xff00ffff )
     GRAY        = Color( 0xff808080 )
-    GREEN       = Color( 0xff008000 )
+    GREEN       = Color( 0xff00ff00 )
     LIME        = Color( 0xff00ff00 )
     MAGENTA     = Color( 0xffff00ff )
     ORANGE      = Color( 0xffffa500 )

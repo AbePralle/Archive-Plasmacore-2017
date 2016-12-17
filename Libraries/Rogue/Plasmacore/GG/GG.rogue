@@ -1,0 +1,39 @@
+# Game GUI
+module Plasmacore::GG
+
+$include "GG/Button.rogue"
+$include "GG/Component.rogue"
+$include "GG/Layout.rogue"
+$include "GG/Spacer.rogue"
+
+augment View
+  PROPERTIES
+    gg = AbsoluteLayout(Display.size)  : Component
+
+  METHODS
+    method add( child:Component, options=null:ValueTable )->this
+      gg.add( child, options )
+      return this
+
+    method handle( e:KeyEvent )
+      <<ui_hook>>
+      gg.handle( e )
+      if (e.is_consumed) return
+
+    method handle( e:PointerEvent )
+      <<ui_hook>>
+      gg.handle( e )
+      if (e.is_consumed) return
+
+    method handle_draw
+      <<ui_hook>>
+      gg.handle_draw
+
+    method handle_resize
+      <<ui_hook>>
+
+    method handle_update
+      <<ui_hook>>
+      gg.update_layout( Display.size )
+      gg.handle_update
+endAugment
