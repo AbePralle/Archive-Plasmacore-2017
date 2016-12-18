@@ -1,5 +1,6 @@
 module Plasmacore::GG
 
+#{
 class Button : Component
   PROPERTIES
     image          : Image
@@ -8,8 +9,9 @@ class Button : Component
     disabled_image : Image
 
   METHODS
-    method init( position, image, over_image=null, down_image=null, disabled_image=null )
+    method init( position:XY, image, over_image=null, down_image=null, disabled_image=null )
       init( image, over_image, down_image, disabled_image )
+      bounds = image.bounds_at( position )
 
     method init( image, over_image=null, down_image=null, disabled_image=null )
       if (not over_image) over_image = image
@@ -29,3 +31,4 @@ class Button : Component
       return this
 endClass
 
+}#

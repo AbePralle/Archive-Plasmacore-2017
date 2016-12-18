@@ -1,5 +1,6 @@
 module Plasmacore::GG
 
+#{
 class Spacer : Component
   PROPERTIES
     size : XY
@@ -9,3 +10,4 @@ class Spacer : Component
 
 endClass
 
+}#

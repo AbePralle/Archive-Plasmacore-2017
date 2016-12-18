@@ -4,9 +4,11 @@ class Layout : Component
   PROPERTIES
     bounds         : Box
     components     = Component[]
-    content_anchor = Anchor.CENTER
+    content_anchor = Anchor.CENTER : Anchor
 
   METHODS
+    method init
+
     method init( @bounds )
 
     method add( component:Component, options=null:Value )->this
