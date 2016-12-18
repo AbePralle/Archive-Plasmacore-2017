@@ -43,7 +43,7 @@ Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCo
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
-	env $(ENV_IDE_FLAG) Build/BuildScript/buildscript $(TARGET)
+	env Build/BuildScript/buildscript $(TARGET) $(ROGUE_IDE_FLAG)
 
 clean:
 	rm -rf Build
