@@ -56,6 +56,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [State] Modified behavior of `queue_state()` to perform the state chaining itself if its view is null rather than having the current Display perform the chaining.
 - [Plasmacore] Displays now have an `is_visible` property that gets set by a `Display.on_show` message.
 - [Plasmacore] Renamed message `Display.render` to `Display.on_render`.
+- [Build System] Actually fixed IDE flag to be passed properly.
 
 ###v0.6.4 - December 16, 2016
 - [Libraries] Deleted now-unused embedded FreeType and HarfBuzz libraries.

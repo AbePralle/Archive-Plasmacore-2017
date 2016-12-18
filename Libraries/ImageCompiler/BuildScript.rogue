@@ -18,8 +18,8 @@ try
   if (0 != System.run(cmd)) System.exit( 1 )
 
 catch (err:Error)
-  if ($defined(IDE)) println err
-  else               println "ERROR: " + err
+  if (System.environment["IDE"]) println err
+  else                           println "ERROR: " + err
   System.exit( 1 )
 
 endTry
@@ -34,7 +34,7 @@ endRoutine
 
 
 routine require_command_line
-  if ($defined(IDE))
+  if (System.environment["IDE"])
     throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
     ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
   endIf

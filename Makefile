@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.6.5.2
+PLASMACORE_VERSION = v0.6.5.3
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -10,8 +10,10 @@ ROGUE_LIBRARIES = $(shell find Libraries/Rogue | grep "\.rogue$$")
 
 ifeq ($(IDE),true)
   ROGUE_IDE_FLAG = --ide
+  ENV_IDE_FLAG = IDE=true
 else
   ROGUE_IDE_FLAG =
+  ENV_IDE_FLAG =
 endif
 
 
@@ -28,10 +30,10 @@ macos: build run compile_images compile_sounds
 build: Build/BuildScript/buildscript
 
 compile_images:
-	env TARGET=$(TARGET) ./icom $(TARGET)
+	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./icom $(TARGET)
 
 compile_sounds:
-	env TARGET=$(TARGET) ./scom $(TARGET)
+	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./scom $(TARGET)
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
@@ -41,7 +43,7 @@ Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCo
 	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
-	Build/BuildScript/buildscript $(TARGET) $(ROGUE_IDE_FLAG)
+	env $(ENV_IDE_FLAG) Build/BuildScript/buildscript $(TARGET)
 
 clean:
 	rm -rf Build
