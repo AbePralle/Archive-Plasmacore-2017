@@ -51,6 +51,15 @@ class PlasmacoreViewController : GLKViewController
     self.setupGL()
   }
 
+  override func viewDidAppear( _ animated:Bool )
+  {
+    super.viewDidAppear( animated )
+
+    let m = PlasmacoreMessage( type:"Display.on_show" )
+    m.set( name:"display_name",   value:name )
+    m.send()
+  }
+
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
 
@@ -96,7 +105,7 @@ class PlasmacoreViewController : GLKViewController
 
     if (display_width == 0 || display_height == 0) { return }
 
-    let m = PlasmacoreMessage( type:"Display.render" )
+    let m = PlasmacoreMessage( type:"Display.on_render" )
     m.set( name:"display_name",   value:name )
     m.set( name:"display_width",  value:Int(display_width) )
     m.set( name:"display_height", value:Int(display_height) )

@@ -78,6 +78,11 @@ class PlasmacoreView: NSOpenGLView
     }
 
     NSLog( "PlasmacoreView \(name) created in Window \(windowID)\n" )
+
+    let m = PlasmacoreMessage( type:"Display.on_show" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.send()
   }
 
   override func draw( _ area:NSRect )
@@ -94,7 +99,7 @@ class PlasmacoreView: NSOpenGLView
     let display_width  = Int(bounds.width)
     let display_height = Int(bounds.height)
 
-    let m = PlasmacoreMessage( type:"Display.render" )
+    let m = PlasmacoreMessage( type:"Display.on_render" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"display_width",  value:display_width )

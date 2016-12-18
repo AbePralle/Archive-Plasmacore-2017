@@ -27,6 +27,7 @@ class Display [singleton]
 
     name               : String
     view               = default_view_type.create_object<<View>> : View
+    is_visible         : Logical
 
     window             : Window
 
