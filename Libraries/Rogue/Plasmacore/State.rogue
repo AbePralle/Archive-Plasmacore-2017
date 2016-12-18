@@ -112,9 +112,14 @@ class State
       view.push_state( new_state )
 
     method queue_state( new_state:State )
-      if (not view) view = Display.view
-      if (not new_state.view) new_state.view = view
-      view.queue_state( new_state )
+      if (view)
+        if (not new_state.view) new_state.view = view
+        view.queue_state( new_state )
+      else
+        local cur = this
+        while (cur.next_state) cur = cur.next_state
+        cur.next_state = new_state
+      endIf
 
     method set_view( @view )->this
       return this
