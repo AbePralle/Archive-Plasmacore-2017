@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.6.5 - December 17, 2016
+- [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.
+
 ###v0.6.4 - December 16, 2016
 - [Libraries] Deleted now-unused embedded FreeType and HarfBuzz libraries.
 

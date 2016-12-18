@@ -20,25 +20,25 @@ class Plasmacore
 
   class func onLaunch()
   {
-    singleton.start()   // Sends Application.launch message automatically on first start
+    singleton.start()   // Sends Application.on_launch message automatically on first start
   }
 
   class func onStop()
   {
     singleton.stop()
-    PlasmacoreMessage( type:"Application.stop" ).send()
+    PlasmacoreMessage( type:"Application.on_stop" ).send()
   }
 
   class func onStart()
   {
-    PlasmacoreMessage( type:"Application.start" ).send()
+    PlasmacoreMessage( type:"Application.on_start" ).send()
     singleton.start()
   }
 
   class func onSave()
   {
     singleton.stop()
-    PlasmacoreMessage( type:"Application.save" ).send()
+    PlasmacoreMessage( type:"Application.on_save" ).send()
   }
 
   @discardableResult
@@ -192,7 +192,7 @@ class Plasmacore
     is_launched = true
 
     RogueInterface_launch()
-    let m = PlasmacoreMessage( type:"Application.launch" )
+    let m = PlasmacoreMessage( type:"Application.on_launch" )
 #if os(OSX)
   m.set( name:"is_window_based", value:true )
 #endif
@@ -212,7 +212,7 @@ class Plasmacore
 
   func relaunch()->Plasmacore
   {
-    PlasmacoreMessage( type:"Application.launch" ).set( name:"is_window_based", value:true ).send()
+    PlasmacoreMessage( type:"Application.on_launch" ).set( name:"is_window_based", value:true ).send()
     return self
   }
 
