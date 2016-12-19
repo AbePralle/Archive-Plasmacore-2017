@@ -3,37 +3,41 @@ module Plasmacore::GG
 
 $include "GG/Button.rogue"
 $include "GG/Component.rogue"
-$include "GG/Layout.rogue"
-$include "GG/Spacer.rogue"
+#$include "GG/Layout.rogue"
+#$include "GG/Spacer.rogue"
 
 augment View
   PROPERTIES
-    gg = AbsoluteLayout(Display.size)  : Component
+    gg_layer = Component(Display.size)  : Component
 
   METHODS
-    method add( child:Component, options=null:ValueTable )->this
-      gg.add( child, options )
+    method add( component:Component, position:XY )->this
+      gg_layer.add( component, position )
       return this
 
+      #{
     method handle( e:KeyEvent )
       <<ui_hook>>
-      gg.handle( e )
+      gg_layer.handle( e )
       if (e.is_consumed) return
 
     method handle( e:PointerEvent )
       <<ui_hook>>
-      gg.handle( e )
+      gg_layer.handle( e )
       if (e.is_consumed) return
+      }#
 
     method handle_draw
       <<ui_hook>>
-      gg.handle_draw
+      gg_layer.handle_draw
 
+      #{
     method handle_resize
       <<ui_hook>>
+      }#
 
     method handle_update
       <<ui_hook>>
-      gg.update_layout( Display.size )
-      gg.handle_update
+      #gg_layer.update_layout( Display.size )
+      gg_layer.handle_update
 endAugment

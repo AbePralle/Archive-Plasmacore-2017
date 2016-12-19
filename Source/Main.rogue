@@ -1,4 +1,5 @@
 using Plasmacore
+using Plasmacore::GG
 
 Display( "Main" ).view = MainView()
 
@@ -8,7 +9,12 @@ class MainView : View
   METHODS
     method on_start
       change_state( InitialState() )
-      add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
+      add( button(Color.RED),    XY(132,116) )
+      add( button(Color.YELLOW) )
+      #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
+
+    method button( color:Color )->Button
+      return Button(Image(color,XY(64,32)))
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)

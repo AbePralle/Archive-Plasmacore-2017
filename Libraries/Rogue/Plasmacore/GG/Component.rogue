@@ -1,28 +1,61 @@
 module Plasmacore::GG
 
-class Component [abstract]
+class Component
+  PROPERTIES
+    parent            : Component
+    position          : XY
+    size              : XY
+    fixed_size        : XY   # A zero in either dimension indicates no fixed size
+
+    organized_components : Component[]
+    floating_components  : Component[]
+
   METHODS
+    method init( fixed_size )
+
+    method add( component:Component )->this
+      ensure organized_components
+      organized_components.add( component )
+      return this
+
+    method add( component:Component, pos:XY )->this
+      component.position = pos
+      ensure floating_components
+      floating_components.add( component )
+      return this
+    #{
     method add( component:Component, options=null:Value )->this
       throw UnsupportedOperationError()
 
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
+      }#
 
     method after_draw
 
     method after_update
 
+      #{
     method bounds->Box [abstract]
 
     method dispatch( e:KeyEvent )
 
     method dispatch( e:PointerEvent )
+      }#
 
     method dispatch_draw
+      if (organized_components)
+        (forEach in organized_components).handle_draw
+      endIf
+
+      if (floating_components)
+        (forEach in floating_components).handle_draw
+      endIf
 
     method dispatch_update
 
+      #{
     method handle( e:KeyEvent )
       on( e )
       if (e.is_consumed) return
@@ -40,6 +73,7 @@ class Component [abstract]
       if (e.is_consumed) return
 
       after( e )
+      }#
 
     method handle_draw
       on_draw
@@ -53,17 +87,20 @@ class Component [abstract]
       dispatch_update
       after_update
 
+      #{
     method is_filler->Logical
       return false
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
+      }#
 
     method on_draw
 
     method on_update
 
+      #{
     method operator+( right_component:Component )->Component
       return HorizontalLayout().add( this ).add( right_component )
 
@@ -86,5 +123,6 @@ class Component [abstract]
 
     method weight->Real64
       return 1.0
+    }#
 
 endClass
