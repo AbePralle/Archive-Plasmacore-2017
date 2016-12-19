@@ -11,6 +11,10 @@ augment View
     gg_layer = Component(Display.size)  : Component
 
   METHODS
+    method add( component:Component )->this
+      gg_layer.add( component )
+      return this
+
     method add( component:Component, position:XY )->this
       gg_layer.add( component, position )
       return this
