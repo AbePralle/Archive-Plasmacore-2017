@@ -76,7 +76,7 @@ routine compile( target:String )
   local exe = "Programs/macOS/roguec"
   local cmd = ''$ --target=$,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
     (exe,language,target,mobile_or_desktop(target),output_folder)
-    if (BuildConfig.ide_flag) cmd += " --define=IDE"
+    if (BuildConfig.ide_flag) cmd += " --ide"
 
   println cmd
   if (System.run(cmd)) System.exit 1
