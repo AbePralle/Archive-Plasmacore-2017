@@ -54,6 +54,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.6.5 - December 17, 2016
 - [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.
 - [State] Modified behavior of `queue_state()` to perform the state chaining itself if its view is null rather than having the current Display perform the chaining.
+- [ProgressFn] Added `ProgressFn.BOUNCE_OUT`.
 - [Plasmacore] Displays now have an `is_visible` property that gets set by a `Display.on_show` message.
 - [Plasmacore] Renamed message `Display.render` to `Display.on_render`.
 - [Build System] Actually fixed IDE flag to be passed properly.
