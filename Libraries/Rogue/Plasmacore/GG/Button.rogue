@@ -9,6 +9,8 @@ class Button : Component
 
   METHODS
     method init( image, over_image=null, down_image=null, disabled_image=null )
+      fixed_size = image.size
+
       if (not over_image) over_image = image
       if (not down_image) down_image = image
       if (not disabled_image) disabled_image = image

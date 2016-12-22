@@ -147,6 +147,12 @@ $endIf
     method positioned_within( enclosing:Box, anchor=Anchor.CENTER:Anchor )->Box
       return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
+    method relative_to( anchor:Anchor )->Box
+      # Returns the result box where Box(box.at(anchor),this.size) == this
+      # E.g. if anchor is Anchor.BOTTOM and Box is [@100,100 20x20], the return value is
+      # [@90,80 20x20]].
+      return Box( position - anchor.position * size, size )
+
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)
 

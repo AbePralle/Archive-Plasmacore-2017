@@ -3,9 +3,14 @@ module Plasmacore::GG
 class Component
   PROPERTIES
     parent            : Component
-    position          : XY
+
+    position          : XY   # Absolute position computed during layout
     size              : XY
-    fixed_size        : XY   # A zero in either dimension indicates no fixed size
+
+    relative_position : XY   # Relative to parent's top-left corner
+    fixed_size        : XY   # A zero indicates no fixed size in that dimension.
+    anchor            = Anchor.CENTER : Anchor
+    alignment         = Anchor.CENTER : Anchor
 
     organized_components : Component[]
     floating_components  : Component[]
@@ -15,14 +20,21 @@ class Component
 
     method add( component:Component )->this
       ensure organized_components
-      organized_components.add( component )
+      organized_components.add( component.detach )
+      component.parent = this
       return this
 
     method add( component:Component, pos:XY )->this
-      component.position = pos
       ensure floating_components
-      floating_components.add( component )
+      floating_components.add( component.detach )
+      component.parent = this
+      component.relative_position = pos
       return this
+
+    method add( component:Component, _alignment:Anchor )->this
+      component.alignment = _alignment
+      return add( component )
+
     #{
     method add( component:Component, options=null:Value )->this
       throw UnsupportedOperationError()
@@ -36,13 +48,21 @@ class Component
 
     method after_update
 
-      #{
-    method bounds->Box [abstract]
+    method bounds->Box
+      return Box( @position, size )
 
+      #{
     method dispatch( e:KeyEvent )
 
     method dispatch( e:PointerEvent )
       }#
+
+    method detach->this
+      if (parent)
+        if (parent.organized_components) parent.organized_components.remove( this )
+        if (parent.floating_components) parent.floating_components.remove( this )
+      endIf
+      return this
 
     method dispatch_draw
       if (organized_components)
@@ -54,6 +74,12 @@ class Component
       endIf
 
     method dispatch_update
+
+    method expands_horizontally->Logical
+      return
+
+    method expands_vertically->Logical
+      return false
 
       #{
     method handle( e:KeyEvent )
@@ -90,11 +116,17 @@ class Component
       #{
     method is_filler->Logical
       return false
+      }#
+
+    method minimum_size->XY
+      return fixed_size
+
+    method maximum_size->XY
+      return fixed_size
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
-      }#
 
     method on_draw
 
@@ -106,23 +138,52 @@ class Component
 
     method operator/( bottom_component:Component )->Component
       return VerticalLayout().add( this ).add( bottom_component )
+      }#
 
-    method position->XY [abstract]
+    method perform_layout
+      forEach (component in organized_components)
+        local box = Box( 0, 0, component.maximum_size.or_smaller(this.size).or_larger(component.minimum_size) )
+        component.update_layout( box.positioned_within(bounds,component.alignment) )
+      endForEach
+
+    method position->XY
+      return bounds.at( anchor )
+
+      #{
 
     method set_content_anchor( anchor:Anchor )->this
       throw UnsupportedOperationError()
 
-      #{
     method set_position( pos:XY )->this
       bounds = Box( pos, bounds.size )
       return this
       }#
 
-    method update_layout( bounds )
-      #(forEach in components).update_layout  # TODO: measure then lay out
+    method update_layout( bounds:Box )
+      position = bounds.position
+      size     = bounds.size
+
+      update_child_components
+
+    method update_child_components
+      update_organized_components
+      update_floating_components
+
+    method update_organized_components
+      if (organized_components and organized_components.count)
+        perform_layout
+      endIf
+
+    method update_floating_components
+      if (floating_components)
+        # Update the absolute positions of floating components by adding each one's relative
+        # position to its parent's position.
+        forEach (component in floating_components)
+          component.update_layout( Box(this.@position + component.relative_position, component.size).relative_to(component.anchor)  )
+        endForEach
+      endIf
 
     method weight->Real64
       return 1.0
-    }#
 
 endClass

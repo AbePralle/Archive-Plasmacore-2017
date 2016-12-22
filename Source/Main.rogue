@@ -11,6 +11,7 @@ class MainView : View
       change_state( InitialState() )
       add( button(Color.RED),    XY(132,116) )
       add( button(Color.YELLOW) )
+      add( button(Color.GREEN), Anchor.RIGHT )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
 
     method button( color:Color )->Button
@@ -18,7 +19,7 @@ class MainView : View
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)
-        trace e.position
+        #trace e.position
       endIf
 
     method on_draw

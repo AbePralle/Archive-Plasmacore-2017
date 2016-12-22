@@ -2,55 +2,25 @@ module Plasmacore::GG
 
 class Layout : Component
   PROPERTIES
-    bounds         : Box
-    components     = Component[]
-    content_anchor = Anchor.CENTER : Anchor
-
   METHODS
-    method init
+endClass
 
-    method init( @bounds )
 
-    method add( component:Component, options=null:Value )->this
-      components.add( component )
-      return this
+class HorizontalLayout : Component
+endClass
 
-    method dispatch( e:KeyEvent )
-      forEach (component in components)
-        component.handle( e )
-        if (e.is_consumed) return
+class VerticalLayout : Component
+  METHODS
+    method perform_layout
+      local total_weight = 0.0
+      local min_height = 0
+      local max_height = components.first.maximum_size.y : Int32
+      forEach (component in organized_components)
+        min_height += component.minimum_size.y
+        max_height = max_height
+
+      forEach (component in organized_components)
+        local box = Box( 0, 0, component.maximum_size.or_smaller(this.size).or_larger(component.minimum_size) )
+        component.update_layout( box.positioned_within(bounds,component.alignment) )
       endForEach
-
-    method dispatch( e:PointerEvent )
-      forEach (component in components)
-        component.handle( e )
-        if (e.is_consumed) return
-      endForEach
-
-    method dispatch_draw
-      (forEach in components).handle_draw
-
-    method dispatch_update
-      (forEach in components).handle_update
-
-    method set_content_anchor( @content_anchor )->this
-      return this
-
-    method update_layout( bounds )
-      (forEach in components).update_layout  # TODO: measure then lay out
-endClass
-
-class AbsoluteLayout : Layout
-endClass
-
-class HorizontalLayout : Layout
-  METHODS
-    method operator+( right_component:Component )->Component
-      return add( right_component )
-endClass
-
-class VerticalLayout : Layout
-  METHODS
-    method operator/( bottom_component:Component )->Component
-      return add( bottom_component )
 endClass

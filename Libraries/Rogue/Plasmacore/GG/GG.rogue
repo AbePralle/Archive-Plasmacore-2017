@@ -3,37 +3,48 @@ module Plasmacore::GG
 
 $include "GG/Button.rogue"
 $include "GG/Component.rogue"
-#$include "GG/Layout.rogue"
+$include "GG/Layout.rogue"
 #$include "GG/Spacer.rogue"
+
+augment Display
+  METHODS
+    method render( true_size, viewport_size )
+      <<ui_hook>>
+      view.game_gui.update_layout( bounds )
+endAugment
 
 augment View
   PROPERTIES
-    gg_layer = Component(Display.size)  : Component
+    game_gui = Layout(Display.size)  : Component
 
   METHODS
     method add( component:Component )->this
-      gg_layer.add( component )
+      game_gui.add( component )
       return this
 
     method add( component:Component, position:XY )->this
-      gg_layer.add( component, position )
+      game_gui.add( component, position )
+      return this
+
+    method add( component:Component, anchor:Anchor )->this
+      game_gui.add( component, anchor )
       return this
 
       #{
     method handle( e:KeyEvent )
       <<ui_hook>>
-      gg_layer.handle( e )
+      game_gui.handle( e )
       if (e.is_consumed) return
 
     method handle( e:PointerEvent )
       <<ui_hook>>
-      gg_layer.handle( e )
+      game_gui.handle( e )
       if (e.is_consumed) return
       }#
 
     method handle_draw
       <<ui_hook>>
-      gg_layer.handle_draw
+      game_gui.handle_draw
 
       #{
     method handle_resize
@@ -42,6 +53,6 @@ augment View
 
     method handle_update
       <<ui_hook>>
-      #gg_layer.update_layout( Display.size )
-      gg_layer.handle_update
+      game_gui.update_layout( Display.bounds )
+      game_gui.handle_update
 endAugment

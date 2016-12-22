@@ -442,9 +442,9 @@ class Display [singleton]
 
       scale_to_fit( target_display_size )
 
-      activate_view_and_state
-
       <<ui_hook>>
+
+      activate_view_and_state
 
       update_timer.update
 

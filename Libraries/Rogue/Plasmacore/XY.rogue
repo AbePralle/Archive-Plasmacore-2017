@@ -168,6 +168,14 @@ class XY( x:Real64, y:Real64 ) [compound]
     method operator^( value:Real64 )->XY
       return XY( x^value, y^value )
 
+    method or_larger( other:XY )->XY
+      # Returns the largest X and the largest Y between this value and the other value.
+      return XY( this.x.or_larger(other.x), this.y.or_larger(other.y) )
+
+    method or_smaller( other:XY )->XY
+      # Returns the smaller X and the smaller Y between this value and the other value.
+      return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
     method parallelum( axis:XY )->XY
       # Returns the component of this vector that lies along the axis defined
       # by the parameter.
