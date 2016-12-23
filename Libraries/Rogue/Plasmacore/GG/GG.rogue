@@ -26,10 +26,6 @@ augment View
       game_gui.add( component, position )
       return this
 
-    method add( component:Component, anchor:Anchor )->this
-      game_gui.add( component, anchor )
-      return this
-
       #{
     method handle( e:KeyEvent )
       <<ui_hook>>

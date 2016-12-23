@@ -10,30 +10,27 @@ class Component
     relative_position : XY   # Relative to parent's top-left corner
     fixed_size        : XY   # A zero indicates no fixed size in that dimension.
     anchor            = Anchor.CENTER : Anchor
-    alignment         = Anchor.CENTER : Anchor
+    content_anchor    = Anchor.CENTER : Anchor
 
-    organized_components : Component[]
-    floating_components  : Component[]
+    organized_subcomponents : Component[]
+    floating_subcomponents  : Component[]
 
   METHODS
     method init( fixed_size )
 
     method add( component:Component )->this
-      ensure organized_components
-      organized_components.add( component.detach )
+      ensure organized_subcomponents
+      organized_subcomponents.add( component.detach )
       component.parent = this
       return this
 
     method add( component:Component, pos:XY )->this
-      ensure floating_components
-      floating_components.add( component.detach )
+      ensure floating_subcomponents
+      floating_subcomponents.add( component.detach )
       component.parent = this
       component.relative_position = pos
       return this
 
-    method add( component:Component, _alignment:Anchor )->this
-      component.alignment = _alignment
-      return add( component )
 
     #{
     method add( component:Component, options=null:Value )->this
@@ -59,27 +56,21 @@ class Component
 
     method detach->this
       if (parent)
-        if (parent.organized_components) parent.organized_components.remove( this )
-        if (parent.floating_components) parent.floating_components.remove( this )
+        if (parent.organized_subcomponents) parent.organized_subcomponents.remove( this )
+        if (parent.floating_subcomponents) parent.floating_subcomponents.remove( this )
       endIf
       return this
 
     method dispatch_draw
-      if (organized_components)
-        (forEach in organized_components).handle_draw
+      if (organized_subcomponents)
+        (forEach in organized_subcomponents).handle_draw
       endIf
 
-      if (floating_components)
-        (forEach in floating_components).handle_draw
+      if (floating_subcomponents)
+        (forEach in floating_subcomponents).handle_draw
       endIf
 
     method dispatch_update
-
-    method expands_horizontally->Logical
-      return
-
-    method expands_vertically->Logical
-      return false
 
       #{
     method handle( e:KeyEvent )
@@ -113,16 +104,27 @@ class Component
       dispatch_update
       after_update
 
-      #{
-    method is_filler->Logical
-      return false
-      }#
+    method horizontal_flex->Real64
+      return 0.0
 
-    method minimum_size->XY
-      return fixed_size
+    method maximum_height->Real64
+      return fixed_size.y
 
     method maximum_size->XY
-      return fixed_size
+      return XY( maximum_width, maximum_height )
+
+    method maximum_width->Real64
+      return fixed_size.x
+
+    method minimum_height->Real64
+      return fixed_size.y
+
+    method minimum_size->XY
+      return XY( minimum_width, minimum_height )
+
+    method minimum_width->Real64
+      return fixed_size.x
+
 
     method on( e:KeyEvent )
 
@@ -132,32 +134,20 @@ class Component
 
     method on_update
 
-      #{
     method operator+( right_component:Component )->Component
       return HorizontalLayout().add( this ).add( right_component )
 
     method operator/( bottom_component:Component )->Component
       return VerticalLayout().add( this ).add( bottom_component )
-      }#
 
     method perform_layout
-      forEach (component in organized_components)
+      forEach (component in organized_subcomponents)
         local box = Box( 0, 0, component.maximum_size.or_smaller(this.size).or_larger(component.minimum_size) )
-        component.update_layout( box.positioned_within(bounds,component.alignment) )
+        component.update_layout( box.positioned_within(bounds,content_anchor) )
       endForEach
 
     method position->XY
       return bounds.at( anchor )
-
-      #{
-
-    method set_content_anchor( anchor:Anchor )->this
-      throw UnsupportedOperationError()
-
-    method set_position( pos:XY )->this
-      bounds = Box( pos, bounds.size )
-      return this
-      }#
 
     method update_layout( bounds:Box )
       position = bounds.position
@@ -166,24 +156,23 @@ class Component
       update_child_components
 
     method update_child_components
-      update_organized_components
-      update_floating_components
+      update_organized_subcomponents
+      update_floating_subcomponents
 
-    method update_organized_components
-      if (organized_components and organized_components.count)
+    method update_organized_subcomponents
+      if (organized_subcomponents and organized_subcomponents.count)
         perform_layout
       endIf
 
-    method update_floating_components
-      if (floating_components)
+    method update_floating_subcomponents
+      if (floating_subcomponents)
         # Update the absolute positions of floating components by adding each one's relative
         # position to its parent's position.
-        forEach (component in floating_components)
+        forEach (component in floating_subcomponents)
           component.update_layout( Box(this.@position + component.relative_position, component.size).relative_to(component.anchor)  )
         endForEach
       endIf
 
-    method weight->Real64
-      return 1.0
-
+    method vertical_flex->Real64
+      return 0.0
 endClass

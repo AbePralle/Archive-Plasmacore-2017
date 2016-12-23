@@ -10,8 +10,7 @@ class MainView : View
     method on_start
       change_state( InitialState() )
       add( button(Color.RED),    XY(132,116) )
-      add( button(Color.YELLOW) )
-      add( button(Color.GREEN), Anchor.RIGHT )
+      add( (button(Color.YELLOW) / button(Color.GREEN)) + button(Color.WHITE) )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
 
     method button( color:Color )->Button
