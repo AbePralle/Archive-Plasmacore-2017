@@ -1,0 +1,43 @@
+# Game GUI
+module Plasmacore
+
+$include "GameGUI/GGButton.rogue"
+$include "GameGUI/GGComponent.rogue"
+$include "GameGUI/GGFiller.rogue"
+$include "GameGUI/GGLayout.rogue"
+$include "GameGUI/GGSpacer.rogue"
+
+class GameGUI : Layer
+  PROPERTIES
+    layout = GGLayout(Display.size)  : GGComponent
+
+  METHODS
+    method add( component:GGComponent )->this
+      layout.add( component )
+      return this
+
+    method add( component:GGComponent, position:XY )->this
+      layout.add( component, position )
+      return this
+
+      #{
+    method handle( e:KeyEvent )
+      layout.handle( e )
+      if (e.is_consumed) return
+
+    method handle( e:PointerEvent )
+      layout.handle( e )
+      if (e.is_consumed) return
+      }#
+
+    method on_draw
+      layout.handle_draw
+
+    method on_resize
+      layout.needs_layout = true
+
+    method on_update
+      if (layout.needs_layout) layout.update_layout( Display.bounds )
+      layout.handle_update
+endClass
+

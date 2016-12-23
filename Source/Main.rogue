@@ -11,12 +11,12 @@ class MainView : View
       change_state( InitialState() )
       local gui = GameGUI()
       #add( button(Color.RED),    XY(132,116) )
-      gui.add( (Filler.y / button(Color.YELLOW) / Filler.y(2) / button(Color.GREEN)/ Filler.y) + Filler.x + button(Color.WHITE) )
+      gui.add( (GGFiller.y / button(Color.YELLOW) / GGFiller.y(2) / button(Color.GREEN)/ GGFiller.y) + GGFiller.x + button(Color.WHITE) )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
       add( gui )
 
-    method button( color:Color )->Button
-      return Button(Image(color,XY(64,32)))
+    method button( color:Color )->GGButton
+      return GGButton(Image(color,XY(64,32)))
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)

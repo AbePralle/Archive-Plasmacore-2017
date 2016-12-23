@@ -1,9 +1,8 @@
 using  Plasmacore
-module Plasmacore::GG
 
-class Component
+class GGComponent
   PROPERTIES
-    parent            : Component
+    parent            : GGComponent
 
     position          : XY   # Absolute position computed during layout
     size              : XY
@@ -13,22 +12,22 @@ class Component
     anchor            = Anchor.CENTER : Anchor
     content_anchor    = Anchor.CENTER : Anchor
 
-    organized_subcomponents : Component[]
-    floating_subcomponents  : Component[]
+    organized_subcomponents : GGComponent[]
+    floating_subcomponents  : GGComponent[]
 
     needs_layout      = true
 
   METHODS
     method init( fixed_size )
 
-    method add( component:Component )->this
+    method add( component:GGComponent )->this
       ensure organized_subcomponents
       organized_subcomponents.add( component.detach )
       component.parent = this
       needs_layout = true
       return this
 
-    method add( component:Component, pos:XY )->this
+    method add( component:GGComponent, pos:XY )->this
       ensure floating_subcomponents
       floating_subcomponents.add( component.detach )
       component.parent = this
@@ -38,7 +37,7 @@ class Component
 
 
     #{
-    method add( component:Component, options=null:Value )->this
+    method add( component:GGComponent, options=null:Value )->this
       throw UnsupportedOperationError()
 
     method after( e:KeyEvent )
@@ -139,11 +138,11 @@ class Component
 
     method on_update
 
-    method operator+( right_component:Component )->Component
-      return HorizontalLayout().add( this ).add( right_component )
+    method operator+( right_component:GGComponent )->GGComponent
+      return GGHorizontalLayout().add( this ).add( right_component )
 
-    method operator/( bottom_component:Component )->Component
-      return VerticalLayout().add( this ).add( bottom_component )
+    method operator/( bottom_component:GGComponent )->GGComponent
+      return GGVerticalLayout().add( this ).add( bottom_component )
 
     method perform_layout
       forEach (component in organized_subcomponents)

@@ -1,12 +1,12 @@
-module Plasmacore::GG
+module Plasmacore
 
-class Filler : Component
+class GGFiller : GGComponent
   GLOBAL METHODS
-    method x( weight=1.0:Real64 )->Filler
-      return Filler( XY(0,1), weight )
+    method x( weight=1.0:Real64 )->GGFiller
+      return GGFiller( XY(0,1), weight )
 
-    method y( weight=1.0:Real64 )->Filler
-      return Filler( XY(1,0), weight )
+    method y( weight=1.0:Real64 )->GGFiller
+      return GGFiller( XY(1,0), weight )
 
   PROPERTIES
     weight : Real64

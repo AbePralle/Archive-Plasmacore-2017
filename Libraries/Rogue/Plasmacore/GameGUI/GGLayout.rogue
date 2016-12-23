@@ -1,13 +1,12 @@
 using  Plasmacore
-module Plasmacore::GG
 
-class Layout : Component
+class GGLayout : GGComponent
   PROPERTIES
   METHODS
 endClass
 
 
-class HorizontalLayout : Component
+class GGHorizontalLayout : GGComponent
   METHODS
     method init
 
@@ -64,7 +63,7 @@ class HorizontalLayout : Component
       endForEach
       return min_height
 
-    method operator+( right_component:Component )->Component
+    method operator+( right_component:GGComponent )->GGComponent
       add( right_component )
       return this
 
@@ -114,7 +113,7 @@ class HorizontalLayout : Component
 
 endClass
 
-class VerticalLayout : Component
+class GGVerticalLayout : GGComponent
   METHODS
     method init
 
@@ -162,7 +161,7 @@ class VerticalLayout : Component
       endForEach
       return min_width
 
-    method operator/( bottom_component:Component )->Component
+    method operator/( bottom_component:GGComponent )->GGComponent
       add( bottom_component )
       return this
 

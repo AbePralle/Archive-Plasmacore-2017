@@ -1,7 +1,6 @@
 using  Plasmacore
-module Plasmacore::GG
 
-class Button : Component
+class GGButton : GGComponent
   GLOBAL PROPERTIES
     default_font = SystemFont
 
