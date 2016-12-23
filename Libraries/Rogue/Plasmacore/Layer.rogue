@@ -1,0 +1,30 @@
+module Plasmacore
+
+class Layer
+  # A View Layer.  When you View.add(Layer), each layer gets a copy of each View event after
+  # the view's 'on' event and before the view's 'after' event.
+  METHODS
+    method after( e:KeyEvent )
+
+    method after( e:PointerEvent )
+
+    method on( e:KeyEvent )
+
+    method on( e:PointerEvent )
+
+    method on_draw
+
+    method on_finish
+
+    method on_prepare
+
+    method on_resize
+
+    method on_resume
+
+    method on_start
+
+    method on_suspend
+
+    method on_update
+endClass

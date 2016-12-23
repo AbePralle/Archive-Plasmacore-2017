@@ -9,9 +9,11 @@ class MainView : View
   METHODS
     method on_start
       change_state( InitialState() )
+      local gui = GameGUI()
       #add( button(Color.RED),    XY(132,116) )
-      add( (Filler.y / button(Color.YELLOW) / Filler.y(2) / button(Color.GREEN)/ Filler.y) + Spacer.x(8) + button(Color.WHITE) )
+      gui.add( (Filler.y / button(Color.YELLOW) / Filler.y(2) / button(Color.GREEN)/ Filler.y) + Filler.x + button(Color.WHITE) )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
+      add( gui )
 
     method button( color:Color )->Button
       return Button(Image(color,XY(64,32)))

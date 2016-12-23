@@ -7,13 +7,15 @@ $include "GG/Filler.rogue"
 $include "GG/Layout.rogue"
 $include "GG/Spacer.rogue"
 
+#{
 augment Display
   METHODS
     method render( true_size, viewport_size )
       <<ui_hook>>
-      view.game_gui.update_layout( bounds )
 endAugment
+}#
 
+#{
 augment View
   PROPERTIES
     game_gui = Layout(Display.size)  : Component
@@ -43,13 +45,50 @@ augment View
       <<ui_hook>>
       game_gui.handle_draw
 
-      #{
     method handle_resize
       <<ui_hook>>
-      }#
+      game_gui.needs_layout = true
 
     method handle_update
       <<ui_hook>>
-      game_gui.update_layout( Display.bounds )
+      if (game_gui.needs_layout) game_gui.update_layout( Display.bounds )
       game_gui.handle_update
 endAugment
+}#
+
+class GameGUI : Layer
+  PROPERTIES
+    layout = Layout(Display.size)  : Component
+
+  METHODS
+    method add( component:Component )->this
+      layout.add( component )
+      return this
+
+    method add( component:Component, position:XY )->this
+      layout.add( component, position )
+      return this
+
+      #{
+    method handle( e:KeyEvent )
+      <<ui_hook>>
+      layout.handle( e )
+      if (e.is_consumed) return
+
+    method handle( e:PointerEvent )
+      <<ui_hook>>
+      layout.handle( e )
+      if (e.is_consumed) return
+      }#
+
+    method on_draw
+      layout.handle_draw
+
+    method on_resize
+      layout.needs_layout = true
+
+    method on_update
+      if (layout.needs_layout) layout.update_layout( Display.bounds )
+      layout.handle_update
+endClass
+

@@ -1,3 +1,4 @@
+using  Plasmacore
 module Plasmacore::GG
 
 class Component
@@ -15,6 +16,8 @@ class Component
     organized_subcomponents : Component[]
     floating_subcomponents  : Component[]
 
+    needs_layout      = true
+
   METHODS
     method init( fixed_size )
 
@@ -22,6 +25,7 @@ class Component
       ensure organized_subcomponents
       organized_subcomponents.add( component.detach )
       component.parent = this
+      needs_layout = true
       return this
 
     method add( component:Component, pos:XY )->this
@@ -29,6 +33,7 @@ class Component
       floating_subcomponents.add( component.detach )
       component.parent = this
       component.relative_position = pos
+      needs_layout = true
       return this
 
 
@@ -148,7 +153,12 @@ class Component
     method position->XY
       return bounds.at( anchor )
 
+    method set_needs_layout( @needs_layout=true )->this
+      if (needs_layout and parent) parent.needs_layout = true
+      return this
+
     method update_layout( bounds:Box )
+      @needs_layout = false
       position = bounds.position
       size     = bounds.size
 

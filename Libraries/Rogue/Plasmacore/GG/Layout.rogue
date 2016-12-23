@@ -1,3 +1,4 @@
+using  Plasmacore
 module Plasmacore::GG
 
 class Layout : Component

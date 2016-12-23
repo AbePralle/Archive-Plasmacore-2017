@@ -3,6 +3,7 @@ module Plasmacore
 class View
   PROPERTIES
     state                 = State(this)
+    layers                = Layer[]
 
     display               : Display
     is_active             : Logical
@@ -13,6 +14,10 @@ class View
     total_asset_count     : Int32
 
   METHODS
+    method add( layer:Layer )->this
+      layers.add( layer )
+      return this
+
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
@@ -41,7 +46,9 @@ class View
     method change_view( new_view:View )
       new_view.display = display
       new_view.on_prepare
+      (forEach in new_view.layers).on_prepare
       this.on_finish
+      (forEach in layers).on_finish
       this.is_active = false
       display.view = new_view
 
@@ -78,7 +85,17 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      <<ui_hook>>
+      if (layers.count)
+        forEach (layer in layers step -1)
+          layer.on( e )
+          if (e.is_consumed) return
+        endForEach
+
+        forEach (layer in layers)
+          layer.after( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
 
       after( e )
 
@@ -86,23 +103,33 @@ class View
       on( e )
       if (e.is_consumed) return
 
-      <<ui_hook>>
+      if (layers.count)
+        forEach (layer in layers step -1)
+          layer.on( e )
+          if (e.is_consumed) return
+        endForEach
+
+        forEach (layer in layers)
+          layer.after( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
 
       after( e )
 
     method handle_draw
       on_draw
-      <<ui_hook>>
+      (forEach in layers).on_draw
       after_draw
 
     method handle_resize
       on_resize
-      <<ui_hook>>
+      (forEach in layers).on_resize
       after_resize
 
     method handle_update
       on_update
-      <<ui_hook>>
+      (forEach in layers).on_update
       after_update
 
     method load_another_asset->Real64
@@ -144,11 +171,7 @@ class View
 
     method on_resize
 
-    method on_resume
-
     method on_start
-
-    method on_suspend
 
     method on_update
 

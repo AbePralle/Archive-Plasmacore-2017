@@ -1,18 +1,25 @@
+using  Plasmacore
 module Plasmacore::GG
 
 class Button : Component
+  GLOBAL PROPERTIES
+    default_font = SystemFont
+
   PROPERTIES
-    image          : Image
-    over_image     : Image
-    down_image     : Image
-    disabled_image : Image
+    label            : String
+    font             : Font
+
+    image            : Image
+    hover_image      : Image
+    selected_image   : Image
+    disabled_image   : Image
 
   METHODS
-    method init( image, over_image=null, down_image=null, disabled_image=null )
+    method init( image, hover_image=null, selected_image=null, disabled_image=null )
       fixed_size = image.size
 
-      if (not over_image) over_image = image
-      if (not down_image) down_image = image
+      if (not hover_image)    hover_image = image
+      if (not selected_image) selected_image = image
       if (not disabled_image) disabled_image = image
 
     method on_draw
