@@ -63,6 +63,10 @@ class HorizontalLayout : Component
       endForEach
       return min_height
 
+    method operator+( right_component:Component )->Component
+      add( right_component )
+      return this
+
     method perform_layout
       local min_width = this.minimum_width
       local max_width = this.maximum_width
@@ -79,9 +83,9 @@ class HorizontalLayout : Component
           local flex = component.horizontal_flex
           if (flex)
             local w = Int32( extra * flex / total_flex )
+            total_flex -= flex
             component.size = XY(component.minimum_width+w,0)
             extra -= w
-            content_width += w
           else
             component.size = component.minimum_size
           endIf
@@ -157,6 +161,10 @@ class VerticalLayout : Component
       endForEach
       return min_width
 
+    method operator/( bottom_component:Component )->Component
+      add( bottom_component )
+      return this
+
     method perform_layout
       local min_height = this.minimum_height
       local max_height = this.maximum_height
@@ -173,9 +181,9 @@ class VerticalLayout : Component
           local flex = component.vertical_flex
           if (flex)
             local h = Int32( extra * flex / total_flex )
+            total_flex -= flex
             component.size = XY(0,component.minimum_height+h)
             extra -= h
-            content_height += h
           else
             component.size = component.minimum_size
           endIf

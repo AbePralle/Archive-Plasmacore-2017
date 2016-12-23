@@ -3,8 +3,9 @@ module Plasmacore::GG
 
 $include "GG/Button.rogue"
 $include "GG/Component.rogue"
+$include "GG/Filler.rogue"
 $include "GG/Layout.rogue"
-#$include "GG/Spacer.rogue"
+$include "GG/Spacer.rogue"
 
 augment Display
   METHODS

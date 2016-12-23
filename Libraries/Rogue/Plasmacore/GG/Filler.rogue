@@ -1,19 +1,26 @@
 module Plasmacore::GG
 
-#{
 class Filler : Component
+  GLOBAL METHODS
+    method x( weight=1.0:Real64 )->Filler
+      return Filler( XY(0,1), weight )
+
+    method y( weight=1.0:Real64 )->Filler
+      return Filler( XY(1,0), weight )
+
   PROPERTIES
-    size   : XY
     weight : Real64
 
   METHODS
-    method init( weight=1.0 )
+    method init( fixed_size, weight=1.0 )
 
-    method is_filler->Logical
-      return true
+    method horizontal_flex->Real64
+      if (fixed_size.x == 0) return weight
+      else                   return 0
 
-    method weight->Real64
-      return @weight
+    method vertical_flex->Real64
+      if (fixed_size.y == 0) return weight
+      else                   return 0
+
 endClass
 
-}#

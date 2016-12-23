@@ -1,13 +1,15 @@
 module Plasmacore::GG
 
-#{
 class Spacer : Component
-  PROPERTIES
-    size : XY
+  GLOBAL METHODS
+    method x( pixels:Int32 )->Spacer
+      return Spacer( XY(pixels,1) )
+
+    method y( pixels:Int32 )->Spacer
+      return Spacer( XY(1,pixels) )
 
   METHODS
-    method init( size )
+    method init( fixed_size )
 
 endClass
 
-}#
