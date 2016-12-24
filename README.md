@@ -51,9 +51,12 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - December 20, 2016
+###v0.7.0 - December 23, 2016
+- [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
+- [GameGUI] Added base classes for the "GameGUI" user interface system.  A `GameGUI` class is a Layer that various GGComponents can be added to.
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
 - [Box] Added `Box.relative_to(Anchor)->Box`.
+- [ProgressFn] Added `ProgressFn.BOUNCE_OUT`.
 
 ###v0.6.5 - December 17, 2016
 - [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.
