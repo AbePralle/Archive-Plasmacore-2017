@@ -1,37 +1,50 @@
 using  Plasmacore
 
 class GGButton : GGComponent
-  GLOBAL PROPERTIES
-    default_font = SystemFont
-
   PROPERTIES
     label            : String
-    font             : Font
 
     image            : Image
-    hover_image      : Image
+    targeted_image   : Image
+    pressed_image    : Image
     selected_image   : Image
     disabled_image   : Image
 
   METHODS
-    method init( image, hover_image=null, selected_image=null, disabled_image=null )
-      fixed_size = image.size
+    method init( label, font=null )
 
-      if (not hover_image)    hover_image = image
-      if (not selected_image) selected_image = image
-      if (not disabled_image) disabled_image = image
+    method init( image, label=null, font=null, targeted_image=null, pressed_image=null, selected_image=null, disabled_image=null )
+      if (label and not font) font = GGComponent.default_font
+
+      if (image)
+        fixed_size = image.size
+
+        if (not targeted_image) targeted_image = image.cloned.set_tint( 0.5, Color.WHITE )
+        if (not selected_image) selected_image = image.cloned.set_tint( 0.2, Color.BLACK )
+        if (not pressed_image)  pressed_image  = selected_image
+        if (not disabled_image) disabled_image = image.cloned.set_tint( 0.5, Color.BLACK )
+      endIf
+
+    method is_selectable->Logical
+      return true
 
     method on_draw
-      image.draw( position )
+      if (image)
+        if (is_pressed)
+          selected_image.draw( position )
+        elseIf (is_selected)
+          selected_image.draw( position )
+        elseIf (is_targeted)
+          targeted_image.draw( position )
+        elseIf (is_disabled)
+          disabled_image.draw( position )
+        else
+          image.draw( position )
+        endIf
+      endIf
+      if (label and font) font.draw( label, position )
 
-    method on_update
+    method on_select( component:GGComponent )
 
-#{
-    method position->XY
-      return bounds.at( image.anchor )
-
-    method set_position( pos:XY )->this
-      bounds = image.bounds_at( pos )
-      return this
-}#
 endClass
+

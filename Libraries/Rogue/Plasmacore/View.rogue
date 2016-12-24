@@ -90,11 +90,6 @@ class View
           layer.on( e )
           if (e.is_consumed) return
         endForEach
-
-        forEach (layer in layers)
-          layer.after( e )
-          if (e.is_consumed) return
-        endForEach
       endIf
 
       after( e )
@@ -106,11 +101,6 @@ class View
       if (layers.count)
         forEach (layer in layers step -1)
           layer.on( e )
-          if (e.is_consumed) return
-        endForEach
-
-        forEach (layer in layers)
-          layer.after( e )
           if (e.is_consumed) return
         endForEach
       endIf

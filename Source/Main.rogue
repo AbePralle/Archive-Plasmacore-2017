@@ -16,7 +16,7 @@ class MainView : View
       add( gui )
 
     method button( color:Color )->GGButton
-      return GGButton(Image(color,XY(64,32)))
+      return GGButton(Image(Bitmap(XY(64,32),color)))
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)

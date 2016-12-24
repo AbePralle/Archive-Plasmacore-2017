@@ -5,6 +5,7 @@ $include "GameGUI/GGButton.rogue"
 $include "GameGUI/GGComponent.rogue"
 $include "GameGUI/GGFiller.rogue"
 $include "GameGUI/GGLayout.rogue"
+$include "GameGUI/GGSimple.rogue"
 $include "GameGUI/GGSpacer.rogue"
 
 class GameGUI : Layer
@@ -20,15 +21,16 @@ class GameGUI : Layer
       layout.add( component, position )
       return this
 
-      #{
-    method handle( e:KeyEvent )
+    method on( e:KeyEvent )
       layout.handle( e )
-      if (e.is_consumed) return
 
-    method handle( e:PointerEvent )
-      layout.handle( e )
-      if (e.is_consumed) return
-      }#
+    method on( e:PointerEvent )
+      if (GGComponent.pointer_focus)
+        GGComponent.pointer_focus.handle( e )
+        e.consume
+      else
+        layout.handle( e )
+      endIf
 
     method on_draw
       layout.handle_draw

@@ -1,6 +1,17 @@
 using  Plasmacore
 
 class GGComponent
+  ENUMERATE
+    NEEDS_LAYOUT = 1
+    IS_TARGETED  = 2
+    IS_PRESSED   = 4
+    IS_SELECTED  = 8
+    IS_DISABLED  = 16
+
+  GLOBAL PROPERTIES
+    default_font  = SystemFont
+    pointer_focus : GGComponent
+
   PROPERTIES
     parent            : GGComponent
 
@@ -15,10 +26,24 @@ class GGComponent
     organized_subcomponents : GGComponent[]
     floating_subcomponents  : GGComponent[]
 
-    needs_layout      = true
+    state            : Int32
+    font             : Font
+
+    on_select_callback   : Function(GGComponent)
+    on_deselect_callback : Function(GGComponent)
 
   METHODS
     method init( fixed_size )
+
+    method acquire_pointer_focus( component=this:GGComponent )
+      if (GGComponent.pointer_focus is component) return
+
+      if (parent)
+        parent.acquire_pointer_focus( component )
+      else
+        if (GGComponent.pointer_focus) GGComponent.pointer_focus.release_pointer_focus
+        GGComponent.pointer_focus = component
+      endIf
 
     method add( component:GGComponent )->this
       ensure organized_subcomponents
@@ -35,15 +60,9 @@ class GGComponent
       needs_layout = true
       return this
 
-
-    #{
-    method add( component:GGComponent, options=null:Value )->this
-      throw UnsupportedOperationError()
-
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
-      }#
 
     method after_draw
 
@@ -52,11 +71,8 @@ class GGComponent
     method bounds->Box
       return Box( @position, size )
 
-      #{
-    method dispatch( e:KeyEvent )
-
-    method dispatch( e:PointerEvent )
-      }#
+    method contains( pos:XY )->Logical
+      return bounds.contains( pos )
 
     method detach->this
       if (parent)
@@ -64,6 +80,36 @@ class GGComponent
         if (parent.floating_subcomponents) parent.floating_subcomponents.remove( this )
       endIf
       return this
+
+    method dispatch( e:KeyEvent )
+      if (floating_subcomponents)
+        forEach (component in floating_subcomponents)
+          component.handle( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
+
+      if (organized_subcomponents)
+        forEach (component in organized_subcomponents)
+          component.handle( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
+
+    method dispatch( e:PointerEvent )
+      if (floating_subcomponents)
+        forEach (component in floating_subcomponents)
+          component.handle( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
+
+      if (organized_subcomponents)
+        forEach (component in organized_subcomponents)
+          component.handle( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
 
     method dispatch_draw
       if (organized_subcomponents)
@@ -75,33 +121,32 @@ class GGComponent
       endIf
 
     method dispatch_update
+      if (organized_subcomponents)
+        (forEach in organized_subcomponents).handle_update
+      endIf
 
-      #{
+      if (floating_subcomponents)
+        (forEach in floating_subcomponents).handle_update
+      endIf
+
     method handle( e:KeyEvent )
       on( e )
       if (e.is_consumed) return
-
       dispatch( e )
       if (e.is_consumed) return
-
       after( e )
 
     method handle( e:PointerEvent )
       on( e )
       if (e.is_consumed) return
-
       dispatch( e )
       if (e.is_consumed) return
-
       after( e )
-      }#
 
     method handle_draw
       on_draw
       dispatch_draw
       after_draw
-
-    method handle_resize
 
     method handle_update
       on_update
@@ -110,6 +155,24 @@ class GGComponent
 
     method horizontal_flex->Real64
       return 0.0
+
+    method is_disabled->Logical [macro]
+      (this.state & GGComponent.IS_DISABLED)
+
+    method is_pressed->Logical [macro]
+      (this.state & GGComponent.IS_PRESSED)
+
+    method is_selectable->Logical
+      return false
+
+    method is_selected->Logical [macro]
+      (this.state & GGComponent.IS_SELECTED)
+
+    method is_targeted->Logical [macro]
+      (this.state & GGComponent.IS_TARGETED)
+
+    method is_toggle->Logical
+      return false
 
     method maximum_height->Real64
       return fixed_size.y
@@ -129,12 +192,72 @@ class GGComponent
     method minimum_width->Real64
       return fixed_size.x
 
+    method needs_layout->Logical [macro]
+      (this.state & GGComponent.NEEDS_LAYOUT)
 
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
+      if (not is_selectable) return
+
+      local contains_pointer = bounds.contains( e.position )
+
+      if (not GGComponent.pointer_focus)
+        if (not contains_pointer or is_disabled) return
+        if (e.is_press)
+          is_targeted = true
+          is_pressed = true
+          acquire_pointer_focus
+        elseIf (e.is_move)
+          is_targeted = true
+          acquire_pointer_focus
+        endIf
+        return
+
+      elseIf (GGComponent.pointer_focus is this)
+        if (is_disabled)
+          release_pointer_focus
+          return
+
+        elseIf (is_pressed)
+          if (e.is_release)
+            if (is_pressed)
+              if (is_selected) on_deselect
+              else             on_select
+              if (is_toggle) is_selected = not is_selected
+            endIf
+            release_pointer_focus
+            is_targeted = contains_pointer
+          elseIf (e.is_move)
+            is_targeted = contains_pointer
+            if (not contains_pointer) is_pressed = false
+          endIf
+
+        elseIf (is_targeted)
+          if (e.is_press)
+            if (contains_pointer) is_pressed = true
+            else                  release_pointer_focus
+          elseIf (e.is_move)
+            if (not contains_pointer) release_pointer_focus
+          endIf
+
+        else
+          if (not contains_pointer)
+            release_pointer_focus
+          endIf
+        endIf
+
+      endIf
 
     method on_draw
+
+    method on_release_pointer_focus
+
+    method on_select
+      if (on_select_callback) on_select_callback( this )
+
+    method on_deselect
+      if (on_deselect_callback) on_deselect_callback( this )
 
     method on_update
 
@@ -152,12 +275,46 @@ class GGComponent
     method position->XY
       return bounds.at( anchor )
 
-    method set_needs_layout( @needs_layout=true )->this
-      if (needs_layout and parent) parent.needs_layout = true
+    method release_pointer_focus
+      is_targeted = false
+      is_pressed = false
+      GGComponent.pointer_focus = null
+      on_release_pointer_focus
+
+    method set_needs_layout( setting=true:Logical )->this
+      if (setting) state |= NEEDS_LAYOUT
+      else         state &= !NEEDS_LAYOUT
+      if (setting and parent) parent.needs_layout = true
+      return this
+
+    method set_is_pressed( setting=true:Logical )->this
+      if (setting) state |= IS_PRESSED
+      else         state &= !IS_PRESSED
+      return this
+
+    method set_is_targeted( setting=true:Logical )->this
+      if (setting) state |= IS_TARGETED
+      else         state &= !IS_TARGETED
+      return this
+
+    method set_is_selected( setting=true:Logical )->this
+      if (setting) state |= IS_SELECTED
+      else         state &= !IS_SELECTED
+      return this
+
+    method set_is_disabled( setting=true:Logical )->this
+      if (setting) state |= IS_DISABLED
+      else         state &= !IS_DISABLED
+      return this
+
+    method set_on_select( @on_select_callback )->this
+      return this
+
+    method set_on_deselect( @on_deselect_callback )->this
       return this
 
     method update_layout( bounds:Box )
-      @needs_layout = false
+      state &= !NEEDS_LAYOUT
       position = bounds.position
       size     = bounds.size
 
