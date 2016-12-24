@@ -305,6 +305,11 @@ class Command
           endIf
         endWhile
         if (characters)
+          local unicode = Int32[](characters.count)
+          forEach (ch in characters) unicode.add( ch )
+          unicode.sort( (a,b)=>(a<b) )
+          characters.clear
+          forEach (code in unicode) characters.print( Character(code) )
           forEach (attr in info//attributes)
             if (attr//name == "varfont") attr//value = characters->String
           endForEach
@@ -621,6 +626,7 @@ class Command
 
       if (unicode.count == 0)
         forEach (code in 32..126) unicode.add( code )
+        forEach (code in 160..255) unicode.add( code )
       endIf
 
       println "Generating $-character font strip from $, $ pixels high" (unicode.count,font_name,height)
@@ -1011,11 +1017,14 @@ class Asset
           else
             local buffer = StringBuilder()
             buffer.print( (forEach in 32..126)->Character )
+            if (placements.count != 95)
+              buffer.print( (forEach in 160..255)->Character )
+            endIf
             characters = buffer->String
 
             if (characters.count != placements.count)
-              throw cmd.error( ''Font strip "$" contains $ characters but the default varfont character mapping specifies 95.''...
-                (filepath.after_first("Assets/Images/"),placements.count) )
+              throw cmd.error( ''Font strip "$" contains $ characters but the default varfont character mapping specifies $.''...
+                (filepath.after_first("Assets/Images/"),placements.count,characters.count) )
             endIf
           endIf
 
