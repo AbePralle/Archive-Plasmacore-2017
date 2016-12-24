@@ -78,11 +78,6 @@ class PlasmacoreView: NSOpenGLView
     }
 
     NSLog( "PlasmacoreView \(name) created in Window \(windowID)\n" )
-
-    let m = PlasmacoreMessage( type:"Display.on_show" )
-    m.set( name:"window_id", value:windowID )
-    m.set( name:"display_name", value:name )
-    m.send()
   }
 
   override func draw( _ area:NSRect )

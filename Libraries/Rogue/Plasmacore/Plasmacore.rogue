@@ -83,8 +83,6 @@ class Plasmacore [essential singleton]
           Display( m.string("display_name") ).render( display_size, viewport_size )
         endFunction )
 
-      MessageManager.add_listener( "Display.on_show", (m) => Display( m.string("display_name") ).is_visible = true )
-
       MessageManager.add_listener( "Display.on_pointer_event",
         function(m:Message)
           local display = Display( m.string("display_name") )

@@ -51,15 +51,6 @@ class PlasmacoreViewController : GLKViewController
     self.setupGL()
   }
 
-  override func viewDidAppear( _ animated:Bool )
-  {
-    super.viewDidAppear( animated )
-
-    let m = PlasmacoreMessage( type:"Display.on_show" )
-    m.set( name:"display_name",   value:name )
-    m.send()
-  }
-
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
 
