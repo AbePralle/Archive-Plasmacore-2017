@@ -11,12 +11,12 @@ class MainView : View
       change_state( InitialState() )
       local gui = GameGUI()
       #add( button(Color.RED),    XY(132,116) )
-      gui.add( (GGFiller.y / button(Color.YELLOW) / GGFiller.y(2) / button(Color.GREEN)/ GGFiller.y) + GGFiller.x + button(Color.WHITE) )
+      gui.add( (GGFiller.y / button("Alpha") / GGFiller.y(2) / button("Beta")/ GGFiller.y) + GGFiller.x + button("Gamma") )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
       add( gui )
 
-    method button( color:Color )->GGButton
-      return GGButton(Image(Bitmap(XY(64,32),color)))
+    method button( label:String )->GGButton
+      return GGDefaultButton( label )
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)
@@ -24,7 +24,7 @@ class MainView : View
       endIf
 
     method on_draw
-      Display.clear( Color.BLUE )
+      Display.clear( Color.BLACK )
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World! \[f7] 0123456789", Display.center )
 

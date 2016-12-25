@@ -9,7 +9,7 @@ class GGComponent
     IS_DISABLED  = 16
 
   GLOBAL PROPERTIES
-    default_font  = SystemFont
+    default_font  = DefaultFont.cloned.set_scale(0.60) : Font
     pointer_focus : GGComponent
 
   PROPERTIES

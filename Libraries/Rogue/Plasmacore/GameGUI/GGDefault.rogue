@@ -1,0 +1,19 @@
+using Plasmacore
+
+class GGDefaultButton : GGButton
+  PROPERTIES
+    background_color : Color
+    color            : Color
+
+  METHODS
+    method init( label, font=GGComponent.default_font, background_color=Color.BLUE, color=Color.WHITE )
+      fixed_size = XY( 96, 32 )
+
+    method on_draw
+      bounds.fill( background_color )
+      font.color = color
+      font.anchor = Anchor.CENTER
+      font.draw( label, bounds.center.floor )
+
+endClass
+

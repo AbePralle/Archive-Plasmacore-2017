@@ -5,7 +5,7 @@ $include "GameGUI/GGButton.rogue"
 $include "GameGUI/GGComponent.rogue"
 $include "GameGUI/GGFiller.rogue"
 $include "GameGUI/GGLayout.rogue"
-$include "GameGUI/GGSimple.rogue"
+$include "GameGUI/GGDefault.rogue"
 $include "GameGUI/GGSpacer.rogue"
 
 class GameGUI : Layer

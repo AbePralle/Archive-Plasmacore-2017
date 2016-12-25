@@ -21,6 +21,19 @@ class Font
     method init( name, options=@{} )
       data = FontData( name )
 
+    method cloned->Font
+      local result = Font( name, options )
+      result.image_info = image_info
+      result.data = data
+      result.snap = snap
+      result.anchor = anchor
+      result.scale = scale
+      result.spacing = spacing
+      result.color = color
+      result.opacity = opacity
+      result.shader = shader
+      return result
+
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       data.collect_texture_names( texture_names )
 
