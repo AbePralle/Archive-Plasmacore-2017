@@ -25,6 +25,8 @@ class MainView : View
 
     method on_draw
       Display.clear( Color.BLUE )
+      DefaultFont.anchor = Anchor.CENTER
+      DefaultFont.draw( "Hello World! \[f7] 0123456789", Display.center )
 
     method on_resize
       # Called when the Display.size changes

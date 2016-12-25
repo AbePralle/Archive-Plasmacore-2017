@@ -143,6 +143,7 @@ class FontLoaders [singleton]
   METHODS
     method init
       this[ "SystemFont" ] = (function(name) => SystemFontData())
+      this[ "DefaultFont" ] = (function(name) => DefaultFontData())
 
     method get( name:String )->Function(String)->(FontData)
       return loaders[ name ]

@@ -21,16 +21,20 @@ try
                     |#   set    image_sheet_size:4096         Set max texture size
                     |#   set    display_scale:1/2             Images drawn half size etc.
                     |#   group  <folder or pattern>           Turn folders into groups
-                    |#   create image:<filepath> font:<font-name> height:<pixels> [characters:"ABC..." unicode:[32..126] ...]
+                    |#   create image:<filepath> font:<font-name> height:<pixels> ...
+                    |#     [characters:"ABC..." unicode:[32..126] ...]
+                    |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
                     |#   copy   from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
                     |#
                     |# ATTTRIBUTES
                     |#   @ ... resample <pixel width>x<pixel height>
                     |#     Change pixel size but leave display size as it was.
                     |#   @ ... split:<tiles-wide>x<tiles-high>
-                    |#   @ ... varfont
-                    |#   @ ... varfont:"Character Mapping"
-                    |#   @ ... varfont [characters:"ABC..." unicode:[32..126] ...]
+                    |#   @ ... varfont [<Options>]
+                    |#   @ ... varfont:"Character Mapping" [<Options>]
+                    |#           <Options>
+                    |#             characters:"ABC..."
+                    |#             unicode:[32..126] ...
                     |#
                     |[Global]
                     |@ **Font* varfont
@@ -608,6 +612,14 @@ class Command
       local font_name = require_arg( args, "font" )->String
       local height = require_arg( args, "height" )->Int32
 
+      local is_monospace = false
+      local is_monospace_numbers = false
+      local monospace_arg = args//monospace
+      if (monospace_arg)
+        if (monospace_arg == "numbers") is_monospace_numbers = true
+        else                            is_monospace = true
+      endIf
+
       local unicode = Int32[]
       if (args.contains("characters"))
         forEach (ch in args//characters->String) unicode.add( Int32(ch) )
@@ -633,6 +645,36 @@ class Command
 
       local font_face = FreeTypeFace( this, font_name, height )
       local characters = font_face.render( unicode )
+
+      if (is_monospace)
+        local max_w = 0
+        forEach (ch in characters)
+          max_w = max_w.or_larger( ch.width )
+        endForEach
+        forEach (ch at index in characters)
+          if (ch.width != max_w)
+            local new_ch = Bitmap( max_w, ch.height )
+            ch.blit( new_ch, XY((max_w-ch.width)/2,ch.height).floor )
+            characters[ index ] = new_ch
+          endIf
+        endForEach
+      elseIf (is_monospace_numbers)
+        local max_w = 0
+        forEach (ch at index in characters)
+          if (unicode[index] == ' ' or unicode[index]->Character.is_number)
+            max_w = max_w.or_larger( ch.width )
+          endIf
+        endForEach
+        forEach (ch at index in characters)
+          if (ch.width != max_w)
+            if (unicode[index] == ' ' or unicode[index]->Character.is_number)
+              local new_ch = Bitmap( max_w, ch.height )
+              ch.blit( new_ch, XY((max_w-ch.width)/2,ch.height).floor )
+              characters[ index ] = new_ch
+            endIf
+          endIf
+        endForEach
+      endIf
 
       local bitmap = Convert.pack_varfont_characters( this, characters )
       print "  -> "

@@ -78,7 +78,8 @@ class Display [singleton]
 
     font_data_by_name  = StringTable<<FontData>>()
 
-    system_font : Font
+    system_font  : Font
+    default_font : Font
 
   GLOBAL METHODS
     method create( name:String )->Display
@@ -86,8 +87,6 @@ class Display [singleton]
 
   METHODS
     method init
-      #view = Plasmacore.create_view( this )
-      system_font = Font( "SystemFont", &options=@{snug,snap} )
 
     method activate_view_and_state
       if (not color_shader)
