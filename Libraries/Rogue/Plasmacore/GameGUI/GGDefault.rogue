@@ -2,9 +2,7 @@ using Plasmacore
 
 class GGDefaultButton : GGButton
   METHODS
-    method init( label )
-      font = GGComponent.default_font
-      fixed_size = XY( 128, 32 )
+    method init( label, font=GGComponent.default_font, fixed_size=XY(128,32) )
 
     method on_draw
       bounds.fill( Color.WHITE )
@@ -18,6 +16,25 @@ class GGDefaultButton : GGButton
       font.color = Color.WHITE
       font.anchor = Anchor.CENTER
       font.draw( label, bounds.center.floor )
+
+endClass
+
+class GGDefaultCheckbox : GGCheckbox
+  METHODS
+    method init( fixed_size=XY(32,32) )
+
+    method on_draw
+      bounds.fill( Color.WHITE )
+      if (is_pressed)
+        bounds.cropped(2).fill( 0xff8080ff )
+      elseIf (is_targeted)
+        bounds.cropped(2).fill( Color.BLUE )
+      else
+        bounds.cropped(2).fill( Color.BLACK )
+      endIf
+      if (is_selected)
+        bounds.cropped(6).fill( Color.WHITE )
+      endIf
 
 endClass
 

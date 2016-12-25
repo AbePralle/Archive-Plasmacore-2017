@@ -44,7 +44,5 @@ class GGButton : GGComponent
       endIf
       if (label and font) font.draw( label, position )
 
-    method on_select( component:GGComponent )
-
 endClass
 

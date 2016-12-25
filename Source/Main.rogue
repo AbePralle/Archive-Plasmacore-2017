@@ -11,7 +11,7 @@ class MainView : View
       change_state( InitialState() )
       local gui = GameGUI()
       #add( button(Color.RED),    XY(132,116) )
-      gui.add( (GGFiller.y / button("Alpha") / GGFiller.y(2) / button("Beta")/ GGFiller.y) + GGFiller.x + button("Gamma") )
+      gui.add( (GGFiller.y / button("Alpha") / GGFiller.y(2) / GGDefaultCheckbox().set_is_selected / GGFiller.y) + GGFiller.x + GGDefaultCheckbox().on_select( (c)=>println true ).on_deselect( (c)=>println false ) )
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
       add( gui )
 
