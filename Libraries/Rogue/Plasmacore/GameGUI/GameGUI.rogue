@@ -6,6 +6,7 @@ $include "GameGUI/GGCheckbox.rogue"
 $include "GameGUI/GGComponent.rogue"
 $include "GameGUI/GGFiller.rogue"
 $include "GameGUI/GGLayout.rogue"
+$include "GameGUI/GGList.rogue"
 $include "GameGUI/GGDefault.rogue"
 $include "GameGUI/GGSpacer.rogue"
 

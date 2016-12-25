@@ -18,10 +18,11 @@ class GGComponent
     position          : XY   # Absolute position computed during layout
     size              : XY
 
+    offset            : XY   # Scroll offset within bounds
+
     relative_position : XY   # Relative to parent's top-left corner
     fixed_size        : XY   # A zero indicates no fixed size in that dimension.
     anchor            = Anchor.CENTER : Anchor
-    content_anchor    = Anchor.CENTER : Anchor
 
     organized_subcomponents : GGComponent[]
     floating_subcomponents  : GGComponent[]
@@ -129,6 +130,19 @@ class GGComponent
         (forEach in floating_subcomponents).handle_update
       endIf
 
+    method find( at_position:XY )->GGComponent
+      if (floating_subcomponents)
+        forEach (component in floating_subcomponents)
+          if (component.bounds.contains(at_position)) return component
+        endForEach
+      endIf
+      if (organized_subcomponents)
+        forEach (component in organized_subcomponents)
+          if (component.bounds.contains(at_position)) return component
+        endForEach
+      endIf
+      return null
+
     method handle( e:KeyEvent )
       on( e )
       if (e.is_consumed) return
@@ -154,7 +168,8 @@ class GGComponent
       after_update
 
     method horizontal_flex->Real64
-      return 0.0
+      if (fixed_size.x) return 0.0
+      else              return 1.0
 
     method is_disabled->Logical [macro]
       (this.state & GGComponent.IS_DISABLED)
@@ -230,13 +245,18 @@ class GGComponent
             is_targeted = contains_pointer
           elseIf (e.is_move)
             is_targeted = contains_pointer
-            if (not contains_pointer) is_pressed = false
+            if (not contains_pointer)
+              is_pressed = false
+            endIf
           endIf
 
         elseIf (is_targeted)
           if (e.is_press)
-            if (contains_pointer) is_pressed = true
-            else                  release_pointer_focus
+            if (contains_pointer)
+              is_pressed = true
+            else
+              release_pointer_focus
+            endIf
           elseIf (e.is_move)
             if (not contains_pointer) release_pointer_focus
           endIf
@@ -249,6 +269,12 @@ class GGComponent
 
       endIf
 
+    method on_deselect
+      if (on_deselect_callback) on_deselect_callback( this )
+
+    method on_deselect( @on_deselect_callback )->this
+      return this
+
     method on_draw
 
     method on_release_pointer_focus
@@ -258,13 +284,6 @@ class GGComponent
 
     method on_select( @on_select_callback )->this
       return this
-
-    method on_deselect
-      if (on_deselect_callback) on_deselect_callback( this )
-
-    method on_deselect( @on_deselect_callback )->this
-      return this
-
 
     method on_update
 
@@ -284,8 +303,8 @@ class GGComponent
 
     method release_pointer_focus
       is_targeted = false
-      is_pressed = false
       GGComponent.pointer_focus = null
+      is_pressed = false
       on_release_pointer_focus
 
     method set_needs_layout( setting=true:Logical )->this
@@ -340,5 +359,6 @@ class GGComponent
       endIf
 
     method vertical_flex->Real64
-      return 0.0
+      if (fixed_size.y) return 0.0
+      else              return 1.0
 endClass

@@ -98,14 +98,14 @@ class GGHorizontalLayout : GGComponent
         endForEach
       endIf
 
-      local x = @position.x + content_anchor.position.x * (size.x - content_width)
+      local x = @position.x
       forEach (component in organized_subcomponents)
         local min_height = component.minimum_height
         local max_height = component.maximum_height
         local content_height = this.size.y
         if (content_height < min_height) content_height = min_height
         if (max_height and content_height > max_height) content_height = max_height
-        local y = @position.y + content_anchor.position.y * (size.y - content_height)
+        local y = @position.y
         local w = component.size.x
         component.update_layout( Box(x,y,w,content_height) )
         x += w
@@ -196,14 +196,14 @@ class GGVerticalLayout : GGComponent
         endForEach
       endIf
 
-      local y = @position.y + content_anchor.position.y * (size.y - content_height)
+      local y = @position.y
       forEach (component in organized_subcomponents)
         local min_width = component.minimum_width
         local max_width = component.maximum_width
         local content_width = this.size.x
         if (content_width < min_width) content_width = min_width
         if (max_width and content_width > max_width) content_width = max_width
-        local x = @position.x + content_anchor.position.x * (size.x - content_width)
+        local x = @position.x
         local h = component.size.y
         component.update_layout( Box(x,y,content_width,h) )
         y += h

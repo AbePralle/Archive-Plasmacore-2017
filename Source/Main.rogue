@@ -10,13 +10,22 @@ class MainView : View
     method on_start
       change_state( InitialState() )
       local gui = GameGUI()
-      #add( button(Color.RED),    XY(132,116) )
-      gui.add( (GGFiller.y / button("Alpha") / GGFiller.y(2) / GGDefaultCheckbox().set_is_selected / GGFiller.y) + GGFiller.x + GGDefaultCheckbox().on_select( (c)=>println true ).on_deselect( (c)=>println false ) )
-      #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
+      local list = GGList()
+      list.add( GGDefaultButton("A") )
+      list.add( GGDefaultButton("B") )
+      list.add( GGDefaultButton("C") )
+      list.add( GGDefaultButton("D") )
+      list.add( GGDefaultButton("E") )
+      list.add( GGDefaultButton("F") )
+      list.add( GGDefaultButton("G") )
+      list.add( GGDefaultButton("H") )
+      list.add( GGDefaultButton("I") )
+      list.add( GGDefaultButton("J") )
+      list.add( GGDefaultButton("K") )
+      list.add( GGDefaultButton("L") )
+      list.add( GGDefaultButton("M") )
+      gui.add( list + GGFiller.x )
       add( gui )
-
-    method button( label:String )->GGComponent
-      return GGDefaultButton( label ).on_select( (button) with (label)=>println label )
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)
