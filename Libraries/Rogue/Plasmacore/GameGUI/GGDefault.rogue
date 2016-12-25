@@ -1,17 +1,21 @@
 using Plasmacore
 
 class GGDefaultButton : GGButton
-  PROPERTIES
-    background_color : Color
-    color            : Color
-
   METHODS
-    method init( label, font=GGComponent.default_font, background_color=Color.BLUE, color=Color.WHITE )
-      fixed_size = XY( 96, 32 )
+    method init( label )
+      font = GGComponent.default_font
+      fixed_size = XY( 128, 32 )
 
     method on_draw
-      bounds.fill( background_color )
-      font.color = color
+      bounds.fill( Color.WHITE )
+      if (is_pressed)
+        bounds.cropped(2).fill( 0xff8080ff )
+      elseIf (is_targeted)
+        bounds.cropped(2).fill( Color.BLUE )
+      else
+        bounds.cropped(2).fill( Color.BLACK )
+      endIf
+      font.color = Color.WHITE
       font.anchor = Anchor.CENTER
       font.draw( label, bounds.center.floor )
 

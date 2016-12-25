@@ -256,8 +256,15 @@ class GGComponent
     method on_select
       if (on_select_callback) on_select_callback( this )
 
+    method on_select( @on_select_callback )->this
+      return this
+
     method on_deselect
       if (on_deselect_callback) on_deselect_callback( this )
+
+    method on_deselect( @on_deselect_callback )->this
+      return this
+
 
     method on_update
 
@@ -305,12 +312,6 @@ class GGComponent
     method set_is_disabled( setting=true:Logical )->this
       if (setting) state |= IS_DISABLED
       else         state &= !IS_DISABLED
-      return this
-
-    method set_on_select( @on_select_callback )->this
-      return this
-
-    method set_on_deselect( @on_deselect_callback )->this
       return this
 
     method update_layout( bounds:Box )

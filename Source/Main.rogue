@@ -15,8 +15,8 @@ class MainView : View
       #add( GG::Button(Image(Color.RED,XY(64,32))) + GG::Button(Image(Color.YELLOW,XY(64,32))) )
       add( gui )
 
-    method button( label:String )->GGButton
-      return GGDefaultButton( label )
+    method button( label:String )->GGComponent
+      return GGDefaultButton( label ).on_select( (button) with (label)=>println label )
 
     method on( e:PointerEvent )
       if (e.is_press or e.is_move or e.is_release)
