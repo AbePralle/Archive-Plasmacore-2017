@@ -1,16 +1,23 @@
 # Game GUI
 module Plasmacore
 
+#{
 $include "GameGUI/GGButton.rogue"
 $include "GameGUI/GGCheckbox.rogue"
+}#
 $include "GameGUI/GGComponent.rogue"
+#{
 $include "GameGUI/GGFiller.rogue"
 $include "GameGUI/GGLayout.rogue"
+}#
 $include "GameGUI/GGList.rogue"
+#{
 $include "GameGUI/GGDefault.rogue"
 $include "GameGUI/GGSpacer.rogue"
+}#
 
 class GameGUI : Layer
+  #{
   PROPERTIES
     layout = GGLayout(Display.size)  : GGComponent
 
@@ -43,5 +50,6 @@ class GameGUI : Layer
     method on_update
       if (layout.needs_layout) layout.update_layout( Display.bounds )
       layout.handle_update
+      }#
 endClass
 

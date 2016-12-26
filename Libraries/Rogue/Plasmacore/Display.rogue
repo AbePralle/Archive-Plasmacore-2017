@@ -45,7 +45,8 @@ class Display [singleton]
     # parallel to the camera axis.  Reset to Display.center at the beginning
     # of every draw.
 
-    clipping_region    : Box?
+    clipping_region       : Box?
+    clipping_region_stack = Box[]
 
     background_color = Color.BLACK : Color
 
@@ -395,6 +396,14 @@ class Display [singleton]
       return group
       }#
 
+    method pop_clipping_region->this
+      if (clipping_region_stack.count)
+        clipping_region = clipping_region_stack.remove_last
+      else
+        clipping_region = null
+      endIf
+      return this
+
     method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)
         if (object_transforms.count)
@@ -415,6 +424,15 @@ class Display [singleton]
       endForEach
       return this
 
+    method push_clipping_region( box:Box )->this
+      if (clipping_region.exists)
+        clipping_region_stack.add( clipping_region.value )
+        clipping_region = clipping_region.value & box
+      else
+        clipping_region = box
+      endIf
+      return this
+
     method push_object_transform( m:Matrix )->this
       object_transforms.add( m )
       object_transform_modified = true
@@ -429,6 +447,8 @@ class Display [singleton]
 
     method render( true_size, viewport_size )
       Display = this  # set the singleton reference to be this display
+      clipping_region = null
+      clipping_region_stack.clear
 
       # Ensure viewport min/max ordering matches true size ordering
       if ((true_size.x <= true_size.y) xor (viewport_size.x <= viewport_size.y))
@@ -625,9 +645,9 @@ class Display [singleton]
       @clipping_region = new_clipping_region
 
       if (clipping_region.exists)
-        local box = clipping_region.value & Display.bounds
-        if (box.size.x == 0) @clipping_region = null
-        else                 @clipping_region = box
+        local box = (clipping_region.value & Display.bounds)
+        if (box.exists) @clipping_region = box
+        else            @clipping_region = null
       endIf
 
       if (clipping_region.exists)

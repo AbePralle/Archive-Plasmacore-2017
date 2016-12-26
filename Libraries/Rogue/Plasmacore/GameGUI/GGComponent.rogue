@@ -1,6 +1,12 @@
 using Plasmacore
 
 class GGComponent
+  PROPERTIES
+    position : XY
+    size     : XY
+
+#{
+class GGComponent
   ENUMERATE
     NEEDS_LAYOUT = 1
     IS_TARGETED  = 2
@@ -32,8 +38,10 @@ class GGComponent
 
     on_select_callback   : Function(GGComponent)
     on_deselect_callback : Function(GGComponent)
+    }#
 
   METHODS
+    #{
     method init( fixed_size )
 
     method acquire_pointer_focus( component=this:GGComponent )
@@ -68,13 +76,18 @@ class GGComponent
     method after_draw
 
     method after_update
+      }#
 
     method bounds->Box
-      return Box( @position, size )
+      return Box( position, size )
 
     method contains( pos:XY )->Logical
       return bounds.contains( pos )
 
+    method contains( e:PointerEvent )->Logical
+      return bounds.contains( e.position )
+
+      #{
     method detach->this
       if (parent)
         if (parent.organized_subcomponents) parent.organized_subcomponents.remove( this )
@@ -274,9 +287,11 @@ class GGComponent
 
     method on_deselect( @on_deselect_callback )->this
       return this
+      }#
 
     method on_draw
 
+      #{
     method on_release_pointer_focus
 
     method on_select
@@ -284,9 +299,11 @@ class GGComponent
 
     method on_select( @on_select_callback )->this
       return this
+      }#
 
     method on_update
 
+      #{
     method operator+( right_component:GGComponent )->GGComponent
       return GGHorizontalLayout().add( this ).add( right_component )
 
@@ -361,4 +378,5 @@ class GGComponent
     method vertical_flex->Real64
       if (fixed_size.y) return 0.0
       else              return 1.0
+}#
 endClass

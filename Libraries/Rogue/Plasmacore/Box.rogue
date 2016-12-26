@@ -84,7 +84,7 @@ $endIf
       this.size.y
 
     method intersects( other:Box )->Logical
-      return (this & other).width?
+      return (this & other).exists
 
     method operator==( other:Box )->Logical
       return (position == other.position and size == other.size)
@@ -92,7 +92,7 @@ $endIf
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
 
-    method operator&( rhs:Box )->Box
+    method operator&( rhs:Box )->Box?
       # Returns the intersection of this box with another box.
       local a_x1 = position.x
       local a_y1 = position.y
@@ -109,7 +109,7 @@ $endIf
       if (a_x2 > b_x2) a_x2 = b_x2
       if (a_y2 > b_y2) a_y2 = b_y2
 
-      if (a_x1 >= a_x2 or a_y1 >= a_y2) return Box(XY(0,0),XY(0,0))
+      if (a_x1 >= a_x2 or a_y1 >= a_y2) return null
 
       return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
 

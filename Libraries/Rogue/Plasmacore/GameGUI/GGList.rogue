@@ -1,0 +1,144 @@
+module Plasmacore
+
+class GGList : GGComponent
+  PROPERTIES
+    is_horizontal : Logical
+    subcomponents = GGComponent[]
+    offset        : XY
+    max_offset    : Real64
+    velocity      : XY
+    acceleration  : Real64
+
+    content_size  : Int32
+
+    is_pressed    : Logical
+    is_dragging   : Logical
+
+    drag_start    : XY
+    drag_delta    : Real64
+    drag_deltas   = Real64[]
+    cur_pos       : XY
+    drag_time     = Stopwatch()
+
+  METHODS
+    method init( box:Box, is_horizontal=false )
+      position = box.position
+      size = box.size
+
+    method add( component:GGComponent )->this
+      subcomponents.add( component )
+      return this
+
+    method adjust_offset( new_pos:XY )
+      local delta = new_pos - cur_pos
+      if (is_horizontal)
+        if (offset.x > 0 and delta.x > 0)
+          delta *= XY( 1.0 - ((new_pos.x / Display.width).sqrt), 1 )
+        endIf
+        delta = delta.xv
+        drag_delta = delta.x
+      else
+        if (offset.y > 0 and delta.y > 0)
+          local p = ((new_pos.y - position.y) / size.y).clamped(0,1)
+          delta *= XY( 1, 1.0 - p.sqrt )
+        elseIf (offset.y < max_offset and delta.y < 0)
+          local p = ((new_pos.y - position.y) / size.y).clamped(0,1)
+          delta *= XY( 1, p*p )
+        endIf
+        delta = delta.yv
+        drag_delta = delta.y
+      endIf
+      offset += delta
+      cur_pos = new_pos
+
+    method on( e:PointerEvent )
+      if (e.is_press)
+        if (not is_dragging and contains(e))
+          is_pressed = true
+          drag_time.restart
+          cur_pos = e.position
+        endIf
+      elseIf (e.is_move)
+        if (is_dragging)
+          adjust_offset( e.position )
+        elseIf (is_pressed)
+          if (e.position.distance_to(cur_pos) >= Display.size.magnitude * 0.01)
+            is_dragging = true
+            drag_deltas.clear
+            adjust_offset( e.position )
+          endIf
+        endIf
+      elseIf (e.is_release)
+        is_pressed = false
+        if (is_dragging)
+          is_dragging = false
+          acceleration = 0.10
+          if (drag_deltas.count)
+            local sum = 0.0
+            sum += (forEach in drag_deltas)
+            local avg = sum / drag_deltas.count
+            if (avg.abs >= 5)
+              acceleration = 0.96
+              if (is_horizontal) velocity += XY( avg, 0 )
+              else               velocity += XY( 0, avg )
+            endIf
+          endIf
+        else
+          acceleration = 0.10
+        endIf
+      endIf
+
+    method on_draw
+      Display.push_clipping_region( bounds )
+      local drawn_any = false
+      forEach (component in subcomponents)
+        if (component.bounds.intersects(bounds))
+          component.on_draw
+          drawn_any = true
+        elseIf (drawn_any)
+          escapeForEach
+        endIf
+      endForEach
+      Display.pop_clipping_region
+
+    method on_update
+      if (is_dragging)
+        # Save 1/10th second of drag deltas
+        drag_deltas.add( drag_delta )
+        if (drag_deltas.count > 10) drag_deltas.remove_first
+      endIf
+
+      if (not velocity.is_zero)
+        offset += velocity
+        velocity *= acceleration
+        if (velocity.abs.max < 0.1) velocity = XY(0,0)
+      endIf
+
+      if (not is_dragging)
+        if (is_horizontal)
+        else
+          if (offset.y > 0)
+            offset   *= XY(1,0.8)
+            acceleration = 0.50
+          elseIf (offset.y < max_offset)
+            offset = XY( offset.x, max_offset + (offset.y - max_offset) * 0.8 )
+            acceleration = 0.50
+          endIf
+        endIf
+      endIf
+
+      content_size = 0
+      local pos = position + offset
+      forEach (component in subcomponents)
+        component.position = pos
+        if (is_horizontal) pos += component.size.xv; content_size += component.size.x
+        else               pos += component.size.yv; content_size += component.size.y
+      endForEach
+
+      if (is_horizontal)
+        max_offset = -((content_size - size.x).or_larger( 0 ))
+      else
+        max_offset = -((content_size - size.y).or_larger( 0 ))
+      endIf
+
+endClass

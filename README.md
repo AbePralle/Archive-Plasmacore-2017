@@ -58,6 +58,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
 - [Box] Added `Box.relative_to(Anchor)->Box`.
 - [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.  Renamed message `Display.render` to `Display.on_render`.
+- [Display] Added `Display.push_clipping_region(Box)` and `Display.pop_clipping_region()`.  Pushed clipping regions operate as an intersection with the current clipping region.
 - [State] Modified behavior of `queue_state()` to perform the state chaining itself if its view is null rather than having the current Display perform the chaining.
 - [ProgressFn] Added `ProgressFn.BOUNCE_OUT`.
 - [Image Compiler] Added optional `monospace` and `monospace:numbers` attributes to `create image:...font:` directive.
