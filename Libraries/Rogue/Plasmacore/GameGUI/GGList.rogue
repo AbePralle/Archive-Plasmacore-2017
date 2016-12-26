@@ -33,7 +33,11 @@ class GGList : GGComponent
       local delta = new_pos - cur_pos
       if (is_horizontal)
         if (offset.x > 0 and delta.x > 0)
-          delta *= XY( 1.0 - ((new_pos.x / Display.width).sqrt), 1 )
+          local p = ((new_pos.x - position.x) / size.x).clamped(0,1)
+          delta *= XY( 1.0 - p.sqrt, 1 )
+        elseIf (offset.x < max_offset and delta.x < 0)
+          local p = ((new_pos.x - position.x) / size.x).clamped(0,1)
+          delta *= XY( p*p, 1 )
         endIf
         delta = delta.xv
         drag_delta = delta.x
@@ -116,6 +120,13 @@ class GGList : GGComponent
 
       if (not is_dragging)
         if (is_horizontal)
+          if (offset.x > 0)
+            offset   *= XY(0.8,1)
+            acceleration = 0.50
+          elseIf (offset.x < max_offset)
+            offset = XY( max_offset + (offset.x - max_offset) * 0.8, offset.y )
+            acceleration = 0.50
+          endIf
         else
           if (offset.y > 0)
             offset   *= XY(1,0.8)

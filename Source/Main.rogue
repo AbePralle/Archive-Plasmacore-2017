@@ -23,7 +23,7 @@ class MainView : View
     method on_start
       change_state( InitialState() )
 
-      list = GGList( Box(0,0,Int32(Display.size.x/2),Display.size.y) )
+      list = GGList( Box(0,0,Int32(Display.size.x/2),Display.size.y), &is_horizontal )
       list.add( ColorBox(Color.RED,XY(64,128)) )
       list.add( ColorBox(Color.GREEN,XY(64,128)) )
       list.add( ColorBox(Color.BLUE,XY(64,128)) )
