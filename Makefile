@@ -30,6 +30,9 @@ endif
 
 -include Local.mk
 
+export CC
+export CXX
+
 ios: override TARGET := iOS
 
 macos: override TARGET := macOS
