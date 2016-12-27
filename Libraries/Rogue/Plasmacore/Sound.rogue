@@ -59,6 +59,9 @@ class Sound
       filepath = Plasmacore.asset_filepath( asset_name + ".wav" )
       if (filepath) return filepath
 
+      filepath = Plasmacore.asset_filepath( asset_name + ".ogg" )
+      if (filepath) return filepath
+
       return null
 
     method is_finished->Logical
