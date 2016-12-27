@@ -82,7 +82,7 @@ xclean: clean clean_harfbuzz clean_icom clean_scom
 update: prepare_update
 
 prepare_update:
-	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone $(REPO) || true
+	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone $(REPO) Plasmacore || true
 	@echo "Pulling latest Build/Update/Plasmacore/"
 	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git checkout $(BRANCH) && git pull
 	@rsync -a -c --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile .
