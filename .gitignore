@@ -5,6 +5,14 @@
 Test
 Update.mk
 Publish.mk
+**/Local.mk
+**/Build/
+
+# Merge/Patch/etc.
+*.orig
+*.rej
+*.diff
+*.patch
 
 # Mac
 .DS_Store

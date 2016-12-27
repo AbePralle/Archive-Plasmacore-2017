@@ -1,8 +1,18 @@
 BUILD_FOLDER := Build
 
-ROGUEC        = ../../Programs/macOS/roguec --libraries=../../Libraries/Rogue
+ROGUEC        = roguec
+ifeq ($(OS),Windows_NT)
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Darwin)
+    ROGUEC = ../../Programs/Mac/roguec
+  else
+  endif
+endif
+
 ROGUEC_FLAGS += --target="C++,Console"
 ROGUEC_FLAGS += --debug
+ROGUEC_FLAGS += --libraries=../../Libraries/Rogue
 
 ROGUE_LIBS = $(shell find ../Rogue | grep "\.rogue$$")
 

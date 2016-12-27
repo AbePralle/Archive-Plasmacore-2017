@@ -17,15 +17,41 @@ else
 endif
 
 
+ROGUEC = roguec
+
+ifeq ($(OS),Windows_NT)
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Darwin)
+    ROGUEC = Programs/Mac/roguec
+  else
+  endif
+endif
+
+-include Local.mk
+
+export CC
+export CXX
+
 ios: override TARGET := iOS
 
 macos: override TARGET := macOS
+
+emscripten: override TARGET := emscripten
+
+linux: override TARGET := Linux
 
 all: build run compile_images compile_sounds
 
 ios: build run compile_images compile_sounds
 
 macos: build run compile_images compile_sounds
+
+emscripten: build run compile_images compile_sounds
+	make -C Platforms/emscripten
+
+linux: build run compile_images compile_sounds
+	make -C Platforms/Linux
 
 build: Build/BuildScript/buildscript
 
@@ -39,8 +65,8 @@ Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCore.rogue $(ROGUE_LIBRARIES)
-	Programs/macOS/roguec $(ROGUE_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
-	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
+	$(ROGUEC) $(ROGUE_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	$(CXX) -std=c++11 -DROGUEC=$(ROGUEC) -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
 	env Build/BuildScript/buildscript $(TARGET) $(ROGUE_IDE_FLAG)
@@ -48,6 +74,9 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Platform/iOS/Build
+	rm -rf Libraries/SoundCompiler/Build
+	rm -rf Libraries/HarfBuzz/Build
+	rm -rf Libraries/ImageCompiler/Build
 
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
@@ -63,7 +92,7 @@ xclean: clean clean_harfbuzz clean_icom clean_scom
 update: prepare_update
 
 prepare_update:
-	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone $(REPO) || true
+	@[ ! -e Build/Update/Plasmacore ] && echo "Cloning Plasmacore into Build/Update/" && mkdir -p Build/Update && cd Build/Update && git clone $(REPO) Plasmacore || true
 	@echo "Pulling latest Build/Update/Plasmacore/"
 	@[ -e Build/Update/Plasmacore ] && cd Build/Update/Plasmacore && git checkout $(BRANCH) && git pull
 	@rsync -a -c --out-format="Updating %n%L" Build/Update/Plasmacore/Makefile .

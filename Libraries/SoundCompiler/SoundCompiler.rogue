@@ -20,7 +20,7 @@ try
                     |#   include <file or pattern>            # Include file in build
                     |#
                     |# ATTTRIBUTES
-                    |#   @ ... format:[ima4|mp3]
+                    |#   @ ... format:[ima4|mp3|ogg]
                     |#     - ima4 is good for iOS and Mac sound effects
                     |#     - mp3 is good for iOS and Mac music
                     |
@@ -29,6 +29,10 @@ try
                     |
                     |[iOS]
                     |@ **.wav format:ima4
+                    |include **
+                    |
+                    |[emscripten]
+                    |@ ** format:ogg
                     |include **
     writer.close
   endIf
@@ -132,6 +136,7 @@ class SoundCompiler
         format = attr//format->String
         which (format)
           case "ima4": new_ext = "caf"
+          case "ogg": new_ext = "ogg"
         endWhich
       endIf
 
@@ -149,11 +154,16 @@ class SoundCompiler
 
         if (format and cur_ext != new_ext)
           local buffer = StringBuilder()
-          buffer.print( "afconvert " )
-          which (format)
-            case "ima4": buffer.print( "-f caff -d 'ima4' " )
-          endWhich
-          buffer.print( from_filepath ).print( " " ).print( to_filepath )
+          if (System.os == "macOS")
+            buffer.print( "afconvert " )
+            which (format)
+              case "ima4": buffer.print( "-f caff -d 'ima4' " )
+            endWhich
+            buffer.print( from_filepath ).print( " " ).print( to_filepath )
+          else
+            buffer.print( "sox " )
+            buffer.print( from_filepath ).print( " " ).print( to_filepath )
+          endIf
 
           local cmd = buffer->String
 
