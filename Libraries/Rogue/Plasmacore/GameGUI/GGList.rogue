@@ -1,9 +1,15 @@
 module Plasmacore
 
 class GGList : GGComponent
+  GLOBAL METHODS
+    method horizontal( bounds:Box )->GGList
+      return GGList( bounds, true )
+
+    method vertical( bounds:Box )->GGList
+      return GGList( bounds, false )
+
   PROPERTIES
     is_horizontal : Logical
-    subcomponents = GGComponent[]
     offset        : XY
     max_offset    : Real64
     velocity      : XY
@@ -26,6 +32,7 @@ class GGList : GGComponent
       size = box.size
 
     method add( component:GGComponent )->this
+      ensure subcomponents
       subcomponents.add( component )
       return this
 
@@ -71,6 +78,10 @@ class GGList : GGComponent
             drag_deltas.clear
             adjust_offset( e.position )
           endIf
+        else
+          # Pass move event to appropriate list item
+          local component = find( e )
+          if (component) component.on( e )
         endIf
       elseIf (e.is_release)
         is_pressed = false
@@ -89,21 +100,32 @@ class GGList : GGComponent
           endIf
         else
           acceleration = 0.10
+          if (velocity.abs.max < 1)
+            # We pressed and released list without dragging it.  Generate a press/release event
+            # for the appropriate list item.
+            local component = find( e )
+            if (component)
+              component.on( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index,e.id) ) # Press
+              component.on( e ) # Release
+            endIf
+          endIf
         endIf
       endIf
 
     method on_draw
-      Display.push_clipping_region( bounds )
-      local drawn_any = false
-      forEach (component in subcomponents)
-        if (component.bounds.intersects(bounds))
-          component.on_draw
-          drawn_any = true
-        elseIf (drawn_any)
-          escapeForEach
-        endIf
-      endForEach
-      Display.pop_clipping_region
+      if (subcomponents)
+        Display.push_clipping_region( bounds )
+        local drawn_any = false
+        forEach (component in subcomponents)
+          if (component.bounds.intersects(bounds))
+            component.on_draw
+            drawn_any = true
+          elseIf (drawn_any)
+            escapeForEach
+          endIf
+        endForEach
+        Display.pop_clipping_region
+      endIf
 
     method on_update
       if (is_dragging)
@@ -139,12 +161,15 @@ class GGList : GGComponent
       endIf
 
       content_size = 0
-      local pos = position + offset
-      forEach (component in subcomponents)
-        component.position = pos
-        if (is_horizontal) pos += component.size.xv; content_size += component.size.x
-        else               pos += component.size.yv; content_size += component.size.y
-      endForEach
+
+      if (subcomponents)
+        local pos = position + offset
+        forEach (component in subcomponents)
+          component.position = pos
+          if (is_horizontal) pos += component.size.xv; content_size += component.size.x
+          else               pos += component.size.yv; content_size += component.size.y
+        endForEach
+      endIf
 
       if (is_horizontal)
         max_offset = -((content_size - size.x).or_larger( 0 ))

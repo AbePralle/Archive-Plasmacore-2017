@@ -5,9 +5,14 @@ Display( "Main" ).view = MainView()
 class ColorBox : GGComponent
   PROPERTIES
     color : Color
+    is_pressed : Logical
 
   METHODS
     method init( color, size )
+
+    method on( e:PointerEvent )
+      if (e.is_press) is_pressed = true
+      if (e.is_release and is_pressed) color.argb = color.argb + 0x7f; is_pressed = false
 
     method on_draw
       bounds.fill( color )
@@ -23,7 +28,7 @@ class MainView : View
     method on_start
       change_state( InitialState() )
 
-      list = GGList( Box(0,0,Int32(Display.size.x/2),Display.size.y), &is_horizontal )
+      list = GGList.vertical( Box(0,0,Int32(Display.size.x/2),Display.size.y) )
       list.add( ColorBox(Color.RED,XY(64,128)) )
       list.add( ColorBox(Color.GREEN,XY(64,128)) )
       list.add( ColorBox(Color.BLUE,XY(64,128)) )
