@@ -64,6 +64,9 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Platform/iOS/Build
+	rm -rf Libraries/SoundCompiler/Build
+	rm -rf Libraries/HarfBuzz/Build
+	rm -rf Libraries/ImageCompiler/Build
 
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
