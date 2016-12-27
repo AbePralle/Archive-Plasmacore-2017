@@ -82,12 +82,22 @@ class Display [singleton]
     system_font  : Font
     default_font : Font
 
+    native "GLuint pos_buf, color_buf, uv_buf;"
+
   GLOBAL METHODS
     method create( name:String )->Display
       return Plasmacore.display( name )
 
   METHODS
     method init
+
+    method on_cleanup
+      native @|if ($this->pos_buf)
+              |{
+              |  glDeleteBuffers(1, &$this->pos_buf);
+              |  glDeleteBuffers(1, &$this->color_buf);
+              |  glDeleteBuffers(1, &$this->uv_buf);
+              |}
 
     method activate_view_and_state
       if (not color_shader)
@@ -98,6 +108,13 @@ class Display [singleton]
         texture_shader_with_color_add      = Shader.create_texture_shader_with_color_add
         texture_shader_with_color_fill     = Shader.create_texture_shader_with_color_fill
       endIf
+
+      native @|if (!$this->pos_buf)
+              |{
+              |  glGenBuffers(1, &$this->pos_buf);
+              |  glGenBuffers(1, &$this->color_buf);
+              |  glGenBuffers(1, &$this->uv_buf);
+              |}
 
       if (not view) view = default_view_type.create_object<<View>>
       view.display = this
@@ -584,19 +601,23 @@ class Display [singleton]
               |  }
               |}
       # Configure shader
-      native @|glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0,
-              |                       $vertex_positions->data->as_real32s );
+      native @|glBindBuffer(GL_ARRAY_BUFFER, $this->pos_buf);
+              |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 4 * $vertex_positions->count, $vertex_positions->data->as_real32s, GL_STREAM_DRAW);
               |glEnableVertexAttribArray( $shader->position_attribute );
+              |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
       if (shader.color_attribute >= 0)
-        native @|glVertexAttribPointer( $shader->color_attribute, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0,
-                |$vertex_colors->data->as_int32s );
+        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->color_buf);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_UNSIGNED_BYTE) * 4 * $vertex_colors->count, $vertex_colors->data->as_int32s, GL_STREAM_DRAW);
                 |glEnableVertexAttribArray( $shader->color_attribute );
+                |glVertexAttribPointer( $shader->color_attribute, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, 0);
       endIf
 
       if (shader.uv_attribute >= 0)
-        native @|glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, $vertex_uvs->data->as_real32s );
+        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->uv_buf);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 2 * $vertex_uvs->count, $vertex_uvs->data->as_real32s, GL_STREAM_DRAW);
                 |glEnableVertexAttribArray( $shader->uv_attribute );
+                |glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
 
       which (active_primitive_type)
