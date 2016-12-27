@@ -505,6 +505,8 @@ class Display [singleton]
         return
       endIf
 
+      native @|glUseProgram( $shader->program_id );
+
       native @|glViewport( 0, 0, (int)$viewport_size.x, (int)$viewport_size.y );
               |glEnable( GL_CULL_FACE );
               |glFrontFace( GL_CCW );
@@ -582,9 +584,7 @@ class Display [singleton]
               |  }
               |}
       # Configure shader
-      native @|glUseProgram( $shader->program_id );
-              |
-              |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0,
+      native @|glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0,
               |                       $vertex_positions->data->as_real32s );
               |glEnableVertexAttribArray( $shader->position_attribute );
 
