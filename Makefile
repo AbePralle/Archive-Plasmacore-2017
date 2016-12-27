@@ -37,11 +37,21 @@ ios: override TARGET := iOS
 
 macos: override TARGET := macOS
 
+emscripten: override TARGET := emscripten
+
+linux: override TARGET := Linux
+
 all: build run compile_images compile_sounds
 
 ios: build run compile_images compile_sounds
 
 macos: build run compile_images compile_sounds
+
+emscripten: build run compile_images compile_sounds
+	make -C Platforms/emscripten
+
+linux: build run compile_images compile_sounds
+	make -C Platforms/Linux
 
 build: Build/BuildScript/buildscript
 

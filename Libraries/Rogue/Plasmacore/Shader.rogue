@@ -24,7 +24,7 @@ endRoutine
 class Shader
   DEFINITIONS
 
-$if "iOS" or "Android"
+$if "iOS" or "Android" or "Linux" or "emscripten"
     GLSL_VERSION = ""
     PRECISION_MEDIUMP_FLOAT = "precision mediump float;\n"
     LOWP = " lowp "

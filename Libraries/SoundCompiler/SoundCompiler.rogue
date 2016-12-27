@@ -30,6 +30,10 @@ try
                     |[iOS]
                     |@ **.wav format:ima4
                     |include **
+                    |
+                    |[emscripten]
+                    |@ ** format:ogg
+                    |include **
     writer.close
   endIf
 

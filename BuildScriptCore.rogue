@@ -18,12 +18,12 @@ routine get_platform->String
 
   try
     which (target)
-      case "iOS", "macOS"
+      case "iOS", "macOS", "emscripten", "Linux"
         noAction
 
       others
         println @|USAGE
-                 |  make [ios | macos]
+                 |  make [ios | macos | emscripten | linux]
         System.exit 1
     endWhich
 
@@ -93,7 +93,7 @@ endRoutine
 
 routine mobile_or_desktop( target:String )->String
   which (target)
-    case "Windows", "macOS", "Linux", "Unix"
+    case "Windows", "macOS", "Linux", "Unix", "emscripten"
       return "Desktop"
 
     others
