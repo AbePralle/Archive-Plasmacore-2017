@@ -17,6 +17,19 @@ else
 endif
 
 
+ROGUEC = roguec
+
+ifeq ($(OS),Windows_NT)
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Darwin)
+    ROGUEC = Programs/Mac/roguec
+  else
+  endif
+endif
+
+-include Local.mk
+
 ios: override TARGET := iOS
 
 macos: override TARGET := macOS
@@ -39,8 +52,8 @@ Build/BuildScript:
 	mkdir -p Build/BuildScript
 
 Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCore.rogue $(ROGUE_LIBRARIES)
-	Programs/macOS/roguec $(ROGUE_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
-	c++ -std=c++11 -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
+	$(ROGUEC) $(ROGUE_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+	$(CXX) -std=c++11 -DROGUEC=$(ROGUEC) -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
 	env Build/BuildScript/buildscript $(TARGET) $(ROGUE_IDE_FLAG)

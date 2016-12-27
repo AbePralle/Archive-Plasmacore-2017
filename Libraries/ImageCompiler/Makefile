@@ -1,5 +1,15 @@
 .PHONY: build
 
+ROGUEC = roguec
+ifeq ($(OS),Windows_NT)
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Darwin)
+    ROGUEC = ../../Programs/Mac/roguec
+  else
+  endif
+endif
+
 COMPILE = $(CXX) -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 all: build run
@@ -15,7 +25,7 @@ Build/BuildScript/buildscript: Build/BuildScript/BuildScript.cpp
 
 Build/BuildScript/BuildScript.cpp: BuildScript.rogue Makefile
 	@mkdir -p Build/BuildScript
-	../../Programs/macOS/roguec --main --libraries=../Rogue BuildScript.rogue --output=Build/BuildScript --define=COMPILER_INVOCATION:"\"$(COMPILE)\""
+	$(ROGUEC) --main --libraries=../Rogue BuildScript.rogue --output=Build/BuildScript --define=COMPILER_INVOCATION:"\"$(COMPILE)\"" --define=ROGUEC:"\"$(ROGUEC)\""
 
 run:
 	Build/BuildScript/buildscript

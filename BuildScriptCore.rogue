@@ -73,7 +73,14 @@ routine compile( target:String )
   local language = "C++"
   if (target == "macOS" or target == "iOS") language = "C++,ObjC"
 
-  local exe = "Programs/macOS/roguec"
+  local exe = "roguec"
+  native @|#ifdef ROGUEC
+          |  #define MAKE_MACRO_STR(s) MAKE_ARG_STR(s)
+          |  #define MAKE_ARG_STR(s) #s
+          |  $(exe) = RogueString_create_from_utf8(MAKE_MACRO_STR(ROGUEC));
+          |  #undef MAKE_ARG_STR
+          |  #undef MAKE_MACRO_STR
+          |#endif
   local cmd = ''$ --target=$,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
     (exe,language,target,mobile_or_desktop(target),output_folder)
     if (BuildConfig.ide_flag) cmd += " --ide"

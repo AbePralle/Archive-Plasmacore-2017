@@ -2,7 +2,7 @@ try
   if (not needs_compile) escapeTry
 
   install_brew
-  if (0 != System.run( ''../../Programs/macOS/roguec --libraries=../../Libraries/Rogue ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
+  if (0 != System.run( ROGUEC + '' --libraries=../../Libraries/Rogue ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
 
 
   local png_folder = library_location( "libpng" )
