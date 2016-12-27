@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - December 23, 2016
+###v0.7.0 - December 27, 2016
 - [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
 - [GameGUI] Added base classes for the "GameGUI" user interface system.  A `GameGUI` class is a Layer that various GGComponents can be added to.
 - [DefaultFont] Added new built-in font called `DefaultFont`.  The font is a 34 pixel high Arial Bold.
