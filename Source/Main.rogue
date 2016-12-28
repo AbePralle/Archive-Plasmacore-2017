@@ -22,57 +22,20 @@ endClass
 
 class MainView : View
   PROPERTIES
-    list : GGList
 
   METHODS
     method on_start
       change_state( InitialState() )
 
-      list = GGList.vertical( Box(0,0,Int32(Display.size.x/2),Display.size.y) )
-      list.add( ColorBox(Color.RED,XY(64,128)) )
-      list.add( ColorBox(Color.GREEN,XY(64,128)) )
-      list.add( ColorBox(Color.BLUE,XY(64,128)) )
-      list.add( ColorBox(Color.RED,XY(64,128)) )
-      list.add( ColorBox(Color.GREEN,XY(64,128)) )
-      list.add( ColorBox(Color.BLUE,XY(64,128)) )
-      list.add( ColorBox(Color.RED,XY(64,128)) )
-      #{
-      local gui = GameGUI()
-      local list = GGList()
-      list.add( GGDefaultButton("A") )
-      list.add( GGDefaultButton("B") )
-      list.add( GGDefaultButton("C") )
-      list.add( GGDefaultButton("D") )
-      list.add( GGDefaultButton("E") )
-      list.add( GGDefaultButton("F") )
-      list.add( GGDefaultButton("G") )
-      list.add( GGDefaultButton("H") )
-      list.add( GGDefaultButton("I") )
-      list.add( GGDefaultButton("J") )
-      list.add( GGDefaultButton("K") )
-      list.add( GGDefaultButton("L") )
-      list.add( GGDefaultButton("M") )
-      gui.add( list + GGFiller.x )
-      add( gui )
-      }#
-
     method on( e:PointerEvent )
-      if (e.is_press or e.is_move or e.is_release)
-        list.on( e )
-      endIf
 
     method on_draw
-      Display.clear( Color.BLACK )
-      DefaultFont.anchor = Anchor.CENTER
-      DefaultFont.draw( "Hello World! \[f7] 0123456789", Display.center )
-      list.on_draw
 
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
-      list.on_update
 endClass
 
 
@@ -91,6 +54,8 @@ class InitialState : State<<MainView>>
 
     method on_draw
       # This happens before the current view's on_draw()
+      DefaultFont.anchor = Anchor.CENTER
+      DefaultFont.draw( "Hello World", Display.center )
 
     method on_resize
       # Called when the Display.size changes

@@ -2,14 +2,15 @@ module Plasmacore
 
 class GGSpacer : GGComponent
   GLOBAL METHODS
-    method x( pixels:Int32 )->GGSpacer
+    method horizontal( pixels:Int32 )->GGSpacer
       return GGSpacer( XY(pixels,1) )
 
-    method y( pixels:Int32 )->GGSpacer
+    method vertical( pixels:Int32 )->GGSpacer
       return GGSpacer( XY(1,pixels) )
 
   METHODS
     method init( fixed_size )
+      size = fixed_size
 
 endClass
 

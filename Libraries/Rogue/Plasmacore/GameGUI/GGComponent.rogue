@@ -1,13 +1,36 @@
 using Plasmacore
 
-class GGComponent
+class GGComponentManager [singleton]
   PROPERTIES
-    position : XY
-    size     : XY
+    pointer_position : XY?
+    pointer_focus    : GGComponent
+    default_font     = DefaultFont.cloned.set_scale( 0.60 ) : Font
+endClass
+
+class GGComponent
+
+  PROPERTIES
+    position   : XY
+    size       : XY
+    fixed_size : XY
 
     subcomponents : GGComponent[]
 
   METHODS
+    method add( component:GGComponent )->this
+      ensure subcomponents
+      subcomponents.add( component )
+      return this
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after_draw
+      noAction
+
+    method after_update
+      noAction
+
     method bounds->Box
       return Box( position, size )
 
@@ -16,6 +39,24 @@ class GGComponent
 
     method contains( e:PointerEvent )->Logical
       return bounds.contains( e.position )
+
+    method dispatch( e:PointerEvent )
+      if (subcomponents)
+        forEach (component in subcomponents)
+          component.handle( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
+
+    method dispatch_draw
+      if (subcomponents)
+        (forEach in subcomponents).handle_draw
+      endIf
+
+    method dispatch_update
+      if (subcomponents)
+        (forEach in subcomponents).handle_update
+      endIf
 
     method find( at_position:XY )->GGComponent
       if (subcomponents)
@@ -28,17 +69,77 @@ class GGComponent
     method find( e:PointerEvent )->GGComponent
       return find( e.position )
 
+    method handle( e:PointerEvent )
+      GGComponentManager.pointer_position = e.position
+      if (GGComponentManager.pointer_focus and GGComponentManager.pointer_focus is not this)
+        GGComponentManager.pointer_focus.handle( e )
+        return
+      endIf
+
+      on( e )
+      if (e.is_consumed) return
+
+      dispatch( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle_draw
+      on_draw
+      dispatch_draw
+      after_draw
+
+    method handle_update
+      on_update
+      dispatch_update
+      after_update
+
+    method horizontal_flex->Real64
+      if (fixed_size.x) return 0.0
+      else              return 1.0
+
+    method maximum_height->Real64
+      return fixed_size.y
+
+    method maximum_size->XY
+      return XY( maximum_width, maximum_height )
+
+    method maximum_width->Real64
+      return fixed_size.x
+
+    method minimum_height->Real64
+      return fixed_size.y
+
+    method minimum_size->XY
+      return XY( minimum_width, minimum_height )
+
+    method minimum_width->Real64
+      return fixed_size.x
+
     method on( e:PointerEvent )
+      noAction
 
     method on_draw
+      noAction
 
     method on_update
+      noAction
 
-      #{
     method operator+( right_component:GGComponent )->GGComponent
       return GGHorizontalLayout().add( this ).add( right_component )
 
     method operator/( bottom_component:GGComponent )->GGComponent
       return GGVerticalLayout().add( this ).add( bottom_component )
-}#
+
+    method update_layout
+      noAction
+
+    method update_layout( new_bounds:Box )
+      position = new_bounds.position
+      size = XY( select{fixed_size.x||new_bounds.width}, select{fixed_size.y||new_bounds.height} )
+      update_layout
+
+    method vertical_flex->Real64
+      if (fixed_size.y) return 0.0
+      else              return 1.0
 endClass

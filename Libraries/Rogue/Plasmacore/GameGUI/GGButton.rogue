@@ -1,48 +1,176 @@
 using  Plasmacore
 
+
 class GGButton : GGComponent
   PROPERTIES
-    label            : String
+    label               : String
+    font                : Font
 
-    image            : Image
-    targeted_image   : Image
-    pressed_image    : Image
-    selected_image   : Image
-    disabled_image   : Image
+    image               : Image
+    pressed_image       : Image
+    targeted_image      : Image
+    selected_image      : Image
+    disabled_image      : Image
+
+    press_timer         = Timer(0.2,&expired)
+
+    is_pressed          : Logical
+    is_selected         : Logical
+    is_disabled         : Logical
+
+    on_press_handler    : Function(GGComponent)
+    on_release_handler  : Function(GGComponent)
+    on_select_handler   : Function(GGComponent)
+    on_deselect_handler : Function(GGComponent)
 
   METHODS
-    method init( label, font=null )
+    method init( label, fixed_size, font=GGComponentManager.default_font )
+      size = fixed_size
 
-    method init( image, label=null, font=null, targeted_image=null, pressed_image=null, selected_image=null, disabled_image=null )
-      if (label and not font) font = GGComponent.default_font
+    method init( image, pressed_image=null )
 
       if (image)
         fixed_size = image.size
+        size = fixed_size
 
-        if (not targeted_image) targeted_image = image.cloned.set_tint( 0.5, Color.WHITE )
-        if (not selected_image) selected_image = image.cloned.set_tint( 0.2, Color.BLACK )
         if (not pressed_image)  pressed_image  = selected_image
-        if (not disabled_image) disabled_image = image.cloned.set_tint( 0.5, Color.BLACK )
+        targeted_image = image.cloned.set_tint( 0.5, Color.WHITE )
+        selected_image = image.cloned.set_tint( 0.2, Color.BLACK )
+        disabled_image = image.cloned.set_tint( 0.5, Color.BLACK )
       endIf
 
-    method is_selectable->Logical
-      return true
+    method handle( e:PointerEvent )
+      GGComponentManager.pointer_position = e.position
+      if (GGComponentManager.pointer_focus and GGComponentManager.pointer_focus is not this)
+        GGComponentManager.pointer_focus.handle( e )
+        return
+      endIf
 
-    method on_draw
-      if (image)
+      if (e.is_press)
+        if (this.contains(e) and GGComponentManager.pointer_focus is not this)
+          GGComponentManager.pointer_focus = this
+          is_pressed = true
+          press_timer.restart
+          on_press
+          if (on_press_handler) on_press_handler( this )
+        endIf
+
+      elseIf (e.is_release)
         if (is_pressed)
-          selected_image.draw( position )
-        elseIf (is_selected)
-          selected_image.draw( position )
-        elseIf (is_targeted)
-          targeted_image.draw( position )
-        elseIf (is_disabled)
-          disabled_image.draw( position )
-        else
-          image.draw( position )
+          is_pressed = false
+          GGComponentManager.pointer_focus = null
+          on_release
+          if (on_release_handler) on_release_handler( this )
+
+          if (this.contains(e))
+            if (this.is_toggle)
+              this.is_selected = not this.is_selected
+              if (this.is_selected)
+                on_select
+                if (on_select_handler) on_select_handler( this )
+              else
+                on_deselect
+                if (on_deselect_handler) on_deselect_handler( this )
+              endIf
+            else
+              on_select
+              if (on_select_handler) on_select_handler( this )
+            endIf
+          endIf
+        endIf
+
+      elseIf (e.is_move)
+        if (not contains(e))
+          if (is_pressed)
+            is_pressed = false
+            GGComponentManager.pointer_focus = null
+            on_release
+            if (on_release_handler) on_release_handler( this )
+          endIf
         endIf
       endIf
-      if (label and font) font.draw( label, position )
 
+    method is_targeted->Logical
+      return (GGComponentManager.pointer_position.exists and this.contains(GGComponentManager.pointer_position.value))
+
+    method is_toggle->Logical
+      return false
+
+    method on_draw
+      local img : Image
+      local color : Color
+
+      if (image)
+        if (is_pressed or not press_timer.is_expired)
+          img = pressed_image
+        elseIf (is_selected)
+          img = selected_image
+        elseIf (is_targeted)
+          img = targeted_image
+        elseIf (is_disabled)
+          img = disabled_image
+        else
+          img = image
+        endIf
+      else
+        if (is_pressed or not press_timer.is_expired)
+          color = 0xff8080ff
+        elseIf (is_targeted)
+          color = Color.BLUE
+        else
+          color = Color.BLACK
+        endIf
+      endIf
+
+      if (img)
+        img.anchor = Anchor.TOP_LEFT
+        img.draw( position )
+      else
+        bounds.fill( Color.WHITE )
+        bounds.cropped(2).fill( color )
+        if (is_toggle and is_selected)
+          bounds.cropped(6).fill( Color.WHITE )
+        endIf
+      endIf
+
+      if (label and font)
+        font.anchor = Anchor.CENTER
+        font.draw( label, bounds.center )
+      endIf
+
+    method on_press
+      noAction
+
+    method on_release
+      noAction
+
+    method on_select
+      noAction
+
+    method on_deselect
+      noAction
+
+    method set_label( @label )->this
+      if (not font) font = GGComponentManager.default_font
+      return this
+
+    method set_label( @label, @font )->this
+      return this
+
+    method set_on_press( @on_press_handler )->this
+      return this
+
+    method set_on_release( @on_release_handler )->this
+      return this
+
+    method set_on_select( @on_select_handler )->this
+      return this
+
+    method set_on_deselect( @on_deselect_handler )->this
+      return this
+
+    method set_press_time( duration:Real64 )->this
+      press_timer.duration = duration
+      return this
 endClass
 

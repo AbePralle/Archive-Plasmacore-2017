@@ -2,10 +2,10 @@ module Plasmacore
 
 class GGFiller : GGComponent
   GLOBAL METHODS
-    method x( weight=1.0:Real64 )->GGFiller
+    method horizontal( weight=1.0:Real64 )->GGFiller
       return GGFiller( XY(0,1), weight )
 
-    method y( weight=1.0:Real64 )->GGFiller
+    method vertical( weight=1.0:Real64 )->GGFiller
       return GGFiller( XY(1,0), weight )
 
   PROPERTIES

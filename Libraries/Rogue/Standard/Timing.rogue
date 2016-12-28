@@ -4,6 +4,9 @@ class Stopwatch
     stop_time  : Real64?
 
   METHODS
+    method init( &stopped )
+      if (stopped) stop_time = start_time
+
     method elapsed->Real64
       if (stop_time.exists)
         return (stop_time.value - start_time)
@@ -58,7 +61,11 @@ class Timer
     stop_time                : Real64?
 
   METHODS
-    method init( duration )
+    method init( duration, &expired )
+      if (expired)
+        stop_time = start_time
+        start_time -= duration
+      endIf
 
     method elapsed->Real64
       if (stop_time.exists)

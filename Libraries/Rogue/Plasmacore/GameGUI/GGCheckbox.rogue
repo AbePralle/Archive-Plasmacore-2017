@@ -1,17 +1,19 @@
 using Plasmacore
 
 class GGCheckbox : GGButton
-  PROPERTIES
-
   METHODS
-    method init( image, targeted_image=null, pressed_image=null, selected_image=null, disabled_image=null )
+    method init( fixed_size )
+      size = fixed_size
+
+    method init( image, selected_image=null )
       if (image)
         fixed_size = image.size
+        size = fixed_size
 
-        if (not targeted_image) targeted_image = image.cloned.set_tint( 0.5, Color.WHITE )
         if (not selected_image) selected_image = image.cloned.set_tint( 0.2, Color.BLACK )
-        if (not pressed_image)  pressed_image  = selected_image
-        if (not disabled_image) disabled_image = image.cloned.set_tint( 0.5, Color.BLACK )
+        pressed_image  = selected_image
+        targeted_image = image.cloned.set_tint( 0.5, Color.WHITE )
+        disabled_image = image.cloned.set_tint( 0.5, Color.BLACK )
       endIf
 
     method is_toggle->Logical

@@ -30,11 +30,10 @@ class GGList : GGComponent
     method init( box:Box, is_horizontal=false )
       position = box.position
       size = box.size
+      fixed_size = size
 
-    method add( component:GGComponent )->this
-      ensure subcomponents
-      subcomponents.add( component )
-      return this
+    method init( fixed_size, is_horizontal=false )
+      size = fixed_size
 
     method adjust_offset( new_pos:XY )
       local delta = new_pos - cur_pos
@@ -62,12 +61,14 @@ class GGList : GGComponent
       offset += delta
       cur_pos = new_pos
 
-    method on( e:PointerEvent )
+    method handle( e:PointerEvent )
+      GGComponentManager.pointer_position = e.position
       if (e.is_press)
         if (not is_dragging and contains(e))
           is_pressed = true
           drag_time.restart
           cur_pos = e.position
+          GGComponentManager.pointer_focus = this
         endIf
       elseIf (e.is_move)
         if (is_dragging)
@@ -81,10 +82,11 @@ class GGList : GGComponent
         else
           # Pass move event to appropriate list item
           local component = find( e )
-          if (component) component.on( e )
+          if (component) component.handle( e )
         endIf
       elseIf (e.is_release)
         is_pressed = false
+        GGComponentManager.pointer_focus = null
         if (is_dragging)
           is_dragging = false
           acceleration = 0.10
@@ -105,8 +107,8 @@ class GGList : GGComponent
             # for the appropriate list item.
             local component = find( e )
             if (component)
-              component.on( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index,e.id) ) # Press
-              component.on( e ) # Release
+              component.handle( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index,e.id) ) # Press
+              component.handle( e ) # Release
             endIf
           endIf
         endIf
@@ -121,7 +123,10 @@ class GGList : GGComponent
             component.on_draw
             drawn_any = true
           elseIf (drawn_any)
-            escapeForEach
+            if (component.size.x and component.size.y)
+              # Only quit non-zero-sized components
+              escapeForEach
+            endIf
           endIf
         endForEach
         Display.pop_clipping_region
