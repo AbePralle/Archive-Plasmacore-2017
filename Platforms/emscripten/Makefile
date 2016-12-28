@@ -66,16 +66,16 @@ JPEG_FILES := \
   jquant2.c
 
 JPEG_OFILES := \
-  $(JPEG_FILES:%.c=$(BUILD_FOLDER)/%.o)
+  $(JPEG_FILES:%.c=$(BUILD_FOLDER)/Intermediate/%.o)
 
 all: build
 
-build: $(BUILD_FOLDER) project
+build: $(BUILD_FOLDER)/Intermediate project
 
-$(BUILD_FOLDER):
-	mkdir -p $(BUILD_FOLDER)
+$(BUILD_FOLDER)/Intermediate:
+	mkdir -p $(BUILD_FOLDER)/Intermediate
 
-$(BUILD_FOLDER)/%.o: $(JPEG_FOLDER)/%.c
+$(BUILD_FOLDER)/Intermediate/%.o: $(JPEG_FOLDER)/%.c
 	$(CC) $(CFLAGS) -O3 -c $< -o $@
 
 clean:
@@ -83,7 +83,7 @@ clean:
 	rm -rf $(BUILD_FOLDER)/Assets
 	rm -f $(BUILD_FOLDER)/Source/RogueProgram.cpp
 	rm -f $(BUILD_FOLDER)/Source/RogueProgram.h
-	rm -f $(BUILD_FOLDER)/*.o
+	rm -f $(BUILD_FOLDER)/Intermediate/*.o
 
 project: $(BUILD_FOLDER)/$(OUTPUT_NAME).html
 
