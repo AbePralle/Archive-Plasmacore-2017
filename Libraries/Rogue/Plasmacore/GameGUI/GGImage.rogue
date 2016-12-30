@@ -1,0 +1,16 @@
+using  Plasmacore
+
+class GGImage : GGComponent
+  PROPERTIES
+    image               : Image
+
+  METHODS
+    method init( image )
+      fixed_size = image.size
+      size = fixed_size
+
+    method on_draw
+      image.anchor = Anchor.TOP_LEFT
+      image.draw( position )
+endClass
+

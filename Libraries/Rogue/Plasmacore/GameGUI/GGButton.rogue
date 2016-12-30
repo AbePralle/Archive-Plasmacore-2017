@@ -3,7 +3,7 @@ using  Plasmacore
 
 class GGButton : GGComponent
   PROPERTIES
-    label               : String
+    text                : String
     font                : Font
 
     image               : Image
@@ -18,13 +18,13 @@ class GGButton : GGComponent
     is_selected         : Logical
     is_disabled         : Logical
 
-    on_press_handler    : Function(GGComponent)
-    on_release_handler  : Function(GGComponent)
-    on_select_handler   : Function(GGComponent)
-    on_deselect_handler : Function(GGComponent)
+    on_press_handler    : Function(GGButton)
+    on_release_handler  : Function(GGButton)
+    on_select_handler   : Function(GGButton)
+    on_deselect_handler : Function(GGButton)
 
   METHODS
-    method init( label, fixed_size, font=GGComponentManager.default_font )
+    method init( fixed_size, text, font=GGComponentManager.default_font )
       size = fixed_size
 
     method init( image, pressed_image=null )
@@ -133,9 +133,9 @@ class GGButton : GGComponent
         endIf
       endIf
 
-      if (label and font)
+      if (text and font)
         font.anchor = Anchor.CENTER
-        font.draw( label, bounds.center )
+        font.draw( text, bounds.center )
       endIf
 
     method on_press
@@ -149,13 +149,6 @@ class GGButton : GGComponent
 
     method on_deselect
       noAction
-
-    method set_label( @label )->this
-      if (not font) font = GGComponentManager.default_font
-      return this
-
-    method set_label( @label, @font )->this
-      return this
 
     method set_on_press( @on_press_handler )->this
       return this

@@ -17,6 +17,9 @@ class GGComponent
     subcomponents : GGComponent[]
 
   METHODS
+    method init( fixed_size )
+      size = fixed_size
+
     method add( component:GGComponent )->this
       ensure subcomponents
       subcomponents.add( component )
@@ -132,7 +135,10 @@ class GGComponent
       return GGVerticalLayout().add( this ).add( bottom_component )
 
     method update_layout
-      noAction
+      if (subcomponents)
+        local my_bounds = bounds
+        (forEach in subcomponents).update_layout( my_bounds )
+      endIf
 
     method update_layout( new_bounds:Box )
       position = new_bounds.position
