@@ -637,7 +637,7 @@ class Display [singleton]
               |}
       # Configure shader
       native @|glBindBuffer(GL_ARRAY_BUFFER, $this->pos_buf);
-              |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 4 * $vertex_positions->count, $vertex_positions->data->as_real32s, GL_STREAM_DRAW);
+              |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $vertex_positions->count, $vertex_positions->data->as_real32s, GL_STREAM_DRAW);
               |glEnableVertexAttribArray( $shader->position_attribute );
               |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -650,7 +650,7 @@ class Display [singleton]
 
       if (shader.uv_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->uv_buf);
-                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 2 * $vertex_uvs->count, $vertex_uvs->data->as_real32s, GL_STREAM_DRAW);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $vertex_uvs->count, $vertex_uvs->data->as_real32s, GL_STREAM_DRAW);
                 |glEnableVertexAttribArray( $shader->uv_attribute );
                 |glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
       endIf

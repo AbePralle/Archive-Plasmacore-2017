@@ -54,13 +54,14 @@ class InitialState : State<<MainView>>
       trace e
 
     method on( e:PointerEvent )
-      trace e
+      if (e.is_press or e.is_release) trace e
 
     method on( e:TextEvent )
       trace e
 
     method on_draw
       # This happens before the current view's on_draw()
+      Display.clear( Color.BLUE )
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World", Display.center )
 
