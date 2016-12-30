@@ -163,16 +163,20 @@ class PlasmacoreView: NSOpenGLView
     guard characters.characters.count > 0 else { return }
     let unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
 
-    m = PlasmacoreMessage( type:"Display.on_text_event" )
-    m.set( name:"window_id", value:windowID )
-    m.set( name:"display_name", value:name )
-    m.set( name:"character", value:unicode )
-
-    if (characters.characters.count > 1)
+    // Don't send unicode 0..31 or 127 as a TextEvent
+    if (characters.characters.count > 1 || (characters.characters.count == 1 && unicode >= 32 && unicode != 127))
     {
-      m.set( name:"text", value:characters )
+      m = PlasmacoreMessage( type:"Display.on_text_event" )
+      m.set( name:"window_id", value:windowID )
+      m.set( name:"display_name", value:name )
+      m.set( name:"character", value:unicode )
+
+      if (characters.characters.count > 1)
+      {
+        m.set( name:"text", value:characters )
+      }
+      m.send()
     }
-    m.send()
   }
 
   override func keyUp( with event:NSEvent )
