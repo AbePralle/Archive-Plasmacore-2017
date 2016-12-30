@@ -25,6 +25,8 @@ class State
 
     method after( e:PointerEvent )
 
+    method after( e:TextEvent )
+
     method after_draw
 
     method after_resize
@@ -50,6 +52,15 @@ class State
       after( e )
 
     method handle( e:PointerEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:TextEvent )
       on( e )
       if (e.is_consumed) return
 
@@ -89,24 +100,37 @@ class State
       view.load_assets
 
     method on( e:KeyEvent )
+      noAction
 
     method on( e:PointerEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
 
     method on_draw
+      noAction
 
     method on_finish
+      noAction
 
     method on_prepare
+      noAction
 
     method on_resize
+      noAction
 
     method on_resume
+      noAction
 
     method on_start
+      noAction
 
     method on_suspend
+      noAction
 
     method on_update
+      noAction
 
     method push_state( new_state:State )
       view.push_state( new_state )

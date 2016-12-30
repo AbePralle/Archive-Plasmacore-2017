@@ -415,6 +415,10 @@ class Display [singleton]
       activate_view_and_state
       view.state.handle( e )
 
+    method handle( e:TextEvent )
+      activate_view_and_state
+      view.state.handle( e )
+
     method height->Int32 [macro]
       this.size.y->Int32
 

@@ -8,6 +8,8 @@ class Layer
 
     method on( e:PointerEvent )
 
+    method on( e:TextEvent )
+
     method on_draw
 
     method on_finish

@@ -56,6 +56,9 @@ class Window
     method handle_pointer_event( display_name_buffer:StringBuilder, e:PointerEvent )
       find_display( display_name_buffer ).handle( e )
 
+    method handle_key_event( display_name_buffer:StringBuilder, e:TextEvent )
+      find_display( display_name_buffer ).handle( e )
+
     method handle_update_and_draw( display_name_buffer:StringBuilder, display_size:XY )
       #{
       local display = find_display( display_name_buffer )

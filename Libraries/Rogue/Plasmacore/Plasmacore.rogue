@@ -84,6 +84,17 @@ class Plasmacore [essential singleton]
           Display( m.string("display_name") ).render( display_size, viewport_size )
         endFunction )
 
+      MessageManager.add_listener( "Display.on_key_event",
+        function(m:Message)
+          local display   = Display( m.string("display_name") )
+          local keycode   = m.int32( "keycode" )
+          local syscode   = m.int32( "syscode" )
+          local is_repeat = m.logical( "is_repeat" )
+          local is_press  = m.logical( "is_press" )
+          local e = KeyEvent( keycode, syscode, is_press, is_repeat )
+          display.handle( e )
+        endFunction )
+
       MessageManager.add_listener( "Display.on_pointer_event",
         function(m:Message)
           local display = Display( m.string("display_name") )
@@ -94,6 +105,17 @@ class Plasmacore [essential singleton]
             m.int32("index"), m.int32("id") )
           display.handle( e )
         endFunction )
+
+      MessageManager.add_listener( "Display.on_text_event",
+        function(m:Message)
+          local display    = Display( m.string("display_name") )
+          local character  = m.int32( "character" )->Character
+          local text       : String
+          if (m.contains("text")) text = m.string( "text" )
+          local e = TextEvent( character, text )
+          display.handle( e )
+        endFunction )
+
 
     method asset_file( name:String )->File
       local filepath = asset_filepath( name )

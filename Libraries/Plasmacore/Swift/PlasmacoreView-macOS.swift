@@ -149,21 +149,29 @@ class PlasmacoreView: NSOpenGLView
     configure()
     let syscode = Int( event.keyCode & 0x7f )
     let keycode = syscodeToKeycode[ syscode ]
-    guard let characters = event.characters else { return }
-    guard characters.characters.count == 1 else { return }
-    var unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
 
-    // Have keycodes < 32 or == 127 pass through as Unicode.
-    if (keycode < 32 || keycode == 127) { unicode = keycode; }
-
-    let m = PlasmacoreMessage( type:"Display.on_key_event" )
+    var m = PlasmacoreMessage( type:"Display.on_key_event" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"is_press", value:true )
-    m.set( name:"unicode", value:unicode )
     m.set( name:"keycode", value:keycode )
     m.set( name:"syscode", value:syscode )
     m.set( name:"is_repeat", value:event.isARepeat )
+    m.send()
+
+    guard let characters = event.characters else { return }
+    guard characters.characters.count > 0 else { return }
+    let unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
+
+    m = PlasmacoreMessage( type:"Display.on_text_event" )
+    m.set( name:"window_id", value:windowID )
+    m.set( name:"display_name", value:name )
+    m.set( name:"character", value:unicode )
+
+    if (characters.characters.count > 1)
+    {
+      m.set( name:"text", value:characters )
+    }
     m.send()
   }
 
@@ -172,18 +180,11 @@ class PlasmacoreView: NSOpenGLView
     configure()
     let syscode = Int( event.keyCode & 0x7f )
     let keycode = syscodeToKeycode[ syscode ]
-    guard let characters = event.characters else { return }
-    guard characters.characters.count == 1 else { return }
-    var unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
-
-    // Have keycodes < 32 or == 127 pass through as Unicode.
-    if (keycode < 32 || keycode == 127) { unicode = keycode; }
 
     let m = PlasmacoreMessage( type:"Display.on_key_event" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"is_press", value:false )
-    m.set( name:"unicode", value:unicode )
     m.set( name:"keycode", value:keycode )
     m.set( name:"syscode", value:syscode )
     m.send()

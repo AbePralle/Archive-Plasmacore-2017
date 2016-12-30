@@ -22,6 +22,8 @@ class View
 
     method after( e:PointerEvent )
 
+    method after( e:TextEvent )
+
     method after_draw
 
     method after_resize
@@ -107,6 +109,19 @@ class View
 
       after( e )
 
+    method handle( e:TextEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      if (layers.count)
+        forEach (layer in layers step -1)
+          layer.on( e )
+          if (e.is_consumed) return
+        endForEach
+      endIf
+
+      after( e )
+
     method handle_draw
       on_draw
       (forEach in layers).on_draw
@@ -152,6 +167,8 @@ class View
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
+
+    method on( e:TextEvent )
 
     method on_draw
 

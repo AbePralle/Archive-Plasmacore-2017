@@ -50,7 +50,14 @@ class InitialState : State<<MainView>>
     method after_draw
       # This happens after the current view's on_draw()
 
+    method on( e:KeyEvent )
+      trace e
+
     method on( e:PointerEvent )
+      trace e
+
+    method on( e:TextEvent )
+      trace e
 
     method on_draw
       # This happens before the current view's on_draw()
