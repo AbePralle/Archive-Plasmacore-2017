@@ -3,7 +3,14 @@ module Plasmacore
 class Layer
   # A View Layer.  When you View.add(Layer), each layer gets a copy of each View event after
   # the view's 'on' event and before the view's 'after' event.
+  PROPERTIES
+    is_visible = true
+
   METHODS
+    method hide->this
+      is_visible = false
+      return this
+
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
@@ -25,4 +32,8 @@ class Layer
     method on_suspend
 
     method on_update
+
+    method show->this
+      is_visible = true
+      return this
 endClass

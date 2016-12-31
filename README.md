@@ -51,10 +51,11 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - December 29, 2016
+###v0.7.0 - December 31, 2016
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten".
 - [TextEvent] Separated the concepts of keypresses and text input.  `KeyEvent` no longer contains `unicode` values.  A new `TextEvent` has been added that contains `character:Character`, `text:Characters`, and a character `count()->Int32`.  Displays, Views, Layers, and States now have both `KeyEvent` and `TextEvent` handlers.
 - [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
+- [Layer] Layers have an `is_visible` property which defaults to true and can be affected by `Layer.hide()` and `Layer.show()`.  A hidden layer does not receive update, draw, or input events.
 - [GameGUI] Added base classes for the "GameGUI" user interface system.  A `GameGUI` class is a Layer that various GGComponents can be added to.
 - [DefaultFont] Added new built-in font called `DefaultFont`.  The font is a 34 pixel high Arial Bold.
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
