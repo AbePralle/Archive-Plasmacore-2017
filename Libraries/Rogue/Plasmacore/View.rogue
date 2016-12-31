@@ -48,9 +48,13 @@ class View
     method change_view( new_view:View )
       new_view.display = display
       new_view.on_prepare
-      (forEach in new_view.layers).on_prepare
+      forEach (layer in new_view.layers)
+        if (layer.is_visible) layer.on_prepare
+      endForEach
       this.on_finish
-      (forEach in layers).on_finish
+      forEach (layer in new_view.layers)
+        if (layer.is_visible) layer.on_finish
+      endForEach
       this.is_active = false
       display.view = new_view
 
@@ -89,8 +93,10 @@ class View
 
       if (layers.count)
         forEach (layer in layers step -1)
-          layer.on( e )
-          if (e.is_consumed) return
+          if (layer.is_visible)
+            layer.on( e )
+            if (e.is_consumed) return
+          endIf
         endForEach
       endIf
 
@@ -102,8 +108,10 @@ class View
 
       if (layers.count)
         forEach (layer in layers step -1)
-          layer.on( e )
-          if (e.is_consumed) return
+          if (layer.is_visible)
+            layer.on( e )
+            if (e.is_consumed) return
+          endIf
         endForEach
       endIf
 
@@ -115,8 +123,10 @@ class View
 
       if (layers.count)
         forEach (layer in layers step -1)
-          layer.on( e )
-          if (e.is_consumed) return
+          if (layer.is_visible)
+            layer.on( e )
+            if (e.is_consumed) return
+          endIf
         endForEach
       endIf
 
@@ -124,17 +134,29 @@ class View
 
     method handle_draw
       on_draw
-      (forEach in layers).on_draw
+      if (layers.count)
+        forEach (layer in layers)
+          if (layer.is_visible) layer.on_draw
+        endForEach
+      endIf
       after_draw
 
     method handle_resize
       on_resize
-      (forEach in layers).on_resize
+      if (layers.count)
+        forEach (layer in layers)
+          if (layer.is_visible) layer.on_resize
+        endForEach
+      endIf
       after_resize
 
     method handle_update
       on_update
-      (forEach in layers).on_update
+      if (layers.count)
+        forEach (layer in layers)
+          if (layer.is_visible) layer.on_update
+        endForEach
+      endIf
       after_update
 
     method load_another_asset->Real64
