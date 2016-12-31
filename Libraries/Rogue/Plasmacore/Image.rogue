@@ -23,6 +23,10 @@ class Image
     selected_shader : Shader
     # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
 
+    on_draw_handler : Function(Image)
+    # Optional, called after the image is drawn and while appropriate transformations and settings are still in effect.
+    # Particularly useful for CompositeImage objects which can be treated as a single image but is actually drawn
+    # as a composite of other images.
 
   METHODS
     method init( name )
@@ -163,6 +167,9 @@ class Image
 
       return false
 
+    method on_draw( on_draw_handler )->this
+      return this
+
     method prepare->Logical
       if (opacity <= 0.0) return false
 
@@ -288,7 +295,7 @@ class Image
 
 endClass
 
-#{
+
 class CompositeImage : Image
   METHODS
     method init( size )
@@ -297,7 +304,6 @@ class CompositeImage : Image
     method init( w:Int32, h:Int32 )
       init( XY(w,h) )
 endClass
-}#
 
 
 class ImageData
@@ -357,6 +363,7 @@ class CompositeImageData : ImageData
       forEach (piece in images) piece.draw
 
       on_draw
+      if (image.on_draw_handler) image.on_draw_handler( image )
 
       Display.pop_view_transform
 
@@ -393,6 +400,8 @@ class ColorFillImageData : ImageData
         transform * XYZ( 0, h, 0 ) )
 
       Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.render_mode, image.selected_shader )
+
+      if (image.on_draw_handler) image.on_draw_handler( image )
 
       Display.pop_object_transform
 
@@ -440,9 +449,11 @@ class TextureImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-        Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
-          Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-          image.render_mode, image.selected_shader )
+      Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
+        Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
+        image.render_mode, image.selected_shader )
+
+      if (image.on_draw_handler) image.on_draw_handler( image )
 
       Display.pop_object_transform
 
