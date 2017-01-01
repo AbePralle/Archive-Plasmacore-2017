@@ -58,7 +58,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Layer] Layers have an `is_visible` property which defaults to true and can be affected by `Layer.hide()` and `Layer.show()`.  A hidden layer does not receive update, draw, or input events.
 - [GameGUI] Added base classes for the "GameGUI" user interface system.  A `GameGUI` class is a Layer that various GGComponents can be added to.
 - [CompositeImage] Restored CompositeImage class (was commented out).
-- [Image] Images can now have a drawing callback: `Image.on_draw(Function(Image))` is used to set the callback.  The callback function is called after the basic image is drawn and while various transformations and settings are still in effect.  Particularly useful for composite images.
+- [Image] Images can now have a drawing callback: `Image.on_draw(Function(Box))` is used to set the callback.  The callback function is called after the basic image is drawn and while various transformations and settings are still in effect.  Particularly useful for composite images.
 - [DefaultFont] Added new built-in font called `DefaultFont`.  The font is a 34 pixel high Arial Bold.
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
 - [Box] Added `Box.relative_to(Anchor)->Box`.

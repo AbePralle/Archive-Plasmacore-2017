@@ -23,7 +23,7 @@ class Image
     selected_shader : Shader
     # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
 
-    on_draw_handler : Function(Image)
+    on_draw_handler : Function(Box)
     # Optional, called after the image is drawn and while appropriate transformations and settings are still in effect.
     # Particularly useful for CompositeImage objects which can be treated as a single image but is actually drawn
     # as a composite of other images.
@@ -37,20 +37,21 @@ class Image
       original_size = size
 
     method init( other:Image )
-      name          = other.name
-      image_info    = other.image_info
-      data          = other.data
-      position      = other.position
-      z             = other.z
-      size          = other.@size
-      original_size = other.@original_size
-      scale         = other.scale
-      rotation      = other.rotation
-      shader        = other.shader
-      anchor        = other.anchor
-      render_mode   = other.render_mode
-      colors        = other.colors
-      opacity       = other.opacity
+      name            = other.name
+      image_info      = other.image_info
+      data            = other.data
+      position        = other.position
+      z               = other.z
+      size            = other.@size
+      original_size   = other.@original_size
+      scale           = other.scale
+      rotation        = other.rotation
+      shader          = other.shader
+      anchor          = other.anchor
+      render_mode     = other.render_mode
+      colors          = other.colors
+      opacity         = other.opacity
+      on_draw_handler = other.on_draw_handler
 
     method init( other:Image, subset:Box )
       name          = other.name
@@ -81,6 +82,8 @@ class Image
         image_info = image_info.cloned
         image_info.texture_bounds = subset + image_info.texture_bounds.position
       endIf
+
+      on_draw_handler = other.on_draw_handler
 
     method init( data )
 
@@ -350,20 +353,19 @@ class CompositeImageData : ImageData
     method draw( image:Image )
       local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
-      local z = -Display.unit_z * image.z
 
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_view_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
+        Display.push_view_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,0)) )
       else
-        Display.push_view_transform( Matrix.translate(XYZ(pos,z)-handle) )
+        Display.push_view_transform( Matrix.translate(XYZ(pos,0)-handle) )
       endIf
 
       forEach (piece in images) piece.draw
 
       on_draw
-      if (image.on_draw_handler) image.on_draw_handler( image )
+      if (image.on_draw_handler) image.on_draw_handler( Box(0,0,size) )
 
       Display.pop_view_transform
 
@@ -401,7 +403,7 @@ class ColorFillImageData : ImageData
 
       Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.render_mode, image.selected_shader )
 
-      if (image.on_draw_handler) image.on_draw_handler( image )
+      if (image.on_draw_handler) image.on_draw_handler( Box(0,0,size) )
 
       Display.pop_object_transform
 
@@ -453,7 +455,7 @@ class TextureImageData : ImageData
         Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
         image.render_mode, image.selected_shader )
 
-      if (image.on_draw_handler) image.on_draw_handler( image )
+      if (image.on_draw_handler) image.on_draw_handler( Box(0,0,size) )
 
       Display.pop_object_transform
 
