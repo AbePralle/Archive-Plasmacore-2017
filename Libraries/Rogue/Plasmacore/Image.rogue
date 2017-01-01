@@ -351,8 +351,10 @@ class CompositeImageData : ImageData
       return result
 
     method draw( image:Image )
-      local size = image.@size * image.scale
+      local size = image.scale * image.@size
       local handle = XYZ( (image.anchor.position * size), 0 )
+
+      Display.push_view_transform( Matrix.scale(XYZ(image.scale,1)) )
 
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
@@ -365,8 +367,9 @@ class CompositeImageData : ImageData
       forEach (piece in images) piece.draw
 
       on_draw
-      if (image.on_draw_handler) image.on_draw_handler( Box(0,0,size) )
+      if (image.on_draw_handler) image.on_draw_handler( Box(0,0,image.@size) )
 
+      Display.pop_view_transform
       Display.pop_view_transform
 
     method on_draw
