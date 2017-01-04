@@ -193,7 +193,11 @@ class SoundGroup : Sound
       endLoop
 
     method can_play->Logical
-      if ((forEach in playlist).can_play) return true
+      if (playlist.count)
+        if ((forEach in playlist).can_play) return true
+      else
+        if ((forEach in sounds).can_play) return true
+      endIf
       return false
 
     method duration->Real64
@@ -322,10 +326,10 @@ class SoundData
       return native( "PlasmacoreSound_position( $this->player )" )->Real64
 
     method set_position( time:Real64 )
-      native @|PlasmacoreSound_set_position( $this->player, time );
+      native @|PlasmacoreSound_set_position( $this->player, $time );
 
     method set_volume( new_volume:Real64 )
-      native @|PlasmacoreSound_set_volume( $this->player, new_volume );
+      native @|PlasmacoreSound_set_volume( $this->player, $new_volume );
 
     method resume
       if (is_paused) play( repeating )
