@@ -1,11 +1,11 @@
 module Plasmacore
 
-class Sound
+class Sound [abstract]
   GLOBAL METHODS
     method create( name:String, is_music=false:Logical, is_repeating=false:Logical )->Sound
       return SimpleSound( name, is_music, is_repeating )
 
-    method create( name:String, channels=1:Int32, is_music=false:Logical )
+    method create( name:String, channels=1:Int32, is_music=false:Logical )->Sound
       return SoundGroup( name, channels, is_music )
 
   METHODS
@@ -16,7 +16,7 @@ class Sound
     method load->this  [abstract]
     method pause->this  [abstract]
     method play->this  [abstract]
-    method play( is_repeating )->this  [abstract]
+    method play( is_repeating:Logical )->this  [abstract]
     method position->Real64  [abstract]
     method set_position( time:Real64 )->this  [abstract]
     method set_volume( new_volume:Real64 )->this  [abstract]
@@ -135,9 +135,6 @@ class SimpleSound : Sound
       if (id) SoundManager[ id ].set_volume( new_volume )
       return this
 
-    method reset->this [abstract]
-      return stop
-
     method resume->this
       # Resumes playing the sound only if it was previously paused
       if (id) SoundManager[ id ].resume
@@ -217,8 +214,9 @@ class SoundGroup : Sound
       (forEach in sounds).load
       return this
 
-    method pause
+    method pause->this
       forEach (sound in sounds) sound.pause
+      return this
 
     method play->this
       if (not playlist.count) playlist.add( sounds )
@@ -273,8 +271,6 @@ class SoundGroup : Sound
     method set_volume( new_volume:Real64 )->this
       (forEach in sounds).set_volume( new_volume )
       return this
-
-    method set_volume( new_volume:Real64 )->this
 
     method stop->this
       if (autoplay_task)
