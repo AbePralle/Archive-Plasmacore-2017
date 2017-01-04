@@ -9,10 +9,11 @@ class Bitmap
       return Bitmap( width, height, Color(0) )
 
   PROPERTIES
-    width    : Int32
-    height   : Int32
-    pixels   : Color[]
-    error    : Logical
+    width                  : Int32
+    height                 : Int32
+    pixels                 : Color[]
+    error                  : Logical
+    is_premultiplied_alpha : Logical
     filepath : String
 
   METHODS
@@ -254,6 +255,7 @@ $if "macOS" or "iOS"
       # Adopt the decoded bitmap data
       init( decoded.width, decoded.height, decoded.pixels )
       swap_red_and_blue
+      is_premultiplied_alpha = true
       return true
 
 $else
@@ -304,17 +306,20 @@ $endIf
     method premultiply_alpha->this
       # Multiplies the R,G,B components of each color by their current
       # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
-      forEach (i of pixels)
-        local argb = pixels[i].argb
-        local a = argb :>>>: 24 & 255
-        local r = argb :>>>: 16 & 255
-        local g = argb :>>>: 8 & 255
-        local b = argb & 255
-        r = (r * a) / 255
-        g = (g * a) / 255
-        b = (b * a) / 255
-        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
-      endForEach
+      if (not is_premultiplied_alpha)
+        is_premultiplied_alpha = true
+        forEach (i of pixels)
+          local argb = pixels[i].argb
+          local a = argb :>>>: 24 & 255
+          local r = argb :>>>: 16 & 255
+          local g = argb :>>>: 8 & 255
+          local b = argb & 255
+          r = (r * a) / 255
+          g = (g * a) / 255
+          b = (b * a) / 255
+          pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+        endForEach
+      endIf
       return this
 
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )

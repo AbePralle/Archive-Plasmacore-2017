@@ -309,11 +309,6 @@ class Command
           endIf
         endWhile
         if (characters)
-          local unicode = Int32[](characters.count)
-          forEach (ch in characters) unicode.add( ch )
-          unicode.sort( (a,b)=>(a<b) )
-          characters.clear
-          forEach (code in unicode) characters.print( Character(code) )
           forEach (attr in info//attributes)
             if (attr//name == "varfont") attr//value = characters->String
           endForEach

@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - December 31, 2016
+###v0.7.0 - January 3, 2016
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten".
 - [TextEvent] Separated the concepts of keypresses and text input.  `KeyEvent` no longer contains `unicode` values.  A new `TextEvent` has been added that contains `character:Character`, `text:Characters`, and a character `count()->Int32`.  Displays, Views, Layers, and States now have both `KeyEvent` and `TextEvent` handlers.
 - [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
@@ -59,6 +59,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [GameGUI] Added base classes for the "GameGUI" user interface system.  A `GameGUI` class is a Layer that various GGComponents can be added to.
 - [CompositeImage] Restored CompositeImage class (was commented out).
 - [Image] Images can now have a drawing callback: `Image.on_draw(Function(Box))` is used to set the callback.  The callback function is called after the basic image is drawn and while various transformations and settings are still in effect.  Particularly useful for composite images.
+- [Image] Fixed premultiplied alpha issue with images (premultiplication was happening twice on iOS and macOS).
+- [ProgressFn] Added the full set of standard easing functions to `ProgressFn.rogue`.
 - [DefaultFont] Added new built-in font called `DefaultFont`.  The font is a 34 pixel high Arial Bold.
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
 - [Box] Added `Box.relative_to(Anchor)->Box`.
