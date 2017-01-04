@@ -60,14 +60,14 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [CompositeImage] Restored CompositeImage class (was commented out).
 - [Image] Images can now have a drawing callback: `Image.on_draw(Function(Box))` is used to set the callback.  The callback function is called after the basic image is drawn and while various transformations and settings are still in effect.  Particularly useful for composite images.
 - [Image] Fixed premultiplied alpha issue with images (premultiplication was happening twice on iOS and macOS).
-- [ProgressFn] Added the full set of standard easing functions to `ProgressFn.rogue`.
+- [ProgressFn] Added the full set of standard easing functions to `ProgressFn.rogue`.  Convention is e.g. `ProgressFn.BOUNCE`, `ProgressFn.BOUNCE_OUT`, `ProgressFn.BOUNCE_IN`.
 - [DefaultFont] Added new built-in font called `DefaultFont`.  The font is a 34 pixel high Arial Bold.
 - [XY] Added `XY.or_larger(XY)` and `XY.or_smaller(XY)` the return the largest/smallest `x` and largest/smallest `y` between the context value and the parameter value.
 - [Box] Added `Box.relative_to(Anchor)->Box`.
 - [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.  Renamed message `Display.render` to `Display.on_render`.
 - [Display] Added `Display.push_clipping_region(Box)` and `Display.pop_clipping_region()`.  Pushed clipping regions operate as an intersection with the current clipping region.
 - [State] Modified behavior of `queue_state()` to perform the state chaining itself if its view is null rather than having the current Display perform the chaining.
-- [ProgressFn] Added `ProgressFn.BOUNCE_OUT`.
+- [SoundGroup] SoundGroup now extends Sound so that sound groups can be added to other sound groups.  SoundGroup now accepts the flag `&replay_last` which will keep replaying the last sound in the sequence once all other sounds have played; call `SoundGroup.reset()` to start the next play from the first sound.
 - [Image Compiler] Added optional `monospace` and `monospace:numbers` attributes to `create image:...font:` directive.
 - [Build System] Actually fixed IDE flag to be passed properly.
 

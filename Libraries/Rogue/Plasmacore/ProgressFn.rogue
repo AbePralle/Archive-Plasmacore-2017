@@ -71,39 +71,39 @@ class ProgressFn [singleton]
                       endFunction
     SINE            = function(p:Real64)->(Real64): return 0.5 * (1 + Math.sin( 3.1415926 * (p - 0.5) ) )
 
-    IN_BACK         = function(p:Real64)->(Real64): return p * p * (2.70158 * p - 1.70158)
-    IN_BOUNCE       = function(p:Real64)->(Real64): return 2 ^ (6 * (p - 1)) * Math.sin( p * pi * 3.5 ).abs
-    IN_CIRCULAR     = function(p:Real64)->(Real64): return 1 - Math.sqrt( 1 - p )
-    IN_CUBIC        = function(p:Real64)->(Real64): return p * p * p
-    IN_ELASTIC      = function(p:Real64)->(Real64)
+    BACK_IN         = function(p:Real64)->(Real64): return p * p * (2.70158 * p - 1.70158)
+    BOUNCE_IN       = function(p:Real64)->(Real64): return 2 ^ (6 * (p - 1)) * Math.sin( p * pi * 3.5 ).abs
+    CIRCULAR_IN     = function(p:Real64)->(Real64): return 1 - Math.sqrt( 1 - p )
+    CUBIC_IN        = function(p:Real64)->(Real64): return p * p * p
+    ELASTIC_IN      = function(p:Real64)->(Real64)
                         local p2 = p * p
                         return p2 * p2 * Math.sin( p * pi * 4.5 )
                       endFunction
-    IN_EXPONENTIAL  = function(p:Real64)->(Real64): return (2^(8*p) - 1) / 255
-    IN_QUAD         = function(p:Real64)->(Real64): return p * p
-    IN_QUARTIC      = function(p:Real64)->(Real64): p *= p; return p * p
-    IN_QUINTIC      = function(p:Real64)->(Real64)
+    EXPONENTIAL_IN  = function(p:Real64)->(Real64): return (2^(8*p) - 1) / 255
+    QUADRATIC_IN    = function(p:Real64)->(Real64): return p * p
+    QUARTIC_IN      = function(p:Real64)->(Real64): p *= p; return p * p
+    QUINTIC_IN      = function(p:Real64)->(Real64)
                         local p2 = p * p
                         return p * p2 * p2
                       endFunction
-    IN_SINE         = function(p:Real64)->(Real64): return Math.sin( 1.5707963 * p )
+    SINE_IN         = function(p:Real64)->(Real64): return Math.sin( 1.5707963 * p )
 
-    OUT_BACK        = function(p:Real64)->(Real64): return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
-    OUT_BACK_EASY   = function(p:Real64)->(Real64): return 1 - ((1.0 - p)^2 - (1.0 - p)/1.25 * Radians((1.0 - p) * pi).sin)
-    OUT_BOUNCE      = function(p:Real64)->(Real64): return 1 - 2 ^ (-6 * p) * Math.cos( p * pi * 3.5 ).abs
-    OUT_CIRCULAR    = function(p:Real64)->(Real64): return Math.sqrt( p )
-    OUT_CUBIC       = function(p:Real64)->(Real64): --p; return 1 + p * p * p
-    OUT_QUADRATIC   = function(p:Real64)->(Real64): return p * (2 - p)
-    OUT_ELASTIC     = function(p:Real64)->(Real64)
+    BACK_OUT        = function(p:Real64)->(Real64): return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
+    BACK_EASY_OUT   = function(p:Real64)->(Real64): return 1 - ((1.0 - p)^2 - (1.0 - p)/1.25 * Radians((1.0 - p) * pi).sin)
+    BOUNCE_OUT      = function(p:Real64)->(Real64): return 1 - 2 ^ (-6 * p) * Math.cos( p * pi * 3.5 ).abs
+    CIRCULAR_OUT    = function(p:Real64)->(Real64): return Math.sqrt( p )
+    CUBIC_OUT       = function(p:Real64)->(Real64): --p; return 1 + p * p * p
+    QUADRATIC_OUT   = function(p:Real64)->(Real64): return p * (2 - p)
+    ELASTIC_OUT     = function(p:Real64)->(Real64)
                         local p2 = (p - 1) * (p - 1)
                         return 1 - p2 * p2 * Math.cos( p * pi * 4.5 )
                       endFunction
-    OUT_EXPONENTIAL = function(p:Real64)->(Real64): return 1 - 2^(-8*p)
-    OUT_QUARTIC     = function(p:Real64)->(Real64): --p; p *= p; return 1 - p * p
-    OUT_QUINTIC     = function(p:Real64)->(Real64)
+    EXPONENTIAL_OUT = function(p:Real64)->(Real64): return 1 - 2^(-8*p)
+    QUARTIC_OUT     = function(p:Real64)->(Real64): --p; p *= p; return 1 - p * p
+    QUINTIC_OUT     = function(p:Real64)->(Real64)
                         local p2 = (p - p) * p
                         return 1 + p * p2 * p2
                       endFunction
-    OUT_SINE        = function(p:Real64)->(Real64): return 1 + Math.sin( 1.5707963 * (p-1) )
+    SINE_OUT        = function(p:Real64)->(Real64): return 1 + Math.sin( 1.5707963 * (p-1) )
 endClass
 
