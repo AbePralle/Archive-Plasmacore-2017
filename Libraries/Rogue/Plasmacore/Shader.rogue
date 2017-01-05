@@ -26,11 +26,27 @@ class Shader
 
 $if "iOS" or "Android" or "Linux" or "emscripten"
     GLSL_VERSION = ""
-    PRECISION_MEDIUMP_FLOAT = "precision mediump float;\n"
+
+    # An empty last line is required on HIGH_PRECISION and MEDIUM_PRECISION.
+    # Allows high precision if the device supports it
+    HIGH_PRECISION =   @|#ifdef GL_FRAGMENT_PRECISION_HIGH
+                        |precision highp float;
+                        |precision highp int;
+                        |#else
+                        |precision mediump float;
+                        |precision mediump int;
+                        |#endif
+                        |
+
+    # Definitely use medium precision
+    MEDIUM_PRECISION = @|precision mediump float;
+                        |precision mediump int;
+                        |
     LOWP = " lowp "
 $else
     GLSL_VERSION = "#version 110\n"
-    PRECISION_MEDIUMP_FLOAT = ""
+    HIGH_PRECISION = ""
+    MEDIUM_PRECISION = ""
     LOWP = " "
 $endIf
 
@@ -47,6 +63,14 @@ $endIf
 
   METHODS
     method init( vertex_shader:String, pixel_shader:String )
+      if (use_high_precision)
+        vertex_shader = GLSL_VERSION + HIGH_PRECISION + vertex_shader
+        pixel_shader = GLSL_VERSION + HIGH_PRECISION + pixel_shader
+      else
+        vertex_shader = GLSL_VERSION + MEDIUM_PRECISION + vertex_shader
+        pixel_shader = GLSL_VERSION + MEDIUM_PRECISION + pixel_shader
+      endIf
+
       native @|$vertex_shader_id = (RogueInt32) glCreateShader( GL_VERTEX_SHADER );
       compile_shader( vertex_shader_id, vertex_shader )
       native @|$pixel_shader_id = (RogueInt32) glCreateShader( GL_FRAGMENT_SHADER );
@@ -76,6 +100,9 @@ $endIf
               |  ++slot;
               |}
 
+    method use_high_precision->Logical
+      return (OpenGL.max_texture_size >= 2048)
+
     method compile_shader( shader:Int32, shader_source:String )
       native @|const char* source = (const char*) $shader_source->utf8;
               |glShaderSource( $shader, 1, &source, 0 );
@@ -98,8 +125,6 @@ $endIf
     method create_color_shader->Shader
       return Shader(
         &vertex_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "attribute vec4 position;                   \n" +
           "attribute" + LOWP + "vec4 color;           \n" +
           "varying  " + LOWP + "vec4 vertex_color;    \n" +
@@ -110,8 +135,6 @@ $endIf
           "}                                          \n",
 
         &pixel_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "varying" + LOWP + "vec4 vertex_color;    \n" +
           "void main()                              \n" +
           "{                                        \n" +
@@ -122,8 +145,6 @@ $endIf
     method create_texture_shader->Shader
       return Shader(
         &vertex_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "attribute vec4 position;              \n" +
           "attribute      vec2 uv;               \n" +
           "varying        vec2 vertex_uv;        \n" +
@@ -134,8 +155,6 @@ $endIf
           "}                                     \n",
 
         &pixel_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "uniform              sampler2D texture_0;        \n" +
           "varying              vec2      vertex_uv;        \n" +
           "void main()                                      \n" +
@@ -147,8 +166,6 @@ $endIf
     method create_texture_shader_with_color_multiply->Shader
       return Shader(
         &vertex_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "attribute vec4 position;                   \n" +
           "attribute      vec2 uv;                    \n" +
           "varying        vec2 vertex_uv;             \n" +
@@ -162,8 +179,6 @@ $endIf
           "}                                          \n",
 
         &pixel_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "uniform              sampler2D texture_0;                       \n" +
           "varying              vec2      vertex_uv;                       \n" +
           "varying"+LOWP+"vec4 vertex_color;                               \n" +
@@ -176,8 +191,6 @@ $endIf
     method create_texture_shader_with_color_add->Shader
       return Shader(
         &vertex_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "attribute vec4 position;                  \n" +
           "attribute      vec2 uv;                   \n" +
           "varying        vec2 vertex_uv;            \n" +
@@ -191,8 +204,6 @@ $endIf
           "}                                         \n",
 
         &pixel_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "uniform        sampler2D texture_0;                    \n" +
           "varying        vec2      vertex_uv;                    \n" +
           "varying"+LOWP+"vec4      vertex_color;                 \n" +
@@ -206,8 +217,6 @@ $endIf
     method create_texture_shader_with_color_fill->Shader
       return Shader(
         &vertex_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "attribute vec4 position;                             \n" +
           "attribute      vec2 uv;                              \n" +
           "varying        vec2 vertex_uv;                       \n" +
@@ -223,8 +232,6 @@ $endIf
           "}                                                    \n",
 
         &pixel_shader =
-          GLSL_VERSION +
-          PRECISION_MEDIUMP_FLOAT +
           "uniform         sampler2D texture_0;        \n" +
           "varying         vec2      vertex_uv;        \n" +
           "varying "+LOWP+"vec4      vertex_color;     \n" +

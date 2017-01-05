@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - January 4, 2016
+###v0.7.0 - January 5, 2016
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten".
 - [TextEvent] Separated the concepts of keypresses and text input.  `KeyEvent` no longer contains `unicode` values.  A new `TextEvent` has been added that contains `character:Character`, `text:Characters`, and a character `count()->Int32`.  Displays, Views, Layers, and States now have both `KeyEvent` and `TextEvent` handlers.
 - [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
@@ -70,6 +70,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [SoundGroup] SoundGroup now extends Sound so that sound groups can be added to other sound groups.  SoundGroup now accepts the flag `&replay_last` which will keep replaying the last sound in the sequence once all other sounds have played; call `SoundGroup.reset()` to start the next play from the first sound.
 - [Image Compiler] Added optional `monospace` and `monospace:numbers` attributes to `create image:...font:` directive.
 - [Build System] Actually fixed IDE flag to be passed properly.
+- [OpenGL] Added new `OpenGL` wrapper singleton with a method `max_texture_size()->Int32`.  Will shift other embedded OpenGL code there over time.
+- [OpenGL] Shaders now use `highp` precision if the max texture size is >= 2048 and OpenGL supports it.
 
 ###v0.6.4 - December 16, 2016
 - [Libraries] Deleted now-unused embedded FreeType and HarfBuzz libraries.
