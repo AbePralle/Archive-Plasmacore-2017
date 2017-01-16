@@ -317,11 +317,8 @@ class CompositeImage : Image
 
     method handle_draw
       # Use scale 1 during the callbacks
-      local original_scale = scale
-      scale = 1.0
       on_draw
       if (on_draw_handler) on_draw_handler()
-      scale = original_scale
 
     method on_draw
 

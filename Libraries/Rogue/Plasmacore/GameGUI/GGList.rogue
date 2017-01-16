@@ -120,7 +120,7 @@ class GGList : GGComponent
         local drawn_any = false
         forEach (component in subcomponents)
           if (component.bounds.intersects(bounds))
-            component.on_draw
+            component.handle_draw
             drawn_any = true
           elseIf (drawn_any)
             if (component.size.x and component.size.y)
@@ -165,6 +165,13 @@ class GGList : GGComponent
         endIf
       endIf
 
+      update_layout
+
+      if (subcomponents)
+        (forEach in subcomponents).update
+      endIf
+
+    method update_layout
       content_size = 0
 
       if (subcomponents)

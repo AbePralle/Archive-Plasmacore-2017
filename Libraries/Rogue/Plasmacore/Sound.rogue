@@ -8,6 +8,9 @@ class Sound [abstract]
     method create( name:String, channels=1:Int32, is_music=false:Logical )->Sound
       return SoundGroup( name, channels, is_music )
 
+  GLOBAL PROPERTIES
+    mute : Logical
+
   METHODS
     method duration->Real64  [abstract]
     method can_play->Logical [abstract]
@@ -34,6 +37,7 @@ class SimpleSound : Sound
   DEPENDENCIES
     nativeHeader void*  PlasmacoreSound_create( RogueString* filepath, bool is_music );
     nativeHeader void   PlasmacoreSound_delete( void* sound );
+    nativeHeader double PlasmacoreSound_duration( void* sound );
     nativeHeader bool   PlasmacoreSound_is_playing( void* sound );
     nativeHeader void   PlasmacoreSound_pause( void* sound );
     nativeHeader void   PlasmacoreSound_play( void* sound, bool repeating );
@@ -117,6 +121,7 @@ class SimpleSound : Sound
       return this
 
     method play->this
+      if (Sound.mute) return this
       if (id) SoundManager[ id ].play( is_repeating )
       return this
 
@@ -223,6 +228,7 @@ class SoundGroup : Sound
       return this
 
     method play->this
+      if (Sound.mute) return this
       if (not playlist.count) playlist.add( sounds )
       if (random or random_order) playlist.shuffle
 

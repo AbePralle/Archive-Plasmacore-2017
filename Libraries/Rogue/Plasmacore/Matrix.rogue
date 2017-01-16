@@ -72,6 +72,12 @@ class Matrix( ...
       m.r2c2 =  cos0
       return m
 
+    method translate( delta:XY )->Matrix
+      local m = identity
+      m.r1c4 = delta.x
+      m.r2c4 = delta.y
+      return m
+
     method translate( delta:XYZ )->Matrix
       local m = identity
       m.r1c4 = delta.x
@@ -80,7 +86,10 @@ class Matrix( ...
       return m
 
     method scale( k:Real64 )->Matrix
-      return scale( XYZ(k,k,k) )
+      return scale( XYZ(k,k,1) )
+
+    method scale( k:XY )->Matrix
+      return scale( XYZ(k,1) )
 
     method scale( k:XYZ )->Matrix
       local m = Matrix()
@@ -89,6 +98,15 @@ class Matrix( ...
       m.r3c3 = k.z
       m.r4c4 = 1
       return m
+
+    method scale( k:Real64, origin:XY )->Matrix
+      return scale( XYZ(k,k,1), XYZ(origin,0) )
+
+    method scale( k:XY, origin:XY )->Matrix
+      return scale( XYZ(k,1), XYZ(origin,0) )
+
+    method scale( k:XYZ, origin:XYZ )->Matrix
+      return Matrix.translate(origin) * Matrix.scale(k) * Matrix.translate(-origin)
 
     METHODS
       method count->Int32 [macro]

@@ -67,6 +67,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Messaging] Changed `Application` message names to `Application.on_launch`, `Application.on_start`, `Application.on_stop`, and `Application.on_save`.  Renamed message `Display.render` to `Display.on_render`.
 - [Display] Added `Display.push_clipping_region(Box)` and `Display.pop_clipping_region()`.  Pushed clipping regions operate as an intersection with the current clipping region.
 - [State] Modified behavior of `queue_state()` to perform the state chaining itself if its view is null rather than having the current Display perform the chaining.
+- [Sound] Added global property `Sound.mute:Logical`.  No sounds play when this is set to `true`.
+- [Sound] Fixed `Sound.duration()->Real64`.
 - [SoundGroup] SoundGroup now extends Sound so that sound groups can be added to other sound groups.  SoundGroup now accepts the flag `&replay_last` which will keep replaying the last sound in the sequence once all other sounds have played; call `SoundGroup.reset()` to start the next play from the first sound.
 - [Image Compiler] Added optional `monospace` and `monospace:numbers` attributes to `create image:...font:` directive.
 - [Build System] Actually fixed IDE flag to be passed properly.

@@ -61,6 +61,9 @@ class GGComponent
         (forEach in subcomponents).handle_update
       endIf
 
+    method draw
+      handle_draw
+
     method find( at_position:XY )->GGComponent
       if (subcomponents)
         forEach (component in subcomponents)
@@ -133,6 +136,13 @@ class GGComponent
 
     method operator/( bottom_component:GGComponent )->GGComponent
       return GGVerticalLayout().add( this ).add( bottom_component )
+
+    method update
+      handle_update
+
+    method update( new_bounds:Box )
+      update_layout( new_bounds )
+      update
 
     method update_layout
       if (subcomponents)

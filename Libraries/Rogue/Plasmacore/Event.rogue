@@ -131,6 +131,12 @@ class PointerEvent : Event
     method is_scroll->Logical [macro]
       (this.type == PointerEvent.SCROLL)
 
+    method operator+( offset:XY )->PointerEvent
+      return PointerEvent( type, position+offset, delta, index, id )
+
+    method operator-( offset:XY )->PointerEvent
+      return this + (-offset)
+
     method to->String
       local buffer = StringBuilder()
       buffer.print( "Pointer " )
