@@ -3,7 +3,7 @@ module Plasmacore
 class Sound [abstract]
   GLOBAL METHODS
     method create( name:String, is_music=false:Logical, is_repeating=false:Logical )->Sound
-      return SimpleSound( name, is_music, is_repeating )
+      return BasicSound( name, is_music, is_repeating )
 
     method create( name:String, channels=1:Int32, is_music=false:Logical )->Sound
       return SoundGroup( name, channels, is_music )
@@ -33,7 +33,7 @@ class Sound [abstract]
     method unload  [abstract]
 endClass
 
-class SimpleSound : Sound
+class BasicSound : Sound
   DEPENDENCIES
     nativeHeader void*  PlasmacoreSound_create( RogueString* filepath, bool is_music );
     nativeHeader void   PlasmacoreSound_delete( void* sound );
@@ -110,7 +110,7 @@ class SimpleSound : Sound
       else    return false
 
     method load->this
-      id = SoundManager.load( filepath, is_music )
+      if (not id) id = SoundManager.load( filepath, is_music )
       return this
 
     method on_cleanup

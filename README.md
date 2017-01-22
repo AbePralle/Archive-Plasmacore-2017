@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.0 - January 11, 2016
+###v0.7.0 - January 22, 2016
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten".
 - [TextEvent] Separated the concepts of keypresses and text input.  `KeyEvent` no longer contains `unicode` values.  A new `TextEvent` has been added that contains `character:Character`, `text:Characters`, and a character `count()->Int32`.  Displays, Views, Layers, and States now have both `KeyEvent` and `TextEvent` handlers.
 - [Layer] Added a "Layer" system to `View`.  Views now have a list of layers; each layer is automatically hooked into the event chain when it is added to a view with `View.add(Layer)`.  Most events such as `on_update` and `on_draw` are sent to layers in a first-added order; pointer and key events are dispatched in reverse order.
@@ -74,6 +74,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Build System] Actually fixed IDE flag to be passed properly.
 - [OpenGL] Added new `OpenGL` wrapper singleton with a method `max_texture_size()->Int32`.  Will shift other embedded OpenGL code there over time.
 - [OpenGL] Shaders now use `highp` precision if the max texture size is >= 2048 and OpenGL supports it.
+- [Rogue] Updated Rogue to v1.1.21.
 
 ###v0.6.4 - December 16, 2016
 - [Libraries] Deleted now-unused embedded FreeType and HarfBuzz libraries.
