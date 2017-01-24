@@ -220,6 +220,9 @@ class XY( x:Real64, y:Real64 ) [compound]
         return @{ x:x, y:y }
       endIf
 
+    method transform( m:Matrix )->XY
+      return m * this
+
     method xv->XY
       return XY(x,0)
 

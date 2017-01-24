@@ -10,4 +10,10 @@ augment Corners<<XY>>
   GLOBAL METHODS
     method create( bounds:Box )->Corners<<XY>>
       return Corners<<XY>>( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
+
+  METHODS
+    method to->Box
+      local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
+      local top_right = a.or_larger(b).or_larger(c).or_larger(d)
+      return Box( top_left, top_right - top_left )
 endAugment

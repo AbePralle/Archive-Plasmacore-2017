@@ -203,10 +203,12 @@ class Matrix( ...
       method operator*( v:XY )->XY
         return XY(
           this[0]   * v.x +
-          this[4]   * v.y,
+          this[4]   * v.y +
+          this[12],
 
           this[1]   * v.x +
-          this[5]   * v.y
+          this[5]   * v.y +
+          this[13]
         )
 
       method operator*( v:XYZ )->XYZW

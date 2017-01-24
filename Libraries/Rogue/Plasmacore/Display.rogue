@@ -448,6 +448,10 @@ class Display [singleton]
       return group
       }#
 
+    method object_transform->Matrix
+      update_transform
+      return @object_transform
+
     method pop_clipping_region->this
       if (clipping_region_stack.count)
         clipping_region = clipping_region_stack.remove_last
@@ -800,14 +804,14 @@ class Display [singleton]
           object_transform_modified = false
           if (object_transforms.count)
             #{
-            object_transform = object_transforms.first
+            @object_transform = object_transforms.first
             forEach (i in 1..object_transforms.count-1)
-              object_transform = object_transform * object_transforms[i]
+              @object_transform = @object_transform * object_transforms[i]
             endForEach
             }#
-            object_transform = object_transforms.last
+            @object_transform = object_transforms.last
             forEach (i in object_transforms.count-2 downTo 0)
-              object_transform = object_transform * object_transforms[i]
+              @object_transform = @object_transform * object_transforms[i]
             endForEach
           endIf
         endIf
@@ -815,22 +819,22 @@ class Display [singleton]
         if (view_transform_modified)
           view_transform_modified = false
           if (view_transforms.count)
-            view_transform = view_transforms.last
+            @view_transform = view_transforms.last
             forEach (i in view_transforms.count-2 downTo 0)
-              view_transform = view_transform * view_transforms[i]
+              @view_transform = @view_transform * view_transforms[i]
             endForEach
           endIf
         endIf
 
         if (view_transforms.count)
           if (object_transforms.count)
-            transform = view_transform * object_transform
+            transform = @view_transform * @object_transform
           else
-            transform = view_transform
+            transform = @view_transform
           endIf
         else
           if (object_transforms.count)
-            transform = object_transform
+            transform = @object_transform
           else
             transform = Matrix.identity
           endIf
@@ -839,6 +843,10 @@ class Display [singleton]
 
       transform = projection_transform * @transform
       transform_modified = false
+
+    method view_transform->Matrix
+      update_transform
+      return @view_transform
 
     method width->Int32 [macro]
       this.size.x->Int32

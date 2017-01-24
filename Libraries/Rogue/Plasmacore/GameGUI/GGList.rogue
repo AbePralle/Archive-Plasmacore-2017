@@ -27,6 +27,8 @@ class GGList : GGComponent
     drag_time     = Stopwatch()
 
   METHODS
+    method init( is_horizontal=false )
+
     method init( box:Box, is_horizontal=false )
       position = box.position
       size = box.size
@@ -60,6 +62,24 @@ class GGList : GGComponent
       endIf
       offset += delta
       cur_pos = new_pos
+
+    method dispatch_draw
+      if (subcomponents)
+        Display.push_clipping_region( bounds.transformed(Display.view_transform) )
+        local drawn_any = false
+        forEach (component in subcomponents)
+          if (component.bounds.intersects(bounds))
+            component.handle_draw
+            drawn_any = true
+          elseIf (drawn_any)
+            if (component.size.x and component.size.y)
+              # Only quit non-zero-sized components
+              escapeForEach
+            endIf
+          endIf
+        endForEach
+        Display.pop_clipping_region
+      endIf
 
     method handle( e:PointerEvent )
       GGComponentManager.pointer_position = e.position
@@ -112,24 +132,6 @@ class GGList : GGComponent
             endIf
           endIf
         endIf
-      endIf
-
-    method on_draw
-      if (subcomponents)
-        Display.push_clipping_region( bounds )
-        local drawn_any = false
-        forEach (component in subcomponents)
-          if (component.bounds.intersects(bounds))
-            component.handle_draw
-            drawn_any = true
-          elseIf (drawn_any)
-            if (component.size.x and component.size.y)
-              # Only quit non-zero-sized components
-              escapeForEach
-            endIf
-          endIf
-        endForEach
-        Display.pop_clipping_region
       endIf
 
     method on_update

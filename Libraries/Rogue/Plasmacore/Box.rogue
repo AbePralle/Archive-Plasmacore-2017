@@ -92,6 +92,9 @@ $endIf
     method operator+( offset:XY )->Box
       return Box( position+offset, size )
 
+    method operator-( offset:XY )->Box
+      return Box( position-offset, size )
+
     method operator&( rhs:Box )->Box?
       # Returns the intersection of this box with another box.
       local a_x1 = position.x
@@ -152,6 +155,17 @@ $endIf
       # E.g. if anchor is Anchor.BOTTOM and Box is [@100,100 20x20], the return value is
       # [@90,80 20x20]].
       return Box( position - anchor.position * size, size )
+
+    method transform( m:Matrix )->Corners<<XY>>
+      return Corners<<XY>>(
+        m * top_left,
+        m * top_right,
+        m * bottom_left,
+        m * bottom_right
+      )
+
+    method transformed( m:Matrix )->Box
+      return transform( m )->Box
 
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)
