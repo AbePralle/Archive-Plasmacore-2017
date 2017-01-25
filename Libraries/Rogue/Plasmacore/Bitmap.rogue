@@ -153,6 +153,19 @@ class Bitmap
     method clear( color=Color(0):Color )
       forEach (i of pixels) pixels[i] = color
 
+    method convert_gray_to_alpha->Bitmap
+      local count = width * height
+
+      native @|RogueInt32* cur = $pixels->data->as_int32s - 1;
+              |while (--$count >= 0)
+              |{
+              |  RogueInt32 gray = *(++cur) & 255;
+              |  *cur = (gray << 24) | 0xFFffFF;
+              |}
+
+      return this
+
+
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32

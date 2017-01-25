@@ -179,7 +179,7 @@ class GGList : GGComponent
       if (subcomponents)
         local pos = position + offset
         forEach (component in subcomponents)
-          component.position = pos
+          component.update_layout( Box(pos,component.size) )
           if (is_horizontal) pos += component.size.xv; content_size += component.size.x
           else               pos += component.size.yv; content_size += component.size.y
         endForEach

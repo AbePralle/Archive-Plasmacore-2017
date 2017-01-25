@@ -2,12 +2,15 @@ using  Plasmacore
 
 class GGLabel : GGComponent
   PROPERTIES
-    text                : String
-    font                : Font
+    text   : String
+    font   : Font
+    anchor : Anchor
 
   METHODS
     method init( fixed_size, text, font=GGComponentManager.default_font, anchor=Anchor.CENTER )
       size = fixed_size
+
+    method init( text, font=GGComponentManager.default_font, anchor=Anchor.CENTER )
 
     method on_draw
       font.anchor = anchor
