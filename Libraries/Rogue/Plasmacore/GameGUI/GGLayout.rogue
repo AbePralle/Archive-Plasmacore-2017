@@ -107,7 +107,7 @@ class GGHorizontalLayout : GGComponent
         if (max_height and content_height > max_height) content_height = max_height
         local y = @position.y
         local w = component.size.x
-        component.update_layout( Box(x,y,w,content_height) )
+        component.update_layout( Box(x,y,w,this.size.y).subset(XY(w,content_height), component.anchor) )
         x += w
       endForEach
 
@@ -205,7 +205,7 @@ class GGVerticalLayout : GGComponent
         if (max_width and content_width > max_width) content_width = max_width
         local x = @position.x
         local h = component.size.y
-        component.update_layout( Box(x,y,content_width,h) )
+        component.update_layout( Box(x,y,this.size.x,h).subset(XY(content_width,h),component.anchor) )
         y += h
       endForEach
 

@@ -9,7 +9,7 @@ class Font
     options        : @{}
     snap           : Logical
 
-    anchor         = Anchor.TOP_LEFT : Anchor
+    anchor         = Anchor.CENTER : Anchor
     scale          = XY(1,1)
     spacing        = 0  # Added to each character's 'advance' (usually the width) to position the next character
 
@@ -54,6 +54,12 @@ class Font
 
     method height->Real64
       return data.height * scale.y
+
+    method set_anchor( @anchor )->this
+      return this
+
+    method set_color( @color )->this
+      return this
 
     method set_options( @options )->this
       if (options.contains("anchor")) anchor = Anchor( options//anchor )

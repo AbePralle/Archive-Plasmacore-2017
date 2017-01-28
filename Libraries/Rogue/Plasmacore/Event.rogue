@@ -102,6 +102,8 @@ class PointerEvent : Event
     PRESS    = 1
     RELEASE  = 2
     SCROLL   = 3
+    # A PointerEvent never has type SCROLL; this definition is used internally to spin off
+    # scroll events into their own ScrollEvent when they come in
 
   PROPERTIES
     type        : Int32
@@ -128,9 +130,6 @@ class PointerEvent : Event
     method is_release( button_index:Int32 )->Logical
       return (this.type == RELEASE and index == button_index)
 
-    method is_scroll->Logical [macro]
-      (this.type == PointerEvent.SCROLL)
-
     method operator+( offset:XY )->PointerEvent
       return PointerEvent( type, position+offset, delta, index, id )
 
@@ -144,11 +143,26 @@ class PointerEvent : Event
         case MOVE:     buffer.print( "move" )
         case PRESS:    buffer.print( "press index " ).print( index )
         case RELEASE:  buffer.print( "release" )
-        case SCROLL:   buffer.print( "scroll " ).print( delta )
       endWhich
       buffer.print( " at " ).print( position )
       if (is_consumed) buffer.print( " (consumed)" )
 
+      return buffer->String
+endClass
+
+
+class ScrollEvent : Event
+  PROPERTIES
+    delta       : XY
+    index       : Int32
+    id          : Int32
+
+  METHODS
+    method init( delta, index, id )
+
+    method to->String
+      local buffer = StringBuilder().print( "Scroll " ).print( delta )
+      if (is_consumed) buffer.print( " (consumed)" )
       return buffer->String
 endClass
 

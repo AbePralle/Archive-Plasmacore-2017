@@ -13,6 +13,8 @@ class View
     loaded_asset_count    : Int32
     total_asset_count     : Int32
 
+    actions : ActionCmd
+
   METHODS
     method add( layer:Layer )->this
       layers.add( layer )
@@ -21,6 +23,8 @@ class View
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
+
+    method after( e:ScrollEvent )
 
     method after( e:TextEvent )
 
@@ -117,6 +121,21 @@ class View
 
       after( e )
 
+    method handle( e:ScrollEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      if (layers.count)
+        forEach (layer in layers step -1)
+          if (layer.is_visible)
+            layer.on( e )
+            if (e.is_consumed) return
+          endIf
+        endForEach
+      endIf
+
+      after( e )
+
     method handle( e:TextEvent )
       on( e )
       if (e.is_consumed) return
@@ -151,9 +170,11 @@ class View
       after_resize
 
     method handle_update
+      if (actions) actions = actions.update
       on_update
       if (layers.count)
         forEach (layer in layers)
+          if (layer.actions) layer.actions = layer.actions.update
           if (layer.is_visible) layer.on_update
         endForEach
       endIf
@@ -189,6 +210,8 @@ class View
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
+
+    method on( e:ScrollEvent )
 
     method on( e:TextEvent )
 

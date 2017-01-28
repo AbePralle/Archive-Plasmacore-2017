@@ -32,6 +32,7 @@ $include "Layer.rogue"
 $include "Log.rogue"
 $include "OpenGL.rogue"
 $include "OverlayLog.rogue"
+$include "Pointer.rogue"
 $include "ProgressFn.rogue"
 $include "ProjectionMode.rogue"
 $include "Quaternion.rogue"
@@ -100,11 +101,22 @@ class Plasmacore [essential singleton]
         function(m:Message)
           local display = Display( m.string("display_name") )
           local scale = display.display_scale
-          local pos   = XY( m.int32("x"), m.int32("y") ) * scale
           local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
-          local e = PointerEvent( m.int32("type"), pos, delta,
-            m.int32("index"), m.int32("id") )
-          display.handle( e )
+          local index = m.int32( "index" )
+          local id = m.int32( "id" )
+          local type = m.int32( "type" )
+
+          if (type == PointerEvent.SCROLL)
+            local e = ScrollEvent( delta, index, id )
+            display.handle( e )
+          else
+            local pos   = XY( m.int32("x"), m.int32("y") ) * scale
+            local e = PointerEvent( type, pos, delta, index, id )
+            Pointer.position = e.position
+            if (e.is_press)       ++Pointer.press_count
+            elseIf (e.is_release) --Pointer.press_count
+            display.handle( e )
+          endIf
         endFunction )
 
       MessageManager.add_listener( "Display.on_text_event",

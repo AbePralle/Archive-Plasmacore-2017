@@ -13,6 +13,7 @@ class GGComponent
     position   : XY
     size       : XY
     fixed_size : XY
+    anchor     = Anchor.CENTER : Anchor
 
     subcomponents : GGComponent[]
 
@@ -137,6 +138,9 @@ class GGComponent
     method operator/( bottom_component:GGComponent )->GGComponent
       return GGVerticalLayout().add( this ).add( bottom_component )
 
+    method set_anchor( @anchor )->this
+      return this
+
     method update
       handle_update
 
@@ -151,8 +155,10 @@ class GGComponent
       endIf
 
     method update_layout( new_bounds:Box )
-      position = new_bounds.position
       size = XY( select{fixed_size.x||new_bounds.width}, select{fixed_size.y||new_bounds.height} )
+      position = bounds.positioned_within( new_bounds ).position
+      size = size.floor
+      position = position.floor
       update_layout
 
     method vertical_flex->Real64

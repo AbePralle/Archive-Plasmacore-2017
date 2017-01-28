@@ -156,6 +156,9 @@ $endIf
       # [@90,80 20x20]].
       return Box( position - anchor.position * size, size )
 
+    method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
+      return Box( position + anchor.position * (size-subset_size), subset_size )
+
     method transform( m:Matrix )->Corners<<XY>>
       return Corners<<XY>>(
         m * top_left,

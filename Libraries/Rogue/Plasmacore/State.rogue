@@ -18,12 +18,16 @@ class State
     next_state            : State
     prior_state           : State
 
+    actions : ActionCmd
+
   METHODS
     method init( view=null )
 
     method after( e:KeyEvent )
 
     method after( e:PointerEvent )
+
+    method after( e:ScrollEvent )
 
     method after( e:TextEvent )
 
@@ -60,6 +64,15 @@ class State
 
       after( e )
 
+    method handle( e:ScrollEvent )
+      on( e )
+      if (e.is_consumed) return
+
+      view.handle( e )
+      if (e.is_consumed) return
+
+      after( e )
+
     method handle( e:TextEvent )
       on( e )
       if (e.is_consumed) return
@@ -86,6 +99,7 @@ class State
       after_resize
 
     method handle_update
+      if (actions) actions = actions.update
       on_update
 
       view.needs_first_update = false
@@ -103,6 +117,9 @@ class State
       noAction
 
     method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
       noAction
 
     method on( e:TextEvent )

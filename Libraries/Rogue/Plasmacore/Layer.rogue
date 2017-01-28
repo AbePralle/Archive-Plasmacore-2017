@@ -5,6 +5,7 @@ class Layer
   # the view's 'on' event and before the view's 'after' event.
   PROPERTIES
     is_visible = true
+    actions : ActionCmd  # Auto-updated even when the layer is hidden
 
   METHODS
     method hide->this
@@ -12,26 +13,40 @@ class Layer
       return this
 
     method on( e:KeyEvent )
+      noAction
 
     method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
 
     method on( e:TextEvent )
+      noAction
 
     method on_draw
+      noAction
 
     method on_finish
+      noAction
 
     method on_prepare
+      noAction
 
     method on_resize
+      noAction
 
     method on_resume
+      noAction
 
     method on_start
+      noAction
 
     method on_suspend
+      noAction
 
     method on_update
+      noAction
 
     method show->this
       is_visible = true

@@ -1,6 +1,6 @@
 module Plasmacore
 
-class TargetValue<<$DataType>>
+class TargetValue<<$DataType>> [abstract]
   PROPERTIES
     target_value : $DataType
 

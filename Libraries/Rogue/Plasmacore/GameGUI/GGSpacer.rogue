@@ -12,5 +12,10 @@ class GGSpacer : GGComponent
     method init( fixed_size )
       size = fixed_size
 
+    method init( _size:Real64 )
+      fixed_size = XY( _size )
+      size = fixed_size
+
+
 endClass
 

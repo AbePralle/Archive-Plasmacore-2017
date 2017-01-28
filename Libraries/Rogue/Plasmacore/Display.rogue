@@ -402,16 +402,16 @@ class Display [singleton]
 
     method handle( e:PointerEvent )
       if (pointer_exists)
-        if (e.is_scroll)
-          e.position = pointer_position
-        else
-          e.delta = e.position - pointer_position
-          pointer_position = e.position
-        endIf
-      elseIf (not e.is_scroll)
+        e.delta = e.position - pointer_position
+        pointer_position = e.position
+      else
         pointer_exists = true
         pointer_position = e.position
       endIf
+      activate_view_and_state
+      view.state.handle( e )
+
+    method handle( e:ScrollEvent )
       activate_view_and_state
       view.state.handle( e )
 

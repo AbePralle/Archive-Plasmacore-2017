@@ -1,0 +1,8 @@
+module Plasmacore
+
+class Pointer [singleton]
+  PROPERTIES
+    position    = Display.center : XY
+    press_count : Int32
+endClass
+
