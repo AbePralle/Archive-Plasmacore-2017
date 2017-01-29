@@ -136,6 +136,9 @@ class Image
       endIf
       data.draw( this )
 
+    method height->Real64 [macro]
+      (this.size.y)
+
     method is_loaded->Logical
       return (data and data.is_loaded)
 
@@ -280,6 +283,9 @@ class Image
         data = null
       endIf
       return this
+
+    method width->Real64 [macro]
+      (this.size.x)
 
 endClass
 

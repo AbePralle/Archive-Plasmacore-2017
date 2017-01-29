@@ -5,18 +5,27 @@ class GGLabel : GGComponent
     text   : String
     font   : Font
     anchor : Anchor
+    color  : Color
 
   METHODS
-    method init( fixed_size, text, font=GGComponentManager.default_font, anchor=Anchor.CENTER )
+    method init( fixed_size, text, font=GGComponentManager.default_font )
       size = fixed_size
+      anchor = font.anchor
+      color = font.color
 
-    method init( text, font=GGComponentManager.default_font, anchor=Anchor.CENTER )
+    method init( text, font=GGComponentManager.default_font )
+      anchor = font.anchor
+      color = font.color
 
     method on_draw
       font.anchor = anchor
+      font.color = color
       font.draw( text, bounds.at(anchor) )
 
     method set_anchor( @anchor )->this
+      return this
+
+    method set_color( @color )->this
       return this
 
 endClass

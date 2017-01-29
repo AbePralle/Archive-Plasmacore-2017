@@ -63,6 +63,12 @@ class Box( position:XY, size:XY ) [compound]
     method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
+    method expanded( delta:Real64 )->Box
+      return cropped( -delta )
+
+    method expanded( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
+      return cropped( -left, -top, -right, -bottom )
+
 $if not "Console"
     method fill( color:Int32 )->this
       Display.fill( this, color )
@@ -94,6 +100,14 @@ $endIf
 
     method operator-( offset:XY )->Box
       return Box( position-offset, size )
+
+    method operator*( scale:Real64 )->Box
+      local h = (width * scale - width) / 2
+      local v = (height * scale - height) / 2
+      return expanded( h, v, h, v )
+
+    method operator/( scale:Real64 )->Box
+      return this * (1/scale)
 
     method operator&( rhs:Box )->Box?
       # Returns the intersection of this box with another box.

@@ -18,6 +18,8 @@ class GGComponent
     subcomponents : GGComponent[]
 
   METHODS
+    method init
+
     method init( fixed_size )
       size = fixed_size
 
@@ -139,6 +141,10 @@ class GGComponent
       return GGVerticalLayout().add( this ).add( bottom_component )
 
     method set_anchor( @anchor )->this
+      return this
+
+    method set_fixed_size( @fixed_size )->this
+      size = fixed_size
       return this
 
     method update
