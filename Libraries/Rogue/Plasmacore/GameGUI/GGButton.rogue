@@ -25,6 +25,9 @@ class GGButton : GGComponent
     on_deselect_handler : Function(GGButton)
 
   METHODS
+    method init( fixed_size )
+      size = fixed_size
+
     method init( fixed_size, text, font=GGComponentManager.default_font )
       size = fixed_size
 
