@@ -3,26 +3,26 @@ using  Plasmacore
 
 class GGButton : GGComponent
   PROPERTIES
-    text                : String
-    font                : Font
-    color=Color.WHITE   : Color
+    text                 : String
+    font                 : Font
+    color=Color.WHITE    : Color
 
-    image               : Image
-    pressed_image       : Image
-    targeted_image      : Image
-    selected_image      : Image
-    disabled_image      : Image
+    image                : Image
+    pressed_image        : Image
+    targeted_image       : Image
+    selected_image       : Image
+    disabled_image       : Image
 
-    press_timer         = Timer(0.2,&expired)
+    press_timer          = Timer(0.2,&expired)
 
-    is_pressed          : Logical
-    is_selected         : Logical
-    is_disabled         : Logical
+    is_pressed           : Logical
+    is_selected          : Logical
+    is_disabled          : Logical
 
-    on_press_handler    : Function(GGButton)
-    on_release_handler  : Function(GGButton)
-    on_select_handler   : Function(GGButton)
-    on_deselect_handler : Function(GGButton)
+    on_press_callback    : Function(GGButton)
+    on_release_callback  : Function(GGButton)
+    on_select_callback   : Function(GGButton)
+    on_deselect_callback : Function(GGButton)
 
   METHODS
     method init( fixed_size )
@@ -56,7 +56,7 @@ class GGButton : GGComponent
           is_pressed = true
           press_timer.restart
           on_press
-          if (on_press_handler) on_press_handler( this )
+          if (on_press_callback) on_press_callback( this )
         endIf
 
       elseIf (e.is_release)
@@ -64,21 +64,21 @@ class GGButton : GGComponent
           is_pressed = false
           GGComponentManager.pointer_focus = null
           on_release
-          if (on_release_handler) on_release_handler( this )
+          if (on_release_callback) on_release_callback( this )
 
           if (this.contains(e))
             if (this.is_toggle)
               this.is_selected = not this.is_selected
               if (this.is_selected)
                 on_select
-                if (on_select_handler) on_select_handler( this )
+                if (on_select_callback) on_select_callback( this )
               else
                 on_deselect
-                if (on_deselect_handler) on_deselect_handler( this )
+                if (on_deselect_callback) on_deselect_callback( this )
               endIf
             else
               on_select
-              if (on_select_handler) on_select_handler( this )
+              if (on_select_callback) on_select_callback( this )
             endIf
           endIf
         endIf
@@ -89,7 +89,7 @@ class GGButton : GGComponent
             is_pressed = false
             GGComponentManager.pointer_focus = null
             on_release
-            if (on_release_handler) on_release_handler( this )
+            if (on_release_callback) on_release_callback( this )
           endIf
         endIf
       endIf
@@ -158,16 +158,16 @@ class GGButton : GGComponent
     method on_deselect
       noAction
 
-    method on_press( @on_press_handler )->this
+    method on_press( @on_press_callback )->this
       return this
 
-    method on_release( @on_release_handler )->this
+    method on_release( @on_release_callback )->this
       return this
 
-    method on_select( @on_select_handler )->this
+    method on_select( @on_select_callback )->this
       return this
 
-    method on_deselect( @on_deselect_handler )->this
+    method on_deselect( @on_deselect_callback )->this
       return this
 
     method set_press_time( duration:Real64 )->this
