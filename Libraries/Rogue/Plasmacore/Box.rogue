@@ -152,12 +152,12 @@ $endIf
       return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
 
 $if not "Console"
-    method draw( color:Int32 )->this
-      Display.draw( this, color )
+    method draw( color:Int32, thickness=1:Int32 )->this
+      Display.draw( this, color, thickness )
       return this
 
-    method draw( color:Color )->this
-      Display.draw( this, color )
+    method draw( color:Color, thickness=1:Int32 )->this
+      Display.draw( this, color, thickness )
       return this
 $endIf
 

@@ -277,15 +277,15 @@ class Display [singleton]
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
 
-    method draw( box:Box, color:Int32 )
+    method draw( box:Box, color:Int32, thickness=1:Int32 )
       draw( box, Color(color) )
 
-    method draw( box:Box, color:Color )
-      fill( Box(box.top_left,1,box.height), color )
-      fill( Box(box.top_left+XY(box.width-1,0),1,box.height), color )
-      if (box.width > 2)
-        fill( Box(box.top_left+XY(1,0),box.width-2,1), color )
-        fill( Box(box.top_left+XY(1,box.height-1),box.width-2,1), color )
+    method draw( box:Box, color:Color, thickness=1:Int32 )
+      fill( Box(box.top_left,thickness,box.height), color )
+      fill( Box(box.top_left+XY(box.width-thickness,0),thickness,box.height), color )
+      if (box.width > thickness*2)
+        fill( Box(box.top_left+XY(thickness,0),box.width-thickness*2,thickness), color )
+        fill( Box(box.top_left+XY(thickness,box.height-thickness),box.width-thickness*2,thickness), color )
       endIf
 
     method fill( box:Box, color:Color )
