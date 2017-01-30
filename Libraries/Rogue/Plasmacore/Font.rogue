@@ -71,10 +71,10 @@ class Font
       return this
 
     method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
-      return data.measure( text ) * scale
+      return data.measure( text, i1, i2 ) * scale
 
     method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
-      return data.measure( text ) * scale
+      return data.measure( text, i1, i2 ) * scale
 
     method measure( ch:Character )->XY
       return data.measure( ch ) * scale
@@ -95,7 +95,7 @@ class Font
 
     method word_wrap( st:String, pixel_width:Int32, buffer:StringBuilder )->StringBuilder
       # Prints a word-wrapped version of the given string into the specified
-      # StringBuilder. Existing newlines characters will cause a new line to
+      # StringBuilder. Existing newline characters will cause a new line to
       # begin immediately. Spaces immediately following existing newline
       # characters are preserved.
       local i1, i2 : Int32
