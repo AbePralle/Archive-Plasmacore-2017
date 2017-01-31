@@ -173,6 +173,7 @@ $endIf
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
 
+$if (not "Console")
     method transform( m:Matrix )->Corners<<XY>>
       return Corners<<XY>>(
         m * top_left,
@@ -183,6 +184,7 @@ $endIf
 
     method transformed( m:Matrix )->Box
       return transform( m )->Box
+$endIf
 
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)

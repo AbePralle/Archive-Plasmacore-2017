@@ -220,8 +220,10 @@ class XY( x:Real64, y:Real64 ) [compound]
         return @{ x:x, y:y }
       endIf
 
+$if (not "Console")
     method transform( m:Matrix )->XY
       return m * this
+$endIf
 
     method xv->XY
       return XY(x,0)

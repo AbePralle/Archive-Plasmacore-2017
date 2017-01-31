@@ -179,6 +179,7 @@ class Plasmacore [essential singleton]
         if (info) return info.load
       endForEach
 
+if (info) println "-----------------------found2: " + info.name
       info = image_info_lookup[ name ]
       if (info) return info.load
 
@@ -221,7 +222,9 @@ class Plasmacore [essential singleton]
         local name = img.name
         while (name.contains('/'))
           name = name.after_first( '/' )
-          if (not image_info_lookup.contains(name)) image_info_lookup[ name ] = img
+          if (not image_info_lookup.contains(name))
+            image_info_lookup[ name ] = img
+          endIf
         endWhile
       endForEach
 

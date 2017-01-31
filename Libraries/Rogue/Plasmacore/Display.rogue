@@ -20,6 +20,9 @@ class Display [singleton]
       nativeHeader #include <OpenGL/gl.h>
     $endIf
 
+  DEFINITIONS
+    VERTEX_BUFFER_SIZE = 4096
+
   GLOBAL PROPERTIES
     default_unit_z    = 512.0
     default_view_type = @View : TypeInfo
@@ -97,6 +100,9 @@ class Display [singleton]
 
   METHODS
     method init
+      vertex_positions.ensure_capacity( VERTEX_BUFFER_SIZE * 4 )
+      vertex_uvs.ensure_capacity( VERTEX_BUFFER_SIZE )
+      vertex_colors.ensure_capacity( VERTEX_BUFFER_SIZE * 2 )
 
     method on_cleanup
       native @|if ($this->pos_buf)
@@ -302,7 +308,7 @@ class Display [singleton]
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
 
-      vertex_count += 6
+      reserve_vertices( 6 )
 
       vertex_positions.add( corners.a.x )
       vertex_positions.add( corners.a.y )
@@ -348,7 +354,7 @@ class Display [singleton]
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
 
-      vertex_count += 6
+      reserve_vertices( 6 )
 
       vertex_positions.add( corners.a.x )
       vertex_positions.add( corners.a.y )
@@ -677,6 +683,10 @@ class Display [singleton]
       vertex_positions.clear
       vertex_uvs.clear
       vertex_colors.clear
+
+    method reserve_vertices( n:Int32 )
+      if (vertex_count + n > VERTEX_BUFFER_SIZE) render
+      vertex_count += n
 
     method scale_to_fit( w:Int32, h:Int32 )->this
       return scale_to_fit( XY(w,h) )

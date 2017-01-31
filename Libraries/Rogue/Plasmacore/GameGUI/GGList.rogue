@@ -85,6 +85,7 @@ class GGList : GGComponent
       GGComponentManager.pointer_position = e.position
       if (e.is_press)
         if (not is_dragging and contains(e))
+          acceleration = 0.10   # halt any scrolling going on
           is_pressed = true
           drag_time.restart
           cur_pos = e.position
