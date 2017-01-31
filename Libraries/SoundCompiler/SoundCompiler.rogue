@@ -160,10 +160,9 @@ class SoundCompiler
         if (format and cur_ext != new_ext)
           local buffer = StringBuilder()
           if (System.os == "macOS")
-            buffer.print( "afconvert " )
             which (format)
               case "ima4": buffer.print( "afconvert -f caff -d 'ima4' " )
-              case "ogg"   buffer.print( "sox " )
+              case "ogg":  buffer.print( "sox " )
             endWhich
             buffer.print( from_filepath ).print( " " ).print( to_filepath )
           else
