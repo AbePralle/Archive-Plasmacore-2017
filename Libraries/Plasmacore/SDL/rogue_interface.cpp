@@ -9,12 +9,12 @@ static int          RogueInterface_argc = 0;
 static const char** RogueInterface_argv = {0};
 
 
-ROGUEAPI RogueString* Plasmacore_get_documents_folder()
+ROGUEAPI extern "C" RogueString* Plasmacore_get_documents_folder()
 {
   return RogueString_validate(RogueString_create_from_utf8("."));
 }
 
-ROGUEAPI RogueString* Plasmacore_get_library_folder()
+ROGUEAPI extern "C" RogueString* Plasmacore_get_library_folder()
 {
   return RogueString_validate(RogueString_create_from_utf8("."));
 }
