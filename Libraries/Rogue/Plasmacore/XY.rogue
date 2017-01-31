@@ -254,3 +254,21 @@ $endIf
       return XY( value^v.x, value^v.y )
 endClass
 
+augment Random
+  METHODS
+    method xy->XY:
+      # Creates a XY compound with randomized (x,y) values,
+      # each in the range (0.0,1.0) exclusive.
+      #
+      # Example:
+      #   local var random_screen_pos = Random.xy * Display.size
+      return XY( random_Real64, random_Real64 )
+
+    method xy( low:Real64, high:Real64 )->XY
+      # Returns a XY compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y) values.
+      return XY((real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment
+
+
