@@ -3,6 +3,7 @@ module Plasmacore
 
 $include "GameGUI/GGButton.rogue"
 $include "GameGUI/GGCheckbox.rogue"
+$include "GameGUI/GGColorBox.rogue"
 $include "GameGUI/GGComponent.rogue"
 $include "GameGUI/GGFiller.rogue"
 $include "GameGUI/GGImage.rogue"

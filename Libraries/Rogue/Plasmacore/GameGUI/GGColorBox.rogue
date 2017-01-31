@@ -1,0 +1,18 @@
+using Plasmacore
+
+class GGColorBox : GGComponent
+  PROPERTIES
+    color : Color
+
+  METHODS
+    method init( color )
+
+    method init( color, fixed_size )
+      size = fixed_size
+
+    method init( color, w:Real64, h:Real64 )
+      init( color, XY(w,h) )
+
+    method on_draw
+      bounds.fill( color )
+endClass

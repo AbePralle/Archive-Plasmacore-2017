@@ -23,6 +23,9 @@ class GGComponent
     method init( fixed_size )
       size = fixed_size
 
+    method init( w:Real64, h:Real64 )
+      init( XY(w,h) )
+
     method add( component:GGComponent )->this
       ensure subcomponents
       subcomponents.add( component )

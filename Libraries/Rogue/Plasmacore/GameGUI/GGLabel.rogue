@@ -8,12 +8,8 @@ class GGLabel : GGComponent
     color  : Color
 
   METHODS
-    method init( fixed_size, text, font=GGComponentManager.default_font )
+    method init( text, font=GGComponentManager.default_font, fixed_size=XY(0,0) )
       size = fixed_size
-      anchor = font.anchor
-      color = font.color
-
-    method init( text, font=GGComponentManager.default_font )
       anchor = font.anchor
       color = font.color
 

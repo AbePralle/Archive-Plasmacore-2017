@@ -28,7 +28,7 @@ class GGButton : GGComponent
     method init( fixed_size )
       size = fixed_size
 
-    method init( fixed_size, text, font=GGComponentManager.default_font )
+    method init( text, font=GGComponentManager.default_font, fixed_size=XY(0,0) )
       size = fixed_size
 
     method init( image, pressed_image=null )
