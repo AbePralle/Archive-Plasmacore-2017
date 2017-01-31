@@ -2,6 +2,11 @@ $include "../Rogue/Plasmacore"
 using Plasmacore
 
 try
+  if (System.os == "macOS")
+    install_brew
+    install_library( "sox --with-libvorbis" )
+  endIf
+
   local config_file = File( "Assets/Sounds/SoundConfig.txt" )
   if (not config_file.exists)
     File.create_folder( config_file.path )
@@ -157,7 +162,8 @@ class SoundCompiler
           if (System.os == "macOS")
             buffer.print( "afconvert " )
             which (format)
-              case "ima4": buffer.print( "-f caff -d 'ima4' " )
+              case "ima4": buffer.print( "afconvert -f caff -d 'ima4' " )
+              case "ogg"   buffer.print( "sox " )
             endWhich
             buffer.print( from_filepath ).print( " " ).print( to_filepath )
           else
@@ -600,3 +606,40 @@ class CommentStripper
 
 endClass
 
+
+routine require_command_line
+  if (System.environment["IDE"])
+    throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
+    ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
+  endIf
+endRoutine
+
+
+routine install_brew
+  if (0 == System.run("which brew >& /dev/null")) return
+
+  require_command_line
+  println "Installing brew"
+  if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+    local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    println cmd
+    if (0 == System.run(cmd)) return
+    throw Error( "Failed to install Homebrew." )
+  endIf
+
+  throw Error( "Missing required dependency 'brew' (Homebrew)." )
+endRoutine
+
+
+routine install_library( library_name:String )
+  if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
+
+  require_command_line
+  if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
+    throw Error( "Missing required library '$'." (library_name) )
+  endIf
+
+  local cmd = "brew install $" (library_name)
+  println cmd
+  if (0 != System.run(cmd)) throw Error( "Failed to install library '$'." (library_name) )
+endRoutine
