@@ -25,3 +25,17 @@ class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
       return XYZ(x,y,z)
 endClass
 
+augment Random
+  METHODS
+    method xyzw->XYZW:
+      # Creates a XYZW compound with randomized (x,y,z,w) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZW( random_Real64, random_Real64, random_Real64, random_Real64 )
+
+    method xyzw( low:Real64, high:Real64 )->XYZW
+      # Returns a XYZW compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z,w) values.
+      return XYZ((real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment
+
