@@ -74,3 +74,16 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
       return XY(x,y)
 endClass
 
+augment Random
+  METHODS
+    method xyz->XYZ:
+      # Creates a XYZ compound with randomized (x,y,z) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZ( random_Real64, random_Real64, random_Real64 )
+
+    method xyz( low:Real64, high:Real64 )->XYZ
+      # Returns a XYZ compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z) values.
+      return XYZ((real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment
