@@ -62,7 +62,7 @@ ROGUEAPI void RogueInterface_send_messages( const unsigned char* data, int count
       rx.clear();
       return;
     }
-    rx.assign(list->data->as_bytes+list->count, list->data->as_bytes);
+    rx.assign( list->data->as_bytes, list->data->as_bytes+list->count );
   }
   catch (RogueException* err)
   {
