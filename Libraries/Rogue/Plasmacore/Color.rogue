@@ -142,12 +142,12 @@ endClass
 
 augment Random
   METHODS
-    method color.Color:
+    method color->Color
       # Returns a color with randomized (r,g,b) values and an
       # alpha of 255.
       return Color.create(int32,int32,int32)
   
-    method realColor.RealColor:
+    method realColor->RealColor
       # Returns a color with randomized (r,g,b) values and an
       # alpha of 1.0.
       return Color.create(real64,real64,real64)
