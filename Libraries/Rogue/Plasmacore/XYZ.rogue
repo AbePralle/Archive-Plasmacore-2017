@@ -79,7 +79,7 @@ augment Random
     method xyz->XYZ:
       # Creates a XYZ compound with randomized (x,y,z) values,
       # each in the range (0.0,1.0) exclusive.
-      return XYZ( random_Real64, random_Real64, random_Real64 )
+      return XYZ( real64, real64, real64 )
 
     method xyz( low:Real64, high:Real64 )->XYZ
       # Returns a XYZ compound with an evenly distributed random real number in
