@@ -137,7 +137,7 @@ class BasicSound : Sound
       return this
 
     method set_volume( new_volume:Real64 )->this
-      if (id) SoundManager[ id ].set_volume( new_volume )
+      if (System.os != "emscripten" and id) SoundManager[ id ].set_volume( new_volume )
       return this
 
     method resume->this
