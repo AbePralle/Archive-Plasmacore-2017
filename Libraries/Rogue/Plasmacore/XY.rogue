@@ -262,7 +262,7 @@ augment Random
       #
       # Example:
       #   local var random_screen_pos = Random.xy * Display.size
-      return XY( random_Real64, random_Real64 )
+      return XY( real64, real64 )
 
     method xy( low:Real64, high:Real64 )->XY
       # Returns a XY compound with an evenly distributed random real number in
