@@ -43,6 +43,9 @@ class Box( position:XY, size:XY ) [compound]
     method at( anchor:Anchor )->XY
       return position + anchor.position * size
 
+    method at_random->XY
+      return XY(Random.real64(position.x,size.x+position.x),Random.real64(position.y,size.y+position.y))
+
     method bottom_left->XY
       return (position + XY(0,size.y))
 
