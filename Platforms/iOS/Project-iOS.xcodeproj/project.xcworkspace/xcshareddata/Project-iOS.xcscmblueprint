@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "127D94E252B6E299ED85EB85D9B0369BE512C243",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "4B256B20949613A2064F35A5344004D0F6261B54" : 9223372036854775807,
+    "127D94E252B6E299ED85EB85D9B0369BE512C243" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "BFDB97E2-7BA5-4B6E-8F19-1A7B1769DDEF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "4B256B20949613A2064F35A5344004D0F6261B54" : "Libraries\/ImageIO\/",
+    "127D94E252B6E299ED85EB85D9B0369BE512C243" : "Plasmacore\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Project-iOS",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Platforms\/iOS\/Project-iOS.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:AbePralle\/Plasmacore.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "127D94E252B6E299ED85EB85D9B0369BE512C243"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:AbePralle\/ImageIO.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4B256B20949613A2064F35A5344004D0F6261B54"
+    }
+  ]
+}
