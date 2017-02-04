@@ -283,9 +283,11 @@ $else
         local decoder = PNGDecoder()
         return decoder.decode( bytes, this )?
 
+$if (not "Web")
       elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
         local decoder = JPEGDecoder()
         return decoder.decode( bytes, this )?
+$endIf
 
       endIf
 
