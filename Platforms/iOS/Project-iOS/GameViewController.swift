@@ -1,6 +1,6 @@
 //
 //  GameViewController.swift
-//  iOS-Project
+//  Project-iOS
 //
 
 

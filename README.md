@@ -52,6 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.7.1 - February 4, 2017
+- [iOS] Renamed project template from `iOS-Project` to `Project-iOS`.
 - [macOS] Renamed project template from `macOS-Project` to `Project-macOS`.
 
 ###v0.7.0 - February 1, 2017
