@@ -37,7 +37,7 @@ ios: override TARGET := iOS
 
 macos: override TARGET := macOS
 
-emscripten: override TARGET := emscripten
+web: override TARGET := Web
 
 linux: override TARGET := Linux
 
@@ -47,8 +47,8 @@ ios: build run compile_images compile_sounds
 
 macos: build run compile_images compile_sounds
 
-emscripten: build run compile_images compile_sounds
-	make -C Platforms/emscripten
+web: build run compile_images compile_sounds
+	make -C Platforms/Web
 
 linux: build run compile_images compile_sounds
 	make -C Platforms/Linux

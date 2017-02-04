@@ -21,14 +21,14 @@ routine get_platform->String
       case "iOS", "macOS", "Linux"
         noAction
 
-      case "emscripten"
+      case "Web"
         if (System.os == "macOS")
           install_emscripten
         endIf
 
       others
         println @|USAGE
-                 |  make [ios | macos | emscripten | linux]
+                 |  make [ios | macos | web | linux]
         System.exit 1
     endWhich
 
@@ -78,6 +78,12 @@ routine compile( target:String )
   local language = "C++"
   if (target == "macOS" or target == "iOS") language = "C++,ObjC"
 
+  local roguec_target = target
+  which (target)
+    case "Web":   roguec_target += ",SDL,emscripten"
+    case "Linux": roguec_target += ",SDL"
+  endWhich
+
   local exe = "roguec"
   native @|#ifdef ROGUEC
           |  #define MAKE_MACRO_STR(s) MAKE_ARG_STR(s)
@@ -87,7 +93,7 @@ routine compile( target:String )
           |  #undef MAKE_MACRO_STR
           |#endif
   local cmd = ''$ --target=$,$,$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
-    (exe,language,target,mobile_or_desktop(target),output_folder)
+    (exe,language,roguec_target,mobile_or_desktop(target),output_folder)
     if (BuildConfig.ide_flag) cmd += " --ide"
 
   println cmd
@@ -98,7 +104,7 @@ endRoutine
 
 routine mobile_or_desktop( target:String )->String
   which (target)
-    case "Windows", "macOS", "Linux", "Unix", "emscripten"
+    case "Windows", "macOS", "Linux", "Unix", "Web"
       return "Desktop"
 
     others

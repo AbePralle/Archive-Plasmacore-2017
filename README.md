@@ -54,6 +54,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.7.1 - February 4, 2017
 - [iOS] Renamed project template from `iOS-Project` to `Project-iOS`.
 - [macOS] Renamed project template from `macOS-Project` to `Project-macOS`.
+- [Web] Renamed target `emscripten` to `Web` - use `make web` to compile.
+- [Web] Fixed `DefaultFont`/hello world transparency issue.
 
 ###v0.7.0 - February 1, 2017
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten" (produces JavaScript game).

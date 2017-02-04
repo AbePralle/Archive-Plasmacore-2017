@@ -1,12 +1,13 @@
 CXX = em++
 CC = emcc
 
-TARGET = emscripten
+TARGET = Web
 
 # The project root directory
 ROOT = ../..
 
-OPT_CFLAGS += -O3 -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
+OPT_CFLAGS += -O3
+OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
 
 SDLCORE_FOLDER = $(ROOT)/Libraries/Plasmacore/SDL
 
