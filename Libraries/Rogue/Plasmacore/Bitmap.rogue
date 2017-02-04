@@ -153,6 +153,11 @@ class Bitmap
     method clear( color=Color(0):Color )
       forEach (i of pixels) pixels[i] = color
 
+  GLOBAL PROPERTIES
+    conversions = 0
+
+  METHODS
+
     method convert_gray_to_alpha->Bitmap
       local count = width * height
 

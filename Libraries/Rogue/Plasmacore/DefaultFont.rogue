@@ -27,7 +27,7 @@ class DefaultFontData : FontData
         local color = bitmap.get( i1, 0 )
         local i2 = i1 + 1
         while (i2 < bitmap.width and bitmap.get(i2,0) == color) ++i2
-        char_bounds.add( sheet_builder.place(Bitmap(bitmap,Box(i1,1,(i2-i1),h)).convert_gray_to_alpha) )
+        char_bounds.add( sheet_builder.place(Bitmap(bitmap,Box(i1,1,(i2-i1),h)) ) )
         i1 = i2
       endForEach
 
