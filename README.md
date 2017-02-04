@@ -2,7 +2,7 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.7.2
+Version   | v0.7.3
 Date      | February 4, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
@@ -50,6 +50,9 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.7.3 - February 4, 2017
+- [Publish] Correcting master/develop sync issue.
 
 ###v0.7.2 - February 4, 2017
 - [Random] Changed `Random.realcolor()->Color` to `Random.color()->Color`.
