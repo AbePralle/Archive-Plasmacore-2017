@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.7.1 - February 4, 2017
+- [macOS] Renamed project template from `macOS-Project` to `Project-macOS`.
+
 ###v0.7.0 - February 1, 2017
 - [emscripten] Plasmacore now supports an "empscripten" asm.js target through "make emscripten" (produces JavaScript game).
 - [linux] Plasmacore now supports a "linux" target.  Uses SDL.  Type "make linux" on Linux; may have to manually install any libraries reported as missing.

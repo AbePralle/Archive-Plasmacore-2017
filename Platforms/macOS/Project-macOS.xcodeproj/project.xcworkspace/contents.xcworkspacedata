@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/abe/Projects/Plasmacore/Platforms/macOS/macOS-Project.xcodeproj">
+      location = "self:/Users/abe/Projects/Plasmacore/Platforms/macOS/Project-macOS.xcodeproj">
    </FileRef>
 </Workspace>
