@@ -539,10 +539,10 @@ class Display [singleton]
       OverlayLog.update
       OverlayLog.draw
 
-      render
+      render_2dx
       native "glFlush();"
 
-    method render
+    method render_2dx
       if (not vertex_count) return
 
       local render_mode = active_render_mode
@@ -563,7 +563,7 @@ class Display [singleton]
       endIf
 
       if (not shader)
-        println "Display.render: No active shader"
+        println "Display.render_2dx: No active shader"
         return
       endIf
 
@@ -685,14 +685,14 @@ class Display [singleton]
       vertex_colors.clear
 
     method reserve_vertices( n:Int32 )
-      if (vertex_count + n > VERTEX_BUFFER_SIZE) render
+      if (vertex_count + n > VERTEX_BUFFER_SIZE) render_2dx
       vertex_count += n
 
     method scale_to_fit( w:Int32, h:Int32 )->this
       return scale_to_fit( XY(w,h) )
 
     method scale_to_fit( @target_display_size )->this
-      render
+      render_2dx
       if (target_display_size.exists)
         display_scale = (target_display_size.value / true_size).max
         size = true_size * display_scale
@@ -711,7 +711,7 @@ class Display [singleton]
         if (new_clipping_region.value == clipping_region.value) return this
       endIf
 
-      render
+      render_2dx
       @clipping_region = new_clipping_region
 
       if (clipping_region.exists)
@@ -741,7 +741,7 @@ class Display [singleton]
 
     method set_primitive_type( primitive_type:Int32 )->this
       if (primitive_type == active_primitive_type) return this
-      render
+      render_2dx
       active_primitive_type = primitive_type
       return this
 
@@ -762,14 +762,14 @@ class Display [singleton]
 
     method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
       if (render_mode.value == active_render_mode.value and custom_shader is shader) return this
-      render
+      render_2dx
       active_render_mode = render_mode
       custom_shader = shader
       return this
 
     method set_texture( index:Int32, texture:Texture )->this
       if (index < active_textures.count and active_textures[index] is texture) return this
-      render
+      render_2dx
       active_textures.expand_to_include( index )[ index ] = texture
       return this
 
