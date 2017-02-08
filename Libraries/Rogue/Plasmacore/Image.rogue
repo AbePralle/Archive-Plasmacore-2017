@@ -9,7 +9,7 @@ class Image
     image_info    : ImageInfo
     data          : ImageData
     position      : XY
-    z             = 1.0
+    z             = 1.0  # A proporition of Display.z - 0.5 is half the distance, 2.0 is 2x the distance, etc.
     size          : XY
     original_size : XY
     scale         = XY(1,1)
