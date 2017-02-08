@@ -2,15 +2,14 @@ module Plasmacore
 
 class Renderer
   PROPERTIES
-    shader : Shader
-
-    native "GLuint position_buffer, color_buffer, uv_buffer;"
+    shader      : Shader
+    render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
 
   METHODS
     method init
       shader = create_shader
 
-    method create_shader
+    method create_shader->Shader
       return Shader(
         &vertex_shader =
           "uniform   mat4 transform;                  \n" +
@@ -74,25 +73,14 @@ final String fragmentShader =
 }#
       )
 
-      native @|glGenBuffers(1, &$this->position_buffer);
-              |glGenBuffers(1, &$this->color_buffer);
-              |glGenBuffers(1, &$this->uv_buffer);
-
-    method on_cleanup
-      native @|glDeleteBuffers( 1, &$this->position_buffer );
-              |glDeleteBuffers( 1, &$this->color_buffer );
-              |glDeleteBuffers( 1, &$this->uv_buffer );
-
     method draw( model:Model )
       local mesh = model.mesh
       if (not mesh) return
       if (not mesh.positions.count) return
 
       if (not shader) return
+      mesh.prepare
 
-      Display.clear_transforms
-
-      local render_mode = model.render_mode
       local viewport_size = Display.viewport_size
 
       native @|glUseProgram( $shader->program_id );
@@ -181,18 +169,17 @@ final String fragmentShader =
       if (shader.transform_setting >= 0)
         native @|static GLfloat m[16];
         forEach (element at i in Display.transform) native @|m[$i] = (GLfloat) $element;
-        #forEach (element at i in Matrix.identity) native @|m[$i] = (GLfloat) $element;
         local setting = shader.transform_setting
         native @|glUniformMatrix4fv( $setting, 1, false, m );
       endIf
 
       if (shader.position_attribute >= 0)
-        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->position_buffer);
-                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $mesh->positions->count, $mesh->positions->data->as_real32s, GL_STREAM_DRAW);
+        native @|glBindBuffer( GL_ARRAY_BUFFER, $mesh->position_buffer );
                 |glEnableVertexAttribArray( $shader->position_attribute );
                 |glVertexAttribPointer( $shader->position_attribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
 
+      #{
       if (shader.color_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->color_buffer);
                 |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_UNSIGNED_BYTE) * 4 * $mesh->colors->count, $mesh->colors->data->as_int32s, GL_STREAM_DRAW);
@@ -206,10 +193,10 @@ final String fragmentShader =
                 |glEnableVertexAttribArray( $shader->uv_attribute );
                 |glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
+      }#
 
       local vertex_count = mesh.positions.count / 3
       native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
-              |glFlush();
 
       #@trace native("glGetError()")->Int32
 

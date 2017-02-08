@@ -46,14 +46,20 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
     method rotated_x( degrees:Degrees )->Rotation
       return (Quaternion(this) * Quaternion(Rotation.x(degrees)))->Rotation
 
+    method to->Matrix
+      return Quaternion( this )->Matrix
+
+    method to->Quaternion
+      return Quaternion( this )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+
     method to_degrees->XYZ
       return XYZ( x.value, y.value, z.value )
 
     method to_radians->XYZ
       return XYZ( x->Radians.value, y->Radians.value, z->Radians.value )
-
-    method to->XYZ
-      return XYZ( x.value, y.value, z.value )
 
 endClass
 

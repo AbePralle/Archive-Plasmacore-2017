@@ -21,11 +21,53 @@ endClass
 
 class InitialState : State<<MainView>>
   PROPERTIES
+    model : Model
 
   METHODS
     method on_start
       # Called when this state becomes the active state
       println "Hello World"
+
+
+      #          0-----1
+      #         /|    /|
+      #        4-----5 |
+      #        | |   | |
+      #        | 3 --|-2
+      #        |/    |/
+      #        7---- 6
+
+      local corners = Vertex[]
+      corners.add( Vertex(-100,-100,-100) )
+      corners.add( Vertex( 100,-100,-100) )
+      corners.add( Vertex( 100, 100,-100) )
+      corners.add( Vertex(-100, 100,-100) )
+
+      corners.add( Vertex(-100,-100, 100) )
+      corners.add( Vertex( 100,-100, 100) )
+      corners.add( Vertex( 100, 100, 100) )
+      corners.add( Vertex(-100, 100, 100) )
+
+      local mesh = Mesh()
+      mesh.add( corners[0], corners[1], corners[2] )
+      mesh.add( corners[0], corners[2], corners[3] )
+
+      mesh.add( corners[4], corners[6], corners[5] )
+      mesh.add( corners[4], corners[7], corners[6] )
+
+      mesh.add( corners[5], corners[2], corners[1] )
+      mesh.add( corners[5], corners[6], corners[2] )
+
+      mesh.add( corners[0], corners[7], corners[4] )
+      mesh.add( corners[0], corners[3], corners[7] )
+
+      mesh.add( corners[0], corners[5], corners[1] )
+      mesh.add( corners[0], corners[4], corners[5] )
+
+      mesh.add( corners[7], corners[2], corners[6] )
+      mesh.add( corners[7], corners[3], corners[2] )
+
+      model = Model( mesh )
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -45,10 +87,13 @@ class InitialState : State<<MainView>>
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World", Display.center )
 
+      model.draw
+
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
+      model.update
 endClass
 

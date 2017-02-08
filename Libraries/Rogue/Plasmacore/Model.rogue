@@ -3,12 +3,19 @@ module Plasmacore
 class Model
   PROPERTIES
     mesh        : Mesh
-    render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
     renderer    = Renderer()
+
+    position    = XYZ(0,0,0)
+    transform   = Matrix.identity : Matrix
 
   METHODS
     method init( mesh )
 
     method draw
+      Display.push_world_transform( Matrix.translate(XYZ(Display.center,-Display.unit_z)) * transform )
       renderer.draw( this )
+      Display.pop_world_transform
+
+    method update
+      transform *= Matrix.rotate_y( Degrees(1) )
 endClass

@@ -6,6 +6,8 @@ class Mesh
     uvs       : Real32[]
     colors    : Int32[]
 
+    native "GLuint position_buffer;"
+
   METHODS
     method add( v:Vertex )->this
       positions.reserve( 3 ).add( v.xyz.x ).add( v.xyz.y ).add( v.xyz.z )
@@ -13,5 +15,21 @@ class Mesh
 
     method add( v1:Vertex, v2:Vertex, v3:Vertex )->this
       return add( v1 ).add( v2 ).add( v3 )
+
+    method on_cleanup
+      native @|if ($this->position_buffer)
+              |{
+              |  glDeleteBuffers( 1, &$this->position_buffer );
+              |}
+
+    method prepare
+      native @|if ( !$this->position_buffer )
+              |{
+              |  glGenBuffers( 1, &$this->position_buffer );
+              |  glBindBuffer( GL_ARRAY_BUFFER, $this->position_buffer );
+              |  glBufferData( GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $positions->count, $positions->data->as_real32s, GL_STATIC_DRAW );
+              |}
+
+
 endClass
 
