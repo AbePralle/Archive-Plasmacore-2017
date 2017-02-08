@@ -8,7 +8,10 @@ class Renderer
 
   METHODS
     method init
-      shader = Shader(
+      shader = create_shader
+
+    method create_shader
+      return Shader(
         &vertex_shader =
           "uniform   mat4 transform;                  \n" +
           "attribute vec4 position;                   \n" +
