@@ -12,7 +12,7 @@ class Model
     method init( mesh )
 
     method draw
-      Display.push_world_transform( Matrix.translate(XYZ(Display.center,-Display.unit_z)) * transform )
+      Display.push_world_transform( Matrix.translate(XYZ(Display.center,Display.z)) * transform )
       renderer.draw( this )
       Display.pop_world_transform
 

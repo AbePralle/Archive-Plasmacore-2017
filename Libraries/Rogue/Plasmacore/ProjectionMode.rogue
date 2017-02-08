@@ -7,18 +7,18 @@ endClass
 
 class ProjectionMode2DX : ProjectionMode
   PROPERTIES
-    unit_z : Real64
+    z      : Real64
     max_z  : Real64
 
   METHODS
-    method init( unit_z=Display.default_unit_z, max_z=16 )
+    method init( z=Display.default_z, max_z=-16 )
 
     method update
       local width   = Display.width
       local height  = Display.height
 
-      local k = (unit_z + 1) * 2
-      Display.unit_z = unit_z
+      local k = (-z + 1) * 2
+      Display.z = z
       local locus_sx = Display.perspective_center.x / width
       local locus_sy = Display.perspective_center.y / height
       local left = (-2 * width / k)  * locus_sx
@@ -27,7 +27,7 @@ class ProjectionMode2DX : ProjectionMode
       local bottom = top + 2*height/k
 
       Display.projection_transform = ...
-        Matrix.projection( left, top, right, bottom, 1, (max_z*k)/3 ) ...
+        Matrix.projection( left, top, right, bottom, 1, (-max_z*k)/3 ) ...
         * Matrix.translate( XYZ(-width*locus_sx,-height*locus_sy,0) )
 
 endClass

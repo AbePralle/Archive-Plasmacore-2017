@@ -56,6 +56,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Display] `glBufferData()` is now called only once for each vertex buffer and `glBufferSubData()` is used to update the data for subsequent rendering.
 - [Display] Renamed `object_transform` to `world_transform`.
 - [Display] Added `worldview_transform` as an intermediate matrix for 3D support.
+- [Display] Renamed `default_unit_z` and `unit_z` to `default_z` and `z`.
 - [SystemFont] Restored black letter outlines by shifting call to `Bitmap.convert_gray_to_alpha` out of the ImageSheetBuilder and into `DefaultFont` which is the only font the call is necessary for.
 
 ###v0.7.3 - February 4, 2017

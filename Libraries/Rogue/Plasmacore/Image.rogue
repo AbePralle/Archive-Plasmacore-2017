@@ -411,7 +411,7 @@ class ColorFillImageData : ImageData
     method draw( image:Image )
       local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
-      local z = -Display.unit_z * image.z
+      local z = Display.z * image.z
 
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
@@ -459,7 +459,7 @@ class TextureImageData : ImageData
     method draw( image:Image )
       local size = image.@size * image.scale
       local handle = XYZ( (image.anchor.position * size), 0 )
-      local z = -Display.unit_z * image.z
+      local z = Display.z * image.z
 
       local pos = image.position
       local has_rotation = not image.rotation.is_zero

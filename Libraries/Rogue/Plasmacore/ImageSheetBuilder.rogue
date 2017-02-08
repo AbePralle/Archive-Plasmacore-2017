@@ -49,7 +49,7 @@ class ImageSheetBuilder
     method to->Texture
       if (@texture) return @texture
 
-      bitmap.premultiply_alpha
+      #bitmap.premultiply_alpha
       texture = Texture( bitmap )
       return @texture
 
