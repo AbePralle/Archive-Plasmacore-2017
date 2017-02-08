@@ -49,9 +49,6 @@ class ImageSheetBuilder
     method to->Texture
       if (@texture) return @texture
 
-$if (not "emscripten")
-      bitmap.convert_gray_to_alpha
-$endIf
       bitmap.premultiply_alpha
       texture = Texture( bitmap )
       return @texture

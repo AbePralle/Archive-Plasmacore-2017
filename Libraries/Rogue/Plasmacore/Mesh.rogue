@@ -1,2 +1,17 @@
 module Plasmacore
 
+class Mesh
+  PROPERTIES
+    positions = Real32[]
+    uvs       : Real32[]
+    colors    : Int32[]
+
+  METHODS
+    method add( v:Vertex )->this
+      positions.reserve( 3 ).add( v.xyz.x ).add( v.xyz.y ).add( v.xyz.z )
+      return this
+
+    method add( v1:Vertex, v2:Vertex, v3:Vertex )->this
+      return add( v1 ).add( v2 ).add( v3 )
+endClass
+

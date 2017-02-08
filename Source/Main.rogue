@@ -2,27 +2,7 @@ using Plasmacore
 
 Display( "Main" ).view = MainView()
 
-class ColorBox : GGComponent
-  PROPERTIES
-    color : Color
-    is_pressed : Logical
-
-  METHODS
-    method init( color, size )
-
-    method on( e:PointerEvent )
-      if (e.is_press) is_pressed = true
-      if (e.is_release and is_pressed) color.argb = color.argb + 0x7f; is_pressed = false
-
-    method on_draw
-      bounds.fill( color )
-
-    method on_update
-endClass
-
 class MainView : View
-  PROPERTIES
-
   METHODS
     method on_start
       change_state( InitialState() )

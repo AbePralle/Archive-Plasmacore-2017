@@ -1,0 +1,214 @@
+module Plasmacore
+
+class Renderer
+  PROPERTIES
+    shader : Shader
+
+    native "GLuint position_buffer, color_buffer, uv_buffer;"
+
+  METHODS
+    method init
+      shader = Shader(
+        &vertex_shader =
+          "uniform   mat4 transform;                  \n" +
+          "attribute vec4 position;                   \n" +
+          "                                           \n" +
+          "void main()                                \n" +
+          "{                                          \n" +
+          "  gl_Position = transform * position;      \n" +
+          "}                                          \n",
+
+          #{
+final String vertexShader =
+    "uniform mat4 u_MVPMatrix;      \n"     // A constant representing the combined model/view/projection matrix.
+  + "uniform mat4 u_MVMatrix;       \n"     // A constant representing the combined model/view matrix.
+  + "uniform vec3 u_LightPos;       \n"     // The position of the light in eye space.
+
+  + "attribute vec4 a_Position;     \n"     // Per-vertex position information we will pass in.
+  + "attribute vec4 a_Color;        \n"     // Per-vertex color information we will pass in.
+  + "attribute vec3 a_Normal;       \n"     // Per-vertex normal information we will pass in.
+
+  + "varying vec4 v_Color;          \n"     // This will be passed into the fragment shader.
+
+  + "void main()                    \n"     // The entry point for our vertex shader.
+  + "{                              \n"
+        // Transform the vertex into eye space.
+  + "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);              \n"
+        // Transform the normal's orientation into eye space.
+  + "   vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));     \n"
+        // Will be used for attenuation.
+  + "   float distance = length(u_LightPos - modelViewVertex);             \n"
+        // Get a lighting direction vector from the light to the vertex.
+  + "   vec3 lightVector = normalize(u_LightPos - modelViewVertex);        \n"
+        // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+        // pointing in the same direction then it will get max illumination.
+  + "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);       \n"
+        // Attenuate the light based on distance.
+  + "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));  \n"
+        // Multiply the color by the illumination level. It will be interpolated across the triangle.
+  + "   v_Color = a_Color * diffuse;                                       \n"
+        // gl_Position is a special variable used to store the final position.
+        // Multiply the vertex by the matrix to get the final point in normalized screen coordinates.
+  + "   gl_Position = u_MVPMatrix * a_Position;                            \n"
+  + "}                                                                     \n";
+  }#
+
+        &pixel_shader =
+          "void main()                              \n" +
+          "{                                        \n" +
+          "  gl_FragColor = vec4(1,1,1,1);          \n" +
+          "}                                        \n"
+#{
+final String fragmentShader =
+  "precision mediump float;       \n"     // Set the default precision to medium. We don't need as high of a
+                                          // precision in the fragment shader.
++ "varying vec4 v_Color;          \n"     // This is the color from the vertex shader interpolated across the
+                                          // triangle per fragment.
++ "void main()                    \n"     // The entry point for our fragment shader.
++ "{                              \n"
++ "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
++ "}                              \n";
+}#
+      )
+
+      native @|glGenBuffers(1, &$this->position_buffer);
+              |glGenBuffers(1, &$this->color_buffer);
+              |glGenBuffers(1, &$this->uv_buffer);
+
+    method on_cleanup
+      native @|glDeleteBuffers( 1, &$this->position_buffer );
+              |glDeleteBuffers( 1, &$this->color_buffer );
+              |glDeleteBuffers( 1, &$this->uv_buffer );
+
+    method draw( model:Model )
+      local mesh = model.mesh
+      if (not mesh) return
+      if (not mesh.positions.count) return
+
+      if (not shader) return
+
+      Display.clear_transforms
+
+      local render_mode = model.render_mode
+      local viewport_size = Display.viewport_size
+
+      native @|glUseProgram( $shader->program_id );
+              |glViewport( 0, 0, (int)$viewport_size.x, (int)$viewport_size.y );
+              |glEnable( GL_CULL_FACE );
+              |glFrontFace( GL_CCW );
+              |glCullFace( GL_BACK );
+
+      if (render_mode.is_blended)
+        local gl_source_blend = 0
+        which (render_mode.source_blend)
+          case RenderMode.BLEND_ZERO:                 gl_source_blend = native("GL_ZERO")->Int32
+          case RenderMode.BLEND_ONE:                  gl_source_blend = native("GL_ONE")->Int32
+          case RenderMode.BLEND_SOURCE_ALPHA:         gl_source_blend = native("GL_SRC_ALPHA")->Int32
+          case RenderMode.BLEND_INVERSE_SOURCE_ALPHA: gl_source_blend = native("GL_ONE_MINUS_SRC_ALPHA")->Int32
+        endWhich
+
+        local gl_dest_blend = 0
+        which (render_mode.dest_blend)
+          case RenderMode.BLEND_ZERO:                 gl_dest_blend = native("GL_ZERO")->Int32
+          case RenderMode.BLEND_ONE:                  gl_dest_blend = native("GL_ONE")->Int32
+          case RenderMode.BLEND_SOURCE_ALPHA:         gl_dest_blend = native("GL_SRC_ALPHA")->Int32
+          case RenderMode.BLEND_INVERSE_SOURCE_ALPHA: gl_dest_blend = native("GL_ONE_MINUS_SRC_ALPHA")->Int32
+        endWhich
+
+        native @|glEnable( GL_BLEND );
+                |glBlendFunc( $gl_source_blend, $gl_dest_blend );
+      else
+        native @|glDisable( GL_BLEND );
+      endIf
+
+      #{
+      if (render_mode.is_textured)
+        forEach (i in 0..<active_textures.count.or_smaller(shader.texture_settings.count))
+          local texture = active_textures[ i ]
+          if (texture)
+            local setting = shader.texture_settings[ i ]
+            native @|glActiveTexture( GL_TEXTURE0+$i );
+                    |glBindTexture( GL_TEXTURE_2D, $texture->id );
+                    |glUniform1i( $setting, $i );
+
+            if (render_mode.wrap_x)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+            endIf
+
+            if (render_mode.wrap_y)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+            endIf
+
+            if (render_mode.is_point_filtered)
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+            else
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+              native @|glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            endIf
+          endIf
+        endForEach
+      endIf
+      }#
+
+      #{
+      # ---- Set Vertex Color Mode ------------------------------------------------
+      # Copy vertex colors and set up vertex color mode
+      # Swap red and blue while premultiplying R,G,B by A.
+      local count = vertex_colors.count
+      native @|{
+              |  RogueInt32* src = $vertex_colors->data->as_int32s - 1;
+              |  while (--$count >= 0)
+              |  {
+              |    int color = *(++src);
+              |    int a = (color >> 24) & 255;
+              |    int r = (((color >> 16) & 255) * a) / 255;
+              |    int g = (((color >> 8) & 255) * a) / 255;
+              |    int b = ((color & 255) * a) / 255;
+              |    *src = (a << 24) | (b << 16) | (g << 8) | r;
+              |  }
+              |}
+      }#
+
+      # Configure shader
+      if (shader.transform_setting >= 0)
+        native @|static GLfloat m[16];
+        forEach (element at i in Display.transform) native @|m[$i] = (GLfloat) $element;
+        #forEach (element at i in Matrix.identity) native @|m[$i] = (GLfloat) $element;
+        local setting = shader.transform_setting
+        native @|glUniformMatrix4fv( $setting, 1, false, m );
+      endIf
+
+      if (shader.position_attribute >= 0)
+        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->position_buffer);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $mesh->positions->count, $mesh->positions->data->as_real32s, GL_STREAM_DRAW);
+                |glEnableVertexAttribArray( $shader->position_attribute );
+                |glVertexAttribPointer( $shader->position_attribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
+      endIf
+
+      if (shader.color_attribute >= 0)
+        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->color_buffer);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_UNSIGNED_BYTE) * 4 * $mesh->colors->count, $mesh->colors->data->as_int32s, GL_STREAM_DRAW);
+                |glEnableVertexAttribArray( $shader->color_attribute );
+                |glVertexAttribPointer( $shader->color_attribute, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, 0);
+      endIf
+
+      if (shader.uv_attribute >= 0)
+        native @|glBindBuffer(GL_ARRAY_BUFFER, $this->uv_buffer);
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $mesh->uvs->count, $mesh->uvs->data->as_real32s, GL_STREAM_DRAW);
+                |glEnableVertexAttribArray( $shader->uv_attribute );
+                |glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
+      endIf
+
+      local vertex_count = mesh.positions.count / 3
+      native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
+              |glFlush();
+
+      #@trace native("glGetError()")->Int32
+
+endClass
+

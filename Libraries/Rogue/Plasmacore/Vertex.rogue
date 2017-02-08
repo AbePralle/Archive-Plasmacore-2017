@@ -1,0 +1,14 @@
+module Plasmacore
+
+class Vertex( xyz:XYZ ) [compound]
+  GLOBAL METHODS
+    method create( x:Real64, y:Real64, z:Real64 )->Vertex
+      return Vertex( XYZ(x,y,z) )
+endClass
+
+class TextureVertex [compound]
+endClass
+
+class ColorVertex [compound]
+endClass
+

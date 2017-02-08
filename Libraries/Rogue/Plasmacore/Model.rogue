@@ -1,0 +1,14 @@
+module Plasmacore
+
+class Model
+  PROPERTIES
+    mesh        : Mesh
+    render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
+    renderer    = Renderer()
+
+  METHODS
+    method init( mesh )
+
+    method draw
+      renderer.draw( this )
+endClass

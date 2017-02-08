@@ -31,6 +31,9 @@ class DefaultFontData : FontData
         i1 = i2
       endForEach
 
+$if (not "Web")
+      sheet_builder.bitmap.convert_gray_to_alpha
+$endIf
       local font_sheet = Image( sheet_builder->Texture )
       font_sheet.anchor = Anchor.TOP_LEFT
 

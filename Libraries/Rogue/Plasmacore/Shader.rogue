@@ -56,10 +56,13 @@ $endIf
     pixel_shader_id       : Int32
     program_id            : Int32
 
-    position_attribute : Int32
-    color_attribute    : Int32
-    uv_attribute       : Int32
-    texture_settings   = Int32[]
+    position_attribute          : Int32
+    color_attribute             : Int32
+    normal_attribute            : Int32
+    uv_attribute                : Int32
+    worldview_transform_setting : Int32
+    transform_setting           : Int32
+    texture_settings            = Int32[]
 
   METHODS
     method init( vertex_shader:String, pixel_shader:String )
@@ -85,7 +88,10 @@ $endIf
               |
               |$position_attribute = glGetAttribLocation( $program_id, "position" );
               |$color_attribute    = glGetAttribLocation( $program_id, "color" );
+              |$normal_attribute   = glGetAttribLocation( $program_id, "normal" );
               |$uv_attribute       = glGetAttribLocation( $program_id,  "uv" );
+              |$worldview_transform_setting = glGetUniformLocation( $program_id, "worldview_transform" );
+              |$transform_setting           = glGetUniformLocation( $program_id, "transform" );
               |
               |int slot = 0;
               |while ($location >= 0)
