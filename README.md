@@ -54,8 +54,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.7.4 - February 7, 2017
 - [Display] Fixed error on initial uv buffer capacity (possible crash issue).
 - [Display] `glBufferData()` is now called only once for each vertex buffer and `glBufferSubData()` is used to update the data for subsequent rendering.
-- [Display] Renamed `object_transform` to `world_transform`.
-- [Display] Added `worldview_transform` as an intermediate matrix for 3D support.
+- [Display] Added `world_transform` as an intermediate matrix for 3D support.
+- [Display] Fixed order of object transform multiplication.
 - [Display] Renamed `default_unit_z` and `unit_z` to `default_z` and `z`.
 - [Display] `z` is now explicitly rather than implicitly negative.
 - [Angles] Renamed compound `Rotation` to `Angles`.

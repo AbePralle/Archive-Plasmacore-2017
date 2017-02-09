@@ -416,9 +416,9 @@ class ColorFillImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_world_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
+        Display.push_object_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
       else
-        Display.push_world_transform( Matrix.translate(XYZ(pos,z)-handle) )
+        Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
 
       local transform = Display.transform
@@ -433,7 +433,7 @@ class ColorFillImageData : ImageData
 
       Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.render_mode, image.selected_shader )
 
-      Display.pop_world_transform
+      Display.pop_object_transform
 
 endClass
 
@@ -464,9 +464,9 @@ class TextureImageData : ImageData
       local pos = image.position
       local has_rotation = not image.rotation.is_zero
       if (has_rotation)
-        Display.push_world_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
+        Display.push_object_transform( Quaternion(image.rotation)->Matrix( handle, XYZ(pos,z)) )
       else
-        Display.push_world_transform( Matrix.translate(XYZ(pos,z)-handle) )
+        Display.push_object_transform( Matrix.translate(XYZ(pos,z)-handle) )
       endIf
 
       local transform = Display.transform
@@ -483,7 +483,7 @@ class TextureImageData : ImageData
         Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
         image.render_mode, image.selected_shader )
 
-      Display.pop_world_transform
+      Display.pop_object_transform
 
     method load
       texture.load

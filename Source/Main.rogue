@@ -22,7 +22,6 @@ endClass
 class InitialState : State<<MainView>>
   PROPERTIES
     model : Model
-    model2 : Model
 
   METHODS
     method on_start
@@ -35,9 +34,7 @@ class InitialState : State<<MainView>>
       model.position = XYZ(82,116,Display.z+16)
       model.scale = XYZ(32,16,16)
 
-      model2 = Model( Mesh.cube )
-      model2.position = XYZ(82+64,116,Display.z+16)
-      model2.scale = XYZ(32,16,16)
+      model.add( Model( Mesh.cube ).set_position(0,-4,0) )
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -60,7 +57,6 @@ class InitialState : State<<MainView>>
       Box(50,100,64,32).fill(Color.YELLOW)
 
       model.draw
-      model2.draw
 
     method on_resize
       # Called when the Display.size changes
@@ -69,6 +65,5 @@ class InitialState : State<<MainView>>
       # Called 60 times a second
       model.rotation = model.rotation.rotated(Angles.degrees(1,0,0))
       model.update
-      model2.update
 endClass
 

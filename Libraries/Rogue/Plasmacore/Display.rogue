@@ -62,15 +62,15 @@ class Display [singleton]
 
     projection_transform  : Matrix
     transform             : Matrix
-    worldview_transform : Matrix
+    world_transform       : Matrix  # Combination of view and object transforms
     view_transform        = Matrix.identity : Matrix
-    world_transform      = Matrix.identity : Matrix
+    object_transform      = Matrix.identity : Matrix
     view_transforms       = Matrix[]
-    world_transforms     = Matrix[]
+    object_transforms     = Matrix[]
 
     transform_modified            : Logical
     view_transform_modified       : Logical
-    world_transform_modified     : Logical
+    object_transform_modified     : Logical
 
     projection_mode   = ProjectionMode2DX()
     z                 = default_z : Real64
@@ -221,10 +221,10 @@ class Display [singleton]
 
     method clear_transforms
       render_2dx
-      world_transforms.clear
+      object_transforms.clear
       view_transforms.clear
       view_transform_modified = true
-      world_transform_modified = true
+      object_transform_modified = true
       transform_modified = true
 
     method define_texture( gl_id:Int32, bitmap:Bitmap, options:Int32 )->Int32
@@ -468,13 +468,13 @@ class Display [singleton]
       return group
       }#
 
+    method object_transform->Matrix
+      update_transform
+      return @object_transform
+
     method world_transform->Matrix
       update_transform
       return @world_transform
-
-    method worldview_transform->Matrix
-      update_transform
-      return @worldview_transform
 
     method pop_clipping_region->this
       if (clipping_region_stack.count)
@@ -484,11 +484,11 @@ class Display [singleton]
       endIf
       return this
 
-    method pop_world_transform( n=1:Int32 )->this
+    method pop_object_transform( n=1:Int32 )->this
       forEach (1..n)
-        if (world_transforms.count)
-          world_transforms.remove_last
-          world_transform_modified = true
+        if (object_transforms.count)
+          object_transforms.remove_last
+          object_transform_modified = true
           transform_modified = true
         endIf
       endForEach
@@ -513,9 +513,9 @@ class Display [singleton]
       endIf
       return this
 
-    method push_world_transform( m:Matrix )->this
-      world_transforms.add( m )
-      world_transform_modified = true
+    method push_object_transform( m:Matrix )->this
+      object_transforms.add( m )
+      object_transform_modified = true
       transform_modified = true
       return this
 
@@ -830,19 +830,13 @@ class Display [singleton]
     method update_transform
       if (not transform_modified) return
 
-      if (view_transform_modified or world_transform_modified)
-        if (world_transform_modified)
-          world_transform_modified = false
-          if (world_transforms.count)
-            #{
-            @world_transform = world_transforms.first
-            forEach (i in 1..world_transforms.count-1)
-              @world_transform = @world_transform * world_transforms[i]
-            endForEach
-            }#
-            @world_transform = world_transforms.last
-            forEach (i in world_transforms.count-2 downTo 0)
-              @world_transform = @world_transform * world_transforms[i]
+      if (view_transform_modified or object_transform_modified)
+        if (object_transform_modified)
+          object_transform_modified = false
+          if (object_transforms.count)
+            @object_transform = object_transforms.first
+            forEach (i in 1..<object_transforms.count)
+              @object_transform = @object_transform * object_transforms[i]
             endForEach
           endIf
         endIf
@@ -858,21 +852,21 @@ class Display [singleton]
         endIf
 
         if (view_transforms.count)
-          if (world_transforms.count)
-            worldview_transform = @view_transform * @world_transform
+          if (object_transforms.count)
+            world_transform = @view_transform * @object_transform
           else
-            worldview_transform = @view_transform
+            world_transform = @view_transform
           endIf
         else
-          if (world_transforms.count)
-            worldview_transform = @world_transform
+          if (object_transforms.count)
+            world_transform = @object_transform
           else
-            worldview_transform = Matrix.identity
+            world_transform = Matrix.identity
           endIf
         endIf
       endIf
 
-      transform = projection_transform * @worldview_transform
+      transform = projection_transform * @world_transform
       transform_modified = false
 
     method view_transform->Matrix

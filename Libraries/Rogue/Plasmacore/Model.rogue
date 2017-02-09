@@ -2,28 +2,62 @@ module Plasmacore
 
 class Model
   PROPERTIES
-    mesh        : Mesh
-    renderer    : Renderer
+    children    : Model[]
 
     position    = XYZ(0,0,0)
     scale       = XYZ(1,1,1)
     rotation    = Quaternion()
 
+    mesh        : Mesh
+    renderer    : Renderer
+
   METHODS
+    method init
+
     method init( mesh, renderer=Renderer.standard )
+
+    method add( child:Model )->this
+      (ensure children).add( child )
+      return this
+
+    method after_draw
+      noAction
+
+    method after_update
+      noAction
 
     method angles->Angles
       return @rotation->Angles
 
     method draw
-      if (renderer)
-        Display.push_world_transform( Matrix.translate(position) * rotation->Matrix * Matrix.scale(scale) )
-        renderer.draw( this )
-        Display.pop_world_transform
+      Display.push_object_transform( Matrix.translate(position) * rotation->Matrix * Matrix.scale(scale) )
+      on_draw
+      if (renderer) renderer.draw( this )
+      if (children)
+        (forEach in children).draw
       endIf
+      after_draw
+      Display.pop_object_transform
+
+    method on_draw
+      noAction
+
+    method on_update
+      noAction
 
     method set_angles( angles:Angles )->this
       @rotation = angles->Quaternion
+      return this
+
+    method set_scale( @scale )->this
+      return this
+
+    method set_scale( x:Real64, y:Real64, z:Real64 )->this
+      @scale = XYZ( x, y, z )
+      return this
+
+    method set_scale( factor:Real64 )->this
+      @scale = XYZ( factor, factor, factor )
       return this
 
     method set_position( @position )->this
@@ -31,6 +65,10 @@ class Model
 
     method set_position( xy:XY )->this
       @position = XYZ( xy, Display.z )
+      return this
+
+    method set_position( x:Real64, y:Real64, z=Display.z:Real64 )->this
+      @position = XYZ( x, y, z )
       return this
 
     method set_rotation( @rotation )->this
@@ -41,4 +79,10 @@ class Model
       return this
 
     method update
+      on_update
+      if (children)
+        (forEach in children).update
+      endIf
+      after_update
 endClass
+
