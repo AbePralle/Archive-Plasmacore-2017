@@ -485,13 +485,13 @@ class Display [singleton]
       return this
 
     method pop_object_transform( n=1:Int32 )->this
-      forEach (1..n)
-        if (object_transforms.count)
-          object_transforms.remove_last
-          object_transform_modified = true
-          transform_modified = true
-        endIf
+      forEach (1..n.or_smaller(object_transforms.count))
+        object_transforms.remove_last
       endForEach
+      object_transform_modified = true
+      transform_modified = true
+      if (object_transforms.count) @object_transform = object_transforms.last
+      else                         @object_transform = Matrix.identity
       return this
 
     method pop_view_transform( n=1:Int32 )->this
@@ -514,7 +514,12 @@ class Display [singleton]
       return this
 
     method push_object_transform( m:Matrix )->this
-      object_transforms.add( m )
+      if (object_transforms.count)
+        object_transforms.add( object_transforms.first * m )
+      else
+        object_transforms.add( m )
+      endIf
+      @object_transform = object_transforms.last
       object_transform_modified = true
       transform_modified = true
       return this
@@ -831,15 +836,7 @@ class Display [singleton]
       if (not transform_modified) return
 
       if (view_transform_modified or object_transform_modified)
-        if (object_transform_modified)
-          object_transform_modified = false
-          if (object_transforms.count)
-            @object_transform = object_transforms.first
-            forEach (i in 1..<object_transforms.count)
-              @object_transform = @object_transform * object_transforms[i]
-            endForEach
-          endIf
-        endIf
+        object_transform_modified = false
 
         if (view_transform_modified)
           view_transform_modified = false
