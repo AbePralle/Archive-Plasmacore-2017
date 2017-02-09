@@ -56,22 +56,22 @@ $endIf
     pixel_shader_id       : Int32
     program_id            : Int32
 
-    position_attribute          : Int32
-    color_attribute             : Int32
-    normal_attribute            : Int32
-    uv_attribute                : Int32
+    position_attribute      : Int32
+    color_attribute         : Int32
+    normal_attribute        : Int32
+    uv_attribute            : Int32
     world_transform_setting : Int32
-    transform_setting           : Int32
-    texture_settings            = Int32[]
+    transform_setting       : Int32
+    texture_settings        = Int32[]
 
   METHODS
     method init( vertex_shader:String, pixel_shader:String )
       if (use_high_precision)
-        vertex_shader = GLSL_VERSION + HIGH_PRECISION + vertex_shader
-        pixel_shader = GLSL_VERSION + HIGH_PRECISION + pixel_shader
+        vertex_shader = GLSL_VERSION + HIGH_PRECISION + vertex_shader.replacing( "$LOWP", LOWP )
+        pixel_shader = GLSL_VERSION + HIGH_PRECISION + pixel_shader.replacing( "$LOWP", LOWP )
       else
-        vertex_shader = GLSL_VERSION + MEDIUM_PRECISION + vertex_shader
-        pixel_shader = GLSL_VERSION + MEDIUM_PRECISION + pixel_shader
+        vertex_shader = GLSL_VERSION + MEDIUM_PRECISION + vertex_shader.replacing( "$LOWP", LOWP )
+        pixel_shader = GLSL_VERSION + MEDIUM_PRECISION + pixel_shader.replacing( "$LOWP", LOWP )
       endIf
 
       native @|$vertex_shader_id = (RogueInt32) glCreateShader( GL_VERTEX_SHADER );
@@ -129,124 +129,124 @@ $endIf
 
   GLOBAL METHODS
     method create_color_shader->Shader
-      return Shader(
-        &vertex_shader =
-          "attribute vec4 position;                   \n" +
-          "attribute" + LOWP + "vec4 color;           \n" +
-          "varying  " + LOWP + "vec4 vertex_color;    \n" +
-          "void main()                                \n" +
-          "{                                          \n" +
-          "  gl_Position = position;                  \n" +
-          "  vertex_color = color / 255.0;            \n" +
-          "}                                          \n",
+      local vertex_shader =
+          @|attribute vec4  position;
+           |attribute $LOWP vec4 color;
+           |varying   $LOWP vec4 vertex_color;
+           |void main()
+           |{
+           |  gl_Position = position;
+           |  vertex_color = color / 255.0;
+           |}
 
-        &pixel_shader =
-          "varying" + LOWP + "vec4 vertex_color;    \n" +
-          "void main()                              \n" +
-          "{                                        \n" +
-          "  gl_FragColor = vertex_color;           \n" +
-          "}                                        \n"
-      )
+      local pixel_shader =
+          @|varying $LOWP vec4 vertex_color;
+           |void main()
+           |{
+           |  gl_FragColor = vertex_color;
+           |}
+
+      return Shader( vertex_shader, pixel_shader )
 
     method create_texture_shader->Shader
-      return Shader(
-        &vertex_shader =
-          "attribute vec4 position;              \n" +
-          "attribute      vec2 uv;               \n" +
-          "varying        vec2 vertex_uv;        \n" +
-          "void main()                           \n" +
-          "{                                     \n" +
-          "  gl_Position = position;             \n" +
-          "  vertex_uv = uv;                     \n" +
-          "}                                     \n",
+      local vertex_shader =
+          @|attribute vec4 position;
+           |attribute      vec2 uv;
+           |varying        vec2 vertex_uv;
+           |void main()
+           |{
+           |  gl_Position = position;
+           |  vertex_uv = uv;
+           |}
 
-        &pixel_shader =
-          "uniform              sampler2D texture_0;        \n" +
-          "varying              vec2      vertex_uv;        \n" +
-          "void main()                                      \n" +
-          "{                                                \n" +
-          "  gl_FragColor = texture2D(texture_0,vertex_uv); \n" +
-          "}                                                \n"
-      )
+      local pixel_shader =
+          @|uniform              sampler2D texture_0;
+           |varying              vec2      vertex_uv;
+           |void main()
+           |{
+           |  gl_FragColor = texture2D(texture_0,vertex_uv);
+           |}
+
+      return Shader( vertex_shader, pixel_shader )
 
     method create_texture_shader_with_color_multiply->Shader
-      return Shader(
-        &vertex_shader =
-          "attribute vec4 position;                   \n" +
-          "attribute      vec2 uv;                    \n" +
-          "varying        vec2 vertex_uv;             \n" +
-          "attribute"+LOWP+"vec4 color;               \n" +
-          "varying  "+LOWP+"vec4 vertex_color;        \n" +
-          "void main()                                \n" +
-          "{                                          \n" +
-          "  gl_Position = position;                  \n" +
-          "  vertex_uv = uv;                          \n" +
-          "  vertex_color = color / 255.0;            \n" +
-          "}                                          \n",
+      local vertex_shader =
+          @|attribute vec4 position;
+           |attribute      vec2 uv;
+           |varying        vec2 vertex_uv;
+           |attribute $LOWP vec4 color;
+           |varying   $LOWP vec4 vertex_color;
+           |void main()
+           |{
+           |  gl_Position = position;
+           |  vertex_uv = uv;
+           |  vertex_color = color / 255.0;
+           |}
 
-        &pixel_shader =
-          "uniform              sampler2D texture_0;                       \n" +
-          "varying              vec2      vertex_uv;                       \n" +
-          "varying"+LOWP+"vec4 vertex_color;                               \n" +
-          "void main()                                                     \n" +
-          "{                                                               \n" +
-          "  gl_FragColor = texture2D(texture_0,vertex_uv) * vertex_color; \n" +
-          "}                                                               \n"
-      )
+      local pixel_shader =
+          @|uniform              sampler2D texture_0;
+           |varying              vec2      vertex_uv;
+           |varying $LOWP vec4 vertex_color;
+           |void main()
+           |{
+           |  gl_FragColor = texture2D(texture_0,vertex_uv) * vertex_color;
+           |}
+
+      return Shader( vertex_shader, pixel_shader )
 
     method create_texture_shader_with_color_add->Shader
-      return Shader(
-        &vertex_shader =
-          "attribute vec4 position;                  \n" +
-          "attribute      vec2 uv;                   \n" +
-          "varying        vec2 vertex_uv;            \n" +
-          "attribute"+LOWP+"vec4 color;              \n" +
-          "varying  "+LOWP+"vec4 vertex_color;       \n" +
-          "void main()                               \n" +
-          "{                                         \n" +
-          "  gl_Position = position;                 \n" +
-          "  vertex_uv = uv;                         \n" +
-          "  vertex_color = color / 255.0;           \n" +
-          "}                                         \n",
+      local vertex_shader =
+          @|attribute vec4 position;
+           |attribute      vec2 uv;
+           |varying        vec2 vertex_uv;
+           |attribute $LOWP vec4 color;
+           |varying   $LOWP vec4 vertex_color;
+           |void main()
+           |{
+           |  gl_Position = position;
+           |  vertex_uv = uv;
+           |  vertex_color = color / 255.0;
+           |}
 
-        &pixel_shader =
-          "uniform        sampler2D texture_0;                    \n" +
-          "varying        vec2      vertex_uv;                    \n" +
-          "varying"+LOWP+"vec4      vertex_color;                 \n" +
-          "void main()                                            \n" +
-          "{                                                      \n" +
-          "  vec4 texture_color = texture2D(texture_0,vertex_uv); \n" +
-          "  gl_FragColor = vec4( texture_color.xyz + (vertex_color.xyz * texture_color.a), texture_color.a ); \n" +
-          "} \n"
-      )
+      local pixel_shader =
+          @|uniform        sampler2D texture_0;
+           |varying        vec2      vertex_uv;
+           |varying $LOWP vec4      vertex_color;
+           |void main()
+           |{
+           |  vec4 texture_color = texture2D(texture_0,vertex_uv);
+           |  gl_FragColor = vec4( texture_color.xyz + (vertex_color.xyz * texture_color.a), texture_color.a );
+           |}
+
+      return Shader( vertex_shader, pixel_shader )
 
     method create_texture_shader_with_color_fill->Shader
-      return Shader(
-        &vertex_shader =
-          "attribute vec4 position;                             \n" +
-          "attribute      vec2 uv;                              \n" +
-          "varying        vec2 vertex_uv;                       \n" +
-          "attribute"+LOWP+"vec4  color;                        \n" +
-          "varying  "+LOWP+"vec4  vertex_color;                 \n" +
-          "varying  "+LOWP+"float vertex_inverse_a;             \n" +
-          "void main()                                          \n" +
-          "{                                                    \n" +
-          "  gl_Position = position;                            \n" +
-          "  vertex_uv = uv;                                    \n" +
-          "  vertex_color = color / 255.0;                      \n" +
-          "  vertex_inverse_a = 1.0 - vertex_color.a;           \n" +
-          "}                                                    \n",
+      local vertex_shader =
+          @|attribute vec4 position;
+           |attribute      vec2 uv;
+           |varying        vec2 vertex_uv;
+           |attribute $LOWP vec4  color;
+           |varying   $LOWP vec4  vertex_color;
+           |varying   $LOWP float vertex_inverse_a;
+           |void main()
+           |{
+           |  gl_Position = position;
+           |  vertex_uv = uv;
+           |  vertex_color = color / 255.0;
+           |  vertex_inverse_a = 1.0 - vertex_color.a;
+           |}
 
-        &pixel_shader =
-          "uniform         sampler2D texture_0;        \n" +
-          "varying         vec2      vertex_uv;        \n" +
-          "varying "+LOWP+"vec4      vertex_color;     \n" +
-          "varying "+LOWP+"float     vertex_inverse_a; \n" +
-          "void main()                                 \n" +
-          "{                                           \n" +
-          "  vec4 texture_color = texture2D(texture_0,vertex_uv); \n" +
-          "  gl_FragColor = vec4( ((texture_color.xyz*vertex_inverse_a)+vertex_color.xyz)*texture_color.a, texture_color.a );\n" +
-          "} \n"
-      )
+      local pixel_shader =
+          @|uniform         sampler2D texture_0;
+           |varying         vec2      vertex_uv;
+           |varying  $LOWP vec4      vertex_color;
+           |varying  $LOWP float     vertex_inverse_a;
+           |void main()
+           |{
+           |  vec4 texture_color = texture2D(texture_0,vertex_uv);
+           |  gl_FragColor = vec4( ((texture_color.xyz*vertex_inverse_a)+vertex_color.xyz)*texture_color.a, texture_color.a );
+           |}
+
+      return Shader( vertex_shader, pixel_shader )
 endClass
 
