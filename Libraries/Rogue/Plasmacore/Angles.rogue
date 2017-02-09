@@ -1,0 +1,80 @@
+module Plasmacore
+
+class AxisAngle( axis:XYZ, angle:Radians ) [compound]
+  GLOBAL METHODS
+    method create( axis:XYZ, angle:Degrees )->AxisAngle
+      return AxisAngle( axis, angle->Radians )
+endClass
+
+class Angles( x:Degrees, y:Degrees, z:Degrees ) [compound]
+  # Represents a Euler angle rotation.
+  GLOBAL METHODS
+    method create->Angles
+      return degrees( 0, 0, 0 )
+
+    method degrees( x:Real64, y:Real64, z:Real64 )->Angles [macro]
+      Angles( Degrees(x), Degrees(y), Degrees(z) )
+
+    method radians( x:Real64, y:Real64, z:Real64 )->Angles
+      return Angles( Radians(x)->Degrees, Radians(y)->Degrees, Radians(z)->Degrees )
+
+    method x( value:Degrees )->Angles [macro]
+      Angles( value, Degrees(0), Degrees(0) )
+
+    method y( value:Degrees )->Angles [macro]
+      Angles( Degrees(0), value, Degrees(0) )
+
+    method z( value:Degrees )->Angles [macro]
+      Angles( Degrees(0), Degrees(0), value)
+
+    method x( r:Radians )->Angles [macro]
+      Angles.radians( r.value, 0, 0 )
+
+    method y( r:Radians )->Angles [macro]
+      Angles.radians( 0, r.value, 0 )
+
+    method z( r:Radians )->Angles [macro]
+      Angles.radians( 0, 0, r.value )
+
+  METHODS
+    method is_rotated->Logical
+      return (x.value or y.value or z.value)
+
+    method is_zero->Logical
+      return not (x.value or y.value or z.value)
+
+    method rotated_x( degrees:Degrees )->Angles
+      return (Quaternion(this) * Quaternion(Angles.x(degrees)))->Angles
+
+    method rotated_y( degrees:Degrees )->Angles
+      return (Quaternion(this) * Quaternion(Angles.y(degrees)))->Angles
+
+    method rotated_z( degrees:Degrees )->Angles
+      return (Quaternion(this) * Quaternion(Angles.z(degrees)))->Angles
+
+    method rotated_x( radians:Radians )->Angles
+      return (Quaternion(this) * Quaternion(Angles.x(radians)))->Angles
+
+    method rotated_y( radians:Radians )->Angles
+      return (Quaternion(this) * Quaternion(Angles.y(radians)))->Angles
+
+    method rotated_z( radians:Radians )->Angles
+      return (Quaternion(this) * Quaternion(Angles.z(radians)))->Angles
+
+    method to->Matrix
+      return Quaternion( this )->Matrix
+
+    method to->Quaternion
+      return Quaternion( this )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+
+    method to_degrees->XYZ
+      return XYZ( x.value, y.value, z.value )
+
+    method to_radians->XYZ
+      return XYZ( x->Radians.value, y->Radians.value, z->Radians.value )
+
+endClass
+

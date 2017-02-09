@@ -7,10 +7,13 @@ class Model
 
     position    = XYZ(0,0,0)
     scale       = XYZ(1,1,1)
-    rotation    : Rotation
+    rotation    = Quaternion()
 
   METHODS
     method init( mesh, renderer=Renderer.standard )
+
+    method angles->Angles
+      return @rotation->Angles
 
     method draw
       if (renderer)
@@ -19,11 +22,22 @@ class Model
         Display.pop_world_transform
       endIf
 
+    method set_angles( angles:Angles )->this
+      @rotation = angles->Quaternion
+      return this
+
     method set_position( @position )->this
       return this
 
     method set_position( xy:XY )->this
       @position = XYZ( xy, Display.z )
+      return this
+
+    method set_rotation( @rotation )->this
+      return this
+
+    method set_rotation( angles:Angles )->this
+      @rotation = angles->Quaternion
       return this
 
     method update

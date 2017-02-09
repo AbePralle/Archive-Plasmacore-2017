@@ -13,7 +13,7 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
           sin * aa.axis.z
       )
 
-    method create( rotation:Rotation )->Quaternion
+    method create( rotation:Angles )->Quaternion
       local radians = rotation.to_radians / 2
 
       local ax = Math.cos( radians.x )
@@ -37,45 +37,49 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
 
 
     method create( m:Matrix )->Quaternion
-      local result = Quaternion()
       local diagonal = m[0] + m[5] + m[10] + 1
+
+      local result_x = 0.0
+      local result_y = 0.0
+      local result_z = 0.0
+      local result_w = 1.0
 
       if (diagonal > 0.0)
         local scale = Math.sqrt( diagonal ) * 2.0
 
-        result.x = (m[6] - m[9]) / scale
-        result.y = (m[8] - m[2]) / scale
-        result.z = (m[1] - m[4]) / scale
-        result.w = 0.25 * scale
+        result_x = (m[6] - m[9]) / scale
+        result_y = (m[8] - m[2]) / scale
+        result_z = (m[1] - m[4]) / scale
+        result_w = 0.25 * scale
 
       else
         if (m[0]>m[5] and m[0]>m[10])
           local scale = Math.sqrt(1.0 + m[0] - m[5] - m[10]) * 2.0
 
-          result.x = scale / 4
-          result.y = (m[4] + m[1]) / scale
-          result.z = (m[2] + m[8]) / scale
-          result.w = (m[6] - m[9]) / scale
+          result_x = scale / 4
+          result_y = (m[4] + m[1]) / scale
+          result_z = (m[2] + m[8]) / scale
+          result_w = (m[6] - m[9]) / scale
 
         elseIf (m[5]>m[10])
           local scale = Math.sqrt(1.0 + m[5] - m[0] - m[10]) * 2.0
 
-          result.x = (m[4] + m[1]) / scale
-          result.y = scale / 4
-          result.z = (m[9] + m[6]) / scale
-          result.w = (m[8] - m[2]) / scale
+          result_x = (m[4] + m[1]) / scale
+          result_y = scale / 4
+          result_z = (m[9] + m[6]) / scale
+          result_w = (m[8] - m[2]) / scale
 
         else
           local scale = Math.sqrt( 1.0 + m[10] - m[0] - m[5] ) * 2
 
-          result.x = (m[8] + m[2]) / scale
-          result.y = (m[9] + m[6]) / scale
-          result.z = scale / scale
-          result.w = (m[1] - m[4]) / scale
+          result_x = (m[8] + m[2]) / scale
+          result_y = (m[9] + m[6]) / scale
+          result_z = scale / scale
+          result_w = (m[1] - m[4]) / scale
         endIf
       endIf
 
-      return result.normalized
+      return Quaternion( result_x, result_y, result_z, result_w ).normalized
 
     method create( from:XYZ, to:XYZ )->Quaternion
       from = from.normalized()
@@ -203,6 +207,9 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
         return linear_tween( target,t )
       endIf
 
+    method rotated( by_angles:Angles )->Quaternion
+      return this * by_angles->Quaternion
+
     method dot( other:Quaternion )->Real64
       return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w)
 
@@ -214,7 +221,7 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
         return AxisAngle( XYZ(x/scale,y/scale,z/scale), Radians(2 * Math.acos(w)) )
       endIf
 
-    method to->Rotation
+    method to->Angles
       local sqw  = w * w
       local sqx  = x * x
       local sqy  = y * y
@@ -222,19 +229,19 @@ class Quaternion( x=0:Real64, y=0:Real64, z=0:Real64, w=1.0:Real64 ) [compound]
       local test = 2.0 * (y*w - x*z)
 
       if ((test-1).abs <= 0.000001)
-        return Rotation.radians(
+        return Angles.radians(
             0,
             pi / 2,
             (-2*Math.atan2(x, w))
         )
       elseIf ((test+1).abs <= 0.000001)
-        return Rotation.radians(
+        return Angles.radians(
             0,
             pi/2,
             (2*Math.atan2(x,w))
         )
       else
-        return Rotation.radians(
+        return Angles.radians(
             Math.atan2( 2 * (y*z +x*w),(-sqx - sqy + sqz + sqw) ),
             Math.asin( test.clamped( -1, 1 ) ),
             Math.atan2( 2 * (x*y +z*w),(sqx - sqy - sqz + sqw) )

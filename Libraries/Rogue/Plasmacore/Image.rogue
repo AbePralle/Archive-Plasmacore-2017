@@ -13,7 +13,7 @@ class Image
     size          : XY
     original_size : XY
     scale         = XY(1,1)
-    rotation      : Rotation
+    rotation      : Angles
     shader        : Shader
     anchor        = Anchor.CENTER : Anchor
     render_mode   : RenderMode

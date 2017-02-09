@@ -67,7 +67,7 @@ class InitialState : State<<MainView>>
 
     method on_update
       # Called 60 times a second
-      model.rotation = model.rotation.rotated_x(Degrees(1))
+      model.rotation = model.rotation.rotated(Angles.degrees(1,0,0))
       model.update
       model2.update
 endClass
