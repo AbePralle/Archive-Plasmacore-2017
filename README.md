@@ -60,6 +60,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Display] `z` is now explicitly rather than implicitly negative.
 - [Angles] Renamed compound `Rotation` to `Angles`.
 - [SystemFont] Restored black letter outlines by shifting call to `Bitmap.convert_gray_to_alpha` out of the ImageSheetBuilder and into `DefaultFont` which is the only font the call is necessary for.
+- [Shader] Switched built-in shader definitions to use verbatim strings for clarity and simplicity.
+- [Shader] Reorganized image shaders as globals under the Image class - `TextureShader` is now `Image.TEXTURE_SHADER` and so forth.
 
 ###v0.7.3 - February 4, 2017
 - [Publish] Correcting master/develop sync issue.

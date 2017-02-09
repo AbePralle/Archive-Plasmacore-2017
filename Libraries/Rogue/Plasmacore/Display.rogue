@@ -28,11 +28,7 @@ class Display [singleton]
     default_view_type = @View : TypeInfo
 
   PROPERTIES
-    color_shader                       : Shader
-    texture_shader                     : Shader
-    texture_shader_with_color_multiply : Shader
-    texture_shader_with_color_add      : Shader
-    texture_shader_with_color_fill     : Shader
+    is_configured : Logical
 
     name               : String
     view               = default_view_type.create_object<<View>> : View
@@ -114,16 +110,10 @@ class Display [singleton]
               |}
 
     method activate_view_and_state
-      if (not color_shader)
-        # Set up default shaders
-        color_shader                       = Shader.create_color_shader
-        texture_shader                     = Shader.create_texture_shader
-        texture_shader_with_color_multiply = Shader.create_texture_shader_with_color_multiply
-        texture_shader_with_color_add      = Shader.create_texture_shader_with_color_add
-        texture_shader_with_color_fill     = Shader.create_texture_shader_with_color_fill
-      endIf
 
-      if (native("$this->position_buffer == 0")->Logical)
+      if (not is_configured)
+        is_configured = true
+
         local pos_capacity = vertex_positions.capacity
         local uv_capacity = vertex_uvs.capacity
         local color_capacity = vertex_colors.capacity
@@ -575,13 +565,13 @@ class Display [singleton]
         # Choose shader based on render mode.
         if (render_mode.is_textured)
           which (render_mode.value & RenderMode.COLOR_MODE_MASK)
-            case RenderMode.COLOR_MULTIPLY: shader = texture_shader_with_color_multiply
-            case RenderMode.COLOR_ADD:      shader = texture_shader_with_color_add
-            case RenderMode.COLOR_FILL:     shader = texture_shader_with_color_fill
-            others:                         shader = texture_shader
+            case RenderMode.COLOR_MULTIPLY: shader = Image.TEXTURE_SHADER_WITH_COLOR_MULTIPLY
+            case RenderMode.COLOR_ADD:      shader = Image.TEXTURE_SHADER_WITH_COLOR_ADD
+            case RenderMode.COLOR_FILL:     shader = Image.TEXTURE_SHADER_WITH_COLOR_FILL
+            others:                         shader = Image.TEXTURE_SHADER
           endWhich
         else
-          shader = color_shader
+          shader = Image.COLOR_SHADER
         endIf
       endIf
 
