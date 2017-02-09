@@ -103,7 +103,7 @@ class Display [singleton]
     method init
       vertex_positions.ensure_capacity( VERTEX_BUFFER_SIZE * 4 )
       vertex_uvs.ensure_capacity( VERTEX_BUFFER_SIZE * 2 )
-      vertex_colors.ensure_capacity( VERTEX_BUFFER_SIZE * 2 )
+      vertex_colors.ensure_capacity( VERTEX_BUFFER_SIZE )
 
     method on_cleanup
       native @|if ($this->position_buffer)

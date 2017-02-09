@@ -46,6 +46,21 @@ class Rotation( x:Degrees, y:Degrees, z:Degrees ) [compound]
     method rotated_x( degrees:Degrees )->Rotation
       return (Quaternion(this) * Quaternion(Rotation.x(degrees)))->Rotation
 
+    method rotated_y( degrees:Degrees )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.y(degrees)))->Rotation
+
+    method rotated_z( degrees:Degrees )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.z(degrees)))->Rotation
+
+    method rotated_x( radians:Radians )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.x(radians)))->Rotation
+
+    method rotated_y( radians:Radians )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.y(radians)))->Rotation
+
+    method rotated_z( radians:Radians )->Rotation
+      return (Quaternion(this) * Quaternion(Rotation.z(radians)))->Rotation
+
     method to->Matrix
       return Quaternion( this )->Matrix
 

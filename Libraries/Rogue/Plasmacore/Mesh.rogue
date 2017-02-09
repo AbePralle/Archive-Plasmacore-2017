@@ -1,15 +1,67 @@
 module Plasmacore
 
 class Mesh
+  GLOBAL PROPERTIES
+    cube : Mesh
+
+  GLOBAL METHODS
+    method cube->Mesh
+      if (@cube) return @cube
+
+      #          0-----1
+      #         /|    /|
+      #        4-----5 |
+      #        | |   | |
+      #        | 3 --|-2
+      #        |/    |/
+      #        7---- 6
+      local corners = Vertex[]
+      corners.add( Vertex(-1,-1,-1) )
+      corners.add( Vertex( 1,-1,-1) )
+      corners.add( Vertex( 1, 1,-1) )
+      corners.add( Vertex(-1, 1,-1) )
+      corners.add( Vertex(-1,-1, 1) )
+      corners.add( Vertex( 1,-1, 1) )
+      corners.add( Vertex( 1, 1, 1) )
+      corners.add( Vertex(-1, 1, 1) )
+
+      @cube = Mesh()
+      @cube.add( corners[0], corners[1], corners[2] )
+      @cube.add( corners[0], corners[2], corners[3] )
+
+      @cube.add( corners[4], corners[6], corners[5] )
+      @cube.add( corners[4], corners[7], corners[6] )
+
+      @cube.add( corners[5], corners[2], corners[1] )
+      @cube.add( corners[5], corners[6], corners[2] )
+
+      @cube.add( corners[0], corners[7], corners[4] )
+      @cube.add( corners[0], corners[3], corners[7] )
+
+      @cube.add( corners[0], corners[5], corners[1] )
+      @cube.add( corners[0], corners[4], corners[5] )
+
+      @cube.add( corners[7], corners[2], corners[6] )
+      @cube.add( corners[7], corners[3], corners[2] )
+
+      return @cube
+
   PROPERTIES
-    positions = Real32[]
-    uvs       : Real32[]
-    colors    : Int32[]
+    positions    : Real32[]
+    uvs          : Real32[]
+    colors       : Int32[]
+    vertex_count : Int32
 
     native "GLuint position_buffer;"
 
   METHODS
+    method init( vertex_count=10 )
+      ensure positions( vertex_count * 3 )
+      #ensure uvs( vertex_count * 2 )
+      #ensure colors( vertex_count )
+
     method add( v:Vertex )->this
+      ++vertex_count
       positions.reserve( 3 ).add( v.xyz.x ).add( v.xyz.y ).add( v.xyz.z )
       return this
 

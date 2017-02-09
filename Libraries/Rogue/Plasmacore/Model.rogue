@@ -3,19 +3,28 @@ module Plasmacore
 class Model
   PROPERTIES
     mesh        : Mesh
-    renderer    = Renderer()
+    renderer    : Renderer
 
     position    = XYZ(0,0,0)
-    transform   = Matrix.identity : Matrix
+    scale       = XYZ(1,1,1)
+    rotation    : Rotation
 
   METHODS
-    method init( mesh )
+    method init( mesh, renderer=Renderer.standard )
 
     method draw
-      Display.push_world_transform( Matrix.translate(XYZ(Display.center,Display.z)) * transform )
-      renderer.draw( this )
-      Display.pop_world_transform
+      if (renderer)
+        Display.push_world_transform( Matrix.translate(position) * rotation->Matrix * Matrix.scale(scale) )
+        renderer.draw( this )
+        Display.pop_world_transform
+      endIf
+
+    method set_position( @position )->this
+      return this
+
+    method set_position( xy:XY )->this
+      @position = XYZ( xy, Display.z )
+      return this
 
     method update
-      transform *= Matrix.rotate_y( Degrees(1) )
 endClass

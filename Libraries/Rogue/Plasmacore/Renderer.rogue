@@ -1,6 +1,14 @@
 module Plasmacore
 
 class Renderer
+  GLOBAL PROPERTIES
+    standard : Renderer
+
+  GLOBAL METHODS
+    method standard->Renderer
+      if (not @standard) @standard = Renderer()
+      return @standard
+
   PROPERTIES
     shader      : Shader
     render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
@@ -195,8 +203,7 @@ final String fragmentShader =
       endIf
       }#
 
-      local vertex_count = mesh.positions.count / 3
-      native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
+      native @|glDrawArrays( GL_TRIANGLES, 0, $mesh->vertex_count );
 
       #@trace native("glGetError()")->Int32
 
