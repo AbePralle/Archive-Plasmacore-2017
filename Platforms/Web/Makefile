@@ -42,7 +42,7 @@ clean:
 	rm -f $(BUILD_FOLDER)/Source/RogueProgram.h
 	rm -f $(BUILD_FOLDER)/Intermediate/*.o
 
-project: $(BUILD_FOLDER)/$(OUTPUT_NAME).html
+project: $(BUILD_FOLDER)/$(OUTPUT_NAME).html custom_index_html
 
 $(BUILD_FOLDER)/$(OUTPUT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
 	# -s FULL_ES2=1 ?
@@ -59,3 +59,10 @@ $(BUILD_FOLDER)/$(OUTPUT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(S
 	       $(BUILD_FOLDER)/Source/RogueProgram.cpp \
 	       $(SDLCORE_FILES) \
 	       -o $(BUILD_FOLDER)/$(OUTPUT_NAME).html
+
+custom_index_html:
+	@test -f index.html && make $(BUILD_FOLDER)/index.html || true
+
+$(BUILD_FOLDER)/index.html: index.html
+	@echo COPYING && cp index.html $(BUILD_FOLDER)/
+
