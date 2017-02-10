@@ -1,13 +1,9 @@
 module Plasmacore
 
 class Renderer [abstract]
-  GLOBAL PROPERTIES
-    standard : Renderer
-
   GLOBAL METHODS
-    method standard->Renderer
-      if (not @standard) @standard = FixedColorRenderer()
-      return @standard
+    method FIXED_COLOR->Renderer
+      return (ensure Display.fixed_color_model_renderer)
 
   PROPERTIES
     shader      : Shader
@@ -24,6 +20,9 @@ class Renderer [abstract]
 
     method pixel_shader_source->String [abstract]
 
+    method configure_render_mode( model:Model )
+      noAction
+
     method draw( model:Model )
       local mesh = model.mesh
       if (not mesh) return
@@ -31,6 +30,8 @@ class Renderer [abstract]
 
       if (not shader) return
       mesh.prepare
+
+      configure_render_mode( model )
 
       local viewport_size = Display.viewport_size
 
@@ -137,6 +138,14 @@ class Renderer [abstract]
                 |glVertexAttribPointer( $shader->position_attribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
 
+      if (shader.fixed_color_setting >= 0)
+        local a = ((model.color.argb :>>>: 24) & 255) / Real32(255)
+        local r = a * ((model.color.argb :>>>: 16) & 255) / Real32(255)
+        local g = a * ((model.color.argb :>>>: 8) & 255) / Real32(255)
+        local b = a * ((model.color.argb) & 255) / Real32(255)
+        native @|glUniform4f( $shader->fixed_color_setting, $r, $g, $b, $a );
+      endIf
+
       #{
       if (shader.color_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->color_buffer);
@@ -161,12 +170,20 @@ endClass
 
 
 class FixedColorRenderer : Renderer
+  PROPERTIES
+    render_mode = RenderMode.ALPHA_SHAPE : RenderMode
+
   METHODS
+    method configure_render_mode( model:Model )
+      if ((model.color.argb & 0xFF000000) == 0xFF000000)
+        render_mode = RenderMode.OPAQUE_SHAPE
+      else
+        render_mode = RenderMode.ALPHA_SHAPE
+      endIf
+
     method vertex_shader_source->String
       return @|uniform   mat4  transform;
               |attribute vec4  position;
-              |attribute $LOWP vec4 color;
-              |varying   $LOWP vec4 vertex_color;
               |
               |void main()
               |{
@@ -174,11 +191,11 @@ class FixedColorRenderer : Renderer
               |}
 
     method pixel_shader_source->String
-      return @|varying $LOWP vec4 vertex_color;
+      return @|uniform $LOWP vec4 fixed_color;
               |
               |void main()
               |{
-              |  gl_FragColor = vec4(1,1,1,1);
+              |  gl_FragColor = fixed_color;
               |}
 
           #{

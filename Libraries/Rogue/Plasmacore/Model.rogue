@@ -11,10 +11,12 @@ class Model
     mesh        : Mesh
     renderer    : Renderer
 
+    color       = Color.WHITE : Color
+
   METHODS
     method init
 
-    method init( mesh, renderer=Renderer.standard )
+    method init( mesh, renderer=Renderer.FIXED_COLOR )
 
     method add( child:Model )->this
       (ensure children).add( child )
@@ -47,6 +49,9 @@ class Model
 
     method set_angles( angles:Angles )->this
       @rotation = angles->Quaternion
+      return this
+
+    method set_color( @color )->this
       return this
 
     method set_scale( @scale )->this

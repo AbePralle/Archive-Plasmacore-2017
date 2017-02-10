@@ -30,11 +30,11 @@ class InitialState : State<<MainView>>
 
       Display.projection_mode = ProjectionMode2DX( -320 )
 
-      model = Model( Mesh.cube )
+      model = Model( Mesh.cube ).set_color(Color.RED)
       model.position = XYZ(82,116,Display.z+16)
       model.scale = XYZ(32,16,16)
 
-      model.add( Model( Mesh.cube ).set_position(0,-4,0) )
+      model.add( Model( Mesh.cube ).set_position(0,-4,0).set_color(Color(0x8000FF00)) )
 
     method after_draw
       # This happens after the current view's on_draw()
