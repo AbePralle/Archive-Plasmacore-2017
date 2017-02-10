@@ -14,6 +14,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <stdlib.h>
 #else
 #include <libgen.h>
 #include <unistd.h>
@@ -467,6 +468,11 @@ int main (int argc, char * argv[])
        FS.syncfs(true, function (err) {
          Module.print("Persistent storage ready.");
          Module["_start_main_loop"]();
+       });
+       window.addEventListener("beforeunload", function (e) {
+         // Sync all filesystems
+         FS.syncfs(false, function(err) {});
+         return null;
        });
     );
   #else
