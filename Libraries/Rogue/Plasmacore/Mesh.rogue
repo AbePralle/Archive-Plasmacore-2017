@@ -55,8 +55,8 @@ class Mesh
     native "GLuint position_buffer;"
 
   METHODS
-    method init( vertex_count=10 )
-      ensure positions( vertex_count * 3 )
+    method init( vertex_capacity=10:Int32 )
+      ensure positions( vertex_capacity * 3 )
       #ensure uvs( vertex_count * 2 )
       #ensure colors( vertex_count )
 
