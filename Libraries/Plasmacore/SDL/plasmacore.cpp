@@ -19,6 +19,7 @@
 #include <unistd.h>
 #endif
 
+#define LOCAL_FS 1
 //#define WINDOW_BASED 1
 
 // The "code" value for SDL_USEREVENT for our async call mechanism
@@ -423,6 +424,12 @@ static void do_iteration (void)
 }
 
 
+extern "C" void start_main_loop (void)
+{
+  emscripten_set_main_loop(do_iteration, 0, 1);
+}
+
+
 Plasmacore Plasmacore::singleton;
 
 int main (int argc, char * argv[])
@@ -453,7 +460,18 @@ int main (int argc, char * argv[])
   Plasmacore::singleton.start();
 
 #ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop(do_iteration, 0, 1);
+  #ifdef LOCAL_FS
+    EM_ASM(
+       FS.mkdir("/local_storage");
+       FS.mount(IDBFS, {}, "/local_storage");
+       FS.syncfs(true, function (err) {
+         Module.print("Persistent storage ready.");
+         Module["_start_main_loop"]();
+       });
+    );
+  #else
+    start_main_loop();
+  #endif
 #else
   SDL_GL_SetSwapInterval(1);
   while (!should_quit)
