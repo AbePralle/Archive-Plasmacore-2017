@@ -484,11 +484,11 @@ int main (int argc, char * argv[])
        });
     }, LOCAL_FS);
   #else
-    launch();
+    launch_plasmacore();
   #endif
   emscripten_set_main_loop(do_iteration, 0, 1);
 #else
-  launch();
+  launch_plasmacore();
 
   SDL_GL_SetSwapInterval(1);
   while (!should_quit)
