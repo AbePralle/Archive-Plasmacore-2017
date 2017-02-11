@@ -63,6 +63,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Shader] Switched built-in shader definitions to use verbatim strings for clarity and simplicity.
 - [Shader] Reorganized image shaders as globals under the Image class - `TextureShader` is now `Image.TEXTURE_SHADER` and so forth.
 - [Web] If Platforms/Web contains a file called `index.html`, that file is copied into the build folder alongside the generated .html file.
+- [Plasmacore] Renamed `data_folder()->String` to `user_data_folder()->String` and added `application_data_folder()->String`.
 
 ###v0.7.3 - February 4, 2017
 - [Publish] Correcting master/develop sync issue.
