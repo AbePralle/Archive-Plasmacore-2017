@@ -50,6 +50,7 @@ $(BUILD_FOLDER)/$(OUTPUT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(S
 	       -s USE_SDL=2 \
 	       -s USE_LIBPNG=1 \
 	       -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_start_main_loop']" \
+	       -D LOCAL_FS='"/local_storage"' \
 	       -std=c++11 \
 	       --preload-file $(BUILD_FOLDER)/Assets@/Assets \
 	       -Wall \

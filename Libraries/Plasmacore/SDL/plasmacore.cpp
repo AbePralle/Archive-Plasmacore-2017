@@ -20,7 +20,6 @@
 #include <unistd.h>
 #endif
 
-#define LOCAL_FS 1
 //#define WINDOW_BASED 1
 
 // The "code" value for SDL_USEREVENT for our async call mechanism
@@ -462,9 +461,10 @@ int main (int argc, char * argv[])
 
 #ifdef __EMSCRIPTEN__
   #ifdef LOCAL_FS
-    EM_ASM(
-       FS.mkdir("/local_storage");
-       FS.mount(IDBFS, {}, "/local_storage");
+    EM_ASM_({
+       var mountpoint = Module["Pointer_stringify"]($0);
+       FS.mkdir(mountpoint);
+       FS.mount(IDBFS, {}, mountpoint);
        FS.syncfs(true, function (err) {
          Module.print("Persistent storage ready.");
          Module["_start_main_loop"]();
@@ -474,7 +474,7 @@ int main (int argc, char * argv[])
          FS.syncfs(false, function(err) {});
          return null;
        });
-    );
+    }, LOCAL_FS);
   #else
     start_main_loop();
   #endif
