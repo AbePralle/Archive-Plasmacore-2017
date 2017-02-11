@@ -433,6 +433,17 @@ extern "C" void start_main_loop (void)
 
 Plasmacore Plasmacore::singleton;
 
+extern "C" void Rogue_sync_idbfs()
+{
+  #ifdef __EMSCRIPTEN__
+  EM_ASM(
+     FS.syncfs( false, function (err) {
+       Module.print("Synched IDBFS -> IndexedDB");
+     });
+  );
+  #endif
+}
+
 int main (int argc, char * argv[])
 {
   gargc = argc;
@@ -463,8 +474,8 @@ int main (int argc, char * argv[])
 #ifdef __EMSCRIPTEN__
   #ifdef LOCAL_FS
     EM_ASM(
-       FS.mkdir("/local_storage");
-       FS.mount(IDBFS, {}, "/local_storage");
+       FS.mkdir("/IDBFS");
+       FS.mount(IDBFS, {}, "/IDBFS");
        FS.syncfs(true, function (err) {
          Module.print("Persistent storage ready.");
          Module["_start_main_loop"]();

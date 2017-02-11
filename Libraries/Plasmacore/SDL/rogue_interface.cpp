@@ -11,7 +11,7 @@ static const char** RogueInterface_argv = {0};
 
 ROGUEAPI extern "C" RogueString* Plasmacore_get_documents_folder()
 {
-  return RogueString_validate(RogueString_create_from_utf8("."));
+  return RogueString_validate(RogueString_create_from_utf8("/IDBFS"));
 }
 
 ROGUEAPI extern "C" RogueString* Plasmacore_get_library_folder()
