@@ -7,6 +7,14 @@ class MainView : View
     method on_start
       change_state( InitialState() )
 
+      local file = File( "$/Test.json" (Plasmacore.user_data_folder) )
+      local table = JSON.load_table( file )
+      @trace "Loaded ", table
+      if (table//x) table//x = table//x + 1
+      else          table//x = 1
+      @trace "Saving ", table
+      table.save( file )
+
     method on( e:PointerEvent )
 
     method on_draw

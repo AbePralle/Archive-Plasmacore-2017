@@ -30,6 +30,7 @@ static char ** gargv;
 
 
 static int iterations;
+static volatile bool plasmacore_launched = false;
 
 
 #ifdef __EMSCRIPTEN__
@@ -358,6 +359,8 @@ static bool should_quit = false;
 static void do_iteration (void)
 {
   ++iterations;
+  if ( !plasmacore_launched ) return;
+
   plasmacore_redraw_all_windows();
   SDL_Event e;
   while (SDL_PollEvent(&e))
@@ -423,24 +426,26 @@ static void do_iteration (void)
   }
 }
 
-
-extern "C" void start_main_loop (void)
-{
-  emscripten_set_main_loop(do_iteration, 0, 1);
-}
-
-
 Plasmacore Plasmacore::singleton;
 
-extern "C" void Rogue_sync_idbfs()
+extern "C" void Rogue_sync_local_storage()
 {
   #ifdef __EMSCRIPTEN__
   EM_ASM(
      FS.syncfs( false, function (err) {
-       Module.print("Synched IDBFS -> IndexedDB");
+       Module.print("Synching IDBFS");
      });
   );
   #endif
+}
+
+extern "C" void launch_plasmacore()
+{
+  Plasmacore::singleton.configure().launch();
+  PlasmacoreMessage( "Application.on_start" ).send();
+  Plasmacore::singleton.start();
+
+  plasmacore_launched = true;
 }
 
 int main (int argc, char * argv[])
@@ -466,30 +471,25 @@ int main (int argc, char * argv[])
   // call it from Rogue via "native".
   //SDL_ShowCursor(false);
 
-  Plasmacore::singleton.configure().launch();
-  PlasmacoreMessage( "Application.on_start" ).send();
-  Plasmacore::singleton.start();
-
 #ifdef __EMSCRIPTEN__
   #ifdef LOCAL_FS
+    plasmacore_launched = false;
     EM_ASM_({
        var mountpoint = Module["Pointer_stringify"]($0);
        FS.mkdir(mountpoint);
        FS.mount(IDBFS, {}, mountpoint);
        FS.syncfs(true, function (err) {
-         Module.print("Persistent storage ready.");
-         Module["_start_main_loop"]();
-       });
-       window.addEventListener("beforeunload", function (e) {
-         // Sync all filesystems
-         FS.syncfs(false, function(err) {});
-         return null;
+         Module.print("IDBFS ready");
+         Module["_launch_plasmacore"]();
        });
     }, LOCAL_FS);
   #else
-    start_main_loop();
+    launch();
   #endif
+  emscripten_set_main_loop(do_iteration, 0, 1);
 #else
+  launch();
+
   SDL_GL_SetSwapInterval(1);
   while (!should_quit)
   {
@@ -500,3 +500,5 @@ int main (int argc, char * argv[])
 
   return 0;
 }
+
+

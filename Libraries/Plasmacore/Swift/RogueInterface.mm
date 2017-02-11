@@ -28,14 +28,14 @@ RogueString* Plasmacore_ns_string_to_rogue_string( NSString* st )
   return RogueString_validate( result );
 }
 
-extern "C" RogueString* Plasmacore_get_documents_folder()
+extern "C" RogueString* Plasmacore_get_user_data_folder()
 {
   return Plasmacore_ns_string_to_rogue_string(
      [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject] path]
   );
 }
 
-extern "C" RogueString* Plasmacore_get_library_folder()
+extern "C" RogueString* Plasmacore_get_application_data_folder()
 {
   return Plasmacore_ns_string_to_rogue_string(
      [[[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask] lastObject] path]
@@ -58,7 +58,7 @@ RogueClassPlasmacore__Bitmap* Plasmacore_decode_image( RogueByte* bytes, RogueIn
 #else
   CGImageRef bitmap_image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
 #endif
-  
+
   if(bitmap_image)
   {
     // Get the width and height of the image

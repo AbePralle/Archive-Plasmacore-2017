@@ -69,8 +69,9 @@ class Plasmacore [essential singleton]
     image_info_lookup       = Table<<String,ImageInfo>>()
     image_group_info_lookup = Table<<String,ImageGroupInfo>>()
 
-    cache_folder : String
-    data_folder  : String
+    application_data_folder : String
+    cache_folder            : String
+    user_data_folder        : String
 
   METHODS
     method init
@@ -133,6 +134,14 @@ class Plasmacore [essential singleton]
           display.handle( e )
         endFunction )
 
+    method application_data_folder->String
+      # iOS: Application data that is not accessible to the user but is still backed up
+      # on iCloud.
+      # Other OS: general data folder
+      if (not @application_data_folder)
+        application_data_folder = native( "Plasmacore_get_application_data_folder()" )->String
+      endIf
+      return @application_data_folder
 
     method asset_file( name:String )->File
       local filepath = asset_filepath( name )
@@ -146,20 +155,16 @@ class Plasmacore [essential singleton]
       return native( "Plasmacore_find_asset( $name )" )->String
 
     method cache_folder->String
+      # iOS: Files that can be removed by the OS as needed.
+      # Other OS: general data folder
       if (not @cache_folder)
-        cache_folder = native( "Plasmacore_get_library_folder()" )->String + "/Caches"
+        cache_folder = application_data_folder + "/Caches"
       endIf
       return @cache_folder
 
     method create_resource_id->Int32
       ++next_resource_id
       return (next_resource_id - 1)
-
-    method data_folder->String
-      if (not @data_folder)
-        data_folder = native( "Plasmacore_get_documents_folder()" )->String
-      endIf
-      return @data_folder
 
     method display( name:String )->Display
       local result = displays[ name ]
@@ -234,6 +239,12 @@ if (info) println "-----------------------found2: " + info.name
 
     method on_global_update( global_update_callback )
       noAction
+
+    method user_data_folder->String
+      if (not @user_data_folder)
+        user_data_folder = native( "Plasmacore_get_user_data_folder()" )->String
+      endIf
+      return @user_data_folder
 
 endClass
 
@@ -331,7 +342,7 @@ class ImageGroupInfo
 endClass
 
 nativeCode extern "C" RogueString* Plasmacore_find_asset( RogueString* name );
-nativeCode extern "C" RogueString* Plasmacore_get_documents_folder();
-nativeCode extern "C" RogueString* Plasmacore_get_library_folder();
+nativeCode extern "C" RogueString* Plasmacore_get_user_data_folder();
+nativeCode extern "C" RogueString* Plasmacore_get_application_data_folder();
 
 $endIf  # not Console
