@@ -1,6 +1,6 @@
-#include "plasmacore_message.h"
+#include "PlasmacoreMessage.h"
 
-#include "plasmacore.h"
+#include "Plasmacore.h"
 
 #include <string.h>
 

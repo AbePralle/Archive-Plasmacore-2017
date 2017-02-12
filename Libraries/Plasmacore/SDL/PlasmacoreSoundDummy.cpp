@@ -1,5 +1,5 @@
 #include "RogueProgram.h"
-#include "rogue_interface.h"
+#include "RogueInterface.h"
 
 void* PlasmacoreSound_create( RogueString* filepath, bool is_music )
 {

@@ -1,4 +1,4 @@
-#include "rogue_interface.h"
+#include "RogueInterface.h"
 #include "RogueProgram.h"
 #include "unistd.h"
 

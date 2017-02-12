@@ -7,10 +7,10 @@
 #include <map>
 #include <iostream>
 
-#include "plasmacore.h"
-#include "plasmacore_message.h"
-#include "plasmacore_view.h"
-#include "rogue_interface.h"
+#include "Plasmacore.h"
+#include "PlasmacoreMessage.h"
+#include "PlasmacoreView.h"
+#include "RogueInterface.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

@@ -4,8 +4,8 @@
 #include <emscripten.h>
 #endif
 
-#include "plasmacore.h"
-#include "plasmacore_view.h"
+#include "Plasmacore.h"
+#include "PlasmacoreView.h"
 #include <map>
 #include <stdexcept>
 #include <iostream>

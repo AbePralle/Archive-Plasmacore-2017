@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.3
+PLASMACORE_VERSION = v0.7.4.0
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git

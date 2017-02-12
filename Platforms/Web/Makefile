@@ -21,11 +21,11 @@ OUTPUT_NAME := $(shell basename $(shell cd $(ROOT) && pwd))
 
 
 SDLCORE_FILES := \
-  $(SDLCORE_FOLDER)/plasmacore.cpp \
-  $(SDLCORE_FOLDER)/plasmacore_message.cpp \
-  $(SDLCORE_FOLDER)/plasmacore_view.cpp \
-  $(SDLCORE_FOLDER)/plasmacore_sound_sdl_mixer.cpp \
-  $(SDLCORE_FOLDER)/rogue_interface.cpp
+  $(SDLCORE_FOLDER)/Plasmacore.cpp \
+  $(SDLCORE_FOLDER)/PlasmacoreMessage.cpp \
+  $(SDLCORE_FOLDER)/PlasmacoreView.cpp \
+  $(SDLCORE_FOLDER)/PlasmacoreSoundSDLMixer.cpp \
+  $(SDLCORE_FOLDER)/RogueInterface.cpp
 
 
 all: build

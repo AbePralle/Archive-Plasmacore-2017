@@ -7,7 +7,7 @@
 #include <map>
 #include <iostream>
 
-#include "plasmacore_message.h"
+#include "PlasmacoreMessage.h"
 
 typedef int HID;
 typedef int RID;

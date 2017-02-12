@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.4 - February 7, 2017
+###v0.7.4 - February 12, 2017
 - [Display] Fixed error on initial uv buffer capacity (possible crash issue).
 - [Display] `glBufferData()` is now called only once for each vertex buffer and `glBufferSubData()` is used to update the data for subsequent rendering.
 - [Display] Added `world_transform` as an intermediate matrix for 3D support.
@@ -63,6 +63,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Shader] Switched built-in shader definitions to use verbatim strings for clarity and simplicity.
 - [Shader] Reorganized image shaders as globals under the Image class - `TextureShader` is now `Image.TEXTURE_SHADER` and so forth.
 - [Web] If Platforms/Web contains a file called `index.html`, that file is copied into the build folder alongside the generated .html file.
+- [Web/SDL] Renamed `Libraries/Plasmacore/SDL/*` files to be `UpperCamelCase` instead of `underscore_names`.
 - [Plasmacore] Renamed `data_folder()->String` to `user_data_folder()->String` and added `application_data_folder()->String`.
 
 ###v0.7.3 - February 4, 2017

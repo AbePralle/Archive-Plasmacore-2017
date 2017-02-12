@@ -1,5 +1,5 @@
 #include "RogueProgram.h"
-#include "rogue_interface.h"
+#include "RogueInterface.h"
 #include <SDL/SDL_mixer.h>
 #include <iostream>
 
