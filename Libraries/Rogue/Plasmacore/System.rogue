@@ -9,5 +9,11 @@ augment System
     method is_mobile->Logical
       $if ("Mobile") return true
       $else          return false
+
+    method sync_storage
+      native @|#ifdef EMSCRIPTEN
+              |  Rogue_sync_local_storage();
+              |#endif
+
 endAugment
 
