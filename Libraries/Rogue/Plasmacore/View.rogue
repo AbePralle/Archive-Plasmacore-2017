@@ -13,7 +13,10 @@ class View
     loaded_asset_count    : Int32
     total_asset_count     : Int32
 
-    actions : ActionCmd
+    lighting : Lighting
+    # 3D lighting model
+
+    actions  : ActionCmd
 
   METHODS
     method add( layer:Layer )->this
@@ -179,6 +182,9 @@ class View
         endForEach
       endIf
       after_update
+
+    method lighting->Lighting
+      return (ensure @lighting)
 
     method load_another_asset->Real64
       if (loaded_asset_count and loaded_asset_count == total_asset_count) return 1.0

@@ -1,9 +1,12 @@
 module Plasmacore
 
-class Renderer [abstract]
+class Material [abstract]
   GLOBAL METHODS
-    method FIXED_COLOR->Renderer
+    method FIXED_COLOR->Material
       return (ensure Display.fixed_color_model_renderer)
+
+    method TEXTURE->Material
+      return (ensure Display.texture_renderer)
 
   PROPERTIES
     shader      : Shader
@@ -169,7 +172,7 @@ class Renderer [abstract]
 endClass
 
 
-class FixedColorRenderer : Renderer
+class FixedColorRenderer : Material
   PROPERTIES
     render_mode = RenderMode.ALPHA_SHAPE : RenderMode
 
@@ -243,6 +246,134 @@ final String fragmentShader =
 + "{                              \n"
 + "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
 + "}                              \n";
+}#
+endClass
+
+
+class TextureRenderer : Material
+  PROPERTIES
+    render_mode = RenderMode.ALPHA_SHAPE : RenderMode
+
+  METHODS
+    method configure_render_mode( model:Model )
+      if ((model.color.argb & 0xFF000000) == 0xFF000000)
+        render_mode = RenderMode.OPAQUE_SHAPE
+      else
+        render_mode = RenderMode.ALPHA_SHAPE
+      endIf
+
+    method vertex_shader_source->String
+      return @|uniform   mat4  transform;
+              |attribute vec4  position;
+              |
+              |void main()
+              |{
+              |  gl_Position = transform * position;
+              |}
+
+    method pixel_shader_source->String
+      return @|uniform $LOWP vec4 fixed_color;
+              |
+              |void main()
+              |{
+              |  gl_FragColor = fixed_color;
+              |}
+
+#{
+  PROPERTIES
+    render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
+
+  METHODS
+    method vertex_shader_source->String
+      return @|uniform   mat4  transform;
+              |attribute vec4  position;
+              |
+              |void main()
+              |{
+              |  gl_Position = transform * position;
+              |}
+
+    method pixel_shader_source->String
+      # Adapted from Tom Dalling's excellent article:
+      # http://www.tomdalling.com/blog/modern-opengl/08-even-more-lighting-directional-lights-spotlights-multiple-lights/
+      return @|uniform mat4 model;
+              |uniform vec3 camera_position;
+              |
+              |uniform       sampler2D texure_0;
+              |uniform $LOWP float     shininess;
+              |uniform $LOWP vec3      specular_color;
+              |
+              |#define MAX_LIGHTS 10
+              |uniform struct Light
+              |{
+              |         vec4  position;
+              |   $LOWP vec3  color;
+              |   $LOWP float attenuation;
+              |   $LOWP float ambient;
+              |   $LOWP float cone_angle;
+              |         vec3  cone_direction;
+              |} lights[MAX_LIGHTS];
+              |uniform int light_count;
+              |
+              |in vec2 fragTexCoord;
+              |in vec3 fragNormal;
+              |in vec3 fragVert;
+              |
+              |out vec4 final_color;
+              |
+              |vec3 ApplyLight( Light light, vec3 surface_color, vec3 normal, vec3 surface_position, vec3 surface_to_camera ) {
+              |    vec3 surfaceToLight;
+              |    float attenuation = 1.0;
+              |    if(light.position.w == 0.0) {
+              |        //directional light
+              |        surfaceToLight = normalize(light.position.xyz);
+              |        attenuation = 1.0; //no attenuation for directional lights
+              |    } else {
+              |        //point light
+              |        surfaceToLight = normalize(light.position.xyz - surface_position);
+              |        float distanceToLight = length(light.position.xyz - surface_position);
+              |        attenuation = 1.0 / (1.0 + light.attenuation * pow(distanceToLight, 2));
+              |
+              |        //cone restrictions (affects attenuation)
+              |        float lightToSurfaceAngle = degrees(acos(dot(-surfaceToLight, normalize(light.cone_direction))));
+              |        if(lightToSurfaceAngle > light.cone_angle){
+              |            attenuation = 0.0;
+              |        }
+              |    }
+              |
+              |    //ambient
+              |    vec3 ambient = light.ambient * surface_color.rgb * light.color;
+              |
+              |    //diffuse
+              |    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+              |    vec3 diffuse = diffuseCoefficient * surface_color.rgb * light.color;
+              |
+              |    //specular
+              |    float specularCoefficient = 0.0;
+              |    if(diffuseCoefficient > 0.0)
+              |        specularCoefficient = pow(max(0.0, dot(surface_to_camera, reflect(-surfaceToLight, normal))), shininess);
+              |    vec3 specular = specularCoefficient * specular_color * light.color;
+              |
+              |    //linear color (color before gamma correction)
+              |    return ambient + attenuation*(diffuse + specular);
+              |}
+              |
+              |void main() {
+              |    vec3 normal = normalize(transpose(inverse(mat3(model))) * fragNormal);
+              |    vec3 surface_position = vec3(model * vec4(fragVert, 1));
+              |    vec4 surface_color = texture(texure_0, fragTexCoord);
+              |    vec3 surface_to_camera = normalize(camera_position - surface_position);
+              |
+              |    //combine color from all the lights
+              |    vec3 linear_color = vec3(0);
+              |    for(int i = 0; i < light_count; ++i){
+              |        linear_color += ApplyLight( lights[i], surface_color.rgb, normal, surface_position, surface_to_camera );
+              |    }
+              |
+              |    //final color (after gamma correction)
+              |    vec3 gamma = vec3(1.0/2.2);
+              |    final_color = vec4(pow(linear_color, gamma), surface_color.a);
+              |}
 }#
 endClass
 

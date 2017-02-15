@@ -34,6 +34,7 @@ class Display [singleton]
     view               = default_view_type.create_object<<View>> : View
 
     fixed_color_model_renderer : FixedColorRenderer
+    texture_renderer           : TextureRenderer
 
     window             : Window
 

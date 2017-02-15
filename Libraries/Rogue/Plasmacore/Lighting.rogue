@@ -1,0 +1,10 @@
+module Plasmacore
+
+class Lighting
+  PROPERTIES
+    ambient = 0.05
+
+  METHODS
+    method set_ambient( @ambient )->this
+      return this
+endClass
