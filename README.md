@@ -62,7 +62,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [SystemFont] Restored black letter outlines by shifting call to `Bitmap.convert_gray_to_alpha` out of the ImageSheetBuilder and into `DefaultFont` which is the only font the call is necessary for.
 - [Shader] Switched built-in shader definitions to use verbatim strings for clarity and simplicity.
 - [Shader] Reorganized image shaders as globals under the Image class - `TextureShader` is now `Image.TEXTURE_SHADER` and so forth.
-- [Web] If Platforms/Web contains a file called `index.html`, that file is copied into the build folder alongside the generated .html file.
+- [Web] Plasmacore now includes <emscripten.h> by default for EM_ASM() support.
+- [Web] Makefile now reads project name from Settings.mk, creating that file if it doesn't exist and using the folder name as the project name by default. [Web] If Platforms/Web contains a file called `index.html`, that file is copied into the build folder alongside the generated .html file.
+- [Web] `Platforms/Web/HTMLAssets` folder is now copied, if it exists, to `Build/Web`.
 - [Web/SDL] Renamed `Libraries/Plasmacore/SDL/*` files to be `UpperCamelCase` instead of `underscore_names`.
 - [Plasmacore] Renamed `data_folder()->String` to `user_data_folder()->String` and added `application_data_folder()->String`.
 
