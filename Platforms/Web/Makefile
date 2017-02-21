@@ -1,24 +1,21 @@
-CXX = em++
-CC = emcc
-
-TARGET = Web
-
-# The project root directory
-ROOT = ../..
-
 OPT_CFLAGS += -O3
 OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
 
-SDLCORE_FOLDER = $(ROOT)/Libraries/Plasmacore/SDL
+# 150 MB by default
+RUNTIME_MEMORY = 150000000
 
-BUILD_FOLDER    := $(ROOT)/Build/$(TARGET)
+PROJECT_ROOT = ../..
 
-# Name to use for the final output
-# You can just set this to a value if you want; the default
-# tries to guess based on directory name.
-# This is the base name -- ".html" and stuff is added.
-OUTPUT_NAME := $(shell basename $(shell cd $(ROOT) && pwd))
+# Overridden by "PROJECT_NAME := ..." definition in Settings.mk, if present
+PROJECT_NAME := $(shell basename $(shell cd $(PROJECT_ROOT) && pwd))
 
+TARGET = Web
+CXX = em++
+CC = emcc
+
+SDLCORE_FOLDER = $(PROJECT_ROOT)/Libraries/Plasmacore/SDL
+
+BUILD_FOLDER    := $(PROJECT_ROOT)/Build/$(TARGET)
 
 SDLCORE_FILES := \
   $(SDLCORE_FOLDER)/Plasmacore.cpp \
@@ -27,8 +24,9 @@ SDLCORE_FILES := \
   $(SDLCORE_FOLDER)/PlasmacoreSoundSDLMixer.cpp \
   $(SDLCORE_FOLDER)/RogueInterface.cpp
 
+-include Settings.mk
 
-all: build
+all: create_default_settings build
 
 build: $(BUILD_FOLDER)/Intermediate project
 
@@ -36,20 +34,21 @@ $(BUILD_FOLDER)/Intermediate:
 	mkdir -p $(BUILD_FOLDER)/Intermediate
 
 clean:
-	rm -f $(BUILD_FOLDER)/$(OUTPUT_NAME).*
+	rm -f $(BUILD_FOLDER)/$(PROJECT_NAME).*
 	rm -rf $(BUILD_FOLDER)/Assets
 	rm -f $(BUILD_FOLDER)/Source/RogueProgram.cpp
 	rm -f $(BUILD_FOLDER)/Source/RogueProgram.h
 	rm -f $(BUILD_FOLDER)/Intermediate/*.o
 
-project: $(BUILD_FOLDER)/$(OUTPUT_NAME).html custom_index_html
+project: $(BUILD_FOLDER)/$(PROJECT_NAME).html index_html html_assets
 
-$(BUILD_FOLDER)/$(OUTPUT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
+$(BUILD_FOLDER)/$(PROJECT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
 	# -s FULL_ES2=1 ?
 	$(CXX) -I$(BUILD_FOLDER)/Source \
 	       -s USE_SDL=2 \
 	       -s USE_LIBPNG=1 \
 	       -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_launch_plasmacore']" \
+               -s TOTAL_MEMORY=$(RUNTIME_MEMORY) \
 	       -D LOCAL_FS='"/IDBFS"' \
 	       -std=c++11 \
 	       --preload-file $(BUILD_FOLDER)/Assets@/Assets \
@@ -60,11 +59,16 @@ $(BUILD_FOLDER)/$(OUTPUT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(S
 	       $(CFLAGS) \
 	       $(BUILD_FOLDER)/Source/RogueProgram.cpp \
 	       $(SDLCORE_FILES) \
-	       -o $(BUILD_FOLDER)/$(OUTPUT_NAME).html
+	       -o $(BUILD_FOLDER)/$(PROJECT_NAME).html
 
-custom_index_html:
+index_html:
 	@test -f index.html && make $(BUILD_FOLDER)/index.html || true
+
+html_assets:
+	@test -d HTMLAssets && rsync -a -c --exclude=".*" --delete --out-format="Updating Build/Web/%n%L" HTMLAssets $(BUILD_FOLDER) || true
 
 $(BUILD_FOLDER)/index.html: index.html
 	@echo COPYING && cp index.html $(BUILD_FOLDER)/
 
+create_default_settings:
+	@test -f Settings.mk || echo PROJECT_NAME := $(PROJECT_NAME) >> Settings.mk

@@ -13,6 +13,8 @@ $include "XY.rogue"
 
 $if not "Console"
 
+$if ("Web") nativeHeader #include <emscripten.h>
+
 $include "ActionCmd.rogue"
 $include "Angles.rogue"
 $include "Assets.rogue"
