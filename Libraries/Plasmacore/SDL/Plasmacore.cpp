@@ -399,6 +399,33 @@ static void do_iteration (void)
         w->on_mouse_move(e.motion.x, e.motion.y);
         break;
       }
+      case SDL_FINGERMOTION:
+      {
+        auto m = PlasmacoreMessage( "Input.on_stylus_event" );
+        m.set( "type", 0 );  // 0=move
+        m.set( "x", e.tfinger.x );
+        m.set( "y", e.tfinger.y );
+        m.send();
+        break;
+      }
+      case SDL_FINGERDOWN:
+      {
+        auto m = PlasmacoreMessage( "Input.on_stylus_event" );
+        m.set( "type", 1 );  // 1=press
+        m.set( "x", e.tfinger.x );
+        m.set( "y", e.tfinger.y );
+        m.send();
+        break;
+      }
+      case SDL_FINGERUP:
+      {
+        auto m = PlasmacoreMessage( "Input.on_stylus_event" );
+        m.set( "type", 2 );  // 2=release
+        m.set( "x", e.tfinger.x );
+        m.set( "y", e.tfinger.y );
+        m.send();
+        break;
+      }
       case SDL_WINDOWEVENT:
       {
         auto w = plasmacore_get_window(e.button.windowID);

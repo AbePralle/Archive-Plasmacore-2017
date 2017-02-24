@@ -126,6 +126,22 @@ class Plasmacore [essential singleton]
           endIf
         endFunction )
 
+      MessageManager.add_listener( "Input.on_stylus_event",
+        # Stylus/touch event not associated with any display.  Dispatch to each display,
+        # mapping normalized coordinates to each display's size.
+        function(m:Message)
+          local pos = XY( m.real64("x"), m.real64("y") )
+          forEach (display in Plasmacore.displays)
+            if (display.is_configured)
+              local e = PointerEvent( m.int32("type"), pos*Display.size, XY(0,0), m.int32("index"), m.int32("id") )
+              Pointer.position = e.position
+              if (e.is_press)       ++Pointer.press_count
+              elseIf (e.is_release) --Pointer.press_count
+              display.handle( e )
+            endIf
+          endForEach
+        endFunction )
+
       MessageManager.add_listener( "Display.on_text_event",
         function(m:Message)
           local display    = Display( m.string("display_name") )
