@@ -67,9 +67,10 @@ class Plasmacore [essential singleton]
     global_update_timer     = UpdateTimer()
     displays                = StringTable<<Display>>()
 
-    #image_group_info_lookup = @{}
+    image_info_list         = ImageInfo[]
     image_info_lookup       = Table<<String,ImageInfo>>()
     image_group_info_lookup = Table<<String,ImageGroupInfo>>()
+    image_filter            : String
 
     application_data_folder : String
     cache_folder            : String
@@ -193,21 +194,48 @@ class Plasmacore [essential singleton]
       endIf
       return result
 
+    method filter_images
+      if (image_filter is null or image_filter.count == 0)
+        filter_images( (name)=>true )
+      elseIf (image_filter.contains('?') or image_filter.contains('*'))
+        filter_images( (name) with (image_filter) => File.matches_wildcard_pattern(name,image_filter) )
+      else
+        filter_images( (name) with (image_filter) => name.contains(image_filter) )
+      endIf
+
+    method filter_images( keep:Function(String)->(Logical) )
+      image_info_lookup.clear
+
+      # Full filepath
+      forEach (image_info in image_info_list)
+        local name = image_info.name
+        image_info_lookup[ name ] = image_info
+      endForEach
+
+      # For A/B/C.png, add B/C.png and C.png as separate entries as long as they
+      # do not conflict with any existing entry.  If there is a conflict, mark the
+      # entry as null rather than creating an arbitrary default
+      forEach (image_info in image_info_list)
+        local name = image_info.name
+        if (keep(name))
+          while (name.contains('/'))
+            name = name.after_first( '/' )
+            if (image_info_lookup.contains(name))
+              image_info_lookup[ name ] = null
+            else
+              image_info_lookup[ name ] = image_info
+            endIf
+          endWhile
+        endIf
+      endForEach
+
+      # Remove any entries that were in conflict
+      forEach (key in image_info_lookup.keys)
+        if (image_info_lookup[key] is null) image_info_lookup.remove( key )
+      endForEach
+
     method find_image_info( name:String )->ImageInfo
-      local info : ImageInfo
-
-      # Attempt with search paths first before falling back to base name
-      forEach (search_path at index in Image.search_folders)
-        Image.search_folders[ index ] = File.ensure_ends_with_separator( search_path )
-      endForEach
-
-      forEach (search_path in Image.search_folders)
-        info = image_info_lookup[ search_path + name ]
-        if (info) return info.load
-      endForEach
-
-if (info) println "-----------------------found2: " + info.name
-      info = image_info_lookup[ name ]
+      local info = image_info_lookup[ name ]
       if (info) return info.load
 
       println "No such image: " + name
@@ -231,7 +259,7 @@ if (info) println "-----------------------found2: " + info.name
     method load_image_index
       local image_index = JSON.load_table( asset_file("Assets/Images/ImageIndex.json") ).decompressed
 
-      image_info_lookup.clear
+      image_info_list.clear
       image_group_info_lookup.clear
 
       # Full filepath
@@ -239,24 +267,17 @@ if (info) println "-----------------------found2: " + info.name
         local group = get_image_group_info( group_info//filepath->String )
         forEach (image in group_info//images)
           local name = image->String
-          image_info_lookup[ name ] = ImageInfo( name, group )
+          image_info_list.add( ImageInfo(name, group) )
         endForEach
       endForEach
 
-      # For A/B/C.png, add B/C.png and C.png as separate entries as long as they
-      # do not conflict with any existing entry.
-      forEach (img in image_info_lookup.values)
-        local name = img.name
-        while (name.contains('/'))
-          name = name.after_first( '/' )
-          if (not image_info_lookup.contains(name))
-            image_info_lookup[ name ] = img
-          endIf
-        endWhile
-      endForEach
+      filter_images
 
     method on_global_update( global_update_callback )
       noAction
+
+    method set_image_filter( @image_filter )
+      filter_images
 
     method user_data_folder->String
       if (not @user_data_folder)

@@ -1,9 +1,6 @@
 module Plasmacore
 
 class Image
-  GLOBAL PROPERTIES
-    search_folders = String[]
-
   GLOBAL METHODS
     method COLOR_SHADER->Shader
       return Display.image_color_shader
