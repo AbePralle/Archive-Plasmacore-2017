@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.4.4
+PLASMACORE_VERSION = v0.7.4.5
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -41,25 +41,23 @@ web: override TARGET := Web
 
 linux: override TARGET := Linux
 
-all: build run compile_images compile_sounds
+all: build run compile_assets
 
-ios: build run compile_images compile_sounds
+ios: build run compile_assets
 
-macos: build run compile_images compile_sounds
+macos: build run compile_assets
 
-web: build run compile_images compile_sounds
+web: build run compile_assets
 	make -C Platforms/Web
 
-linux: build run compile_images compile_sounds
+linux: build run compile_assets
 	make -C Platforms/Linux
 
 build: Build/BuildScript/buildscript
 
-compile_images:
-	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./icom $(TARGET)
-
-compile_sounds:
-	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./scom $(TARGET)
+compile_assets:
+	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) make -C Libraries/AssetCompiler
+	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) Libraries/AssetCompiler/Build/assetcompiler
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript

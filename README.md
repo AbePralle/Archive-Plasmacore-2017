@@ -52,6 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.7.4 - February 25, 2017
+- [Build] Consolidated ImageCompiler and SoundCompiler into single AssetCompiler.
 - [Image] Removed `Image.search_paths:String[]` in favor of `Plasmacore.image_filter:String`.  `Plasmacore.image_filter = "iPadRetina"` will constrain image loading based on partial filepaths to only those filepaths containing the word `iPadRetina`.  Wildcard patterns may be used.
 - [Display] Fixed error on initial uv buffer capacity (possible crash issue).
 - [Display] `glBufferData()` is now called only once for each vertex buffer and `glBufferSubData()` is used to update the data for subsequent rendering.
