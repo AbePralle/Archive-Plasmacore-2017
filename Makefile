@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.4.8
+PLASMACORE_VERSION = v0.7.4.9
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -57,7 +57,7 @@ build: Build/BuildScript/buildscript
 
 compile_assets:
 	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) make -C Libraries/AssetCompiler
-	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) Libraries/AssetCompiler/Build/assetcompiler
+	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) Libraries/AssetCompiler/Build/assetcompiler $(TARGET)
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
