@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.4.6
+PLASMACORE_VERSION = v0.7.4.7
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -79,13 +79,10 @@ clean:
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
 
-clean_icom:
-	make -C Libraries/ImageCompiler clean
+clean_asset_compiler:
+	make -C Libraries/AssetCompiler clean
 
-clean_scom:
-	make -C Libraries/SoundCompiler clean
-
-xclean: clean clean_harfbuzz clean_icom clean_scom
+xclean: clean clean_harfbuzz clean_asset_compiler
 
 update: prepare_update
 
@@ -98,8 +95,6 @@ prepare_update:
 
 continue_update:
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildScriptCore.rogue .
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/icom .
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/scom .
 	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageCompiler Libraries
 	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/SoundCompiler Libraries
 	@rm -rf Libraries/FreeType
