@@ -1122,6 +1122,7 @@ class Placement
         filename:image_sheet.filename,
         bounds:[x,y,width,height]
       }
+      if (bitmap.is_opaque) info//is_opaque = true
       return info
 
     method render( to_bitmap:Bitmap )

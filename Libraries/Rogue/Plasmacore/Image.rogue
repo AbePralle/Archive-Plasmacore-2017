@@ -166,9 +166,10 @@ class Image
       which (image_info.type)
         case ImageInfo.TYPE_TEXTURE_IMAGE
           local texture = Texture( image_info.texture_filename )
-          data = TextureImageData( texture )
+          local is_opaque = image_info.is_opaque->Logical
+          data = TextureImageData( texture, is_opaque )
           uv = image_info.texture_bounds
-          render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+          render_mode = select{ is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
       endWhich
 
@@ -197,7 +198,7 @@ class Image
           selected_shader = TEXTURE_SHADER
           local texture_data = data as TextureImageData
           if (texture_data)
-            render_mode = select{ texture_data.texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+            render_mode = select{ texture_data.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           endIf
         endIf
       endIf
@@ -452,16 +453,17 @@ endClass
 
 class TextureImageData : ImageData
   PROPERTIES
-    texture : Texture
-    uv1     : XY
-    uv2     : XY
+    texture   : Texture
+    uv1       : XY
+    uv2       : XY
+    is_opaque : Logical
 
   METHODS
-    method init( texture )
+    method init( texture, is_opaque=false )
       uv2 = texture.uv_size
 
     method cloned->ImageData
-      local result = TextureImageData( texture )
+      local result = TextureImageData( texture, is_opaque )
       result.uv1 = uv1
       result.uv2 = uv2
       return result

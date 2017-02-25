@@ -76,6 +76,10 @@ class Plasmacore [essential singleton]
     cache_folder            : String
     user_data_folder        : String
 
+    trace_fps : Logical
+    fps       : Int32
+    fps_timer = Timer(1)
+
   METHODS
     method init
       Console.println "Initializing Plasmacore"
@@ -84,6 +88,14 @@ class Plasmacore [essential singleton]
 
       MessageManager.add_listener( "Display.on_render",
         function(m:Message)
+          if (Plasmacore.trace_fps)
+            ++Plasmacore.fps
+            if (Plasmacore.fps_timer.is_expired)
+              print( "fps:" ).println( Plasmacore.fps )
+              Plasmacore.fps = 0
+              Plasmacore.fps_timer.restart
+            endIf
+          endIf
           local display_size = XY( m.int32("display_width"),m.int32("display_height") )
           local viewport_size : XY
           if (m.contains("viewport_width"))
@@ -276,8 +288,17 @@ class Plasmacore [essential singleton]
     method on_global_update( global_update_callback )
       noAction
 
-    method set_image_filter( @image_filter )
+    method set_image_filter( @image_filter )->this
       filter_images
+      return this
+
+    method set_trace_fps( setting:Logical )->this
+      if (setting == trace_fps) return this
+
+      @trace_fps = setting
+      fps = 0
+      fps_timer.restart
+      return this
 
     method user_data_folder->String
       if (not @user_data_folder)
@@ -304,6 +325,7 @@ class ImageInfo
     display_size     : XY
     texture_filename : String
     texture_bounds   : Box
+    is_opaque        : Logical
 
     images           : ImageInfo[]
 
@@ -318,6 +340,7 @@ class ImageInfo
       display_size = existing.display_size
       texture_bounds = existing.texture_bounds
       texture_filename = existing.texture_filename
+      is_opaque = existing.is_opaque
       if (existing.images) images = existing.images.cloned
 
     method init( info:Value )
@@ -339,6 +362,7 @@ class ImageInfo
           texture_filename = info//texture//filename->String
           texture_bounds = Box( info//texture//bounds )
           display_size = XY( info//display_size )
+          is_opaque = info//is_opaque
 
         case "Image[]"
           type = TYPE_IMAGE_LIST
