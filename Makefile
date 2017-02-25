@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.4.7
+PLASMACORE_VERSION = v0.7.4.8
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -72,9 +72,8 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Platform/iOS/Build
-	rm -rf Libraries/SoundCompiler/Build
 	rm -rf Libraries/HarfBuzz/Build
-	rm -rf Libraries/ImageCompiler/Build
+	rm -rf Libraries/AssetCompiler/Build
 
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
@@ -95,10 +94,7 @@ prepare_update:
 
 continue_update:
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildScriptCore.rogue .
-	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageCompiler Libraries
-	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/SoundCompiler Libraries
-	@rm -rf Libraries/FreeType
-	@rm -rf Libraries/HarfBuzz
+	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/AssetCompiler Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageIO      Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Plasmacore   Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Standard Libraries/Rogue
