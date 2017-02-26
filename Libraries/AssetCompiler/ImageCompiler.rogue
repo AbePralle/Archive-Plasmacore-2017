@@ -1,77 +1,79 @@
-$include "../Rogue/Plasmacore"
 using Plasmacore
 
-try
-  local config_file = File( "Assets/Images/ImageConfig.txt" )
-  if (not config_file.exists)
-    File.create_folder( config_file.path )
-    local writer = PrintWriter(config_file.writer)
-    writer.println @|# Default image config file - customize as desired.
-                    |#
-                    |# PLATFORMS
-                    |#   [Global]  - Use this category for attributes and settings
-                    |#               that apply to all platforms.
-                    |#   [Default] - Used when specific platform isn't defined, e.g.
-                    |#               if [iOS] isn't defined then [Default] is used.
-                    |#   [iOS]     - iOS-specific attributes, settings, and groups.
-                    |#
-                    |#
-                    |# COMMANDS
-                    |#   @ <file or pattern> [attributes...]  Set image attributes
-                    |#   set    image_sheet_size:4096         Set max texture size
-                    |#   set    display_scale:1/2             Images drawn half size etc.
-                    |#   group  <folder or pattern>           Turn folders into groups
-                    |#   create image:<filepath> font:<font-name> height:<pixels> ...
-                    |#     [characters:"ABC..." unicode:[32..126] ...]
-                    |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
-                    |#   copy   from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
-                    |#
-                    |# ATTTRIBUTES
-                    |#   @ ... resample <pixel width>x<pixel height>
-                    |#     Change pixel size but leave display size as it was.
-                    |#   @ ... split:<tiles-wide>x<tiles-high>
-                    |#   @ ... varfont [<Options>]
-                    |#   @ ... varfont:"Character Mapping" [<Options>]
-                    |#           <Options>
-                    |#             characters:"ABC..."
-                    |#             unicode:[32..126] ...
-                    |#
-                    |[Global]
-                    |@ **Font* varfont
-                    |@ **font* varfont
-                    |
-                    |[Default]
-                    |set image_sheet_size:4096
-                    |group .
-    writer.close
-  endIf
+routine launch_image_compiler
+  try
+    local config_file = File( "Assets/Images/ImageConfig.txt" )
+    if (not config_file.exists)
+      File.create_folder( config_file.path )
+      local writer = PrintWriter(config_file.writer)
+      writer.println @|# Default image config file - customize as desired.
+                      |#
+                      |# PLATFORMS
+                      |#   [Global]  - Use this category for attributes and settings
+                      |#               that apply to all platforms.
+                      |#   [Default] - Used when specific platform isn't defined, e.g.
+                      |#               if [iOS] isn't defined then [Default] is used.
+                      |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                      |#
+                      |#
+                      |# COMMANDS
+                      |#   @ <file or pattern> [attributes...]  Set image attributes
+                      |#   set    image_sheet_size:4096         Set max texture size
+                      |#   set    display_scale:1/2             Images drawn half size etc.
+                      |#   group  <folder or pattern>           Turn folders into groups
+                      |#   create image:<filepath> font:<font-name> height:<pixels> ...
+                      |#     [characters:"ABC..." unicode:[32..126] ...]
+                      |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
+                      |#   copy   from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
+                      |#
+                      |# ATTTRIBUTES
+                      |#   @ ... resample <pixel width>x<pixel height>
+                      |#     Change pixel size but leave display size as it was.
+                      |#   @ ... split:<tiles-wide>x<tiles-high>
+                      |#   @ ... varfont [<Options>]
+                      |#   @ ... varfont:"Character Mapping" [<Options>]
+                      |#           <Options>
+                      |#             characters:"ABC..."
+                      |#             unicode:[32..126] ...
+                      |#
+                      |[Global]
+                      |@ **Font* varfont
+                      |@ **font* varfont
+                      |
+                      |[Default]
+                      |set image_sheet_size:4096
+                      |group .
+      writer.close
+    endIf
 
 
 
-  local args = System.command_line_arguments
-  if (args.count)
-    ImageCompiler( config_file, (forEach in args) )
-  else
-    ImageCompiler( config_file, "Default" )
-  endIf
+    local args = System.command_line_arguments
+    if (args.count)
+      ImageCompiler( config_file, (forEach in args) )
+    else
+      ImageCompiler( config_file, "Default" )
+    endIf
 
-catch (err:BuildError)
-  if (System.environment["IDE"])
-    Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
-  else
-    println err
-  endIf
-  System.exit 1
+  catch (err:ImageCompileError)
+    if (System.environment["IDE"])
+      Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
+    else
+      println err
+    endIf
+    System.exit 1
 
-catch (err:Error)
-  if (System.environment["IDE"])
-    Console.error.println "ImageCompiler:0: error:$" (err.message)
-  else
-    println err
-  endIf
-  System.exit 1
+  catch (err:Error)
+    if (System.environment["IDE"])
+      Console.error.println "ImageCompiler:0: error:$" (err.message)
+    else
+      println err
+    endIf
+    System.exit 1
 
-endTry
+  endTry
+endRoutine
+
 
 class Bitmaps : Table<<String,Bitmap>> [singleton]
   METHODS
@@ -85,9 +87,9 @@ class Bitmaps : Table<<String,Bitmap>> [singleton]
       return bitmap
 endClass
 
-class BuildError : Error
+class ImageCompileError : Error
   PROPERTIES
-    cmd      : Command
+    cmd      : ImageCommand
     filepath : String
     line     : Int32
 
@@ -121,7 +123,7 @@ class ImageCompiler
     file             : File
     file_timestamp   : Real64
     platform         : String
-    commands         = Table<<String,Command[]>>()
+    commands         = Table<<String,ImageCommand[]>>()
     attributes       = @[]
     settings         = @{}
     image_sheet_size = 2048
@@ -195,18 +197,18 @@ class ImageCompiler
         if (line.count == 0) nextIteration
         if (line.begins_with('['))
           local after = line.after_first(']')
-          if (after.count) throw BuildError( Command(this,file.filepath,index+1,line), "Syntax error after ']'." )
+          if (after.count) throw ImageCompileError( ImageCommand(this,file.filepath,index+1,line), "Syntax error after ']'." )
           category = line.after_first( '[' ).before_first( ']' ).trimmed
         else
           ensure commands[ category ]
-          commands[ category ].add( Command(this,file.filepath,index+1,line) )
+          commands[ category ].add( ImageCommand(this,file.filepath,index+1,line) )
         endIf
       endForEach
 
 endClass
 
 
-class Command
+class ImageCommand
   PROPERTIES
     icom         : ImageCompiler
     src_filepath : String
@@ -260,8 +262,8 @@ class Command
 
       return found_any
 
-    method error( message:String )->BuildError
-      return BuildError( this, message )
+    method error( message:String )->ImageCompileError
+      return ImageCompileError( this, message )
 
     method execute
       if (consume("@"))
@@ -923,7 +925,7 @@ endClass
 
 class Convert
   GLOBAL METHODS
-    method bitmap_to_tiles( cmd:Command, bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
+    method bitmap_to_tiles( cmd:ImageCommand, bitmap:Bitmap, tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
       local tiles = Bitmap[]
       local w = bitmap.width / tiles_wide
       local h = bitmap.height / tiles_high
@@ -934,7 +936,7 @@ class Convert
       endForEach
       return tiles
 
-    method tiles_to_bitmap( cmd:Command, tiles:Bitmap[], tiles_wide:Int32, tiles_high:Int32 )->Bitmap
+    method tiles_to_bitmap( cmd:ImageCommand, tiles:Bitmap[], tiles_wide:Int32, tiles_high:Int32 )->Bitmap
       require (tiles.count == tiles_wide * tiles_high)
       local w = tiles.first.width
       local h = tiles.first.height
@@ -946,7 +948,7 @@ class Convert
       endForEach
       return bitmap
 
-    method extract_varfont_characters( cmd:Command, bitmap:Bitmap )->Bitmap[]
+    method extract_varfont_characters( cmd:ImageCommand, bitmap:Bitmap )->Bitmap[]
       local characters = Bitmap[]
       local x1 = 0
       local w  = bitmap.width
@@ -962,7 +964,7 @@ class Convert
 
       return characters
 
-    method pack_varfont_characters( cmd:Command, characters:Bitmap[] )->Bitmap
+    method pack_varfont_characters( cmd:ImageCommand, characters:Bitmap[] )->Bitmap
       require characters.count
       local total_w = 0
       total_w += (forEach in characters).width
@@ -978,7 +980,7 @@ class Convert
       endForEach
       return bitmap
 
-    method parse_dimensions( cmd:Command, text:String )->Value
+    method parse_dimensions( cmd:ImageCommand, text:String )->Value
       local dims = text.split( "x" )
       if (dims.count == 1)
         local size = dims.first->Int32
@@ -987,7 +989,7 @@ class Convert
         return @{ width:dims[0]->Int32, height:dims[1]->Int32 }
       endIf
 
-    method parse_scale( cmd:Command, text:String )->Real64
+    method parse_scale( cmd:ImageCommand, text:String )->Real64
       if (text.count == 0) return 1.0
       if (not text.contains('/')) return text->Real64
       local parts = text.split( "/" )
@@ -998,7 +1000,7 @@ endClass
 
 class Asset
   PROPERTIES
-    cmd          : Command
+    cmd          : ImageCommand
     filepath     : String
     attributes   : @{}
     placements   = Placement[]
@@ -1120,6 +1122,7 @@ class Placement
         filename:image_sheet.filename,
         bounds:[x,y,width,height]
       }
+      if (bitmap.is_opaque) info//is_opaque = true
       return info
 
     method render( to_bitmap:Bitmap )
@@ -1161,71 +1164,6 @@ class ImageSheet
 
 endClass
 
-class CommentStripper
-  PROPERTIES
-    reader        : StringReader
-    lines         = String[]
-    buffer        = StringBuilder()
-    comment_level : Int32
-
-  METHODS
-    method process( text:String )->String[]
-      reader = text.reader
-      while (reader.has_another) scan_next
-      if (buffer.count) lines.add( buffer->String )
-      return lines
-
-    method scan_next
-      local ch = reader.read
-      which (ch)
-        case '#'
-          if (reader.peek == '{')
-            # Multiline comment
-            reader.read  # '{'
-            ++comment_level
-          else
-            # Single line comment
-            while (reader.has_another and reader.peek != '\n') reader.read
-          endIf
-
-        case '}'
-          if (comment_level and reader.peek == '#')
-            reader.read
-            --comment_level
-          else
-            write( '}' )
-          endIf
-
-        case '"', '\''
-          # "string"
-          local quote_type = ch
-          write( ch )
-          while (reader.has_another)
-            ch = reader.read
-            write( ch )
-            which (ch)
-              case '\\':       write( reader.read ) # skip past next
-              case quote_type: escapeWhile
-            endWhich
-          endWhile
-
-        others
-          write( ch )
-
-      endWhich
-
-    method write( ch:Character )->this
-      if (ch == '\n')
-        lines.add( buffer->String )
-        buffer.clear
-      elseIf (comment_level == 0)
-        buffer.print( ch )
-      endIf
-
-      return this
-
-endClass
-
 class FreeTypeFace
   DEPENDENCIES
     nativeHeader
@@ -1243,24 +1181,24 @@ class FreeTypeFace
     native "FT_Face ft_face;"
 
   METHODS
-    method init( cmd:Command, name:String, pixel_height )
+    method init( cmd:ImageCommand, name:String, pixel_height )
       ft_height = pixel_height
 
       local filepath = "Assets/Fonts/" + name
       if (not File.exists(filepath)) filepath = "/Library/Fonts/" + name
       if (not File.exists(filepath)) filepath = "/System/Library/Fonts/" + name
-      if (not File.exists(filepath)) throw BuildError( cmd, "Unable to find font: " + name )
+      if (not File.exists(filepath)) throw ImageCompileError( cmd, "Unable to find font: " + name )
 
       if (not native("Plasmacore_freetype_library")->Logical)
         # Initialize FreeType library
         if (native("FT_Init_FreeType(&Plasmacore_freetype_library)")->Int32)
-          throw BuildError( cmd, "FreeType library failed to initialize." )
+          throw ImageCompileError( cmd, "FreeType library failed to initialize." )
         endIf
         on_exit( () => native "FT_Done_FreeType( Plasmacore_freetype_library );" )
       endIf
 
       if (native("FT_New_Face( Plasmacore_freetype_library, (char*)$filepath->utf8, 0, &$this->ft_face )")->Int32)
-        throw BuildError( cmd, "Error loading $." (name) )
+        throw ImageCompileError( cmd, "Error loading $." (name) )
       endIf
 
     method render( unicode:Int32[] )->Bitmap[]

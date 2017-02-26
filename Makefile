@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.4.2
+PLASMACORE_VERSION = v0.7.4.9
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -41,25 +41,23 @@ web: override TARGET := Web
 
 linux: override TARGET := Linux
 
-all: build run compile_images compile_sounds
+all: build run compile_assets
 
-ios: build run compile_images compile_sounds
+ios: build run compile_assets
 
-macos: build run compile_images compile_sounds
+macos: build run compile_assets
 
-web: build run compile_images compile_sounds
+web: build run compile_assets
 	make -C Platforms/Web
 
-linux: build run compile_images compile_sounds
+linux: build run compile_assets
 	make -C Platforms/Linux
 
 build: Build/BuildScript/buildscript
 
-compile_images:
-	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./icom $(TARGET)
-
-compile_sounds:
-	env TARGET=$(TARGET) $(ENV_IDE_FLAG) ./scom $(TARGET)
+compile_assets:
+	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) make -C Libraries/AssetCompiler
+	@env TARGET=$(TARGET) $(ENV_IDE_FLAG) Libraries/AssetCompiler/Build/assetcompiler $(TARGET)
 
 Build/BuildScript:
 	mkdir -p Build/BuildScript
@@ -74,20 +72,16 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Platform/iOS/Build
-	rm -rf Libraries/SoundCompiler/Build
 	rm -rf Libraries/HarfBuzz/Build
-	rm -rf Libraries/ImageCompiler/Build
+	rm -rf Libraries/AssetCompiler/Build
 
 clean_harfbuzz:
 	make -C Libraries/HarfBuzz clean
 
-clean_icom:
-	make -C Libraries/ImageCompiler clean
+clean_asset_compiler:
+	make -C Libraries/AssetCompiler clean
 
-clean_scom:
-	make -C Libraries/SoundCompiler clean
-
-xclean: clean clean_harfbuzz clean_icom clean_scom
+xclean: clean clean_harfbuzz clean_asset_compiler
 
 update: prepare_update
 
@@ -100,12 +94,7 @@ prepare_update:
 
 continue_update:
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildScriptCore.rogue .
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/icom .
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/scom .
-	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageCompiler Libraries
-	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/SoundCompiler Libraries
-	@rm -rf Libraries/FreeType
-	@rm -rf Libraries/HarfBuzz
+	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/AssetCompiler Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageIO      Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Plasmacore   Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Rogue/Standard Libraries/Rogue

@@ -1,76 +1,71 @@
-$include "../Rogue/Plasmacore"
 using Plasmacore
 
-try
-  if (System.os == "macOS")
-    install_brew
-    install_library( "sox --with-libvorbis" )
-  endIf
+routine launch_sound_compiler
+  try
+    local config_file = File( "Assets/Sounds/SoundConfig.txt" )
+    if (not config_file.exists)
+      File.create_folder( config_file.path )
+      local writer = PrintWriter(config_file.writer)
+      writer.println @|# Default sound config file - customize as desired.
+                      |#
+                      |# PLATFORMS
+                      |#   [Global]  - Use this category for attributes and settings
+                      |#               that apply to all platforms.
+                      |#   [Default] - Used when specific platform isn't defined, e.g.
+                      |#               if [iOS] isn't defined then [Default] is used.
+                      |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                      |#
+                      |# COMMANDS
+                      |#   @ <file or pattern> [attributes...]  # Set sound attributes
+                      |#   include <file or pattern>            # Include file in build
+                      |#
+                      |# ATTTRIBUTES
+                      |#   @ ... format:[ima4|mp3|ogg]
+                      |#     - ima4 is good for iOS and Mac sound effects
+                      |#     - mp3 is good for iOS and Mac music
+                      |
+                      |[Default]
+                      |include **
+                      |
+                      |[iOS]
+                      |@ **.wav format:ima4
+                      |include **
+                      |
+                      |[emscripten]
+                      |@ ** format:ogg
+                      |include **
+      writer.close
+    endIf
 
-  local config_file = File( "Assets/Sounds/SoundConfig.txt" )
-  if (not config_file.exists)
-    File.create_folder( config_file.path )
-    local writer = PrintWriter(config_file.writer)
-    writer.println @|# Default sound config file - customize as desired.
-                    |#
-                    |# PLATFORMS
-                    |#   [Global]  - Use this category for attributes and settings
-                    |#               that apply to all platforms.
-                    |#   [Default] - Used when specific platform isn't defined, e.g.
-                    |#               if [iOS] isn't defined then [Default] is used.
-                    |#   [iOS]     - iOS-specific attributes, settings, and groups.
-                    |#
-                    |# COMMANDS
-                    |#   @ <file or pattern> [attributes...]  # Set sound attributes
-                    |#   include <file or pattern>            # Include file in build
-                    |#
-                    |# ATTTRIBUTES
-                    |#   @ ... format:[ima4|mp3|ogg]
-                    |#     - ima4 is good for iOS and Mac sound effects
-                    |#     - mp3 is good for iOS and Mac music
-                    |
-                    |[Default]
-                    |include **
-                    |
-                    |[iOS]
-                    |@ **.wav format:ima4
-                    |include **
-                    |
-                    |[emscripten]
-                    |@ ** format:ogg
-                    |include **
-    writer.close
-  endIf
+    local args = System.command_line_arguments
+    if (args.count)
+      SoundCompiler( config_file, (forEach in args) )
+    else
+      SoundCompiler( config_file, "Default" )
+    endIf
 
-  local args = System.command_line_arguments
-  if (args.count)
-    SoundCompiler( config_file, (forEach in args) )
-  else
-    SoundCompiler( config_file, "Default" )
-  endIf
+  catch (err:SoundCompileError)
+    if (System.environment["IDE"])
+      Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
+    else
+      println err
+    endIf
+    System.exit 1
 
-catch (err:BuildError)
-  if (System.environment["IDE"])
-    Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
-  else
-    println err
-  endIf
-  System.exit 1
+  catch (err:Error)
+    if (System.environment["IDE"])
+      Console.error.println "SoundCompiler:0: error:$" (err.message)
+    else
+      println err
+    endIf
+    System.exit 1
 
-catch (err:Error)
-  if (System.environment["IDE"])
-    Console.error.println "SoundCompiler:0: error:$" (err.message)
-  else
-    println err
-  endIf
-  System.exit 1
+  endTry
+endRoutine
 
-endTry
-
-
-class BuildError : Error
+class SoundCompileError : Error
   PROPERTIES
-    cmd      : Command
+    cmd      : SoundCommand
     filepath : String
     line     : Int32
 
@@ -80,7 +75,7 @@ class BuildError : Error
       line = cmd.src_line
 
     method init( message )
-      filepath = "ImageCompiler"
+      filepath = "SoundCompiler"
 
     method to->String
       local builder = StringBuilder()
@@ -104,7 +99,7 @@ class SoundCompiler
   PROPERTIES
     file             : File
     platform         : String
-    commands         = Table<<String,Command[]>>()
+    commands         = Table<<String,SoundCommand[]>>()
     attributes       = @[]
     settings         = @{}
     even_odd         = true
@@ -203,11 +198,11 @@ class SoundCompiler
         if (line.count == 0) nextIteration
         if (line.begins_with('['))
           local after = line.after_first(']')
-          if (after.count) throw BuildError( Command(this,file.filepath,index+1,line), "Syntax error after ']'." )
+          if (after.count) throw SoundCompileError( SoundCommand(this,file.filepath,index+1,line), "Syntax error after ']'." )
           category = line.after_first( '[' ).before_first( ']' ).trimmed
         else
           ensure commands[ category ]
-          commands[ category ].add( Command(this,file.filepath,index+1,line) )
+          commands[ category ].add( SoundCommand(this,file.filepath,index+1,line) )
         endIf
       endForEach
 
@@ -227,9 +222,9 @@ class SoundCompiler
 endClass
 
 
-class Command
+class SoundCommand
   PROPERTIES
-    icom         : SoundCompiler
+    scom         : SoundCompiler
     src_filepath : String
     src_line     : Int32
     content      : String
@@ -237,7 +232,7 @@ class Command
     buffer       = StringBuilder()
 
   METHODS
-    method init( icom, src_filepath, src_line, content )
+    method init( scom, src_filepath, src_line, content )
       reader = ParseReader( content )
 
     method collect_files( filepath:String )->String[]
@@ -281,8 +276,8 @@ class Command
 
       return found_any
 
-    method error( message:String )->BuildError
-      return BuildError( this, message )
+    method error( message:String )->SoundCompileError
+      return SoundCompileError( this, message )
 
     method execute
       if (consume("@"))
@@ -302,7 +297,7 @@ class Command
             info//attributes.add( attribute )
           endIf
         endWhile
-        icom.attributes.add( info )
+        scom.attributes.add( info )
         return
       endIf
 
@@ -313,7 +308,7 @@ class Command
 
           #{
         case "copy"
-          icom.all_sounds = null
+          scom.all_sounds = null
           local args = parse_args
           require_arg( args, "from" )
           require_arg( args, "to" )
@@ -322,14 +317,14 @@ class Command
 
         case "set"
           local setting = parse_name_value
-          icom.settings[ setting//name ] = setting//value
+          scom.settings[ setting//name ] = setting//value
 
         others
           throw error( ''Syntax error - unknown command "$".'' (cmd) )
       endWhich
 
     method include_sounds
-      if (not icom.all_sounds) icom.all_sounds = File.listing( "Assets/Sounds", &recursive, &ignore_hidden )
+      if (not scom.all_sounds) scom.all_sounds = File.listing( "Assets/Sounds", &recursive, &ignore_hidden )
 
       local pattern = parse_string( "Folder or file pattern expected." )
       if (pattern == ".")
@@ -340,13 +335,13 @@ class Command
 
     method include_sounds( pattern:String )
       if (pattern.contains('*') or pattern.contains('?'))
-        forEach (filepath in icom.all_sounds)
+        forEach (filepath in scom.all_sounds)
           if (File.matches_wildcard_pattern(filepath,pattern))
-            icom.included_sounds.add( filepath )
+            scom.included_sounds.add( filepath )
           endIf
         endForEach
       else
-        icom.included_sounds.add( pattern )
+        scom.included_sounds.add( pattern )
       endIf
 
     method has_another->Logical
@@ -389,7 +384,7 @@ class Command
 
     method copy_sounds( from_filepath:String, to_filepath:String, args:Value )
       local attributes = @{}
-      forEach (attr in icom.attributes)
+      forEach (attr in scom.attributes)
         if (File.matches_wildcard_pattern(from_filepath,attr//pattern))
           forEach (a in attr//attributes)
             if (a//value) attributes[ a//name ]         = a//value
@@ -539,106 +534,3 @@ class Command
       return content
 endClass
 
-
-class CommentStripper
-  PROPERTIES
-    reader        : StringReader
-    lines         = String[]
-    buffer        = StringBuilder()
-    comment_level : Int32
-
-  METHODS
-    method process( text:String )->String[]
-      reader = text.reader
-      while (reader.has_another) scan_next
-      if (buffer.count) lines.add( buffer->String )
-      return lines
-
-    method scan_next
-      local ch = reader.read
-      which (ch)
-        case '#'
-          if (reader.peek == '{')
-            # Multiline comment
-            reader.read  # '{'
-            ++comment_level
-          else
-            # Single line comment
-            while (reader.has_another and reader.peek != '\n') reader.read
-          endIf
-
-        case '}'
-          if (comment_level and reader.peek == '#')
-            reader.read
-            --comment_level
-          else
-            write( '}' )
-          endIf
-
-        case '"', '\''
-          # "string"
-          local quote_type = ch
-          write( ch )
-          while (reader.has_another)
-            ch = reader.read
-            write( ch )
-            which (ch)
-              case '\\':       write( reader.read ) # skip past next
-              case quote_type: escapeWhile
-            endWhich
-          endWhile
-
-        others
-          write( ch )
-
-      endWhich
-
-    method write( ch:Character )->this
-      if (ch == '\n')
-        lines.add( buffer->String )
-        buffer.clear
-      elseIf (comment_level == 0)
-        buffer.print( ch )
-      endIf
-
-      return this
-
-endClass
-
-
-routine require_command_line
-  if (System.environment["IDE"])
-    throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
-    ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
-  endIf
-endRoutine
-
-
-routine install_brew
-  if (0 == System.run("which brew >& /dev/null")) return
-
-  require_command_line
-  println "Installing brew"
-  if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
-    local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    println cmd
-    if (0 == System.run(cmd)) return
-    throw Error( "Failed to install Homebrew." )
-  endIf
-
-  throw Error( "Missing required dependency 'brew' (Homebrew)." )
-endRoutine
-
-
-routine install_library( library_name:String )
-  if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
-
-  require_command_line
-  if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
-    throw Error( "Missing required library '$'." (library_name) )
-  endIf
-
-  local cmd = "brew install $" (library_name)
-  println cmd
-  if (0 != System.run(cmd)) throw Error( "Failed to install library '$'." (library_name) )
-endRoutine

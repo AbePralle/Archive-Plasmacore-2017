@@ -68,13 +68,18 @@ class Plasmacore [essential singleton]
     global_update_timer     = UpdateTimer()
     displays                = StringTable<<Display>>()
 
-    #image_group_info_lookup = @{}
+    image_info_list         = ImageInfo[]
     image_info_lookup       = Table<<String,ImageInfo>>()
     image_group_info_lookup = Table<<String,ImageGroupInfo>>()
+    image_filter            : String
 
     application_data_folder : String
     cache_folder            : String
     user_data_folder        : String
+
+    trace_fps : Logical
+    fps       : Int32
+    fps_timer = Timer(1)
 
   METHODS
     method init
@@ -84,6 +89,14 @@ class Plasmacore [essential singleton]
 
       MessageManager.add_listener( "Display.on_render",
         function(m:Message)
+          if (Plasmacore.trace_fps)
+            ++Plasmacore.fps
+            if (Plasmacore.fps_timer.is_expired)
+              print( "fps:" ).println( Plasmacore.fps )
+              Plasmacore.fps = 0
+              Plasmacore.fps_timer.restart
+            endIf
+          endIf
           local display_size = XY( m.int32("display_width"),m.int32("display_height") )
           local viewport_size : XY
           if (m.contains("viewport_width"))
@@ -125,6 +138,22 @@ class Plasmacore [essential singleton]
             elseIf (e.is_release) --Pointer.press_count
             display.handle( e )
           endIf
+        endFunction )
+
+      MessageManager.add_listener( "Input.on_stylus_event",
+        # Stylus/touch event not associated with any display.  Dispatch to each display,
+        # mapping normalized coordinates to each display's size.
+        function(m:Message)
+          local pos = XY( m.real64("x"), m.real64("y") )
+          forEach (display in Plasmacore.displays)
+            if (display.is_configured)
+              local e = PointerEvent( m.int32("type"), pos*Display.size, XY(0,0), m.int32("index"), m.int32("id") )
+              Pointer.position = e.position
+              if (e.is_press)       ++Pointer.press_count
+              elseIf (e.is_release) --Pointer.press_count
+              display.handle( e )
+            endIf
+          endForEach
         endFunction )
 
       MessageManager.add_listener( "Display.on_text_event",
@@ -178,21 +207,48 @@ class Plasmacore [essential singleton]
       endIf
       return result
 
+    method filter_images
+      if (image_filter is null or image_filter.count == 0)
+        filter_images( (name)=>true )
+      elseIf (image_filter.contains('?') or image_filter.contains('*'))
+        filter_images( (name) with (image_filter) => File.matches_wildcard_pattern(name,image_filter) )
+      else
+        filter_images( (name) with (image_filter) => name.contains(image_filter) )
+      endIf
+
+    method filter_images( keep:Function(String)->(Logical) )
+      image_info_lookup.clear
+
+      # Full filepath
+      forEach (image_info in image_info_list)
+        local name = image_info.name
+        image_info_lookup[ name ] = image_info
+      endForEach
+
+      # For A/B/C.png, add B/C.png and C.png as separate entries as long as they
+      # do not conflict with any existing entry.  If there is a conflict, mark the
+      # entry as null rather than creating an arbitrary default
+      forEach (image_info in image_info_list)
+        local name = image_info.name
+        if (keep(name))
+          while (name.contains('/'))
+            name = name.after_first( '/' )
+            if (image_info_lookup.contains(name))
+              image_info_lookup[ name ] = null
+            else
+              image_info_lookup[ name ] = image_info
+            endIf
+          endWhile
+        endIf
+      endForEach
+
+      # Remove any entries that were in conflict
+      forEach (key in image_info_lookup.keys)
+        if (image_info_lookup[key] is null) image_info_lookup.remove( key )
+      endForEach
+
     method find_image_info( name:String )->ImageInfo
-      local info : ImageInfo
-
-      # Attempt with search paths first before falling back to base name
-      forEach (search_path at index in Image.search_folders)
-        Image.search_folders[ index ] = File.ensure_ends_with_separator( search_path )
-      endForEach
-
-      forEach (search_path in Image.search_folders)
-        info = image_info_lookup[ search_path + name ]
-        if (info) return info.load
-      endForEach
-
-if (info) println "-----------------------found2: " + info.name
-      info = image_info_lookup[ name ]
+      local info = image_info_lookup[ name ]
       if (info) return info.load
 
       println "No such image: " + name
@@ -216,7 +272,7 @@ if (info) println "-----------------------found2: " + info.name
     method load_image_index
       local image_index = JSON.load_table( asset_file("Assets/Images/ImageIndex.json") ).decompressed
 
-      image_info_lookup.clear
+      image_info_list.clear
       image_group_info_lookup.clear
 
       # Full filepath
@@ -224,24 +280,26 @@ if (info) println "-----------------------found2: " + info.name
         local group = get_image_group_info( group_info//filepath->String )
         forEach (image in group_info//images)
           local name = image->String
-          image_info_lookup[ name ] = ImageInfo( name, group )
+          image_info_list.add( ImageInfo(name, group) )
         endForEach
       endForEach
 
-      # For A/B/C.png, add B/C.png and C.png as separate entries as long as they
-      # do not conflict with any existing entry.
-      forEach (img in image_info_lookup.values)
-        local name = img.name
-        while (name.contains('/'))
-          name = name.after_first( '/' )
-          if (not image_info_lookup.contains(name))
-            image_info_lookup[ name ] = img
-          endIf
-        endWhile
-      endForEach
+      filter_images
 
     method on_global_update( global_update_callback )
       noAction
+
+    method set_image_filter( @image_filter )->this
+      filter_images
+      return this
+
+    method set_trace_fps( setting:Logical )->this
+      if (setting == trace_fps) return this
+
+      @trace_fps = setting
+      fps = 0
+      fps_timer.restart
+      return this
 
     method user_data_folder->String
       if (not @user_data_folder)
@@ -268,6 +326,7 @@ class ImageInfo
     display_size     : XY
     texture_filename : String
     texture_bounds   : Box
+    is_opaque        : Logical
 
     images           : ImageInfo[]
 
@@ -282,6 +341,7 @@ class ImageInfo
       display_size = existing.display_size
       texture_bounds = existing.texture_bounds
       texture_filename = existing.texture_filename
+      is_opaque = existing.is_opaque
       if (existing.images) images = existing.images.cloned
 
     method init( info:Value )
@@ -303,6 +363,7 @@ class ImageInfo
           texture_filename = info//texture//filename->String
           texture_bounds = Box( info//texture//bounds )
           display_size = XY( info//display_size )
+          is_opaque = info//is_opaque
 
         case "Image[]"
           type = TYPE_IMAGE_LIST

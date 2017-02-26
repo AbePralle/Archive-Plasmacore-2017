@@ -1,26 +1,27 @@
 try
   if (not needs_compile) escapeTry
 
-  if (0 != System.run( ROGUEC + '' --libraries=../../Libraries/Rogue ImageCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
+  if (0 != System.run( ROGUEC + '' --libraries=../../Libraries/Rogue AssetCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
 
   local cmd = ""
 
   if (System.os == "macOS")
     install_brew
+    install_library( "sox --with-libvorbis" )
 
     local png_folder = library_location( "libpng" )
     local jpeg_folder = library_location( "libjpeg" )
     local freetype_folder = library_location( "freetype" )
-    cmd = ''cd Build && $ ImageCompiler.cpp ''...
+    cmd = ''cd Build && $ AssetCompiler.cpp ''...
         ''-I "$/include" -L "$/lib" -lpng ''...
         ''-I "$/include" -L "$/lib" -ljpeg ''...
         ''-I "$/include/freetype2" -L "$/lib" -lfreetype ''...
-        ''-o imagecompiler ''...
+        ''-o assetcompiler ''...
         (COMPILER_INVOCATION,png_folder,png_folder,jpeg_folder,jpeg_folder,freetype_folder,freetype_folder)
   else
-    cmd = ''cd Build && $ ImageCompiler.cpp -lpng -ljpeg -lfreetype ''...
+    cmd = ''cd Build && $ AssetCompiler.cpp -lpng -ljpeg -lfreetype ''...
         ''-I /usr/include/freetype2 ''...
-        ''-o imagecompiler ''...
+        ''-o assetcompiler ''...
         (COMPILER_INVOCATION)
   endIf
 
@@ -36,9 +37,11 @@ endTry
 
 
 routine needs_compile->Logical
-  if (File.is_newer_than("ImageCompiler.rogue","Build/imagecompiler")) return true
-  if (File.is_newer_than("Makefile","Build/imagecompiler")) return true
-  if (File.is_newer_than("BuildScript.rogue","Build/imagecompiler")) return true
+  if (File.is_newer_than("AssetCompiler.rogue","Build/assetcompiler")) return true
+  if (File.is_newer_than("ImageCompiler.rogue","Build/assetcompiler")) return true
+  if (File.is_newer_than("SoundCompiler.rogue","Build/assetcompiler")) return true
+  if (File.is_newer_than("Makefile","Build/assetcompiler")) return true
+  if (File.is_newer_than("BuildScript.rogue","Build/assetcompiler")) return true
   return false
 endRoutine
 
