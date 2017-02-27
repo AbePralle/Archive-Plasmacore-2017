@@ -1,0 +1,13 @@
+module Plasmacore
+
+class Renderer
+  PROPERTIES
+    material : Material
+
+  METHODS
+    method init( material )
+
+    method render( model:Model )
+      if (material) material.draw( model )
+endClass
+

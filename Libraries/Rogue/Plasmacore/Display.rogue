@@ -33,9 +33,6 @@ class Display [singleton]
     name               : String
     view               = default_view_type.create_object<<View>> : View
 
-    fixed_color_model_renderer : FixedColorRenderer
-    texture_renderer           : TextureRenderer
-
     window             : Window
 
     update_timer       = UpdateTimer()
@@ -568,13 +565,13 @@ class Display [singleton]
         # Choose shader based on render mode.
         if (render_mode.is_textured)
           which (render_mode.value & RenderMode.COLOR_MODE_MASK)
-            case RenderMode.COLOR_MULTIPLY: shader = Image.TEXTURE_SHADER_WITH_COLOR_MULTIPLY
-            case RenderMode.COLOR_ADD:      shader = Image.TEXTURE_SHADER_WITH_COLOR_ADD
-            case RenderMode.COLOR_FILL:     shader = Image.TEXTURE_SHADER_WITH_COLOR_FILL
-            others:                         shader = Image.TEXTURE_SHADER
+            case RenderMode.COLOR_MULTIPLY: shader = ImageShader.TEXTURE_WITH_COLOR_MULTIPLY
+            case RenderMode.COLOR_ADD:      shader = ImageShader.TEXTURE_WITH_COLOR_ADD
+            case RenderMode.COLOR_FILL:     shader = ImageShader.TEXTURE_WITH_COLOR_FILL
+            others:                         shader = ImageShader.TEXTURE
           endWhich
         else
-          shader = Image.COLOR_SHADER
+          shader = ImageShader.COLOR
         endIf
       endIf
 

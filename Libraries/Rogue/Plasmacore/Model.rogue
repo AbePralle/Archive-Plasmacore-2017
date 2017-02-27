@@ -11,12 +11,16 @@ class Model
     mesh        : Mesh
     renderer    : Renderer
 
-    color       = Color.WHITE : Color
-
   METHODS
     method init
 
-    method init( mesh, renderer=Renderer.FIXED_COLOR )
+    method init( mesh )
+
+    method init( mesh, material:Material )
+      renderer = Renderer( material )
+
+    method init( mesh, color:Color )
+      init( mesh, ColorMaterial(color) )
 
     method add( child:Model )->this
       (ensure children).add( child )
@@ -34,7 +38,7 @@ class Model
     method draw
       Display.push_object_transform( Matrix.translate(position) * rotation->Matrix * Matrix.scale(scale) )
       on_draw
-      if (renderer) renderer.draw( this )
+      if (renderer) renderer.render( this )
       if (children)
         (forEach in children).draw
       endIf
@@ -49,9 +53,6 @@ class Model
 
     method set_angles( angles:Angles )->this
       @rotation = angles->Quaternion
-      return this
-
-    method set_color( @color )->this
       return this
 
     method set_scale( @scale )->this

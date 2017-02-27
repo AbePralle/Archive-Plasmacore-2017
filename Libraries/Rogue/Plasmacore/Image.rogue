@@ -1,22 +1,25 @@
 module Plasmacore
 
-class Image
+class ImageShader
   GLOBAL METHODS
-    method COLOR_SHADER->Shader
-      return Display.image_color_shader
+    method COLOR->Shader
+      return Display.color_image_shader
 
-    method TEXTURE_SHADER->Shader
-      return Display.image_texture_shader
+    method TEXTURE->Shader
+      return Display.texture_image_shader
 
-    method TEXTURE_SHADER_WITH_COLOR_MULTIPLY->Shader
-      return Display.image_texture_shader_with_color_multiply
+    method TEXTURE_WITH_COLOR_MULTIPLY->Shader
+      return Display.texture_with_color_multiply_image_shader
 
-    method TEXTURE_SHADER_WITH_COLOR_ADD->Shader
-      return Display.image_texture_shader_with_color_add
+    method TEXTURE_WITH_COLOR_ADD->Shader
+      return Display.texture_with_color_add_image_shader
 
-    method TEXTURE_SHADER_WITH_COLOR_FILL->Shader
-      return Display.image_texture_shader_with_color_fill
+    method TEXTURE_WITH_COLOR_FILL->Shader
+      return Display.texture_with_color_fill_image_shader
 
+endClass
+
+class Image
   PROPERTIES
     name          : String
     image_info    : ImageInfo
@@ -104,7 +107,7 @@ class Image
     method init( _color:Color, _size=Display.size:XY )
       data = ColorFillImageData()
       colors = Colors( _color )
-      shader = COLOR_SHADER
+      shader = ImageShader.COLOR
       render_mode = select{ _color.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
       size = _size
       original_size = _size
@@ -112,7 +115,7 @@ class Image
     method init( _colors:Colors, _size=Display.size:XY )
       data = ColorFillImageData()
       colors = _colors
-      shader = COLOR_SHADER
+      shader = ImageShader.COLOR
       render_mode = select{ _colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }
       size = _size
       original_size = _size
@@ -124,9 +127,6 @@ class Image
       local s = @size * scale
       local handle = (anchor.position * s)
       return Box( at_position - handle, s )
-
-    method set_uv( subset:Box )
-      if (data) data.uv = subset
 
     method cloned->Image
       return Image( this )
@@ -154,6 +154,11 @@ class Image
 
     method is_loaded->Logical
       return (data and data.is_loaded)
+
+    method is_opaque->Logical
+      local texture_data = data as TextureImageData
+      if (texture_data) return texture_data.is_opaque
+      else              return false
 
     method load->Logical
       if (data)
@@ -192,10 +197,10 @@ class Image
       else
         # Use default shader
         if (opacity < 1.0 or not colors.is_opaque_white)
-          selected_shader = TEXTURE_SHADER_WITH_COLOR_MULTIPLY
+          selected_shader = ImageShader.TEXTURE_WITH_COLOR_MULTIPLY
           render_mode = RenderMode.ALPHA_IMAGE
         else
-          selected_shader = TEXTURE_SHADER
+          selected_shader = ImageShader.TEXTURE
           local texture_data = data as TextureImageData
           if (texture_data)
             render_mode = select{ texture_data.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
@@ -273,7 +278,7 @@ class Image
       else
         local a32 = (t * 255)->Int32.clamped( 0, 255 ) :<<: 24
         colors = (colors & 0xFFFFFF) | a32
-        shader = TEXTURE_SHADER_WITH_COLOR_FILL
+        shader = ImageShader.TEXTURE_WITH_COLOR_FILL
       endIf
 
       return this
@@ -284,6 +289,9 @@ class Image
 
     method set_tint( t:Real64, colors )->this
       return set_tint( t )
+
+    method set_uv( subset:Box )
+      if (data) data.uv = subset
 
     method set_z( @z )->this
       return this
@@ -518,15 +526,15 @@ endClass
 
 
 #------------------------------------------------------------------------------
-# Image.TEXTURE_SHADER
+# ImageShader.TEXTURE
 #------------------------------------------------------------------------------
 augment Display
   PROPERTIES
-    image_texture_shader : Shader
+    texture_image_shader : Shader
 
   METHODS
-    method image_texture_shader->Shader
-      if (@image_texture_shader) return @image_texture_shader
+    method texture_image_shader->Shader
+      if (@texture_image_shader) return @texture_image_shader
 
       local vertex_shader =
           @|attribute vec4 position;
@@ -548,21 +556,21 @@ augment Display
            |  gl_FragColor = texture2D(texture_0,vertex_uv);
            |}
 
-       @image_texture_shader = Shader( vertex_shader, pixel_shader )
-      return @image_texture_shader
+       @texture_image_shader = Shader( vertex_shader, pixel_shader )
+      return @texture_image_shader
 endAugment
 
 
 #------------------------------------------------------------------------------
-# Image.COLOR_SHADER
+# ImageShader.COLOR
 #------------------------------------------------------------------------------
 augment Display
   PROPERTIES
-    image_color_shader : Shader
+    color_image_shader : Shader
 
   METHODS
-    method image_color_shader->Shader
-      if (@image_color_shader) return @image_color_shader
+    method color_image_shader->Shader
+      if (@color_image_shader) return @color_image_shader
 
       local vertex_shader =
           @|attribute vec4  position;
@@ -581,22 +589,22 @@ augment Display
            |  gl_FragColor = vertex_color;
            |}
 
-      @image_color_shader = Shader( vertex_shader, pixel_shader )
-      return @image_color_shader
+      @color_image_shader = Shader( vertex_shader, pixel_shader )
+           return @color_image_shader
 
 endAugment
 
 
 #------------------------------------------------------------------------------
-# Image.TEXTURE_SHADER_WITH_COLOR_MULTIPLY
+# ImageShader.TEXTURE_WITH_COLOR_MULTIPLY
 #------------------------------------------------------------------------------
 augment Display
   PROPERTIES
-    image_texture_shader_with_color_multiply : Shader
+    texture_with_color_multiply_image_shader : Shader
 
   METHODS
-    method image_texture_shader_with_color_multiply->Shader
-      if (@image_texture_shader_with_color_multiply) return @image_texture_shader_with_color_multiply
+    method texture_with_color_multiply_image_shader->Shader
+      if (@texture_with_color_multiply_image_shader) return @texture_with_color_multiply_image_shader
 
       local vertex_shader =
           @|attribute vec4 position;
@@ -620,22 +628,22 @@ augment Display
            |  gl_FragColor = texture2D(texture_0,vertex_uv) * vertex_color;
            |}
 
-      @image_texture_shader_with_color_multiply = Shader( vertex_shader, pixel_shader )
-      return @image_texture_shader_with_color_multiply
+           @texture_with_color_multiply_image_shader = Shader( vertex_shader, pixel_shader )
+      return @texture_with_color_multiply_image_shader
 
 endAugment
 
 
 #------------------------------------------------------------------------------
-# Image.TEXTURE_SHADER_WITH_COLOR_ADD
+# ImageShader.TEXTURE_WITH_COLOR_ADD
 #------------------------------------------------------------------------------
 augment Display
   PROPERTIES
-    image_texture_shader_with_color_add : Shader
+    texture_with_color_add_image_shader : Shader
 
   METHODS
-    method image_texture_shader_with_color_add->Shader
-      if (@image_texture_shader_with_color_add) return @image_texture_shader_with_color_add
+    method texture_with_color_add_image_shader->Shader
+      if (@texture_with_color_add_image_shader) return @texture_with_color_add_image_shader
 
       local vertex_shader =
           @|attribute vec4  position;
@@ -660,22 +668,22 @@ augment Display
            |  gl_FragColor = vec4( texture_color.xyz + (vertex_color.xyz * texture_color.a), texture_color.a );
            |}
 
-      @image_texture_shader_with_color_add = Shader( vertex_shader, pixel_shader )
-      return @image_texture_shader_with_color_add
+      @texture_with_color_add_image_shader = Shader( vertex_shader, pixel_shader )
+      return @texture_with_color_add_image_shader
 
 endAugment
 
 
 #------------------------------------------------------------------------------
-# Image.TEXTURE_SHADER_WITH_COLOR_FILL
+# ImageShader.TEXTURE_WITH_COLOR_FILL
 #------------------------------------------------------------------------------
 augment Display
   PROPERTIES
-    image_texture_shader_with_color_fill : Shader
+    texture_with_color_fill_image_shader : Shader
 
   METHODS
-    method image_texture_shader_with_color_fill->Shader
-      if (@image_texture_shader_with_color_fill) return @image_texture_shader_with_color_fill
+    method texture_with_color_fill_image_shader->Shader
+      if (@texture_with_color_fill_image_shader) return @texture_with_color_fill_image_shader
 
       local vertex_shader =
           @|attribute vec4  position;
@@ -704,8 +712,8 @@ augment Display
            |  gl_FragColor = vec4( ((texture_color.xyz*vertex_inverse_a)+vertex_color.xyz)*texture_color.a, texture_color.a );
            |}
 
-      @image_texture_shader_with_color_fill = Shader( vertex_shader, pixel_shader )
-      return @image_texture_shader_with_color_fill
+      @texture_with_color_fill_image_shader = Shader( vertex_shader, pixel_shader )
+      return @texture_with_color_fill_image_shader
 
 endAugment
 

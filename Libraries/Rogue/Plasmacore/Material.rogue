@@ -1,40 +1,29 @@
 module Plasmacore
 
-class Material [abstract]
+class MaterialShader
   GLOBAL METHODS
-    method FIXED_COLOR->Material
-      return (ensure Display.fixed_color_model_renderer)
+    method COLOR->Shader
+      return Display.color_material_shader
 
-    method TEXTURE->Material
-      return (ensure Display.texture_renderer)
+    method TEXTURE->Shader
+      return Display.texture_material_shader
 
+endClass
+
+class Material [abstract]
   PROPERTIES
     shader      : Shader
     render_mode = RenderMode.OPAQUE_SHAPE : RenderMode
 
   METHODS
-    method init
-      shader = create_shader
-
-    method create_shader->Shader
-      return Shader( &vertex_shader=vertex_shader_source, &pixel_shader=pixel_shader_source )
-
-    method vertex_shader_source->String [abstract]
-
-    method pixel_shader_source->String [abstract]
-
-    method configure_render_mode( model:Model )
-      noAction
-
     method draw( model:Model )
+      if (not shader) return
+
       local mesh = model.mesh
       if (not mesh) return
       if (not mesh.positions.count) return
 
-      if (not shader) return
       mesh.prepare
-
-      configure_render_mode( model )
 
       local viewport_size = Display.viewport_size
 
@@ -120,34 +109,7 @@ class Material [abstract]
               |}
       }#
 
-      # Configure shader
-      if (shader.transform_setting >= 0)
-        native @|static GLfloat m[16];
-        forEach (element at i in Display.transform) native @|m[$i] = (GLfloat) $element;
-        local setting = shader.transform_setting
-        native @|glUniformMatrix4fv( $setting, 1, false, m );
-      endIf
-
-      if (shader.world_transform_setting >= 0)
-        native @|static GLfloat m[16];
-        forEach (element at i in Display.world_transform) native @|m[$i] = (GLfloat) $element;
-        local setting = shader.world_transform_setting
-        native @|glUniformMatrix4fv( $setting, 1, false, m );
-      endIf
-
-      if (shader.position_attribute >= 0)
-        native @|glBindBuffer( GL_ARRAY_BUFFER, $mesh->position_buffer );
-                |glEnableVertexAttribArray( $shader->position_attribute );
-                |glVertexAttribPointer( $shader->position_attribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
-      endIf
-
-      if (shader.fixed_color_setting >= 0)
-        local a = ((model.color.argb :>>>: 24) & 255) / Real32(255)
-        local r = a * ((model.color.argb :>>>: 16) & 255) / Real32(255)
-        local g = a * ((model.color.argb :>>>: 8) & 255) / Real32(255)
-        local b = a * ((model.color.argb) & 255) / Real32(255)
-        native @|glUniform4f( $shader->fixed_color_setting, $r, $g, $b, $a );
-      endIf
+      configure_shader( model )
 
       #{
       if (shader.color_attribute >= 0)
@@ -169,37 +131,131 @@ class Material [abstract]
 
       #@trace native("glGetError()")->Int32
 
+    method configure_shader( model:Model )
+      local mesh = model.mesh
+
+      if (shader.transform_setting >= 0)
+        native @|static GLfloat m[16];
+        forEach (element at i in Display.transform) native @|m[$i] = (GLfloat) $element;
+        local setting = shader.transform_setting
+        native @|glUniformMatrix4fv( $setting, 1, false, m );
+      endIf
+
+      if (shader.world_transform_setting >= 0)
+        native @|static GLfloat m[16];
+        forEach (element at i in Display.world_transform) native @|m[$i] = (GLfloat) $element;
+        local setting = shader.world_transform_setting
+        native @|glUniformMatrix4fv( $setting, 1, false, m );
+      endIf
+
+      if (shader.position_attribute >= 0)
+        native @|glBindBuffer( GL_ARRAY_BUFFER, $mesh->position_buffer );
+                |glEnableVertexAttribArray( $shader->position_attribute );
+                |glVertexAttribPointer( $shader->position_attribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
+      endIf
+
 endClass
 
 
-class FixedColorRenderer : Material
+#------------------------------------------------------------------------------
+# ColorMaterial
+#------------------------------------------------------------------------------
+class ColorMaterial : Material
   PROPERTIES
-    render_mode = RenderMode.ALPHA_SHAPE : RenderMode
+    color : Color
 
   METHODS
-    method configure_render_mode( model:Model )
+    method init( color=Color(0xFFc0c0c0) )
+      shader = MaterialShader.COLOR
+
+    method configure_shader( model:Model )
+      prior.configure_shader( model )
+
+      if (shader.fixed_color_setting >= 0)
+        local a = ((color.argb :>>>: 24) & 255) / Real32(255)
+        local r = a * ((color.argb :>>>: 16) & 255) / Real32(255)
+        local g = a * ((color.argb :>>>: 8) & 255) / Real32(255)
+        local b = a * ((color.argb) & 255) / Real32(255)
+        native @|glUniform4f( $shader->fixed_color_setting, $r, $g, $b, $a );
+      endIf
+
+endClass
+
+#------------------------------------------------------------------------------
+# MaterialShader.COLOR
+#------------------------------------------------------------------------------
+augment Display
+  PROPERTIES
+    color_material_shader : Shader
+
+  METHODS
+    method color_material_shader->Shader
+      if (@color_material_shader) return @color_material_shader
+
+      local vertex_shader =
+          @|uniform   mat4  transform;
+           |attribute vec4  position;
+           |
+           |void main()
+           |{
+           |  gl_Position = transform * position;
+           |}
+
+      local pixel_shader =
+          @|uniform $LOWP vec4 fixed_color;
+           |
+           |void main()
+           |{
+           |  gl_FragColor = fixed_color;
+           |}
+
+      @color_material_shader = Shader( vertex_shader, pixel_shader )
+      return @color_material_shader
+
+endAugment
+
+
+#------------------------------------------------------------------------------
+# MaterialShader.TEXTURE
+#------------------------------------------------------------------------------
+augment Display
+  PROPERTIES
+    texture_material_shader : Shader
+
+  METHODS
+    method texture_material_shader->Shader
+      if (@texture_material_shader) return @texture_material_shader
+
+      local vertex_shader =
+          @|uniform   mat4  transform;
+           |attribute vec4  position;
+           |
+           |void main()
+           |{
+           |  gl_Position = transform * position;
+           |}
+
+      local pixel_shader =
+          @|uniform $LOWP vec4 fixed_color;
+           |
+           |void main()
+           |{
+           |  gl_FragColor = fixed_color;
+           |}
+
+      @texture_material_shader = Shader( vertex_shader, pixel_shader )
+      return @texture_material_shader
+
+endAugment
+
+#{
       if ((model.color.argb & 0xFF000000) == 0xFF000000)
         render_mode = RenderMode.OPAQUE_SHAPE
       else
         render_mode = RenderMode.ALPHA_SHAPE
       endIf
+}#
 
-    method vertex_shader_source->String
-      return @|uniform   mat4  transform;
-              |attribute vec4  position;
-              |
-              |void main()
-              |{
-              |  gl_Position = transform * position;
-              |}
-
-    method pixel_shader_source->String
-      return @|uniform $LOWP vec4 fixed_color;
-              |
-              |void main()
-              |{
-              |  gl_FragColor = fixed_color;
-              |}
 
           #{
 final String vertexShader =
@@ -247,37 +303,8 @@ final String fragmentShader =
 + "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
 + "}                              \n";
 }#
-endClass
 
 
-class TextureRenderer : Material
-  PROPERTIES
-    render_mode = RenderMode.ALPHA_SHAPE : RenderMode
-
-  METHODS
-    method configure_render_mode( model:Model )
-      if ((model.color.argb & 0xFF000000) == 0xFF000000)
-        render_mode = RenderMode.OPAQUE_SHAPE
-      else
-        render_mode = RenderMode.ALPHA_SHAPE
-      endIf
-
-    method vertex_shader_source->String
-      return @|uniform   mat4  transform;
-              |attribute vec4  position;
-              |
-              |void main()
-              |{
-              |  gl_Position = transform * position;
-              |}
-
-    method pixel_shader_source->String
-      return @|uniform $LOWP vec4 fixed_color;
-              |
-              |void main()
-              |{
-              |  gl_FragColor = fixed_color;
-              |}
 
 #{
   PROPERTIES
@@ -375,5 +402,3 @@ class TextureRenderer : Material
               |    final_color = vec4(pow(linear_color, gamma), surface_color.a);
               |}
 }#
-endClass
-
