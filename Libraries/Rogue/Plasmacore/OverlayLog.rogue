@@ -16,7 +16,7 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       return this
 
     method draw
-      if (not lines.count) return
+      if (not lines.count and not Plasmacore.show_fps) return
 
       local original_region = Display.clipping_region
       Display.clipping_region = null
@@ -28,18 +28,24 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       while (lines.count > max) lines.remove_first
 
       font.scale = (Display.size.max / 1024.0).or_larger(1.0)
+      font.color = Color.WHITE
+      font.anchor = Anchor.TOP_LEFT
+
+      local y = 0
+
+      if (Plasmacore.show_fps)
+        font.draw( "fps:$" (Plasmacore.fps), XY(0,0) )
+        y += font.height
+      endIf
 
       local t = timer.remaining
       if (t >= 0 and t <= 1.0)
         font.color = Color( 1.0, 1.0, 1.0, t )
-      else
-        font.color = Color.WHITE
       endIf
 
-      font.anchor = Anchor.TOP_LEFT
-
-      forEach (line at j in lines)
-        font.draw( line, XY(0,j*font.height) )
+      forEach (line in lines)
+        font.draw( line, XY(0,y) )
+        y += font.height
       endForEach
 
       Display.clipping_region = original_region

@@ -78,8 +78,9 @@ class Plasmacore [essential singleton]
     cache_folder            : String
     user_data_folder        : String
 
-    trace_fps : Logical
+    show_fps  : Logical
     fps       : Int32
+    next_fps  : Int32
     fps_timer = Timer(1)
 
   METHODS
@@ -90,11 +91,11 @@ class Plasmacore [essential singleton]
 
       MessageManager.add_listener( "Display.on_render",
         function(m:Message)
-          if (Plasmacore.trace_fps)
-            ++Plasmacore.fps
+          if (Plasmacore.show_fps)
+            ++Plasmacore.next_fps
             if (Plasmacore.fps_timer.is_expired)
-              print( "fps:" ).println( Plasmacore.fps )
-              Plasmacore.fps = 0
+              Plasmacore.fps = Plasmacore.next_fps
+              Plasmacore.next_fps = 0
               Plasmacore.fps_timer.restart
             endIf
           endIf
@@ -294,10 +295,10 @@ class Plasmacore [essential singleton]
       filter_images
       return this
 
-    method set_trace_fps( setting:Logical )->this
-      if (setting == trace_fps) return this
+    method set_show_fps( setting:Logical )->this
+      if (setting == show_fps) return this
 
-      @trace_fps = setting
+      @show_fps = setting
       fps = 0
       fps_timer.restart
       return this

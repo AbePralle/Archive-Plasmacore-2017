@@ -40,13 +40,11 @@ class ActionCmd
       endIf
       return this
 
-    method then( node:ActionCmd )->this
-      if (node)
-        local cur = this
-        while (cur.next_node) cur = cur.next_node
-        cur.next_node = node
-      endIf
-      return this
+    method count->Int32
+      local n = 1
+      if (next_node) n += next_node.count
+      if (concurrent_node) n += concurrent_node.count
+      return n
 
     method finish
       if (duration < 0) duration = 0
@@ -89,6 +87,14 @@ class ActionCmd
       return this
 
     method set_progress_fn( @progress_fn )->this
+      return this
+
+    method then( node:ActionCmd )->this
+      if (node)
+        local cur = this
+        while (cur.next_node) cur = cur.next_node
+        cur.next_node = node
+      endIf
       return this
 
     method update->ActionCmd

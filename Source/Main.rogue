@@ -2,18 +2,12 @@ using Plasmacore
 
 Display( "Main" ).view = MainView()
 
+#Plasmacore.show_fps = true
+
 class MainView : View
   METHODS
     method on_start
       change_state( InitialState() )
-
-      local file = File( "$/Test.json" (Plasmacore.user_data_folder) )
-      local table = JSON.load_table( file )
-      @trace "Loaded ", table
-      if (table//x) table//x = table//x + 1
-      else          table//x = 1
-      @trace "Saving ", table
-      table.save( file )
 
     method on( e:PointerEvent )
 
@@ -28,21 +22,10 @@ endClass
 
 
 class InitialState : State<<MainView>>
-  PROPERTIES
-    model : Model
-
   METHODS
     method on_start
       # Called when this state becomes the active state
       println "Hello World"
-
-      Display.projection_mode = ProjectionMode2DX( -320 )
-
-      model = Model( Mesh.cube, Color.GREEN )
-      model.position = XYZ(82,116,Display.z+16)
-      model.scale = XYZ(32,16,16)
-
-      model.add( Model(Mesh.cube, Color.LIGHT_GRAY).set_position(0,-4,0) )
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -62,16 +45,10 @@ class InitialState : State<<MainView>>
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World", Display.center )
 
-      Box(50,100,64,32).fill(Color.YELLOW)
-
-      model.draw
-
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
-      model.rotation = model.rotation.rotated(Angles.degrees(1,0,0))
-      model.update
 endClass
 

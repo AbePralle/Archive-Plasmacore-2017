@@ -110,26 +110,12 @@ class Display [singleton]
               |}
 
     method activate_view_and_state
-
       if (not is_configured)
         is_configured = true
-
-        local pos_capacity = vertex_positions.capacity
-        local uv_capacity = vertex_uvs.capacity
-        local color_capacity = vertex_colors.capacity
 
         native @|glGenBuffers(1, &$this->position_buffer);
                 |glGenBuffers(1, &$this->color_buffer);
                 |glGenBuffers(1, &$this->uv_buffer);
-                |
-                |glBindBuffer(GL_ARRAY_BUFFER, $this->position_buffer);
-                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $pos_capacity, $vertex_positions->data->as_real32s, GL_DYNAMIC_DRAW );
-                |
-                |glBindBuffer(GL_ARRAY_BUFFER, $this->color_buffer);
-                |glBufferData(GL_ARRAY_BUFFER, 4 * $color_capacity, $vertex_colors->data->as_int32s, GL_DYNAMIC_DRAW );
-                |
-                |glBindBuffer(GL_ARRAY_BUFFER, $this->uv_buffer);
-                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $uv_capacity, $vertex_uvs->data->as_real32s, GL_DYNAMIC_DRAW );
       endIf
 
       if (not view) view = default_view_type.create_object<<View>>
@@ -210,7 +196,7 @@ class Display [singleton]
       return clear
 
     method clear_transforms
-      render_2dx
+      flush
       object_transforms.clear
       view_transforms.clear
       view_transform_modified = true
@@ -406,6 +392,10 @@ class Display [singleton]
       vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
 
+    method flush->this
+      render_2dx
+      return this
+
     method handle( e:KeyEvent )
       activate_view_and_state
       view.state.handle( e )
@@ -552,7 +542,7 @@ class Display [singleton]
       OverlayLog.update
       OverlayLog.draw
 
-      render_2dx
+      flush
       native "glFlush();"
 
     method render_2dx
@@ -658,26 +648,25 @@ class Display [singleton]
               |    *src = (a << 24) | (b << 16) | (g << 8) | r;
               |  }
               |}
+
       # Configure shader
       if (shader.position_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->position_buffer);
-                |glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GL_FLOAT) * $vertex_positions->count,
-                |    $vertex_positions->data->as_real32s );
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $vertex_positions->count, $vertex_positions->data->as_real32s, GL_STREAM_DRAW );
                 |glEnableVertexAttribArray( $shader->position_attribute );
                 |glVertexAttribPointer( $shader->position_attribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
 
       if (shader.color_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->color_buffer);
-                |glBufferSubData(GL_ARRAY_BUFFER, 0, 4 * $vertex_colors->count,
-                |    $vertex_colors->data->as_int32s );
+                |glBufferData(GL_ARRAY_BUFFER, 4 * $vertex_colors->count, $vertex_colors->data->as_int32s, GL_STREAM_DRAW );
                 |glEnableVertexAttribArray( $shader->color_attribute );
                 |glVertexAttribPointer( $shader->color_attribute, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, 0);
       endIf
 
       if (shader.uv_attribute >= 0)
         native @|glBindBuffer(GL_ARRAY_BUFFER, $this->uv_buffer);
-                |glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GL_FLOAT) * $vertex_uvs->count, $vertex_uvs->data->as_real32s );
+                |glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * $vertex_uvs->count, $vertex_uvs->data->as_real32s, GL_STREAM_DRAW );
                 |glEnableVertexAttribArray( $shader->uv_attribute );
                 |glVertexAttribPointer( $shader->uv_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
       endIf
@@ -702,14 +691,14 @@ class Display [singleton]
       vertex_colors.clear
 
     method reserve_vertices( n:Int32 )
-      if (vertex_count + n > VERTEX_BUFFER_SIZE) render_2dx
+      if (vertex_count + n > VERTEX_BUFFER_SIZE) flush
       vertex_count += n
 
     method scale_to_fit( w:Int32, h:Int32 )->this
       return scale_to_fit( XY(w,h) )
 
     method scale_to_fit( @target_display_size )->this
-      render_2dx
+      flush
       if (target_display_size.exists)
         display_scale = (target_display_size.value / true_size).max
         size = true_size * display_scale
@@ -728,7 +717,7 @@ class Display [singleton]
         if (new_clipping_region.value == clipping_region.value) return this
       endIf
 
-      render_2dx
+      flush
       @clipping_region = new_clipping_region
 
       if (clipping_region.exists)
@@ -758,7 +747,7 @@ class Display [singleton]
 
     method set_primitive_type( primitive_type:Int32 )->this
       if (primitive_type == active_primitive_type) return this
-      render_2dx
+      flush
       active_primitive_type = primitive_type
       return this
 
@@ -779,14 +768,14 @@ class Display [singleton]
 
     method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
       if (render_mode.value == active_render_mode.value and custom_shader is shader) return this
-      render_2dx
+      flush
       active_render_mode = render_mode
       custom_shader = shader
       return this
 
     method set_texture( index:Int32, texture:Texture )->this
       if (index < active_textures.count and active_textures[index] is texture) return this
-      render_2dx
+      flush
       active_textures.expand_to_include( index )[ index ] = texture
       return this
 
