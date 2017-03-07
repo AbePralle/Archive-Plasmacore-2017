@@ -2,8 +2,8 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.7.3
-Date      | February 4, 2017
+Version   | v0.7.4
+Date      | March 6, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -51,13 +51,12 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.4 - February 25, 2017
+###v0.7.4 - March 6, 2017
 - [Build] Consolidated ImageCompiler and SoundCompiler into single AssetCompiler.
 - [Build] Asset compiler now tags images `is_opaque:true` if appropriate.
 - [Image] Now using image info `is_opaque` instead of texture `is_opaque` since the latter was hardly ever true for image sheets.
 - [Image] Removed `Image.search_paths:String[]` in favor of `Plasmacore.image_filter:String`.  `Plasmacore.image_filter = "iPadRetina"` will constrain image loading based on partial filepaths to only those filepaths containing the word `iPadRetina`.  Wildcard patterns may be used.
 - [Display] Fixed error on initial uv buffer capacity (possible crash issue).
-- [Display] `glBufferData()` is now called only once for each vertex buffer and `glBufferSubData()` is used to update the data for subsequent rendering.
 - [Display] Added `world_transform` as an intermediate matrix for 3D support.
 - [Display] Fixed order of object transform multiplication.
 - [Display] Renamed `default_unit_z` and `unit_z` to `default_z` and `z`.
