@@ -12,6 +12,9 @@ class RichText : PrintWriter<<print_buffer>>
     lines = RichTextFragment[][]
     # Lines of fragments
 
+    line_positions = XY[]
+    # Work buffer used during drawing
+
     print_buffer = StringBuilder()
 
   METHODS
@@ -27,6 +30,8 @@ class RichText : PrintWriter<<print_buffer>>
 
     method draw( pos:XY )
       flush
+
+      line_positions.clear
 
       local prior_anchor = font.anchor
       font.anchor = Anchor.TOP_LEFT
@@ -47,13 +52,18 @@ class RichText : PrintWriter<<print_buffer>>
           endIf
         endForEach
 
-        # Draw current line
-        position = pos - Box(bounds.size).at( anchor ).xv
-        forEach (fragment in line)
-          fragment.draw( this )
-        endForEach
+        # Cache position of current line - can't draw right now because
+        # otherwise the the font state (color etc.) has been corrupted
+        # by iterating through the fragments while measuring this line
+        line_positions.add( pos - Box(bounds.size).at( anchor ).xv )
 
         pos += bounds.size.yv
+      endForEach
+
+      # Draw lines using cached positions
+      forEach (line at i in lines)
+        position = line_positions[ i ]
+        (forEach in line).draw( this )
       endForEach
 
       font.anchor = prior_anchor
