@@ -22,17 +22,10 @@ endClass
 
 
 class InitialState : State<<MainView>>
-  PROPERTIES
-    rich_text = RichText( DefaultFont )
-
   METHODS
     method on_start
       # Called when this state becomes the active state
       println "Hello World"
-
-      rich_text.set( Color.BLACK ).print( "Roses are " ).set( Color.RED ).print( "RED" ).set(Color.BLACK).println( "!!!!!!!," )
-      rich_text.print( "Violets are " ).set( Color.BLUE ).print( "BLUE" )
-      trace rich_text.measure
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -48,25 +41,9 @@ class InitialState : State<<MainView>>
 
     method on_draw
       # This happens before the current view's on_draw()
-      Display.clear( Color.WHITE )
+      Display.clear( Color.BLUE )
       DefaultFont.anchor = Anchor.CENTER
-      DefaultFont.color = Color.RED
-
-      rich_text.anchor = Anchor.CENTER
-      rich_text.draw( Display.center )
-
-      rich_text.anchor = Anchor.TOP_LEFT
-      rich_text.draw( Display.at(0,0) )
-
-      rich_text.anchor = Anchor.TOP_RIGHT
-      rich_text.draw( Display.at(1,0) )
-
-      rich_text.anchor = Anchor.BOTTOM_LEFT
-      rich_text.draw( Display.at(0,1) )
-
-      rich_text.anchor = Anchor.BOTTOM_RIGHT
-      rich_text.draw( Display.at(1,1) )
-
+      DefaultFont.draw( "Hello World", Display.center )
 
     method on_resize
       # Called when the Display.size changes
