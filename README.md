@@ -51,6 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.7.5 - March 8, 2017
+- [RichText] Added new class RichText for composing and displaying text with multiple colors.  `RichText(font).set(color).print("...").set(color).print("...")` to create and `.draw(position:XY)` to draw.  Can set the `.anchor`; default `Anchor.TOP_LEFT`.
+- [PlasmacoreMessage.swift] Fixed bug in `set(String,[UInt8])`.
+
 ###v0.7.4 - March 6, 2017
 - [Build] Consolidated ImageCompiler and SoundCompiler into single AssetCompiler.
 - [Build] Asset compiler now tags images `is_opaque:true` if appropriate.

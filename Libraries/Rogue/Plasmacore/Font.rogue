@@ -77,7 +77,7 @@ class Font
       return data.measure( this, text, i1, i2 )
 
     method measure( ch:Character )->XY
-      local result = data.measure( ch ) * scale
+      local result = data.measure( this, ch ) * scale
       if (snap) result = result.floor
       return result
 
@@ -284,7 +284,7 @@ class FontData
           w = 0.0
         else
           local info = this[ ch ]
-          if (info) w += info.advance.x
+          if (info) w += info.advance.x + font.spacing
         endIf
       endForEach
 
@@ -310,18 +310,18 @@ class FontData
           w = 0.0
         else
           local info = this[ ch ]
-          if (info) w += info.advance.x
+          if (info) w += info.advance.x + font.spacing
         endIf
       endForEach
 
       max_w = max_w.or_larger( w )
       return XY( max_w*font.scale.x, h )
 
-    method measure( ch:Character )->XY
+    method measure( font:Font, ch:Character )->XY
       if (ch == '\n') return XY(0,height)
       local info = this[ ch ]
       if (not info) return XY(0,0)
-      return info.advance
+      return info.advance + XY(font.spacing,0)
 
     method unload
       if (not is_loaded) return

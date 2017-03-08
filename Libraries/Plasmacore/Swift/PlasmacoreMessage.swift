@@ -81,7 +81,7 @@ class PlasmacoreMessage
     }
     return [UInt8]()
   }
-    
+
   func getDictionary( name:String, default_value:String="" )->[String:AnyObject]?
   {
     let jsonString = getString(name: name, default_value: default_value)
@@ -93,7 +93,7 @@ class PlasmacoreMessage
         }
     }
     return nil
-  
+
   }
 
   func getInt32( name:String, default_value:Int=0 )->Int
@@ -259,7 +259,7 @@ class PlasmacoreMessage
     writeIntX( value.count )
     for byte in value
     {
-      writeIntX( Int(byte) )
+      writeByte( Int(byte) )
     }
     return self
   }

@@ -10,6 +10,7 @@ class DefaultFontData : FontData
     method init
       name = "DefaultFont"
       exists = true
+      height = 34
 
     method load
       if (is_loaded) return

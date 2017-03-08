@@ -1,0 +1,147 @@
+module Plasmacore
+
+class RichText : PrintWriter<<print_buffer>>
+  PROPERTIES
+    anchor   = Anchor.TOP_LEFT : Anchor
+    font     : Font   # Current font
+
+    position : XY
+    # Automatically adjusted during measure() and draw(); rich text fragment styles
+    # can manually adjust further.
+
+    lines = RichTextFragment[][]
+    # Lines of fragments
+
+    print_buffer = StringBuilder()
+
+  METHODS
+    method init
+
+    method init( font, anchor=Anchor.TOP_LEFT )
+
+    method add( fragment:RichTextFragment )->this
+      flush
+      if (lines.count == 0) lines.add( RichTextFragment[] )
+      lines.last.add( fragment )
+      return this
+
+    method draw( pos:XY )
+      flush
+
+      local prior_anchor = font.anchor
+      font.anchor = Anchor.TOP_LEFT
+
+      local total_size = measure
+      pos -= Box( total_size ).at( anchor ).yv
+
+      forEach (line in lines)
+        # Measure current line
+        position = pos
+
+        local bounds = Box( position, XY(1,font.height) )
+        forEach (fragment in line)
+          local size = fragment.measure( this )
+          if (not size.is_zero)
+            bounds |= Box( position, size )
+            position += size.xv
+          endIf
+        endForEach
+
+        # Draw current line
+        position = pos - Box(bounds.size).at( anchor ).xv
+        forEach (fragment in line)
+          fragment.draw( this )
+        endForEach
+
+        pos += bounds.size.yv
+      endForEach
+
+      font.anchor = prior_anchor
+
+    method measure->XY
+      flush
+
+      position = XY(0,0)
+      local bounds = Box( position, XY(1,font.height) )
+
+      forEach (line in lines)
+        position = XY( 0, position.y )
+
+        local line_bounds = Box( position, XY(1,font.height) )
+        forEach (fragment in line)
+          local size = fragment.measure( this )
+          if (not size.is_zero)
+            line_bounds |= Box( position, size )
+            position += size.xv
+          endIf
+        endForEach
+
+        bounds |= line_bounds
+        position += line_bounds.size.yv
+      endForEach
+
+      return bounds.size
+
+    method set( style_fn:Function(RichText) )->this
+      add( RichTextFragmentStyle(style_fn) )
+      return this
+
+    method set( color:Color )->this
+      add( RichTextFragmentStyle( (rt) with(color) =>rt.font.color = color ) )
+      return this
+
+    method set( new_font:Font )->this
+      add( RichTextFragmentStyle( (rt) with(new_font) =>rt.font = new_font ) )
+      return this
+
+    method write( buffer:StringBuilder )->this
+      if (buffer.count == 0) return this
+
+      local st = buffer->String
+      buffer.clear
+
+      local next_newline = st.locate( '\n' )
+      while (next_newline.exists)
+        if (next_newline.value > 0)
+          add( RichTextFragmentText(st.leftmost(next_newline.value)) )
+        endIf
+        lines.add( RichTextFragment[] ) # newline
+        st = st.from( next_newline.value + 1 )
+        next_newline = st.locate( '\n' )
+      endWhile
+
+      # Remaining text after newline
+      if (st.count) add( RichTextFragmentText(st) )
+
+      return this
+endClass
+
+
+class RichTextFragment [abstract]
+  METHODS
+    method draw( rich_text:RichText ) [abstract]
+    method measure( rich_text:RichText )->XY [abstract]
+endClass
+
+
+class RichTextFragmentText( text:String ) : RichTextFragment
+  METHODS
+    method draw( rich_text:RichText )
+      rich_text.font.draw( text, rich_text.position )
+      rich_text.position += measure( rich_text ).xv  # Adjusts the position
+
+    method measure( rich_text:RichText )->XY
+      return rich_text.font.measure( text )
+endClass
+
+
+class RichTextFragmentStyle( fn:Function(RichText) ) : RichTextFragment
+  METHODS
+    method draw( rich_text:RichText )
+      fn( rich_text )
+
+    method measure( rich_text:RichText )->XY
+      fn( rich_text )
+      return XY(0,0)
+endClass
+
