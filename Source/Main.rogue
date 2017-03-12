@@ -48,6 +48,7 @@ class InitialState : State<<MainView>>
       Triangle( XY(0,0), Display.at(0.5,0.25), Display.center ).fill( Color.GREEN )
 
       Circle( Display.center, Display.at(0.25,0.25).min ).fill( Colors(Color.WHITE,Color.YELLOW) )
+      Line( XY(0,0), Pointer.position ).draw( Colors(Color.BLACK,Color.RED) )
 
     method on_resize
       # Called when the Display.size changes

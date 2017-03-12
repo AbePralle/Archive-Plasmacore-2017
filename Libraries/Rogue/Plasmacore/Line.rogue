@@ -1,0 +1,15 @@
+module Plasmacore
+
+class Line( a:XY, b:XY ) [compound]
+  METHODS
+    method draw( color:Color )->this
+      Display.draw( this, Colors(color) )
+      return this
+
+    method draw( colors:Colors )->this
+      Display.draw( this, colors )
+      return this
+endClass
+
+class Line<<$DataType>>( a:$DataType, b:$DataType ) [compound]
+endClass

@@ -284,6 +284,29 @@ class Display [singleton]
         fill( Box(box.top_left+XY(thickness,box.height-thickness),box.width-thickness*2,thickness), color )
       endIf
 
+    method draw( line:Line, colors:Colors )
+      draw( transform(line), colors, select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
+
+    method draw( line:Line<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
+      if (colors.count == 1) colors = Colors( colors.a, colors.a )
+
+      set_primitive_type( 2 )
+      set_render_mode( render_mode, shader )
+
+      reserve_vertices( 2 )
+
+      vertex_positions.add( line.a.x )
+      vertex_positions.add( line.a.y )
+      vertex_positions.add( line.a.z )
+      vertex_positions.add( line.a.w )
+      vertex_positions.add( line.b.x )
+      vertex_positions.add( line.b.y )
+      vertex_positions.add( line.b.z )
+      vertex_positions.add( line.b.w )
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.b.argb )
+
     method fill( box:Box, color:Color )
       fill( box, Colors(color) )
 
@@ -834,6 +857,11 @@ class Display [singleton]
     method transform( corners:Corners<<XYZ>> )->Corners<<XYZW>>
       local t = transform
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
+
+    method transform( line:Line )->Line<<XYZW>>
+      local t = transform
+      local _z = z
+      return Line<<XYZW>>( t*XYZ(line.a,_z), t*XYZ(line.b,_z) )
 
     method transform( triangle:Triangle )->Triangle<<XYZW>>
       local t = transform

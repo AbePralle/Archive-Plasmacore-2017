@@ -56,6 +56,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [PlasmacoreMessage.swift] Fixed bug in `set(String,[UInt8])`.
 - [Circle] Added `Circle` class.
 - [Triangle] Added `Triangle` and `Triangle<<XYZW>>` classes.
+- [Line] Added `Line` class.
 
 ###v0.7.4 - March 6, 2017
 - [Build] Consolidated ImageCompiler and SoundCompiler into single AssetCompiler.
