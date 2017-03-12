@@ -1,0 +1,55 @@
+module Plasmacore
+
+class Circle( position:XY, radius:Real64 ) [compound]
+  METHODS
+    method at( angle:Radians )->XY
+      # Returns the point along the edge of the circle at the given angle.
+      #
+      # Example:
+      #   one_oclock = circle.at( 2*Radians(pi/12) )
+      return position + XY( radius, angle )
+
+    method at( angle:Degrees )->XY
+      # Returns the point along the edge of the circle at the given angle.
+      #
+      # Example:
+      #   one_oclock = circle.at( Degrees(360.0/12.0) )
+      return position + XY( radius, angle )
+
+    method fill( color:Color )->this
+      return fill( Colors(color) )
+
+    method fill( colors:Colors, segments=(1.0/12.0):Real64 )->this
+      # Fills the given circle with the given color or colors.
+      # Can use Colors(inner,outer)
+      #
+      # Parameters
+      #   color
+      #     The color to draw the circle in.
+      #
+      #   segments [default: (1.0/12.0)]
+      #     If whole - the number of segments.
+      #     If fractional -  the number of segments is dynamically determined
+      #     as this fraction of the circle's circumference.
+      #
+      if (colors.count == 2) colors = Colors( colors.b, colors.b, colors.a )
+
+      if (segments < 1.0)
+        local circ = radius * 2 * pi
+        segments = (circ * segments).floor
+      endIf
+      local angle_step = pi * 2 / segments
+      if (angle_step > pi/8) angle_step = pi/8
+      local first = at(Radians(0))
+      local pt1 = first
+      forEach (angle in angle_step..2*pi step angle_step)
+        local pt2 = at(Radians(angle))
+        Triangle(pt1,pt2,position).fill( colors )
+        pt1 = pt2
+      endForEach
+
+      Triangle(pt1,first,position).fill( colors )
+
+      return this
+endClass
+

@@ -1,0 +1,18 @@
+module Plasmacore
+
+class Triangle( a:XY, b:XY, c:XY ) [compound]
+  # [a,b,c] should be defined in clockwise order to ensure visibility
+  METHODS
+    method fill( color:Color )->this
+      Display.fill( this, color )
+      return this
+
+    method fill( colors:Colors )->this
+      Display.fill( this, colors )
+      return this
+
+endClass
+
+class Triangle<<$DataType>>( a:$DataType, b:$DataType, c:$DataType ) [compound]
+  # [a,b,c] should be defined in clockwise order to ensure visibility
+endClass

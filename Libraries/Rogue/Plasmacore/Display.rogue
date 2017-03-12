@@ -294,6 +294,13 @@ class Display [singleton]
       fill_solid_quad( transform(Corners<<XY>>(box)), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
+    method fill( triangle:Triangle, color:Color )
+      fill( triangle, Colors(color) )
+
+    method fill( triangle:Triangle, colors:Colors )
+      fill_solid_triangle( transform(triangle), colors,
+        select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
+
     method fill_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
@@ -332,6 +339,29 @@ class Display [singleton]
       vertex_colors.add( colors.a.argb )
       vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
+
+    method fill_solid_triangle( triangle:Triangle<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
+      set_primitive_type( 3 )
+      set_render_mode( render_mode, shader )
+
+      reserve_vertices( 3 )
+
+      vertex_positions.add( triangle.a.x )
+      vertex_positions.add( triangle.a.y )
+      vertex_positions.add( triangle.a.z )
+      vertex_positions.add( triangle.a.w )
+      vertex_positions.add( triangle.c.x )
+      vertex_positions.add( triangle.c.y )
+      vertex_positions.add( triangle.c.z )
+      vertex_positions.add( triangle.c.w )
+      vertex_positions.add( triangle.b.x )
+      vertex_positions.add( triangle.b.y )
+      vertex_positions.add( triangle.b.z )
+      vertex_positions.add( triangle.b.w )
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.b.argb )
 
     method fill_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
@@ -804,6 +834,11 @@ class Display [singleton]
     method transform( corners:Corners<<XYZ>> )->Corners<<XYZW>>
       local t = transform
       return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
+
+    method transform( triangle:Triangle )->Triangle<<XYZW>>
+      local t = transform
+      local _z = z
+      return Triangle<<XYZW>>( t*XYZ(triangle.a,_z), t*XYZ(triangle.b,_z), t*XYZ(triangle.c,_z) )
 
     method true_height->Int32 [macro]
       this.true_size.y->Int32

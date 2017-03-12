@@ -45,6 +45,10 @@ class InitialState : State<<MainView>>
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World", Display.center )
 
+      Triangle( XY(0,0), Display.at(0.5,0.25), Display.center ).fill( Color.GREEN )
+
+      Circle( Display.center, Display.at(0.25,0.25).min ).fill( Colors(Color.WHITE,Color.YELLOW) )
+
     method on_resize
       # Called when the Display.size changes
 

@@ -17,3 +17,4 @@ augment Corners<<XY>>
       local top_right = a.or_larger(b).or_larger(c).or_larger(d)
       return Box( top_left, top_right - top_left )
 endAugment
+
