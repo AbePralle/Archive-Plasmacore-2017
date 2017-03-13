@@ -7,13 +7,14 @@
 #include <map>
 #include <iostream>
 
+#include "PlasmacoreList.h"
 #include "PlasmacoreMessage.h"
 
 typedef int HID;
 typedef int RID;
 typedef int Int;
 typedef std::string String;
-typedef std::vector<uint8_t> Buffer;
+typedef PlasmacoreList<uint8_t> Buffer;
 
 
 
@@ -55,6 +56,7 @@ public:
 
   Buffer pending_message_data;
   Buffer io_buffer;
+  Buffer decode_buffer;
 
   bool is_sending = false;
   bool update_requested = false;

@@ -42,7 +42,7 @@ ROGUEAPI void RogueInterface_launch()
   Rogue_launch();
 }
 
-ROGUEAPI void RogueInterface_send_messages( const unsigned char* data, int count, std::vector<uint8_t> rx )
+ROGUEAPI void RogueInterface_send_messages( PlasmacoreList<uint8_t>& io )
 {
   try
   {
@@ -53,25 +53,21 @@ ROGUEAPI void RogueInterface_send_messages( const unsigned char* data, int count
     RogueByte_List* list = mm->io_buffer;
 
     RogueByte_List__clear( list );
-    RogueByte_List__reserve__Int32( list, count );
-    memcpy( list->data->as_bytes, data, count );
-    list->count = count;
+    RogueByte_List__reserve__Int32( list, io.count );
+    memcpy( list->data->as_bytes, io.data, io.count );
+    list->count = io.count;
+    io.clear();
 
     // Call Rogue MessageManager.update(), which sends back a reference to another byte
     // list containing messages to us.
     list = RoguePlasmacore__MessageManager__update( mm );
 
-    if ( !list )
-    {
-      rx.clear();
-      return;
-    }
-    rx.assign( list->data->as_bytes, list->data->as_bytes+list->count );
+    if ( !list ) return;
+    io.add( list->data->as_bytes, list->count );
   }
   catch (RogueException* err)
   {
     RogueException__display( err );
-    rx.clear();
     return;
   }
 }

@@ -197,14 +197,14 @@ void Plasmacore::removeMessageHandler( HID handlerID )
 
 void Plasmacore::send( PlasmacoreMessage & m )
 {
-  auto size = m.data.size();
-  pending_message_data.push_back( uint8_t((size>>24)&255) );
-  pending_message_data.push_back( uint8_t((size>>16)&255) );
-  pending_message_data.push_back( uint8_t((size>>8)&255) );
-  pending_message_data.push_back( uint8_t(size&255) );
-  for (int i = 0; i < m.data.size(); ++i)
+  auto size = m.data.count;
+  pending_message_data.add( uint8_t((size>>24)&255) );
+  pending_message_data.add( uint8_t((size>>16)&255) );
+  pending_message_data.add( uint8_t((size>>8)&255) );
+  pending_message_data.add( uint8_t(size&255) );
+  for (int i = 0; i < m.data.count; ++i)
   {
-    pending_message_data.push_back( m.data[i] );
+    pending_message_data.add( m.data[i] );
   }
   real_update(false);
 }
@@ -289,13 +289,14 @@ void Plasmacore::real_update (bool reschedule)
     update_requested = false;
 
     // Swap pending data with io_buffer data
-    io_buffer.swap(pending_message_data);
+    io_buffer.clear().add( pending_message_data );
+    pending_message_data.clear();
 
-    RogueInterface_send_messages( &io_buffer[0], io_buffer.size(), pending_message_data );
-    auto count = pending_message_data.size();
+    RogueInterface_send_messages( io_buffer );
+    auto count = io_buffer.count;
     //if (count || io_buffer.size())
     //  printf("TX:%-8lu  RX:%-8lu  @iter:%i\n", io_buffer.size(), count, iterations);
-    uint8_t * bytes = &pending_message_data[0];
+    uint8_t * bytes = &io_buffer[0];
 
     int read_pos = 0;
     while (read_pos+4 <= count)
@@ -308,14 +309,13 @@ void Plasmacore::real_update (bool reschedule)
 
       if (read_pos + size <= count)
       {
-        std::vector<uint8_t> message_data;
-        message_data.reserve( size );
+        decode_buffer.clear().reserve( size );
         for (int i = 0; i < size; ++i)
         {
-          message_data.push_back( bytes[read_pos+i] );
+          decode_buffer.add( bytes[read_pos+i] );
         }
 
-        auto m = PlasmacoreMessage( message_data );
+        auto m = PlasmacoreMessage( decode_buffer );
         printf( "Received message type %s\n", m.type.c_str() );
         auto iter = handlers.find(m.type);
         if (iter != handlers.end())

@@ -1,10 +1,11 @@
 #ifndef PLASMACOREMESSAGE_H
 #define PLASMACOREMESSAGE_H
 
-#include <vector>
 #include <string>
 #include <cstdint>
 #include <map>
+
+#include "PlasmacoreList.h"
 
 class PlasmacoreMessage;
 
@@ -14,7 +15,7 @@ typedef void (*HandlerCallback)(PlasmacoreMessage);
 typedef int MID;
 typedef int Int;
 typedef std::string String;
-typedef std::vector<uint8_t> Buffer;
+typedef PlasmacoreList<uint8_t> Buffer;
 
 
 class PlasmacoreMessage
@@ -39,7 +40,7 @@ public:
   std::map<String, int> entries;
   int position = 0;
 
-  PlasmacoreMessage (std::vector<uint8_t> & data);
+  PlasmacoreMessage ( Buffer& data );
   PlasmacoreMessage ( const char * type, MID message_id);
   PlasmacoreMessage ( const char * type );
   PlasmacoreMessage (void);

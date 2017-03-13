@@ -8,7 +8,7 @@ MID PlasmacoreMessage::next_message_id = 1;
 
 
 
-PlasmacoreMessage::PlasmacoreMessage (std::vector<uint8_t> & data)
+PlasmacoreMessage::PlasmacoreMessage ( Buffer& data )
 {
   init();
   this->data = data;
@@ -197,7 +197,7 @@ String PlasmacoreMessage::getString( String & name )
 
 bool PlasmacoreMessage::indexAnother (void)
 {
-  if (position == data.size()) { return false; }
+  if (position == data.count) { return false; }
   auto name = readString();
   entries[ name ] = position;
 
@@ -253,12 +253,12 @@ void PlasmacoreMessage::send_rsvp( HandlerCallback callback )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, Buffer & value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::BYTES );
-  writeIntX( value.size() );
-  for (int i = 0; i < value.size(); ++i)
+  writeIntX( value.count );
+  for (int i = 0; i < value.count; ++i)
   {
     writeIntX( value[i] );
   }
@@ -267,7 +267,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, Buffer & value )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, int64_t value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::INT64 );
@@ -278,7 +278,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, int64_t value )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, Int value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::INT32 );
@@ -288,7 +288,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, Int value )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, bool value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::LOGICAL );
@@ -298,7 +298,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, bool value )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, double value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::REAL64 );
@@ -308,7 +308,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, double value )
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, const char * value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::STRING );
@@ -318,7 +318,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, const char * valu
 
 PlasmacoreMessage & PlasmacoreMessage::set( const char * name, String & value )
 {
-  position = data.size();
+  position = data.count;
   writeString( name );
   entries[ name ] = position;
   writeIntX( DataType::STRING );
@@ -333,7 +333,7 @@ PlasmacoreMessage & PlasmacoreMessage::set( const char * name, String & value )
 
 Int PlasmacoreMessage::readByte (void)
 {
-  if (position >= data.size()) { return 0; }
+  if (position >= data.count) { return 0; }
   position += 1;
   return Int(data[position-1]);
 }
@@ -367,18 +367,18 @@ Int PlasmacoreMessage::readIntX()
 
     case 0x10:
       position += 2;
-      if (position > data.size())
+      if (position > data.count)
       {
-        position = data.size();
+        position = data.count;
         return 0;
       }
       return ((b & 15) << 16) | (Int(data[position-2])<<8) | Int(data[position-1]);
 
     case 0x20:
       position += 3;
-      if (position > data.size())
+      if (position > data.count)
       {
-        position = data.size();
+        position = data.count;
         return 0;
       }
       return ((b & 15) << 24) | (Int(data[position-3])<<16) | (Int(data[position-2]<<8)) | Int(data[position-1]);
@@ -409,9 +409,9 @@ String PlasmacoreMessage::readString (void)
 void PlasmacoreMessage::writeByte ( Int value )
 {
   position += 1;
-  if (position > data.size())
+  if (position > data.count)
   {
-    data.push_back( uint8_t(value&255) );
+    data.add( uint8_t(value&255) );
   }
   else
   {
