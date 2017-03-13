@@ -90,12 +90,13 @@ Plasmacore & Plasmacore::configure()
 
   addMessageHandler( "<reply>", [] (PlasmacoreMessage m)
     {
-        auto iter = singleton.reply_handlers.find( m.message_id );
-        if (iter != singleton.reply_handlers.end())
+        auto entry = singleton.reply_handlers.find( m.message_id );
+        if (entry)
         {
-          auto info = iter->second;
-          singleton.reply_handlers.erase(iter);
-          info->callback( m );
+          auto handler = entry->value;
+          singleton.reply_handlers.remove( m.message_id );
+          handler->callback( m );
+          delete handler;
         }
     }
   );
@@ -176,11 +177,11 @@ Plasmacore & Plasmacore::relaunch()
 
 void Plasmacore::removeMessageHandler( HID handlerID )
 {
-  auto iter = handlers_by_id.find(handlerID);
-  if (iter != handlers_by_id.end())
+  auto entry = handlers_by_id.find(handlerID);
+  if (entry)
   {
-    auto handler = iter->second;
-    handlers_by_id.erase( handlerID );
+    auto handler = entry->value;
+    handlers_by_id.remove( handlerID );
     auto handler_list = handlers[ handler->type.c_str() ];
     if (handler_list)
     {

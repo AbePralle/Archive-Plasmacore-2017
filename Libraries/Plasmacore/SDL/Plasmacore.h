@@ -63,8 +63,8 @@ public:
   bool update_requested = false;
 
   PlasmacoreStringTable<PlasmacoreList<PlasmacoreMessageHandler*>*> handlers;
-  std::map<HID, PlasmacoreMessageHandler*> handlers_by_id;
-  std::map<HID, PlasmacoreMessageHandler*> reply_handlers;
+  PlasmacoreIntTable<PlasmacoreMessageHandler*> handlers_by_id;
+  PlasmacoreIntTable<PlasmacoreMessageHandler*> reply_handlers;
   std::map<RID, void *> resources;
 
   bool update_timer = false; // true if running
