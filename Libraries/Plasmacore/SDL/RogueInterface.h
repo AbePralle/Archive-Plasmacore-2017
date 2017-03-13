@@ -5,7 +5,6 @@
 
 #define PLASMACORE_PLATFORM_SDL 1
 
-#include <vector>
 #include "PlasmacoreList.h"
 
 void    RogueInterface_configure();

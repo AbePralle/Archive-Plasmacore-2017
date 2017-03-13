@@ -1,7 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengles2.h>
 
-#include <vector>
 #include <string>
 #include <cstdint>
 #include <map>
@@ -62,23 +61,25 @@ static void do_async_call ( void (*cb)(void *), int millis )
 
 HID Plasmacore::addMessageHandler( std::string & type, HandlerCallback handler )
 {
-  auto info = PlasmacoreMessageHandler( nextHandlerID, type, handler );
+  auto info = new PlasmacoreMessageHandler( nextHandlerID, type, handler );
   nextHandlerID += 1;
 
-  handlers_by_id[ info.handlerID ] = info;
-  handlers[ type ].push_back( info );
-  return info.handlerID;
+  handlers_by_id[ info->handlerID ] = info;
+  if ( !handlers[ type.c_str() ] ) handlers[ type.c_str() ] = new PlasmacoreList<PlasmacoreMessageHandler*>();
+  handlers[ type.c_str() ]->add( info );
+  return info->handlerID;
 }
 
 
 HID Plasmacore::addMessageHandler( const char * type, HandlerCallback handler )
 {
-  auto info = PlasmacoreMessageHandler( nextHandlerID, type, handler );
+  auto info = new PlasmacoreMessageHandler( nextHandlerID, type, handler );
   nextHandlerID += 1;
 
-  handlers_by_id[ info.handlerID ] = info;
-  handlers[ type ].push_back( info );
-  return info.handlerID;
+  handlers_by_id[ info->handlerID ] = info;
+  if ( !handlers[ type ] ) handlers[ type ] = new PlasmacoreList<PlasmacoreMessageHandler*>();
+  handlers[ type ]->add( info );
+  return info->handlerID;
 }
 
 
@@ -94,7 +95,7 @@ Plasmacore & Plasmacore::configure()
         {
           auto info = iter->second;
           singleton.reply_handlers.erase(iter);
-          info.callback( m );
+          info->callback( m );
         }
     }
   );
@@ -180,17 +181,19 @@ void Plasmacore::removeMessageHandler( HID handlerID )
   {
     auto handler = iter->second;
     handlers_by_id.erase( handlerID );
-    auto & handler_list = handlers[ handler.type ]; // This should always work, right?
+    auto handler_list = handlers[ handler->type.c_str() ];
+    if (handler_list)
     {
-      for (int i = 0; i < handler_list.size(); ++i)
+      for (int i = 0; i < handler_list->count; ++i)
       {
-        if (handler_list[i].handlerID == handlerID)
+        if ((*handler_list)[i]->handlerID == handlerID)
         {
-          handler_list.erase(handler_list.begin() + i);
+          handler_list->remove_at( i );
           return;
         }
       }
     }
+    delete handler;
   }
 }
 
@@ -212,7 +215,7 @@ void Plasmacore::send( PlasmacoreMessage & m )
 
 void Plasmacore::send_rsvp( PlasmacoreMessage & m, HandlerCallback callback )
 {
-  reply_handlers[ m.message_id ] = PlasmacoreMessageHandler( nextHandlerID, "<reply>", callback );
+  reply_handlers[ m.message_id ] = new PlasmacoreMessageHandler( nextHandlerID, "<reply>", callback );
   nextHandlerID += 1;
   send( m );
 }
@@ -317,12 +320,13 @@ void Plasmacore::real_update (bool reschedule)
 
         auto m = PlasmacoreMessage( decode_buffer );
         printf( "Received message type %s\n", m.type.characters );
-        auto iter = handlers.find(m.type.characters);
-        if (iter != handlers.end())
+        auto entry = handlers.find(m.type.characters);
+        if (entry)
         {
-          for (auto const & handler : iter->second)
+          auto& list = *(entry->value);
+          for (int i=0; i<list.count; ++i)
           {
-            handler.callback( m );
+            list[i]->callback( m );
           }
         }
       }

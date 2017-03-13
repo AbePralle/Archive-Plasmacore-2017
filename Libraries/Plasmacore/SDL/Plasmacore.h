@@ -1,14 +1,15 @@
 #ifndef PLASMACORE_H
 #define PLASMACORE_H
 
-#include <vector>
 #include <string>
 #include <cstdint>
 #include <map>
 #include <iostream>
 
+#include "PlasmacoreIntTable.h"
 #include "PlasmacoreList.h"
 #include "PlasmacoreMessage.h"
+#include "PlasmacoreStringTable.h"
 
 typedef int HID;
 typedef int RID;
@@ -61,9 +62,9 @@ public:
   bool is_sending = false;
   bool update_requested = false;
 
-  std::map<std::string, std::vector<PlasmacoreMessageHandler>> handlers;
-  std::map<HID, PlasmacoreMessageHandler> handlers_by_id;
-  std::map<HID, PlasmacoreMessageHandler> reply_handlers;
+  PlasmacoreStringTable<PlasmacoreList<PlasmacoreMessageHandler*>*> handlers;
+  std::map<HID, PlasmacoreMessageHandler*> handlers_by_id;
+  std::map<HID, PlasmacoreMessageHandler*> reply_handlers;
   std::map<RID, void *> resources;
 
   bool update_timer = false; // true if running
