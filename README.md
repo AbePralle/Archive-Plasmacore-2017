@@ -51,8 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.5 - March 12, 2017
+###v0.7.5 - March 13, 2017
 - [RichText] Added new class RichText for composing and displaying text with multiple colors.  `RichText(font).set(color).print("...").set(color).print("...")` to create and `.draw(position:XY)` to draw.  Can set the `.anchor`; default `Anchor.TOP_LEFT`.
+- [Web/Linux] Added simple and customizable `Main.cpp` to `Platforms/Web` and `Platforms/Linux` that calls a new object-oriented launcher for a simple way to define window title and display size.
+- [SDL] Replaced the STL code with custom classes in the SDL library files for a 10% JS code size savings in the Web target.
 - [PlasmacoreMessage.swift] Fixed bug in `set(String,[UInt8])`.
 - [Circle] Added `Circle` class with `draw(Color)`, `fill(Color)`, and various `intersects()` methods.
 - [Corners] Added various `intersects()` methods.
