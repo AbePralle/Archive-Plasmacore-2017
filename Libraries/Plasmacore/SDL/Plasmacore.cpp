@@ -142,9 +142,9 @@ RID Plasmacore::getResourceID( void * resource)
 {
   if (! resource) return 0;
 
-  for (auto const & it : resources)
+  for (auto const & entry : resources)
   {
-    if (it.second == resource) { return it.first; }
+    if (entry->value == resource) { return entry->key; }
   }
   return 0;
 }

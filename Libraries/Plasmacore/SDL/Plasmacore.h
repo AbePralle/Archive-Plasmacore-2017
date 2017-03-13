@@ -65,7 +65,7 @@ public:
   PlasmacoreStringTable<PlasmacoreList<PlasmacoreMessageHandler*>*> handlers;
   PlasmacoreIntTable<PlasmacoreMessageHandler*> handlers_by_id;
   PlasmacoreIntTable<PlasmacoreMessageHandler*> reply_handlers;
-  std::map<RID, void *> resources;
+  PlasmacoreIntTable<void*> resources;
 
   bool update_timer = false; // true if running
 
