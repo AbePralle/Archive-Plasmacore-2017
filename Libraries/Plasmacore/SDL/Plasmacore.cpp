@@ -1,9 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengles2.h>
 
-#include <string>
 #include <cstdint>
-#include <iostream>
 
 #include "Plasmacore.h"
 #include "PlasmacoreMessage.h"
@@ -58,18 +56,6 @@ static void do_async_call ( void (*cb)(void *), int millis )
 #endif
 
 
-HID Plasmacore::addMessageHandler( std::string & type, HandlerCallback handler )
-{
-  auto info = new PlasmacoreMessageHandler( nextHandlerID, type, handler );
-  nextHandlerID += 1;
-
-  handlers_by_id[ info->handlerID ] = info;
-  if ( !handlers[ type.c_str() ] ) handlers[ type.c_str() ] = new PlasmacoreList<PlasmacoreMessageHandler*>();
-  handlers[ type.c_str() ]->add( info );
-  return info->handlerID;
-}
-
-
 HID Plasmacore::addMessageHandler( const char * type, HandlerCallback handler )
 {
   auto info = new PlasmacoreMessageHandler( nextHandlerID, type, handler );
@@ -109,7 +95,7 @@ Plasmacore & Plasmacore::configure()
       if (!view) throw "No view created!";
 
       Plasmacore::singleton.resources[ m.getInt32("id") ] = view;
-      std::cerr << "Controller window: " << view << std::endl;
+      //fprintf( stderr, "Controller window: " << view << std::endl;
     }
   );
 
@@ -123,7 +109,7 @@ Plasmacore & Plasmacore::configure()
   #else
   auto view = plasmacore_new_view("Main");
   if (!view) throw "No view created!";
-  std::cerr << "Controller window: " << view << std::endl;
+  //std::cerr << "Controller window: " << view << std::endl;
   #endif
 
   RogueInterface_set_arg_count( gargc );
@@ -181,7 +167,7 @@ void Plasmacore::removeMessageHandler( HID handlerID )
   {
     auto handler = entry->value;
     handlers_by_id.remove( handlerID );
-    auto handler_list = handlers[ handler->type.c_str() ];
+    auto handler_list = handlers[ handler->type ];
     if (handler_list)
     {
       for (int i = 0; i < handler_list->count; ++i)
@@ -332,7 +318,7 @@ void Plasmacore::real_update (bool reschedule)
       }
       else
       {
-        std::cerr << "*** Skipping message due to invalid size.\n";
+        fprintf( stderr, "*** Skipping message due to invalid size.\n" );
       }
       read_pos += size;
     }

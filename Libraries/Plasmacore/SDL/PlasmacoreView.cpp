@@ -8,8 +8,6 @@
 #include "PlasmacoreIntTable.h"
 #include "PlasmacoreStringTable.h"
 #include "PlasmacoreView.h"
-#include <stdexcept>
-#include <iostream>
 
 PlasmacoreIntTable<PlasmacoreView*> sdl_windows;
 
@@ -52,17 +50,17 @@ void PlasmacoreView::init ()
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   create_window();
-  if (!window) throw std::runtime_error("Didn't create window");
+  if (!window) throw "Didn't create window";
 
   gl_context = SDL_GL_CreateContext(window);
-  if (!gl_context) throw std::runtime_error("Didn't create GL context");
+  if (!gl_context) throw "Didn't create GL context";
 
   swindowID = SDL_GetWindowID(window);
   sdl_windows[swindowID] = this;
 
   if (SDL_GL_MakeCurrent(window, gl_context))
   {
-    std::cerr << "SDL_GL_MakeCurrent() failed: " << SDL_GetError() << std::endl;
+    fprintf( stderr, "SDL_GL_MakeCurrent() failed: %s\n", SDL_GetError() );
     return;
   }
 
@@ -82,9 +80,9 @@ void PlasmacoreView::configure()
 
   SDL_RaiseWindow(window); // Should we immediately send a focus event? (Mac version does...)
 
-  std::cerr << "PlasmacoreView " << name << ":" << std::endl;
-  std::cerr << "  SDL   WID " << swindowID << std::endl;
-  std::cerr << "  PCore WID " << pwindowID << std::endl;
+  fprintf( stderr, "PlasmacoreView %s:\n", name );
+  fprintf( stderr, "  SDL   WID %d:\n", swindowID );
+  fprintf( stderr, "  PCore WID %d:\n", pwindowID );
 }
 
 
@@ -99,7 +97,7 @@ void PlasmacoreView::redraw ()
 
   if (SDL_GL_MakeCurrent(window, gl_context))
   {
-    std::cerr << "SDL_GL_MakeCurrent() failed: " << SDL_GetError() << std::endl;
+    fprintf( stderr, "SDL_GL_MakeCurrent() failed: %s\n", SDL_GetError() );
     return;
   }
 
@@ -199,7 +197,7 @@ PlasmacoreView * plasmacore_new_view ( const char* name )
   {
     factory = (*plasmacore_views)[DEFAULT_VIEW_FACTORY];
   }
-  if (!factory) throw std::runtime_error("Null view factory?");
+  if (!factory) throw "Null view factory?";
   return factory(name);
 }
 

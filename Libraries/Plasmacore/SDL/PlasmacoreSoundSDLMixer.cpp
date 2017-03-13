@@ -1,7 +1,6 @@
 #include "RogueProgram.h"
 #include "RogueInterface.h"
 #include <SDL/SDL_mixer.h>
-#include <iostream>
 
 
 #ifndef SOUND_CHANNELS
@@ -209,7 +208,7 @@ bool PlasmacoreSoundInit( void )
   Mix_Init(MIX_INIT_OGG);
   if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024))
   {
-    std::cerr << "LOG: Failed to initialize audio - " << Mix_GetError() << std::endl;
+    fprintf( stderr, "Failed to initialize audio - %s\n", Mix_GetError() );
   }
   Mix_AllocateChannels(SOUND_CHANNELS);
   return true;

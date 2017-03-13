@@ -1,9 +1,7 @@
 #ifndef PLASMACORE_H
 #define PLASMACORE_H
 
-#include <string>
 #include <cstdint>
-#include <iostream>
 
 #include "PlasmacoreIntTable.h"
 #include "PlasmacoreList.h"
@@ -13,7 +11,6 @@
 typedef int HID;
 typedef int RID;
 typedef int Int;
-typedef std::string String;
 typedef PlasmacoreList<uint8_t> Buffer;
 
 
@@ -22,15 +19,10 @@ class PlasmacoreMessageHandler
 {
 public:
   HID handlerID;
-  std::string type;
+  const char* type;
   HandlerCallback callback;
 
-  PlasmacoreMessageHandler (HID handlerID, std::string & type, HandlerCallback callback)
-  : handlerID(handlerID), type(type), callback(callback)
-  {
-  }
-
-  PlasmacoreMessageHandler (HID handlerID, const char * type, HandlerCallback callback)
+  PlasmacoreMessageHandler (HID handlerID, const char* type, HandlerCallback callback)
   : handlerID(handlerID), type(type), callback(callback)
   {
   }
@@ -68,7 +60,6 @@ public:
 
   bool update_timer = false; // true if running
 
-  HID addMessageHandler( std::string & type, HandlerCallback handler );
   HID addMessageHandler( const char * type, HandlerCallback handler );
   Plasmacore & configure();
   RID getResourceID( void * resource);
