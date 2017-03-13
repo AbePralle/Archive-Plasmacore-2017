@@ -67,6 +67,7 @@ class XY( x:Real64, y:Real64 ) [compound]
 
       return XY(vx,vy)
 
+$if (not "Console")
     method clamped( line:Line )->XY
       # Returns the point along the given line segment that is closest
       # to this point.
@@ -93,6 +94,7 @@ class XY( x:Real64, y:Real64 ) [compound]
       local t_denom = B.dot(B)
       if (t_numer > t_denom) return P2
       return P1 + (t_numer / t_denom) * B
+$endIf
 
     method cross( other:XY )->Real64
       return x * other.y - y * other.x

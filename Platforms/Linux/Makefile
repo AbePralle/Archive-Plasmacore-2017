@@ -21,8 +21,7 @@ SDLCORE_FILES := \
   $(SDLCORE_FOLDER)/PlasmacoreView.cpp \
   $(SDLCORE_FOLDER)/RogueInterface.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreSoundSDLMixer.cpp \
-  $(SDLCORE_FOLDER)/PlasmacoreCString.cpp \
-  $(SDLCORE_FOLDER)/PlasmacoreCStringBuilder.cpp
+  $(SDLCORE_FOLDER)/PlasmacoreUtility.cpp
   #$(SDLCORE_FOLDER)/plasmacore_sound_dummy.cpp
 
 all: build

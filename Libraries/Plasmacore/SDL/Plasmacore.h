@@ -3,10 +3,8 @@
 
 #include <cstdint>
 
-#include "PlasmacoreIntTable.h"
-#include "PlasmacoreList.h"
 #include "PlasmacoreMessage.h"
-#include "PlasmacoreStringTable.h"
+#include "PlasmacoreUtility.h"
 
 typedef int HID;
 typedef int RID;

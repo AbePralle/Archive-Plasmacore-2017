@@ -1,7 +1,6 @@
 #include "PlasmacoreMessage.h"
 
 #include "Plasmacore.h"
-#include "PlasmacoreCStringBuilder.h"
 
 MID PlasmacoreMessage::next_message_id = 1;
 

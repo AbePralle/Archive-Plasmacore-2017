@@ -5,8 +5,7 @@
 #endif
 
 #include "Plasmacore.h"
-#include "PlasmacoreIntTable.h"
-#include "PlasmacoreStringTable.h"
+#include "PlasmacoreUtility.h"
 #include "PlasmacoreView.h"
 
 PlasmacoreIntTable<PlasmacoreView*> sdl_windows;

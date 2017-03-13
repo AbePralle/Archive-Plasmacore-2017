@@ -3,10 +3,7 @@
 
 #include <cstdint>
 
-#include "PlasmacoreCString.h"
-#include "PlasmacoreCStringBuilder.h"
-#include "PlasmacoreList.h"
-#include "PlasmacoreStringTable.h"
+#include "PlasmacoreUtility.h"
 
 class PlasmacoreMessage;
 

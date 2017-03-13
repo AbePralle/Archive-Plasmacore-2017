@@ -5,7 +5,7 @@
 
 #define PLASMACORE_PLATFORM_SDL 1
 
-#include "PlasmacoreList.h"
+#include "PlasmacoreUtility.h"
 
 void    RogueInterface_configure();
 void    RogueInterface_launch();
