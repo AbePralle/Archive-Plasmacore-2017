@@ -78,13 +78,6 @@ void PlasmacoreView::configure()
   if (isConfigured) { return; }
   isConfigured = true;
 
-  if (name == "unnamed")
-  {
-    std::cerr << "ERROR: Unnamed PlasmacoreView.  Set a 'name' string "
-              << "attribute in the interface builder's User Defined "
-              << "Runtime Attributes section.\n";
-  }
-
   pwindowID = Plasmacore::singleton.getResourceID( this );
 
   SDL_RaiseWindow(window); // Should we immediately send a focus event? (Mac version does...)
@@ -113,7 +106,7 @@ void PlasmacoreView::redraw ()
   int display_width, display_height;
   SDL_GetWindowSize(window, &display_width, &display_height);
   auto m = PlasmacoreMessage( "Display.on_render" );
-  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
+  m.set( "window_id", pwindowID ).set( "display_name", name );
   m.set( "display_width",  display_width );
   m.set( "display_height", display_height );
   m.set( "viewport_width",  display_width );
@@ -133,7 +126,7 @@ void PlasmacoreView::on_mouse_down (int x, int y, int button)
   configure();
   // button 0 = left, 1 = right
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
+  m.set( "window_id", pwindowID ).set( "display_name", name );
   m.set( "type", 1 );  // 1=press
   m.set( "x", x );
   m.set( "y", y );
@@ -145,7 +138,7 @@ void PlasmacoreView::on_mouse_up (int x, int y, int button)
 {
   configure();
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
+  m.set( "window_id", pwindowID ).set( "display_name", name );
   m.set( "type", 2 );  // 2=release
   m.set( "x", x );
   m.set( "y", y );
@@ -157,7 +150,7 @@ void PlasmacoreView::on_mouse_move (int x, int y)
 {
   configure();
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
+  m.set( "window_id", pwindowID ).set( "display_name", name );
   m.set( "type", 0 );  // 0=move
   m.set( "x", x );
   m.set( "y", y );
@@ -169,7 +162,7 @@ void PlasmacoreView::on_focus_gained  (void)
   configure();
   auto m = PlasmacoreMessage( "Display.focus_gained" );
   m.set( "window_id", pwindowID );
-  m.set( "display_name", name.c_str() );
+  m.set( "display_name", name );
   m.send();
 }
 
@@ -177,13 +170,13 @@ void PlasmacoreView::on_focus_gained  (void)
 
 PlasmacoreStringTable<ViewFactory>* plasmacore_views = 0;
 
-void plasmacore_register_view_factory (std::string name, ViewFactory factory)
+void plasmacore_register_view_factory (const char* name, ViewFactory factory)
 {
   if (!plasmacore_views) plasmacore_views = new PlasmacoreStringTable<ViewFactory>();
-  (*plasmacore_views)[name.c_str()] = factory;
+  (*plasmacore_views)[name] = factory;
 }
 
-static PlasmacoreView * default_factory (std::string & name)
+static PlasmacoreView * default_factory (const char* name)
 {
   auto v = new PlasmacoreView();
   v->name = name;
@@ -191,16 +184,16 @@ static PlasmacoreView * default_factory (std::string & name)
   return v;
 }
 
-PlasmacoreView * plasmacore_new_view (std::string name)
+PlasmacoreView * plasmacore_new_view ( const char* name )
 {
   ViewFactory factory = 0;
-  if ( (!plasmacore_views) || !plasmacore_views->contains(name.c_str()) )
+  if ( (!plasmacore_views) || !plasmacore_views->contains(name) )
   {
     factory = default_factory;
   }
-  else if (plasmacore_views->contains(name.c_str()))
+  else if (plasmacore_views->contains(name))
   {
-    factory = (*plasmacore_views)[name.c_str()];
+    factory = (*plasmacore_views)[name];
   }
   else if (plasmacore_views->contains(DEFAULT_VIEW_FACTORY))
   {

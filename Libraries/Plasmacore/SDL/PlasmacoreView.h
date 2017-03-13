@@ -1,9 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengles2.h>
 
-#include <string>
-
-
 #define INVALID_SDL_WID -1
 
 class PlasmacoreView;
@@ -14,8 +11,8 @@ class PlasmacoreView;
 // PlasmacoreView, and use a static initializer to call
 // plasmacore_register_view (an example is shown below).  You're done!
 #define DEFAULT_VIEW_FACTORY " "
-typedef PlasmacoreView * (*ViewFactory)(std::string &);
-void plasmacore_register_view_factory (std::string name, ViewFactory factory);
+typedef PlasmacoreView * (*ViewFactory)(const char*);
+void plasmacore_register_view_factory (const char* name, ViewFactory factory);
 
 // Here's how you can register factories from your own files without editing
 // anything that comes with Plasmacore.
@@ -34,7 +31,7 @@ static_block {
 #endif
 
 
-PlasmacoreView * plasmacore_new_view (std::string name);
+PlasmacoreView * plasmacore_new_view ( const char* name );
 PlasmacoreView * plasmacore_get_window (int swindow_id);
 void plasmacore_redraw_all_windows (void);
 
@@ -42,7 +39,7 @@ class PlasmacoreView
 {
 public:
   bool isConfigured = false;
-  std::string name  = "unnamed";
+  const char* name  = "unnamed";
   int pwindowID     = 0; // Plasmacore windowID
   int swindowID     = INVALID_SDL_WID; // SDL windowID
   //var keyModifierFlags:UInt = 0
