@@ -306,6 +306,7 @@ void Plasmacore::real_update (bool reschedule)
 
         auto m = PlasmacoreMessage( decode_buffer );
         printf( "Received message type %s\n", m.type.characters );
+        /*
         auto entry = handlers.find(m.type.characters);
         if (entry)
         {
@@ -315,6 +316,7 @@ void Plasmacore::real_update (bool reschedule)
             list[i]->callback( m );
           }
         }
+        */
       }
       else
       {

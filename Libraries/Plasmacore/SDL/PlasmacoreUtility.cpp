@@ -93,7 +93,7 @@ bool PlasmacoreCString::operator==( const char* st )
 //=============================================================================
 //  PlasmacoreCStringBuilder
 //=============================================================================
-PlasmacoreCStringBuilder::PlasmacoreCStringBuilder()
+PlasmacoreCStringBuilder::PlasmacoreCStringBuilder() : data(internal_buffer), count(0), capacity(0)
 {
 }
 

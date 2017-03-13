@@ -71,7 +71,7 @@ html_assets:
 	@test -d HTMLAssets && rsync -a -c --exclude=".*" --delete --out-format="Updating Build/Web/%n%L" HTMLAssets $(BUILD_FOLDER) || true
 
 $(BUILD_FOLDER)/index.html: index.html
-	@echo COPYING && cp index.html $(BUILD_FOLDER)/
+	cp index.html $(BUILD_FOLDER)/
 
 create_default_settings:
 	@test -f Settings.mk || echo PROJECT_NAME := $(PROJECT_NAME) >> Settings.mk

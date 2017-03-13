@@ -1,5 +1,6 @@
 #include "PlasmacoreMessage.h"
 
+#include <cstdio>
 #include "Plasmacore.h"
 
 MID PlasmacoreMessage::next_message_id = 1;

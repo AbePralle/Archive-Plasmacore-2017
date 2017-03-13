@@ -23,9 +23,14 @@ struct PlasmacoreList
     reserve( initial_capacity );
   }
 
+  PlasmacoreList( const PlasmacoreList<DataType>& other ) : data(0), count(0), capacity(0)
+  {
+    add( other );
+  }
+
   ~PlasmacoreList()
   {
-    if (data) delete data;
+    if (data){ delete data; data = 0; }
     capacity = count = 0;
   }
 
@@ -44,7 +49,7 @@ struct PlasmacoreList
     return *this;
   }
 
-  PlasmacoreList<DataType>& add( PlasmacoreList<DataType>& other )
+  PlasmacoreList<DataType>& add( const PlasmacoreList<DataType>& other )
   {
     int n = other.count;
     reserve( n );
@@ -115,7 +120,7 @@ struct PlasmacoreList
     return data[ index ];
   }
 
-  DataType& operator=( const DataType& other )
+  PlasmacoreList<DataType>& operator=( const PlasmacoreList<DataType>& other )
   {
     return clear().add( other );
   }

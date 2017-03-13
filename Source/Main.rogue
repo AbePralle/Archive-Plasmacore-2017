@@ -29,6 +29,7 @@ class InitialState : State<<MainView>>
     method on_start
       # Called when this state becomes the active state
       println "Hello World"
+      Message( "Testing" ).set( "alpha", true ).set( "beta", "omega" ).send
 
     method after_draw
       # This happens after the current view's on_draw()
