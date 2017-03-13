@@ -1,4 +1,4 @@
-#OPT_CFLAGS += -O3
+OPT_CFLAGS += -O3
 OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
 
 # 150 MB by default
