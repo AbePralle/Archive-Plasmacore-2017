@@ -459,10 +459,8 @@ extern "C" void Rogue_sync_local_storage()
 {
   #ifdef __EMSCRIPTEN__
   EM_ASM(
-     console.log( "START:" + Date.now() );
      FS.syncfs( false, function (err) {
        Module.print("Synching IDBFS");
-       console.log( "STOP:" + Date.now() );
      });
   );
   #endif
