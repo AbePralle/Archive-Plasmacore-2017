@@ -3,7 +3,6 @@
 
 #include <string>
 #include <cstdint>
-#include <map>
 
 #include "PlasmacoreCString.h"
 #include "PlasmacoreCStringBuilder.h"

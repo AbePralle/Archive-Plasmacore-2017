@@ -5,17 +5,18 @@
 #endif
 
 #include "Plasmacore.h"
+#include "PlasmacoreIntTable.h"
+#include "PlasmacoreStringTable.h"
 #include "PlasmacoreView.h"
-#include <map>
 #include <stdexcept>
 #include <iostream>
 
-std::map<int, PlasmacoreView *> sdl_windows;
+PlasmacoreIntTable<PlasmacoreView*> sdl_windows;
 
 
 PlasmacoreView * plasmacore_get_window (int swindow_id)
 {
-  if (sdl_windows.count(swindow_id) == 0) return 0;
+  if ( !sdl_windows.contains(swindow_id)) return 0;
   return sdl_windows[swindow_id];
 }
 
@@ -23,7 +24,7 @@ void plasmacore_redraw_all_windows (void)
 {
   for (auto const & iter : sdl_windows)
   {
-    iter.second->redraw();
+    iter->value->redraw();
   }
 }
 
@@ -174,12 +175,12 @@ void PlasmacoreView::on_focus_gained  (void)
 
 
 
-static std::map<std::string, ViewFactory> * plasmacore_views;
+PlasmacoreStringTable<ViewFactory>* plasmacore_views = 0;
 
 void plasmacore_register_view_factory (std::string name, ViewFactory factory)
 {
-  if (!plasmacore_views) plasmacore_views = new std::map<std::string, ViewFactory>();
-  (*plasmacore_views)[name] = factory;
+  if (!plasmacore_views) plasmacore_views = new PlasmacoreStringTable<ViewFactory>();
+  (*plasmacore_views)[name.c_str()] = factory;
 }
 
 static PlasmacoreView * default_factory (std::string & name)
@@ -193,18 +194,19 @@ static PlasmacoreView * default_factory (std::string & name)
 PlasmacoreView * plasmacore_new_view (std::string name)
 {
   ViewFactory factory = 0;
-  if ( (!plasmacore_views) || (plasmacore_views->count(name) == 0) )
+  if ( (!plasmacore_views) || !plasmacore_views->contains(name.c_str()) )
   {
     factory = default_factory;
   }
-  else if (plasmacore_views->count(name))
+  else if (plasmacore_views->contains(name.c_str()))
   {
-    factory = (*plasmacore_views)[name];
+    factory = (*plasmacore_views)[name.c_str()];
   }
-  else if (plasmacore_views->count(DEFAULT_VIEW_FACTORY))
+  else if (plasmacore_views->contains(DEFAULT_VIEW_FACTORY))
   {
     factory = (*plasmacore_views)[DEFAULT_VIEW_FACTORY];
   }
   if (!factory) throw std::runtime_error("Null view factory?");
   return factory(name);
 }
+
