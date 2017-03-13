@@ -1,7 +1,6 @@
 #ifndef PLASMACOREMESSAGE_H
 #define PLASMACOREMESSAGE_H
 
-#include <string>
 #include <cstdint>
 
 #include "PlasmacoreCString.h"
@@ -16,7 +15,6 @@ typedef void (*HandlerCallback)(PlasmacoreMessage);
 
 typedef int MID;
 typedef int Int;
-typedef std::string String;
 typedef PlasmacoreList<uint8_t> Buffer;
 
 
