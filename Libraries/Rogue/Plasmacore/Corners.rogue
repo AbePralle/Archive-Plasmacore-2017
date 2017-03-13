@@ -1,20 +1,123 @@
 module Plasmacore
 
+class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
+  GLOBAL METHODS
+    method create( bounds:Box )->Corners
+      return Corners( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
+
+  METHODS
+    method bounds->Box
+      return this->Box
+
+    method contains( point:XY )->Logical
+      return (Triangle(a,b,c).contains(point) or Triangle(a,c,d).contains(point))
+
+    method draw( color:Color )->this
+      Line( a, b ).draw( color )
+      Line( b, c ).draw( color )
+      Line( c, d ).draw( color )
+      Line( d, a ).draw( color )
+      return this
+
+    method fill( color:Color )->this
+      return fill( Colors(color) )
+
+    method fill( colors:Colors )->this
+      if (colors.count == 1)
+        Triangle( a, b, c ).fill( colors.a )
+        Triangle( a, c, d ).fill( colors.a )
+      else
+        Triangle( a, b, c ).fill( Colors(colors.a,colors.b,colors.c) )
+        Triangle( a, c, d ).fill( Colors(colors.a,colors.c,colors.d) )
+      endIf
+      return this
+
+    method intersects( line:Line )->Logical
+      # Returns true if this Corners quad and `line` intersect.
+
+      # See if any lines intersect
+      if (line.intersects(Line(a,b))) return true
+      if (line.intersects(Line(b,c))) return true
+      if (line.intersects(Line(c,d))) return true
+      if (line.intersects(Line(d,a))) return true
+
+      # This quad may fully contain the line - test one of the points
+      return this.contains(line.a)
+
+    method intersects( box:Box )->Logical
+      return intersects( box->Corners )
+
+    method intersects( other:Corners )->Logical
+      if (not this.bounds.intersects(other.bounds)) return false
+
+      # See if any lines intersect
+      local line = Line( this.a, this.b )
+      if (line.intersects(Line(other.a,other.b))) return true
+      if (line.intersects(Line(other.b,other.c))) return true
+      if (line.intersects(Line(other.c,other.d))) return true
+      if (line.intersects(Line(other.d,other.a))) return true
+
+      line = Line( this.b, this.c )
+      if (line.intersects(Line(other.a,other.b))) return true
+      if (line.intersects(Line(other.b,other.c))) return true
+      if (line.intersects(Line(other.c,other.d))) return true
+      if (line.intersects(Line(other.d,other.a))) return true
+
+      line = Line( this.c, this.d )
+      if (line.intersects(Line(other.a,other.b))) return true
+      if (line.intersects(Line(other.b,other.c))) return true
+      if (line.intersects(Line(other.c,other.d))) return true
+      if (line.intersects(Line(other.d,other.a))) return true
+
+      line = Line( this.d, this.a )
+      if (line.intersects(Line(other.a,other.b))) return true
+      if (line.intersects(Line(other.b,other.c))) return true
+      if (line.intersects(Line(other.c,other.d))) return true
+      if (line.intersects(Line(other.d,other.a))) return true
+
+      # Either the quads don't intersect or one completely contains the other.
+      # We can test any one point from each to see if it lies within the other.
+      if (this.contains(other.a)) return true
+      if (other.contains(this.a)) return true
+
+      return false
+
+    method intersects( circle:Circle )->Logical
+      if (Line(a,b).intersects(circle)) return true
+      if (Line(b,c).intersects(circle)) return true
+      if (Line(c,d).intersects(circle)) return true
+      if (Line(d,a).intersects(circle)) return true
+
+      # The circle could be entirely inside this quad
+      return (this.contains(circle.position))
+
+    method intersects( triangle:Triangle )->Logical
+      return (Triangle(a,b,c).intersects(triangle) or Triangle(a,c,d).intersects(triangle))
+
+    method operator+( position:XY )->Corners
+      return Corners( a+position, b+position, c+position, d+position )
+
+    method operator-( position:XY )->Corners
+      return Corners( a-position, b-position, c-position, d-position )
+
+    method rotated( angle:Degrees )->Corners [macro]
+      this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Corners
+      return Corners( a.rotated(angle), b.rotated(angle), c.rotated(angle), d.rotated(angle) )
+
+    method to->Box
+      local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
+      local top_right = a.or_larger(b).or_larger(c).or_larger(d)
+      return Box( top_left, top_right - top_left )
+
+    method to->String
+      return "[$ $ $ $]" (a,b,c,d)
+endClass
+
 class Corners<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
   METHODS
     method to->String
       return "[$ $ $ $]" (a,b,c,d)
 endClass
-
-augment Corners<<XY>>
-  GLOBAL METHODS
-    method create( bounds:Box )->Corners<<XY>>
-      return Corners<<XY>>( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
-
-  METHODS
-    method to->Box
-      local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
-      local top_right = a.or_larger(b).or_larger(c).or_larger(d)
-      return Box( top_left, top_right - top_left )
-endAugment
 

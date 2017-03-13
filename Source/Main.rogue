@@ -22,6 +22,9 @@ endClass
 
 
 class InitialState : State<<MainView>>
+  PROPERTIES
+    angle = Degrees(0)
+
   METHODS
     method on_start
       # Called when this state becomes the active state
@@ -45,10 +48,9 @@ class InitialState : State<<MainView>>
       DefaultFont.anchor = Anchor.CENTER
       DefaultFont.draw( "Hello World", Display.center )
 
-      Triangle( XY(0,0), Display.at(0.5,0.25), Display.center ).fill( Color.GREEN )
-
-      Circle( Display.center, Display.at(0.25,0.25).min ).fill( Colors(Color.WHITE,Color.YELLOW) )
-      Line( XY(0,0), Pointer.position ).draw( Colors(Color.BLACK,Color.RED) )
+      (Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).fill( Color.WHITE )
+      (Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).draw( Color.GREEN )
+      ++angle
 
     method on_resize
       # Called when the Display.size changes

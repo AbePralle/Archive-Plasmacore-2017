@@ -9,6 +9,43 @@ class Line( a:XY, b:XY ) [compound]
     method draw( colors:Colors )->this
       Display.draw( this, colors )
       return this
+
+    method intersects( box:Box )->Logical
+      return Corners(box).intersects( this )
+
+    method intersects( circle:Circle )->Logical
+      local closest_pt = circle.position.clamped( this )
+      return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
+
+    method intersects( quad:Corners )->Logical
+      return quad.intersects( this )
+
+    method intersects( other:Line )->Logical
+      return (this & other).exists
+
+    method intersects( triangle:Triangle )->Logical
+      if (this.intersects(Line(triangle.a,triangle.b))) return true
+      if (this.intersects(Line(triangle.b,triangle.c))) return true
+      if (this.intersects(Line(triangle.a,triangle.c))) return true
+
+      # This line could be entirely contained within the triangle - see
+      # if the triangle contains either end point
+      return triangle.contains( a )
+
+    method operator&( other:Line )->XY?
+      # Returns the point of intersection between this line and another line.
+      local P1 = this.a
+      local P2 = this.b
+      local P3 = other.a
+      local P4 = other.b
+      local A = P2 - P1
+      local B = P4 - P3
+      local C = P3 - P1
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      local t1 = A.cross(C) / denom
+      if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
+      return P1 + t0 * A
 endClass
 
 class Line<<$DataType>>( a:$DataType, b:$DataType ) [compound]

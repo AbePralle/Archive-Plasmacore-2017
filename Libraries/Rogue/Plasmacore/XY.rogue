@@ -67,6 +67,33 @@ class XY( x:Real64, y:Real64 ) [compound]
 
       return XY(vx,vy)
 
+    method clamped( line:Line )->XY
+      # Returns the point along the given line segment that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the line are defined by:
+      #
+      #   Line(t) = line.a + t * (line.b - line.a)
+      #
+      # where t is 0 to 1.  We can define t as:
+      #
+      #   A = v - line.a
+      #   B = line.b - line.a
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local P1 = line.a
+      local P2 = line.b
+      local A = this - P1
+      local B = P2 - P1
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return P1
+      local t_denom = B.dot(B)
+      if (t_numer > t_denom) return P2
+      return P1 + (t_numer / t_denom) * B
+
     method cross( other:XY )->Real64
       return x * other.y - y * other.x
 
@@ -193,10 +220,10 @@ class XY( x:Real64, y:Real64 ) [compound]
       return Radians( Math.atan2( y, x ) )
 
     method rotated( angle:Degrees )->XY [macro]
-      XY( this.magnitude, angle )
+      XY( this.magnitude, angle->Radians )
 
-    method rotated( angle:Radians )->XY [macro]
-      XY( this.magnitude, angle )
+    method rotated( angle:Radians )->XY
+      return XY( magnitude, radians + angle )
 
     method round->XY
       return (this + 0.5).floor

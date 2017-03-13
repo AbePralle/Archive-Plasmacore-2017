@@ -503,7 +503,7 @@ class TextureImageData : ImageData
         transform * XYZ( 0, h, 0 ) )
 
       Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
-        Corners<<XY>>( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
+        Corners( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
         image.render_mode, image.selected_shader )
 
       Display.pop_object_transform

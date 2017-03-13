@@ -55,6 +55,16 @@ class Box( position:XY, size:XY ) [compound]
     method center->XY [macro]
       this.at(0.5,0.5)
 
+    method clamped( enclosing:Box )->Box
+      # Clamps this box to the enclosing box, first by positioning and then
+      # by resizing if it's still too large.
+      local inner = this
+      local pos = inner.position - enclosing.position
+      local br = pos + inner.size
+      if (br.x > enclosing.size.x) pos += XY(enclosing.size.x-br.x,0)
+      if (br.y > enclosing.size.y) pos += XY(0,enclosing.size.y-br.y)
+      return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
+
     method contains( pos:XY )->Logical
       if (pos.x < position.x or pos.x >= position.x + size.x) return false
       if (pos.y < position.y or pos.y >= position.y + size.y) return false
@@ -90,6 +100,18 @@ $endIf
 
     method intersects( other:Box )->Logical
       return (this & other).exists
+
+    method intersects( circle:Circle )->Logical
+      return this->Corners.intersects( circle )
+
+    method intersects( quad:Corners )->Logical
+      return this->Corners.intersects( quad )
+
+    method intersects( line:Line )->Logical
+      return this->Corners.intersects( line )
+
+    method intersects( triangle:Triangle )->Logical
+      return this->Corners.intersects( triangle )
 
     method operator==( other:Box )->Logical
       return (position == other.position and size == other.size)
@@ -165,12 +187,18 @@ $endIf
       # [@90,80 20x20]].
       return Box( position - anchor.position * size, size )
 
+    method rotated( angle:Degrees )->Corners [macro]
+      this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Corners [macro]
+      this->Corners.rotated( angle )
+
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
 
 $if (not "Console")
-    method transform( m:Matrix )->Corners<<XY>>
-      return Corners<<XY>>(
+    method transform( m:Matrix )->Corners
+      return Corners(
         m * top_left,
         m * top_right,
         m * bottom_left,
@@ -180,6 +208,9 @@ $if (not "Console")
     method transformed( m:Matrix )->Box
       return transform( m )->Box
 $endIf
+
+    method to->Corners
+      return Corners( this )
 
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)

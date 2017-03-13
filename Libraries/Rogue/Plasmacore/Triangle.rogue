@@ -3,6 +3,36 @@ module Plasmacore
 class Triangle( a:XY, b:XY, c:XY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
   METHODS
+    method contains( point:XY )->Logical
+      # Using Barycentric technique as described here:
+      #   http://www.blackpawn.com/texts/pointinpoly/default.html
+
+      # Compute vectors
+      local v0 = c - a
+      local v1 = b - a
+      local v2 = point - a
+
+      # Compute dot products
+      local dot00 = v0.dot(v0)
+      local dot01 = v0.dot(v1)
+      local dot02 = v0.dot(v2)
+      local dot11 = v1.dot(v1)
+      local dot12 = v1.dot(v2)
+
+      # Compute barycentric coordinates
+      local inverse_denom = 1.0 / (dot00 * dot11 - dot01 * dot01)
+      local u = (dot11 * dot02 - dot01 * dot12) * inverse_denom
+      local v = (dot00 * dot12 - dot01 * dot02) * inverse_denom
+
+      # Check if point is in triangle
+      return (u >= 0) and (v >= 0) and (u + v < 1)
+
+    method draw( color:Color )->this
+      Line( a, b ).draw( color )
+      Line( b, c ).draw( color )
+      Line( c, a ).draw( color )
+      return this
+
     method fill( color:Color )->this
       Display.fill( this, color )
       return this
@@ -10,6 +40,25 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method fill( colors:Colors )->this
       Display.fill( this, colors )
       return this
+
+    method intersects( box:Box )->Logical
+      return box->Corners.intersects( this )
+
+    method intersects( circle:Circle )->Logical
+      if (Line(a,b).intersects(circle)) return true
+      if (Line(b,c).intersects(circle)) return true
+      return (Line(a,c).intersects(circle))
+
+    method intersects( quad:Corners )->Logical
+      return quad.intersects( this )
+
+    method intersects( line:Line )->Logical
+      return line.intersects( this )
+
+    method intersects( other:Triangle )->Logical
+      if (Line(a,b).intersects(other)) return true
+      if (Line(b,c).intersects(other)) return true
+      return (Line(a,c).intersects(other))
 
 endClass
 

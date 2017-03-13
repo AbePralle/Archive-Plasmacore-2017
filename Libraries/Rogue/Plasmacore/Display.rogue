@@ -314,7 +314,7 @@ class Display [singleton]
       fill( box, Colors(color) )
 
     method fill( box:Box, colors:Colors )
-      fill_solid_quad( transform(Corners<<XY>>(box)), colors,
+      fill_solid_quad( transform(Corners(box)), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
     method fill( triangle:Triangle, color:Color )
@@ -389,7 +389,7 @@ class Display [singleton]
     method fill_textured_quad( texture:Texture,
         corners:Corners<<XYZW>>,
         colors:Colors,
-        uv:Corners<<XY>>,
+        uv:Corners,
         render_mode:RenderMode,
         shader:Shader )
 
@@ -849,7 +849,7 @@ class Display [singleton]
       update_transform
       return @transform
 
-    method transform( corners:Corners<<XY>> )->Corners<<XYZW>>
+    method transform( corners:Corners )->Corners<<XYZW>>
       local t = transform
       local _z = z
       return Corners<<XYZW>>( t*XYZ(corners.a,_z), t*XYZ(corners.b,_z), t*XYZ(corners.c,_z), t*XYZ(corners.d,_z) )
