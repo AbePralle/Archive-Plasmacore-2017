@@ -465,10 +465,26 @@ extern "C" void launch_plasmacore()
   plasmacore_launched = true;
 }
 
-int main (int argc, char * argv[])
+//=============================================================================
+//  PlasmacoreLauncher
+//=============================================================================
+PlasmacoreLauncher::PlasmacoreLauncher( int argc, char* argv[] ) : default_window_title("Plasmacore"), default_display_width(1024), default_display_height(768)
+{
+}
+
+PlasmacoreLauncher::PlasmacoreLauncher( int argc, char* argv[], PlasmacoreCString default_window_title, int default_display_width, int default_display_height )
+  : argc(argc), argv(argv), default_window_title(default_window_title), default_display_width(default_display_width), default_display_height(default_display_height)
+{
+}
+
+int PlasmacoreLauncher::launch()
 {
   gargc = argc;
   gargv = argv;
+
+  PlasmacoreView::default_window_title = default_window_title.characters;
+  PlasmacoreView::default_display_width = default_display_width;
+  PlasmacoreView::default_display_height = default_display_height;
 
   #ifdef __EMSCRIPTEN__
     auto flags = 0;
@@ -515,7 +531,6 @@ int main (int argc, char * argv[])
   }
 #endif
 
-  return 0;
+  return 0; // no error
 }
-
 

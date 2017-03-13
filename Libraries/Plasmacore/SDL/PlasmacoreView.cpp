@@ -10,6 +10,9 @@
 
 PlasmacoreIntTable<PlasmacoreView*> sdl_windows;
 
+const char* PlasmacoreView::default_window_title = "Plasmacore";
+int         PlasmacoreView::default_display_width = 1024;
+int         PlasmacoreView::default_display_height = 768;
 
 PlasmacoreView * plasmacore_get_window (int swindow_id)
 {
@@ -35,7 +38,7 @@ void PlasmacoreView::destroy ()
 /// Override to change just window creation
 void PlasmacoreView::create_window ()
 {
-  window = SDL_CreateWindow("Plasmacore", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, initial_width, initial_height, window_flags|SDL_WINDOW_OPENGL);
+  window = SDL_CreateWindow(default_window_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, initial_width, initial_height, window_flags|SDL_WINDOW_OPENGL);
 }
 
 /// Called by view factory to create window

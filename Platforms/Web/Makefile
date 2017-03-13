@@ -18,6 +18,7 @@ SDLCORE_FOLDER = $(PROJECT_ROOT)/Libraries/Plasmacore/SDL
 BUILD_FOLDER    := $(PROJECT_ROOT)/Build/$(TARGET)
 
 SDLCORE_FILES := \
+  Main.cpp \
   $(SDLCORE_FOLDER)/Plasmacore.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreMessage.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreView.cpp \
@@ -46,6 +47,7 @@ project: $(BUILD_FOLDER)/$(PROJECT_NAME).html index_html html_assets
 $(BUILD_FOLDER)/$(PROJECT_NAME).html: $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
 	# -s FULL_ES2=1 ?
 	$(CXX) -I$(BUILD_FOLDER)/Source \
+	       -I$(SDLCORE_FOLDER) \
 	       -s USE_SDL=2 \
 	       -s USE_LIBPNG=1 \
 	       -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_launch_plasmacore']" \

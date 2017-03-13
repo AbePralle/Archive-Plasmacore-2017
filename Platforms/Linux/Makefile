@@ -16,6 +16,7 @@ OUTPUT_NAME := $(shell basename $(shell cd $(ROOT) && pwd))
 
 
 SDLCORE_FILES := \
+  Main.cpp \
   $(SDLCORE_FOLDER)/Plasmacore.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreMessage.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreView.cpp \
@@ -41,6 +42,7 @@ project: $(BUILD_FOLDER)/$(OUTPUT_NAME)
 
 $(BUILD_FOLDER)/$(OUTPUT_NAME): $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
 	$(CXX) -I$(BUILD_FOLDER)/Source \
+	       -I$(SDLCORE_FOLDER) \
 	       -ljpeg \
 	       -lpng \
 	       -lSDL2 \

@@ -11,6 +11,24 @@ typedef int RID;
 typedef int Int;
 typedef PlasmacoreList<uint8_t> Buffer;
 
+//=============================================================================
+//  PlasmacoreLauncher
+//=============================================================================
+struct PlasmacoreLauncher
+{
+  // PROPERTIES
+  int               argc;
+  char**            argv;
+  PlasmacoreCString default_window_title;
+  int               default_display_width;
+  int               default_display_height;
+
+  // METHODS
+  PlasmacoreLauncher( int argc, char* argv[] );
+  PlasmacoreLauncher( int argc, char* argv[], PlasmacoreCString default_window_title, int default_display_width, int default_display_height );
+
+  int launch();
+};
 
 
 class PlasmacoreMessageHandler

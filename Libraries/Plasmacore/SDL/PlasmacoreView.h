@@ -21,7 +21,7 @@ void plasmacore_register_view_factory (const char* name, ViewFactory factory);
 static_block {
   // Register the default view factory
   // (For a named view, specify the name instead of DEFAULT_VIEW_FACTORY.)
-  plasmacore_register_view_factory(DEFAULT_VIEW_FACTORY, [] (std::string & name) -> (PlasmacoreView *) {
+  plasmacore_register_view_factory(DEFAULT_VIEW_FACTORY, [] (const char* name) -> (PlasmacoreView *) {
     auto v = new MyDefaultPlasmacoreView();
     v->name = name;
     v->init();
@@ -38,6 +38,10 @@ void plasmacore_redraw_all_windows (void);
 class PlasmacoreView
 {
 public:
+  static const char* default_window_title;
+  static int         default_display_width;
+  static int         default_display_height;
+
   bool isConfigured = false;
   const char* name  = "unnamed";
   int pwindowID     = 0; // Plasmacore windowID
@@ -45,8 +49,8 @@ public:
   //var keyModifierFlags:UInt = 0
   SDL_Window * window;
   SDL_GLContext gl_context;
-  int initial_width = 640;
-  int initial_height = 480;
+  int initial_width = default_display_width;
+  int initial_height = default_display_height;
   int window_flags = SDL_WINDOW_SHOWN; //|SDL_WINDOW_FULLSCREEN;
 
   void destroy ();
