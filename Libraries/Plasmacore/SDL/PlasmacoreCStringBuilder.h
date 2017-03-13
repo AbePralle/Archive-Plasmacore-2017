@@ -35,6 +35,12 @@ struct PlasmacoreCStringBuilder
     return *this;
   }
 
+  char* as_c_string()
+  {
+    reserve( 1 )[ count ] = 0;  // temporary null terminator
+    return data;
+  }
+
   PlasmacoreCStringBuilder& clear()
   {
     count = 0;

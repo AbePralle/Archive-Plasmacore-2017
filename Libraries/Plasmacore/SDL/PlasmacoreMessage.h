@@ -5,7 +5,10 @@
 #include <cstdint>
 #include <map>
 
+#include "PlasmacoreCString.h"
+#include "PlasmacoreCStringBuilder.h"
 #include "PlasmacoreList.h"
+#include "PlasmacoreStringTable.h"
 
 class PlasmacoreMessage;
 
@@ -33,11 +36,11 @@ public:
 
   static MID next_message_id;
 
-  String type;
+  PlasmacoreCString type;
   MID message_id;
 
   Buffer data;
-  std::map<String, int> entries;
+  PlasmacoreStringTable<int> entries;
   int position = 0;
 
   PlasmacoreMessage ( Buffer& data );
@@ -47,12 +50,11 @@ public:
   void init (void);
   PlasmacoreMessage createReply (void) const;
   //Buffer getBytes (const char * name);
-  int32_t getInt32 (String & name, int32_t default_value = 0);
-  int64_t getInt64 (String & name, int64_t default_value = 0 );
-  bool getLogical( String & name, bool default_value = false );
-  double getReal64( String & name, double default_value=0.0 );
-  String getString( String & name );
-  String getString( String & name, String & default_value );
+  int32_t getInt32 (const char* name, int32_t default_value = 0);
+  int64_t getInt64 (const char* name, int64_t default_value = 0 );
+  bool getLogical( const char* name, bool default_value = false );
+  double getReal64( const char* name, double default_value=0.0 );
+  void getString( const char* name, PlasmacoreCString& result );
   bool indexAnother (void);
   void send();
   void send_rsvp( HandlerCallback callback );
@@ -62,7 +64,6 @@ public:
   PlasmacoreMessage & set( const char * name, bool value );
   PlasmacoreMessage & set( const char * name, double value );
   PlasmacoreMessage & set( const char * name, const char * value );
-  PlasmacoreMessage & set( const char * name, String & value );
 
 private:
   //---------------------------------------------------------------------------
@@ -74,14 +75,14 @@ private:
   int32_t readInt32();
   Int readIntX();
   double readReal64 (void);
-  String readString (void);
+  void readString ( PlasmacoreCString& result );
+  void readString ( PlasmacoreCStringBuilder& result );
   void writeByte ( Int value );
   void writeInt32( Int value );
   void writeInt64X( int64_t value );
   void writeIntX( Int value );
   void writeReal64 ( double value );
-  void writeString ( const char * value );
-  void writeString ( String & value );
+  void writeString ( const char* value );
 };
 
 #endif

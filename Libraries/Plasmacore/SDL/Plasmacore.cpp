@@ -316,8 +316,8 @@ void Plasmacore::real_update (bool reschedule)
         }
 
         auto m = PlasmacoreMessage( decode_buffer );
-        printf( "Received message type %s\n", m.type.c_str() );
-        auto iter = handlers.find(m.type);
+        printf( "Received message type %s\n", m.type.characters );
+        auto iter = handlers.find(m.type.characters);
         if (iter != handlers.end())
         {
           for (auto const & handler : iter->second)

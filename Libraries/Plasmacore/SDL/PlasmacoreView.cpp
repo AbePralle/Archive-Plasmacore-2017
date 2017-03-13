@@ -112,7 +112,7 @@ void PlasmacoreView::redraw ()
   int display_width, display_height;
   SDL_GetWindowSize(window, &display_width, &display_height);
   auto m = PlasmacoreMessage( "Display.on_render" );
-  m.set( "window_id", pwindowID ).set( "display_name", name );
+  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
   m.set( "display_width",  display_width );
   m.set( "display_height", display_height );
   m.set( "viewport_width",  display_width );
@@ -132,7 +132,7 @@ void PlasmacoreView::on_mouse_down (int x, int y, int button)
   configure();
   // button 0 = left, 1 = right
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name );
+  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
   m.set( "type", 1 );  // 1=press
   m.set( "x", x );
   m.set( "y", y );
@@ -144,7 +144,7 @@ void PlasmacoreView::on_mouse_up (int x, int y, int button)
 {
   configure();
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name );
+  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
   m.set( "type", 2 );  // 2=release
   m.set( "x", x );
   m.set( "y", y );
@@ -156,7 +156,7 @@ void PlasmacoreView::on_mouse_move (int x, int y)
 {
   configure();
   auto m = PlasmacoreMessage( "Display.on_pointer_event" );
-  m.set( "window_id", pwindowID ).set( "display_name", name );
+  m.set( "window_id", pwindowID ).set( "display_name", name.c_str() );
   m.set( "type", 0 );  // 0=move
   m.set( "x", x );
   m.set( "y", y );
@@ -168,7 +168,7 @@ void PlasmacoreView::on_focus_gained  (void)
   configure();
   auto m = PlasmacoreMessage( "Display.focus_gained" );
   m.set( "window_id", pwindowID );
-  m.set( "display_name", name );
+  m.set( "display_name", name.c_str() );
   m.send();
 }
 
