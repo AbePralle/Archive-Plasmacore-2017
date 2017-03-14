@@ -71,8 +71,6 @@ run:
 
 clean:
 	rm -rf Build
-	rm -rf Platform/iOS/Build
-	rm -rf Libraries/HarfBuzz/Build
 	rm -rf Libraries/AssetCompiler/Build
 
 clean_harfbuzz:

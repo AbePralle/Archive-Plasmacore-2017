@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.7.6 - March 14, 2017
+- [Makefile] Removed outdated filepaths in `clean` target.
+
 ###v0.7.5 - March 13, 2017
 - [RichText] Added new class RichText for composing and displaying text with multiple colors.  `RichText(font).set(color).print("...").set(color).print("...")` to create and `.draw(position:XY)` to draw.  Can set the `.anchor`; default `Anchor.TOP_LEFT`.
 - [Web/Linux] Added simple and customizable `Main.cpp` to `Platforms/Web` and `Platforms/Linux` that calls a new object-oriented launcher for a simple way to define window title and display size.
