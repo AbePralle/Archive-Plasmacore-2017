@@ -24,10 +24,11 @@ routine launch_image_compiler
                       |#   create image:<filepath> font:<font-name> height:<pixels> ...
                       |#     [characters:"ABC..." unicode:[32..126] ...]
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
-                      |#   copy   from:<folder> to:<folder> [rescale:1/2] [resize:WxH->WxH]
+                      |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH]
                       |#
                       |# ATTTRIBUTES
-                      |#   @ ... resample <pixel width>x<pixel height>
+                      |#   @ ... resize:<pixel width>x<pixel height>
+                      |#   @ ... resample:<pixel width>x<pixel height>
                       |#     Change pixel size but leave display size as it was.
                       |#   @ ... split:<tiles-wide>x<tiles-high>
                       |#   @ ... varfont [<Options>]
@@ -726,7 +727,7 @@ class ImageCommand
 
       println "Image Copy $ -> $" (from_filepath.after_first("Assets/Images/"),to_filepath.after_first("Assets/Images/"))
 
-      local rescale = Convert.parse_scale( this, args//rescale )
+      local scale = Convert.parse_scale( this, select{ args.contains("scale"):args//scale || args//rescale } )
 
       local resize = false
       local from_size : XY
@@ -737,14 +738,14 @@ class ImageCommand
           resize = true
           from_size = Convert.parse_dimensions( this, resize_dims.first )
           to_size   = Convert.parse_dimensions( this, resize_dims.last )
-          if (not args//rescale)
+          if (not args//scale)
             # Derive scale from resize args
-            rescale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
+            scale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
           endIf
         endIf
       endIf
 
-      if (rescale == 1.0)
+      if (scale == 1.0)
         File.copy( from_filepath, to_filepath )
       else
         local bitmap = Bitmaps[ from_filepath ]
@@ -755,7 +756,7 @@ class ImageCommand
           local characters = Convert.extract_varfont_characters( this, bitmap )
           print "  # character".pluralized( characters.count )
           print " [$x$] -> " (w,h)
-          forEach (ch in characters) ch.resize( ch.width*rescale, ch.height*rescale )
+          forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
           bitmap = Convert.pack_varfont_characters( this, characters )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
@@ -770,14 +771,14 @@ class ImageCommand
           local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
           print "  $x$ tiles" (tiles_wide,tiles_high)
           print " [$x$] -> " (w,h)
-          forEach (tile in tiles) tile.resize( tile.width*rescale, tile.height*rescale )
+          forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
           bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
         else
-          local new_w = (w * rescale)->Int32
-          local new_h = (h * rescale)->Int32
+          local new_w = (w * scale)->Int32
+          local new_h = (h * scale)->Int32
           if (resize)
             if (w == from_size.min and h == from_size.max)     new_w = to_size.min; new_h = to_size.max
             elseIf (w == from_size.max and h == from_size.min) new_w = to_size.max; new_h = to_size.min
@@ -1101,8 +1102,17 @@ class Placement
       display_width  = width
       display_height = height
 
+      if (attributes//resize)
+        local tx_size = Convert.parse_dimensions( asset.cmd, attributes//resize )
+        width  = tx_size//width->Int32
+        height = tx_size//height->Int32
+        bitmap = bitmap.resized( width, height )
+        display_width = width
+        display_height = height
+      endIf
+
       if (attributes//resample)
-        local tx_size   = Convert.parse_dimensions( asset.cmd, attributes//resample )
+        local tx_size = Convert.parse_dimensions( asset.cmd, attributes//resample )
         width  = tx_size//width->Int32
         height = tx_size//height->Int32
         bitmap = bitmap.resized( width, height )

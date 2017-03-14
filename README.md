@@ -52,6 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.7.6 - March 14, 2017
+- [Image Compiler] Renamed image attribute `rescale` to `scale` (`rescale` still works for compatibility).  Added `resize` image attribute.
 - [Makefile] Removed outdated filepaths in `clean` target.
 
 ###v0.7.5 - March 13, 2017
