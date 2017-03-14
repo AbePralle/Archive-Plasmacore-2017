@@ -36,8 +36,23 @@ class RenderMode( value=0:Int32 ) [compound]
       return RenderMode( (dest_blend:<<:28) | (src_blend:<<:24) | options )
 
   METHODS
+    method operator&( flags:Int32 )->RenderMode [macro]
+      RenderMode( this.value & flags )
+
+    method operator|( flags:Int32 )->RenderMode [macro]
+      RenderMode( this.value | flags )
+
+    method operator&( other:RenderMode )->RenderMode [macro]
+      RenderMode( this.value & other.value )
+
+    method operator|( other:RenderMode )->RenderMode [macro]
+      RenderMode( this.value | other.value )
+
     method dest_blend->Logical [macro]
       ((this.value :>>>: 28) & 15)
+
+    method has_blend_mode->Logical [macro]
+      ((this.value & RenderMode.BLEND_MASK) != 0)
 
     method is_blended->Logical [macro]
       (this.value & RenderMode.BLENDED)

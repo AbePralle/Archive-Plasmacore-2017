@@ -32,11 +32,12 @@ class Image
     rotation      : Angles
     shader        : Shader
     anchor        = Anchor.CENTER : Anchor
-    render_mode   : RenderMode
+    render_mode   : RenderMode  # no need to set explicitly in most cases
     colors        = Colors(Color.WHITE) : Colors
     opacity       = 1.0  # Master opacity; multiplies each color's alpha component
 
-    selected_shader : Shader
+    selected_render_mode : RenderMode
+    selected_shader      : Shader
     # Automatically set to either the non-null 'shader' or a default shader.  Should not be set manually.
 
   METHODS
@@ -100,7 +101,6 @@ class Image
 
     method init( texture:Texture )
       init( TextureImageData(texture) )
-      render_mode = select{ texture.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
       size = texture.image_size
       original_size = size
 
@@ -174,7 +174,6 @@ class Image
           local is_opaque = image_info.is_opaque->Logical
           data = TextureImageData( texture, is_opaque )
           uv = image_info.texture_bounds
-          render_mode = select{ is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
           return true
       endWhich
 
@@ -192,19 +191,26 @@ class Image
         return false
       endIf
 
+      selected_render_mode = render_mode
+      if (not render_mode.has_blend_mode)
+        if (opacity < 1.0 or not colors.is_opaque_white)
+          selected_render_mode |= RenderMode.ALPHA_IMAGE
+        else
+          local texture_data = data as TextureImageData
+          if (texture_data)
+            selected_render_mode |= select{ texture_data.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+          endIf
+        endIf
+      endIf
+
       if (shader)
         selected_shader = shader
       else
         # Use default shader
         if (opacity < 1.0 or not colors.is_opaque_white)
           selected_shader = ImageShader.TEXTURE_WITH_COLOR_MULTIPLY
-          render_mode = RenderMode.ALPHA_IMAGE
         else
           selected_shader = ImageShader.TEXTURE
-          local texture_data = data as TextureImageData
-          if (texture_data)
-            render_mode = select{ texture_data.is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
-          endIf
         endIf
       endIf
 
@@ -453,7 +459,7 @@ class ColorFillImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.render_mode, image.selected_shader )
+      Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
@@ -504,7 +510,7 @@ class TextureImageData : ImageData
 
       Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
         Corners( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-        image.render_mode, image.selected_shader )
+        image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
