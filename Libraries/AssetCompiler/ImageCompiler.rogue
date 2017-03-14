@@ -27,10 +27,10 @@ routine launch_image_compiler
                       |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH]
                       |#
                       |# ATTTRIBUTES
-                      |#   @ ... resize:<pixel width>x<pixel height>
-                      |#   @ ... resample:<pixel width>x<pixel height>
-                      |#     Change pixel size but leave display size as it was.
-                      |#   @ ... split:<tiles-wide>x<tiles-high>
+                      |#   @ ... resize:WxH
+                      |#   @ ... resample:WxH      # Change pixel size but leave display size
+                      |#   @ ... display_size:WxH  # Change display size but leave pixel size
+                      |#   @ ... split:WxH         # Split into W tiles wide and H tiles high
                       |#   @ ... varfont [<Options>]
                       |#   @ ... varfont:"Character Mapping" [<Options>]
                       |#           <Options>
@@ -1116,6 +1116,12 @@ class Placement
         width  = tx_size//width->Int32
         height = tx_size//height->Int32
         bitmap = bitmap.resized( width, height )
+      endIf
+
+      if (attributes//display_size)
+        local tx_size = Convert.parse_dimensions( asset.cmd, attributes//display_size )
+        display_width  = tx_size//width->Int32
+        display_height = tx_size//height->Int32
       endIf
 
       local display_scale = asset.cmd.icom.settings//display_scale
