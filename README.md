@@ -53,6 +53,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ###v0.7.6 - March 14, 2017
 - [Image] Custom `render_mode` settings now work correctly again.  If you set a `render_mode` that includes a blending mode then your render mode will be used as-is.  If you don't include a blending mode then any render mode flags you set (like `RenderMode.POINT_FILTER`) will be merged with an automatically chosen render mode.
+- [OverlayLog/SystemFont] OverlayLog now uses a cloned copy of SystemFont to isolate changes to SystemFont opacity etc.
 - [Image Compiler] Renamed image attribute `rescale` to `scale` (`rescale` still works for compatibility).  Added `resize` image attribute.
 - [Image Compiler] Added `display_size:WxH` image attribute.
 - [Makefile] Removed outdated filepaths in `clean` target.

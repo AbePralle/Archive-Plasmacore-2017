@@ -1,5 +1,10 @@
 module Plasmacore
 
+augment Display
+  PROPERTIES
+    overlay_log_font : Font
+endAugment
+
 class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
   PROPERTIES
     lines = String[]
@@ -21,8 +26,9 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
       local original_region = Display.clipping_region
       Display.clipping_region = null
 
-      local font = SystemFont
-      font.load
+      if (not Display.overlay_log_font) Display.overlay_log_font = SystemFont.cloned.load
+      local font = Display.overlay_log_font
+
       local max = Display.height / font.height
       if (max_lines.exists and max_lines.value < max) max = max_lines.value
       while (lines.count > max) lines.remove_first

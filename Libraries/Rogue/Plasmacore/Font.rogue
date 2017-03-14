@@ -37,8 +37,9 @@ class Font
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       data.collect_texture_names( texture_names )
 
-    method load
+    method load->this
       data.load
+      return this
 
     method draw( text:String, position:XY )
       data.draw( this, text, position )
@@ -54,6 +55,9 @@ class Font
 
     method height->Real64
       return data.height * scale.y
+
+    method is_loaded->Logical
+      return data.is_loaded
 
     method set_anchor( @anchor )->this
       return this
