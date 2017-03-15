@@ -101,19 +101,15 @@ class PointerEvent : Event
     MOVE     = 0
     PRESS    = 1
     RELEASE  = 2
-    SCROLL   = 3
-    # A PointerEvent never has type SCROLL; this definition is used internally to spin off
-    # scroll events into their own ScrollEvent when they come in
 
   PROPERTIES
     type        : Int32
     position    : XY
     delta       : XY
     index       : Int32
-    id          : Int32
 
   METHODS
-    method init( type, position, delta, index, id )
+    method init( type, position, delta, index )
 
     method is_move->Logical [macro]
       (this.type == PointerEvent.MOVE)
@@ -131,7 +127,7 @@ class PointerEvent : Event
       return (this.type == RELEASE and index == button_index)
 
     method operator+( offset:XY )->PointerEvent
-      return PointerEvent( type, position+offset, delta, index, id )
+      return PointerEvent( type, position+offset, delta, index )
 
     method operator-( offset:XY )->PointerEvent
       return this + (-offset)
@@ -154,11 +150,9 @@ endClass
 class ScrollEvent : Event
   PROPERTIES
     delta       : XY
-    index       : Int32
-    id          : Int32
 
   METHODS
-    method init( delta, index, id )
+    method init( delta )
 
     method to->String
       local buffer = StringBuilder().print( "Scroll " ).print( delta )

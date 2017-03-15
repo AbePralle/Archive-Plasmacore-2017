@@ -130,20 +130,23 @@ class Plasmacore [essential singleton]
           local scale = display.display_scale
           local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
           local index = m.int32( "index" )
-          local id = m.int32( "id" )
           local type = m.int32( "type" )
 
-          if (type == PointerEvent.SCROLL)
-            local e = ScrollEvent( delta, index, id )
-            display.handle( e )
-          else
-            local pos   = XY( m.int32("x"), m.int32("y") ) * scale
-            local e = PointerEvent( type, pos, delta, index, id )
-            Pointer.position = e.position
-            if (e.is_press)       ++Pointer.press_count
-            elseIf (e.is_release) --Pointer.press_count
-            display.handle( e )
-          endIf
+          local pos   = XY( m.int32("x"), m.int32("y") ) * scale
+          local e = PointerEvent( type, pos, delta, index )
+          Pointer.position = e.position
+          if (e.is_press)       ++Pointer.press_count
+          elseIf (e.is_release) --Pointer.press_count
+          display.handle( e )
+        endFunction )
+
+      MessageManager.add_listener( "Display.on_scroll_event",
+        function(m:Message)
+          local display = Display( m.string("display_name") )
+          local scale = display.display_scale
+          local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
+
+          display.handle( ScrollEvent(delta) )
         endFunction )
 
       MessageManager.add_listener( "Input.on_stylus_event",
@@ -151,9 +154,11 @@ class Plasmacore [essential singleton]
         # mapping normalized coordinates to each display's size.
         function(m:Message)
           local pos = XY( m.real64("x"), m.real64("y") )
+          local type = m.int32( "type" )
+          local index = m.int32( "index" )
           forEach (display in Plasmacore.displays)
             if (display.is_configured)
-              local e = PointerEvent( m.int32("type"), pos*Display.size, XY(0,0), m.int32("index"), m.int32("id") )
+              local e = PointerEvent( type, pos*Display.size, XY(0,0), index )
               Pointer.position = e.position
               if (e.is_press)       ++Pointer.press_count
               elseIf (e.is_release) --Pointer.press_count

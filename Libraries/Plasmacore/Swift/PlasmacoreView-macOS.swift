@@ -205,7 +205,7 @@ class PlasmacoreView: NSOpenGLView
     m.set( name:"type", value:1 )  // 1=press
     m.set( name:"x", value:Double(point.x) )
     m.set( name:"y", value:Double(bounds.size.height - point.y) )
-    m.set( name:"button", value:0 )
+    m.set( name:"index", value:0 )
     m.send()
   }
 
@@ -248,7 +248,7 @@ class PlasmacoreView: NSOpenGLView
     m.set( name:"type", value:2 )  // 2=release
     m.set( name:"x", value:Double(point.x) )
     m.set( name:"y", value:Double(bounds.size.height - point.y) )
-    m.set( name:"button", value:0 )
+    m.set( name:"index", value:0 )
     m.send()
   }
 
@@ -301,13 +301,13 @@ class PlasmacoreView: NSOpenGLView
     configure()
     let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"type", value:1 )  // 1=press
     m.set( name:"x", value:Double(point.x) )
     m.set( name:"y", value:Double(bounds.size.height - point.y) )
-    m.set( name:"button", value:1 )
+    m.set( name:"index", value:1 )
     m.send()
   }
 
@@ -316,7 +316,7 @@ class PlasmacoreView: NSOpenGLView
     configure()
     let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"type", value:0 )  // 0=move
@@ -330,13 +330,13 @@ class PlasmacoreView: NSOpenGLView
     configure()
     let point = convert( event.locationInWindow, from: nil )
 
-    let m = PlasmacoreMessage( type:"Display.pointer_event" )
+    let m = PlasmacoreMessage( type:"Display.on_pointer_event" )
     m.set( name:"window_id", value:windowID )
     m.set( name:"display_name", value:name )
     m.set( name:"type", value:2 )  // 2=release
     m.set( name:"x", value:Double(point.x) )
     m.set( name:"y", value:Double(bounds.size.height - point.y) )
-    m.set( name:"button", value:1 )
+    m.set( name:"index", value:1 )
     m.send()
   }
 
@@ -348,10 +348,9 @@ class PlasmacoreView: NSOpenGLView
 
     if (dx >= 0.0001 || dx <= -0.0001 || dy >= 0.0001 || dy <= -0.0001)
     {
-      let m = PlasmacoreMessage( type:"Display.pointer_event" )
+      let m = PlasmacoreMessage( type:"Display.on_scroll_event" )
       m.set( name:"window_id", value:windowID )
       m.set( name:"display_name", value:name )
-      m.set( name:"type", value:3 )  // 3=scroll
       m.set( name:"dx", value:Double(dx) )
       m.set( name:"dy", value:Double(dy) )
       m.send()
