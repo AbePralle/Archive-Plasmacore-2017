@@ -120,6 +120,7 @@ class Plasmacore [essential singleton]
           local syscode   = m.int32( "syscode" )
           local is_repeat = m.logical( "is_repeat" )
           local is_press  = m.logical( "is_press" )
+          if (not is_repeat) Keyboard.key_pressed[ keycode & 255 ] = is_press
           local e = KeyEvent( keycode, syscode, is_press, is_repeat )
           display.handle( e )
         endFunction )

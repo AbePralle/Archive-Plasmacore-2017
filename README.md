@@ -56,6 +56,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Image] Custom `render_mode` settings now work correctly again.  If you set a `render_mode` that includes a blending mode then your render mode will be used as-is.  If you don't include a blending mode then any render mode flags you set (like `RenderMode.POINT_FILTER`) will be merged with an automatically chosen render mode.
 - [macOS] macOS default window now 1024x768, centered.
 - [macOS] Right mouse button events now sent correctly on macOS.
+- [Keyboard] Key events now correctly set `Keyboard` flags for `Keyboard.is_key_pressed(keycode:Int32)->Logical`.
 - [Events] Some light refactoring and cleaning up of pointer and scroll event code.
 - [OverlayLog/SystemFont] OverlayLog now uses a cloned copy of SystemFont to isolate changes to SystemFont opacity etc.
 - [Image Compiler] Renamed image attribute `rescale` to `scale` (`rescale` still works for compatibility).  Added `resize` image attribute.
