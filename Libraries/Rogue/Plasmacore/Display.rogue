@@ -574,7 +574,12 @@ class Display [singleton]
       endIf
 
       clear_transforms
-      perspective_center = center
+
+      if (target_display_size.exists)
+        perspective_center = target_display_size.value / 2
+      else
+        perspective_center = true_size / 2
+      endIf
 
       scale_to_fit( target_display_size )
 

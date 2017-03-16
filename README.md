@@ -52,6 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.7.6 - March 15, 2017
+- [Display] Fixed initialization bug that had the transformation matrix slightly wrong on the first rendered frame.
 - [Image] Custom `render_mode` settings now work correctly again.  If you set a `render_mode` that includes a blending mode then your render mode will be used as-is.  If you don't include a blending mode then any render mode flags you set (like `RenderMode.POINT_FILTER`) will be merged with an automatically chosen render mode.
 - [macOS] macOS default window now 1024x768, centered.
 - [macOS] Right mouse button events now sent correctly on macOS.
