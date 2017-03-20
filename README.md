@@ -2,8 +2,8 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.7.5
-Date      | March 13, 2017
+Version   | v0.7.6
+Date      | March 20, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.6 - March 17, 2017
+###v0.7.6 - March 20, 2017
 - [Display] Fixed initialization bug that had the transformation matrix slightly wrong on the first rendered frame.
 - [Image] Custom `render_mode` settings now work correctly again.  If you set a `render_mode` that includes a blending mode then your render mode will be used as-is.  If you don't include a blending mode then any render mode flags you set (like `RenderMode.POINT_FILTER`) will be merged with an automatically chosen render mode.
 - [Circle] Fixed `Circle.intersects(Circle)->Logical`.
