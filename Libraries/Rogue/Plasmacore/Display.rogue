@@ -46,6 +46,12 @@ class Display [singleton]
     target_display_size : XY?
     display_scale       : Real64
 
+    updates_per_second  : Int32
+    # Usually fixed at 60
+
+    update_scale_factor : Real64
+    # 1.0 when updates_per_second==60, 60.0/70.0 when ups=70, etc.
+
     perspective_center : XY
     # The "origin" for 3D perspective and the vanishing point for polygons
     # parallel to the camera axis.  Reset to Display.center at the beginning
@@ -563,8 +569,9 @@ class Display [singleton]
       transform_modified = true
       return this
 
-    method render( true_size, viewport_size )
+    method render( true_size, viewport_size, updates_per_second )
       Display = this  # set the singleton reference to be this display
+      update_scale_factor = 60.0 / updates_per_second
       clipping_region = null
       clipping_region_stack.clear
 

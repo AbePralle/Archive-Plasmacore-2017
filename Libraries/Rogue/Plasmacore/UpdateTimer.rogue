@@ -3,37 +3,26 @@ module Plasmacore
 class UpdateTimer
   PROPERTIES
     previous_update_time = System.time : Real64
-    time_debt            : Real64
     first_update         = true
+    ticks                : Int32
 
   METHODS
     method tick->Logical
-      if (time_debt < 1.0/60.0)
-        if (time_debt >= 0) return false  # Just not time yet
-
-        # The clock got changed backwards
-        time_debt = 0
-
-      else
-        time_debt -= 1.0/60.0
-
-      endIf
-
+      if (ticks <= 0) return false
+      --ticks
       return true
 
     method update
+      local cur_time = System.time
+      local elapsed_time = (cur_time - previous_update_time).or_smaller( 1.0/10.0 )
       if (first_update)
         # Ensure we get at least one tick() the first time so that a View or State
         # gets its update() called before its first draw().
         first_update = false
-        previous_update_time = System.time
-        time_debt = 1.0/60.0
+        ticks = 1
       else
-        local cur_time = System.time
-        local elapsed_time = cur_time - previous_update_time
-        if (elapsed_time > 1.0/10.0) elapsed_time = 1.0/10.0
-        time_debt += elapsed_time
-        previous_update_time = cur_time
+        ticks = Int32( (elapsed_time * 60 + 0.5).floor ).or_larger( 1 )
       endIf
+      previous_update_time = cur_time
 endClass
 
