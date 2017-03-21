@@ -21,7 +21,7 @@ class UpdateTimer
         first_update = false
         ticks = 1
       else
-        ticks = Int32( (elapsed_time * 60 + 0.5).floor ).or_larger( 1 )
+        ticks = Int32( (elapsed_time * Display.updates_per_second + 0.5).floor ).or_larger( 1 )
       endIf
       previous_update_time = cur_time
 endClass

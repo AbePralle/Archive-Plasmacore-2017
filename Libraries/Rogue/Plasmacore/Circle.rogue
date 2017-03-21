@@ -19,17 +19,16 @@ class Circle( position:XY, radius:Real64 ) [compound]
     method contains( point:XY )->Logical
       return (point - position).magnitude_squared <= radius^2
 
-    method draw( color:Color, segments=(1.0/12.0):Real64 )->this
+    method draw( color:Color, segments=(1.0/4.0):Real64 )->this
       # Draws an outline of the given circle in the given color.
       #
       # Parameters
       #   color
       #     The color to draw the circle in.
       #
-      #   segments [default: (1.0/12.0)]
-      #     If whole - the number of segments.
-      #     If fractional -  the number of segments is dynamically determined
-      #     as this fraction of the circle's circumference.
+      #   segments [default: (1.0/4.0)]
+      #     If whole - the number of segments
+      #     If fractional -  segments *= circumference (1/8 is a rougher circle than 1/4)
       #
       if (segments < 1.0)
         local circ = radius * 2 * pi
@@ -49,10 +48,10 @@ class Circle( position:XY, radius:Real64 ) [compound]
 
       return this
 
-    method fill( color:Color )->this
-      return fill( Colors(color) )
+    method fill( color:Color, segments=(1.0/4.0):Real64 )->this
+      return fill( Colors(color), segments )
 
-    method fill( colors:Colors, segments=(1.0/12.0):Real64 )->this
+    method fill( colors:Colors, segments=(1.0/4.0):Real64 )->this
       # Fills the given circle with the given color or colors.
       # Can use Colors(inner,outer)
       #
@@ -60,11 +59,9 @@ class Circle( position:XY, radius:Real64 ) [compound]
       #   color
       #     The color to fill the circle with.
       #
-      #   segments [default: (1.0/12.0)]
-      #     If whole - the number of segments.
-      #     If fractional -  the number of segments is dynamically determined
-      #     as this fraction of the circle's circumference.
-      #
+      #   segments [default: (1.0/4.0)]
+      #     If whole - the number of segments
+      #     If fractional -  segments *= circumference (1/8 is a rougher circle than 1/4)
       if (colors.count == 2) colors = Colors( colors.b, colors.b, colors.a )
 
       if (segments < 1.0)
