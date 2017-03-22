@@ -137,9 +137,7 @@ class Plasmacore [essential singleton]
 
           local pos   = XY( m.int32("x"), m.int32("y") ) * scale
           local e = PointerEvent( type, pos, delta, index )
-          Pointer.position = e.position
-          if (e.is_press)       ++Pointer.press_count
-          elseIf (e.is_release) --Pointer.press_count
+          Pointer.on( e )
           display.handle( e )
         endFunction )
 
@@ -162,9 +160,7 @@ class Plasmacore [essential singleton]
           forEach (display in Plasmacore.displays)
             if (display.is_configured)
               local e = PointerEvent( type, pos*Display.size, XY(0,0), index )
-              Pointer.position = e.position
-              if (e.is_press)       ++Pointer.press_count
-              elseIf (e.is_release) --Pointer.press_count
+              Pointer.on( e )
               display.handle( e )
             endIf
           endForEach
