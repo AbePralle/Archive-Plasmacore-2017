@@ -129,7 +129,7 @@ class GGList : GGComponent
             # for the appropriate list item.
             local component = find( e )
             if (component)
-              component.handle( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index,e.id) ) # Press
+              component.handle( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index) ) # Press
               component.handle( e ) # Release
             endIf
           endIf

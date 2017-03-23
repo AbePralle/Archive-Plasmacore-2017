@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.7.7.2
+PLASMACORE_VERSION = v0.7.7.3
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -72,9 +72,6 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Libraries/AssetCompiler/Build
-
-clean_harfbuzz:
-	make -C Libraries/HarfBuzz clean
 
 clean_asset_compiler:
 	make -C Libraries/AssetCompiler clean

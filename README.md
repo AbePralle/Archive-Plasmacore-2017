@@ -57,6 +57,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 - [Display] Added `update_scale_factor` which will be 1.0 in most cases.  If `updates_per_second` were 120 then `update_scale_factor` would be 0.5 etc.
 - [Circle] `draw()` and `fill()` are now higher-resolution operations by default and create smooth circles on Retina displays.
 - [Pointer] Fleshed out Pointer class.  The positions of active presses are now tracked with `positions:XY[]`.  `position:XY` now reflects the position of the first active press (if one or more) or of the last active press (if no active presses).
+- [GGList] Removed vestigial reference to `PointerEvent.id`.
 
 ###v0.7.6 - March 20, 2017
 - [Display] Fixed initialization bug that had the transformation matrix slightly wrong on the first rendered frame.
