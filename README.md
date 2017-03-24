@@ -2,8 +2,8 @@
 
           | Current Release
 ----------|-----------------------
-Version   | v0.7.6
-Date      | March 20, 2017
+Version   | v0.7.7
+Date      | March 24, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -51,7 +51,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.7.7 - March 21, 2017
+###v0.7.7 - March 24, 2017
 - [UpdateTimer] Reworked the update mechanism to have a consistently smooth 60 FPS.
 - [Display] Added `updates_per_second` which will be 60 in most cases.  This reflects the fixed screen refresh rate and does not fluctuate over time.
 - [Display] Added `update_scale_factor` which will be 1.0 in most cases.  If `updates_per_second` were 120 then `update_scale_factor` would be 0.5 etc.
