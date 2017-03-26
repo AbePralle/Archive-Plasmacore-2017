@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.7.8 - March 26, 2017
+- [Update Cycle] Reworked update cycle regulator.  The `Display.on_render` message can now send a `refresh_rate` (default 60) parameter which is stored in `Display.refresh_rate`.  This is used in conjunction with `Display.updates_per_second` (default and recommended setting 60) to ensure the specified number of updates per second independent of the display refresh rate.
+
 ###v0.7.7 - March 24, 2017
 - [UpdateTimer] Reworked the update mechanism to have a consistently smooth 60 FPS.
 - [Display] Added `updates_per_second` which will be 60 in most cases.  This reflects the fixed screen refresh rate and does not fluctuate over time.

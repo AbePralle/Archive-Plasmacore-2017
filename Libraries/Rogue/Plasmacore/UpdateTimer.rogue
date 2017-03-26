@@ -4,12 +4,13 @@ class UpdateTimer
   PROPERTIES
     previous_update_time = System.time : Real64
     first_update         = true
-    ticks                : Int32
+    tick_debt            : Int32
 
   METHODS
     method tick->Logical
-      if (ticks <= 0) return false
-      --ticks
+      local refresh_rate = Display.refresh_rate
+      if (tick_debt < refresh_rate) return false
+      tick_debt -= refresh_rate
       return true
 
     method update
@@ -19,9 +20,10 @@ class UpdateTimer
         # Ensure we get at least one tick() the first time so that a View or State
         # gets its update() called before its first draw().
         first_update = false
-        ticks = 1
+        tick_debt += Display.refresh_rate
       else
-        ticks = Int32( (elapsed_time * Display.updates_per_second + 0.5).floor ).or_larger( 1 )
+        local ticks = Int32( (elapsed_time * Display.refresh_rate + 0.5).floor ).or_larger( 1 )
+        tick_debt += ticks * Display.updates_per_second
       endIf
       previous_update_time = cur_time
 endClass

@@ -110,9 +110,8 @@ class Plasmacore [essential singleton]
           else
             viewport_size = display_size
           endIf
-          local ups = m.int32( "updates_per_second" )
-          if (ups == 0) ups = 60
-          Display( m.string("display_name") ).render( display_size, viewport_size, ups )
+          local refresh_rate = m.int32( "refresh_rate", 60 )
+          Display( m.string("display_name") ).render( display_size, viewport_size, refresh_rate )
         endFunction )
 
       MessageManager.add_listener( "Display.on_key_event",
