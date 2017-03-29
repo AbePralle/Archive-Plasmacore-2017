@@ -23,8 +23,7 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
     method draw
       if (not lines.count and not Plasmacore.show_fps) return
 
-      local original_region = Display.clipping_region
-      Display.clipping_region = null
+      Display.push_clipping_region( null )
 
       if (not Display.overlay_log_font) Display.overlay_log_font = SystemFont.cloned.load
       local font = Display.overlay_log_font
@@ -54,7 +53,7 @@ class OverlayLog : PrintWriter<<output_buffer>> [essential singleton]
         y += font.height
       endForEach
 
-      Display.clipping_region = original_region
+      Display.pop_clipping_region
 
     method update
       if (timer.is_expired) lines.clear

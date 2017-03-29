@@ -2,12 +2,14 @@ module Plasmacore
 
 class Texture
   PROPERTIES
-    filepath      : String
-    id            : Int32    # id in loading display context
-    image_size    : XY       # In pixels
-    texture_size  : XY       # In pixels
-    uv_size       : XY       # (1,1) in most cases
-    is_opaque     : Logical
+    filepath         : String
+    id               : Int32    # id in loading display context
+    image_size       : XY       # In pixels
+    texture_size     : XY       # In pixels
+    uv_size          : XY       # (1,1) in most cases
+    is_opaque        : Logical
+
+    native "GLuint frame_buffer_id;"
 
   GLOBAL METHODS
     method create( name:String )->Texture
@@ -47,6 +49,38 @@ class Texture
 
     method init( bitmap:Bitmap )
       set( bitmap )
+
+    method init( width:Int32, height:Int32 )
+      # Creates an off-screen buffer / render target texture
+      image_size = XY( width, height )
+
+      local wp2 = width.to_power_of_two
+      local hp2 = height.to_power_of_two
+      texture_size = XY( wp2, hp2 )
+
+      native @|glGenFramebuffers( 1, &$this->frame_buffer_id );
+              |glBindFramebuffer( GL_FRAMEBUFFER, $this->frame_buffer_id );
+              |
+              |GLuint new_id;
+              |glGenTextures( 1, &new_id );
+              |glBindTexture( GL_TEXTURE_2D, new_id );
+              |$id = new_id;
+              |
+              |glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, $wp2, $hp2, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+              |glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, $id, 0 );
+              |
+              |if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER))
+              |{
+              |  printf( "Failed to create offscreen buffer.\n" );
+              |  glDeleteFramebuffers( 1, &$this->frame_buffer_id );
+              |  $this->frame_buffer_id = 0;
+              |}
+
+      # Restore the original render target
+      Display.configure_render_target
+
+    method frame_buffer_id->Int32
+      return native( "$this->frame_buffer_id" )->Int32
 
     method on_cleanup
       unload
@@ -117,6 +151,8 @@ class Texture
         Display.texture_list.remove( this )
         id = 0
       endIf
+
+      native @|if ($this->frame_buffer_id) glDeleteFramebuffers( 1, &$this->frame_buffer_id );
       return this
 
     method uv_height->Real64 [macro]

@@ -281,6 +281,9 @@ $endIf
 
     method operator^( value:Real64, v:XY )->XY
       return XY( value^v.x, value^v.y )
+
+    method zero->XY [macro]
+      XY(0,0)
 endClass
 
 augment Random

@@ -40,41 +40,14 @@ class Display [singleton]
     pointer_position   : XY
     pointer_exists     : Logical
 
-    size                : XY
-    true_size           : XY
-    viewport_size       : XY
-    target_display_size : XY?
-    display_scale       : Real64
-
     refresh_rate        = 60
     # Disclosed by the native layer - usually 60
 
     updates_per_second  = 60
     # Arbitrary - usually left at 60.  Determineds how often View/State on_update() is called.
 
-    perspective_center : XY
-    # The "origin" for 3D perspective and the vanishing point for polygons
-    # parallel to the camera axis.  Reset to Display.center at the beginning
-    # of every draw.
-
-    clipping_region       : Box?
-    clipping_region_stack = Box[]
-
     background_color = Color.BLACK : Color
 
-    projection_transform  : Matrix
-    transform             : Matrix
-    world_transform       : Matrix  # Combination of view and object transforms
-    view_transform        = Matrix.identity : Matrix
-    object_transform      = Matrix.identity : Matrix
-    view_transforms       = Matrix[]
-    object_transforms     = Matrix[]
-
-    transform_modified            : Logical
-    view_transform_modified       : Logical
-    object_transform_modified     : Logical
-
-    projection_mode   = ProjectionMode2DX()
     z                 = default_z : Real64
 
     custom_shader          : Shader
@@ -95,6 +68,12 @@ class Display [singleton]
     system_font  : Font
     default_font : Font
 
+    render_target         = RenderTarget()
+    default_render_target : RenderTarget
+    #render_target          : RenderTarget
+    #original_true_size     : XY
+    #original_viewport_size : XY
+
     native "GLuint position_buffer, color_buffer, uv_buffer;"
 
   GLOBAL METHODS
@@ -103,6 +82,8 @@ class Display [singleton]
 
   METHODS
     method init
+
+    method init_object
       vertex_positions.ensure_capacity( VERTEX_BUFFER_SIZE * 4 )
       vertex_uvs.ensure_capacity( VERTEX_BUFFER_SIZE * 2 )
       vertex_colors.ensure_capacity( VERTEX_BUFFER_SIZE )
@@ -116,14 +97,6 @@ class Display [singleton]
               |}
 
     method activate_view_and_state
-      if (not is_configured)
-        is_configured = true
-
-        native @|glGenBuffers(1, &$this->position_buffer);
-                |glGenBuffers(1, &$this->color_buffer);
-                |glGenBuffers(1, &$this->uv_buffer);
-      endIf
-
       if (not view) view = default_view_type.create_object<<View>>
       view.display = this
       view.state.view = view
@@ -202,12 +175,22 @@ class Display [singleton]
       return clear
 
     method clear_transforms
-      flush
-      object_transforms.clear
-      view_transforms.clear
-      view_transform_modified = true
-      object_transform_modified = true
-      transform_modified = true
+      render_target.clear_transforms
+
+    method configure_render_target
+      native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      #{
+      if (render_target)
+        local frame_buffer_id = render_target.texture.frame_buffer_id
+        local w = render_target.texture.texture_size.x
+        local h = render_target.texture.texture_size.y
+        native @|glBindFramebuffer( GL_FRAMEBUFFER, $frame_buffer_id );
+                |glBindTexture( GL_TEXTURE_2D, 0 );
+                |glViewport(0, 0, $w, $h );
+      else
+        native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      endIf
+      }#
 
     method define_texture( gl_id:Int32, bitmap:Bitmap, options:Int32 )->Int32
       if (not gl_id)
@@ -278,6 +261,9 @@ class Display [singleton]
 
       native @|GLuint texture_id = (GLuint) $gl_id;
               |glDeleteTextures( 1, &texture_id );
+
+    method display_scale->Real64
+      return render_target.display_scale
 
     method draw( box:Box, color:Int32, thickness=1:Int32 )
       draw( box, Color(color) )
@@ -508,89 +494,64 @@ class Display [singleton]
       }#
 
     method object_transform->Matrix
-      update_transform
-      return @object_transform
+      return render_target.update_transform.object_transform
 
     method world_transform->Matrix
-      update_transform
-      return @world_transform
+      return render_target.update_transform.world_transform
+
+    method perspective_center->XY
+      return render_target.perspective_center
 
     method pop_clipping_region->this
-      if (clipping_region_stack.count)
-        clipping_region = clipping_region_stack.remove_last
-      else
-        clipping_region = null
-      endIf
+      render_target.pop_clipping_region
       return this
 
     method pop_object_transform( n=1:Int32 )->this
-      forEach (1..n.or_smaller(object_transforms.count))
-        object_transforms.remove_last
-      endForEach
-      object_transform_modified = true
-      transform_modified = true
-      if (object_transforms.count) @object_transform = object_transforms.last
-      else                         @object_transform = Matrix.identity
+      render_target.pop_object_transform( n )
       return this
 
     method pop_view_transform( n=1:Int32 )->this
-      forEach (1..n)
-        if (view_transforms.count)
-          view_transforms.remove_last
-          view_transform_modified = true
-          transform_modified = true
-        endIf
-      endForEach
+      render_target.pop_view_transform( n )
       return this
 
-    method push_clipping_region( box:Box )->this
-      if (clipping_region.exists)
-        clipping_region_stack.add( clipping_region.value )
-        clipping_region = clipping_region.value & box
+      #{
+    method set_render_target( @render_target )
+      if (render_target)
+        flush
+        local sz = render_target.texture.texture_size
+        original_true_size = _true_size
+        original_viewport_size = _viewport_size
+        configure_size( sz, sz )
+        configure_render_target
+        clipping_region = clipping_region  # Reset clipping region
       else
-        clipping_region = box
+        clear_render_target
       endIf
+
+    method clear_render_target
+      @render_target = null
+      flush
+      native "glFlush();"
+      configure_size( original_true_size, original_viewport_size )
+      configure_render_target
+      clipping_region = clipping_region  # Reset clipping region
+      }#
+
+    method push_clipping_region( box:Box?, &replace )->this
+      render_target.push_clipping_region( box, replace )
       return this
 
     method push_object_transform( m:Matrix )->this
-      if (object_transforms.count)
-        object_transforms.add( object_transforms.first * m )
-      else
-        object_transforms.add( m )
-      endIf
-      @object_transform = object_transforms.last
-      object_transform_modified = true
-      transform_modified = true
+      render_target.push_object_transform( m )
       return this
 
     method push_view_transform( m:Matrix )->this
-      view_transforms.add( m )
-      view_transform_modified = true
-      transform_modified = true
+      render_target.push_view_transform( m )
       return this
 
-    method render( true_size, viewport_size, refresh_rate )
+    method render( _true_size:XY, _viewport_size:XY, refresh_rate )
       Display = this  # set the singleton reference to be this display
-      clipping_region = null
-      clipping_region_stack.clear
-
-      # Ensure viewport min/max ordering matches true size ordering
-      if ((true_size.x <= true_size.y) xor (viewport_size.x <= viewport_size.y))
-        viewport_size = XY( viewport_size.y, viewport_size.x )
-      endIf
-
-      clear_transforms
-
-      if (target_display_size.exists)
-        perspective_center = target_display_size.value / 2
-      else
-        perspective_center = true_size / 2
-      endIf
-
-      scale_to_fit( target_display_size )
-
-      <<ui_hook>>
-
+      render_target.configure( _true_size, _viewport_size )
       activate_view_and_state
 
       update_timer.update
@@ -611,6 +572,16 @@ class Display [singleton]
 
     method render_2dx
       if (not vertex_count) return
+
+      configure_render_target
+
+      if (not is_configured)
+        is_configured = true
+
+        native @|glGenBuffers(1, &$this->position_buffer);
+                |glGenBuffers(1, &$this->color_buffer);
+                |glGenBuffers(1, &$this->uv_buffer);
+      endIf
 
       local render_mode = active_render_mode
 
@@ -634,9 +605,11 @@ class Display [singleton]
         return
       endIf
 
+      local vp_size = viewport_size
+
       native @|glUseProgram( $shader->program_id );
 
-      native @|glViewport( 0, 0, (int)$viewport_size.x, (int)$viewport_size.y );
+      native @|glViewport( 0, 0, (int)$vp_size.x, (int)$vp_size.y );
               |glEnable( GL_CULL_FACE );
               |glFrontFace( GL_CCW );
               |glCullFace( GL_BACK );
@@ -761,52 +734,12 @@ class Display [singleton]
     method scale_to_fit( w:Int32, h:Int32 )->this
       return scale_to_fit( XY(w,h) )
 
-    method scale_to_fit( @target_display_size )->this
-      flush
-      if (target_display_size.exists)
-        display_scale = (target_display_size.value / true_size).max
-        size = true_size * display_scale
-      else
-        display_scale = 1.0
-        size = true_size
-      endIf
-      projection_mode.update
+    method scale_to_fit( target_display_size:XY )->this
+      render_target.scale_to_fit( target_display_size )
       return this
 
     method set_clipping_region( new_clipping_region:Box? )->this
-      if (new_clipping_region.exists == clipping_region.exists)
-        # Avoid rendering cached content if the clipping region is unchanged
-        if (not new_clipping_region.exists) return this
-
-        if (new_clipping_region.value == clipping_region.value) return this
-      endIf
-
-      flush
-      @clipping_region = new_clipping_region
-
-      if (clipping_region.exists)
-        local box = (clipping_region.value & Display.bounds)
-        if (box.exists) @clipping_region = box
-        else            @clipping_region = null
-      endIf
-
-      if (clipping_region.exists)
-        local scale = viewport_size / size
-        local box = clipping_region.value
-        local pos = box.position * scale
-        local size = box.size * scale
-
-        local w = size.x->Int32
-        local h = size.y->Int32
-        local x = pos.x->Int32
-        local y = (viewport_size.y - (pos.y + h))->Int32
-
-        native @|glEnable( GL_SCISSOR_TEST );
-                |glScissor( $x, $y, $w, $h );
-      else
-        native @|glDisable( GL_SCISSOR_TEST );
-      endIf
-
+      render_target.set_clipping_region( new_clipping_region )
       return this
 
     method set_primitive_type( primitive_type:Int32 )->this
@@ -816,18 +749,17 @@ class Display [singleton]
       return this
 
     method set_perspective_center( new_center:XY )->this
-      if (new_center != perspective_center)
-        @perspective_center = new_center
-        projection_mode.update
-      endIf
+      render_target.set_perspective_center( new_center )
       return this
 
-    method set_projection_mode( @projection_mode )->this
-      projection_mode.update
+    method set_projection_mode( _projection_mode:ProjectionMode )->this
+      render_target.projection_mode = _projection_mode
+      render_target.projection_mode.update
       return this
 
-    method set_projection_transform( @projection_transform )->this
-      transform_modified = true
+    method set_projection_transform( _projection_transform:Matrix )->this
+      render_target.projection_transform = _projection_transform
+      render_target.transform_modified = true
       return this
 
     method set_render_mode( render_mode:RenderMode, shader=null:Shader )->this
@@ -852,13 +784,15 @@ class Display [singleton]
       view.display = this
       return this
 
+    method size->XY
+      return render_target.size
+
     method state->State [macro]
       # Obtains the state of this Display's current view.
       this.view.state
 
     method transform->Matrix
-      update_transform
-      return @transform
+      return render_target.update_transform.transform
 
     method transform( corners:Corners )->Corners<<XYZW>>
       local t = transform
@@ -882,46 +816,17 @@ class Display [singleton]
     method true_height->Int32 [macro]
       this.true_size.y->Int32
 
+    method true_size->XY [macro]
+      render_target.true_size
+
     method true_width->Int32 [macro]
       this.true_size.x->Int32
 
-    method update_transform
-      if (not transform_modified) return
-
-      if (view_transform_modified or object_transform_modified)
-        object_transform_modified = false
-
-        if (view_transform_modified)
-          view_transform_modified = false
-          if (view_transforms.count)
-            @view_transform = view_transforms.last
-            forEach (i in view_transforms.count-2 downTo 0)
-              @view_transform = @view_transform * view_transforms[i]
-            endForEach
-          endIf
-        endIf
-
-        if (view_transforms.count)
-          if (object_transforms.count)
-            world_transform = @view_transform * @object_transform
-          else
-            world_transform = @view_transform
-          endIf
-        else
-          if (object_transforms.count)
-            world_transform = @object_transform
-          else
-            world_transform = Matrix.identity
-          endIf
-        endIf
-      endIf
-
-      transform = projection_transform * @world_transform
-      transform_modified = false
-
     method view_transform->Matrix
-      update_transform
-      return @view_transform
+      return render_target.update_transform.view_transform
+
+    method viewport_size->XY [macro]
+      render_target.viewport_size
 
     method width->Int32 [macro]
       this.size.x->Int32

@@ -1,0 +1,17 @@
+using Plasmacore
+
+class Canvas : Image
+  PROPERTIES
+    texture : Texture
+
+  METHODS
+    method init( w:Int32, h:Int32 )
+      texture = Texture( w, h )
+      prior.init( texture )
+
+endClass
+
+#{
+      native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+              |glBindFramebuffer( GL_FRAMEBUFFER, $frame_buffer_id );
+}#

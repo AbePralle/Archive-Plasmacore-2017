@@ -1,0 +1,219 @@
+using Plasmacore
+
+class RenderTarget
+  PROPERTIES
+    size                  : XY
+    true_size             : XY
+    viewport_size         : XY
+
+    target_display_size : XY?
+    display_scale       : Real64
+
+    perspective_center : XY
+    # The "origin" for 3D perspective and the vanishing point for polygons
+    # parallel to the camera axis.  Automatically reset to Display.center at
+    # the beginning of every draw.
+
+    projection_mode   = ProjectionMode2DX() : ProjectionMode
+
+    clipping_region       : Box?
+    clipping_region_stack = Box?[]
+
+    projection_transform  : Matrix
+    transform             : Matrix
+    world_transform       : Matrix  # Combination of view and object transforms
+    view_transform        = Matrix.identity : Matrix
+    object_transform      = Matrix.identity : Matrix
+    view_transforms       = Matrix[]
+    object_transforms     = Matrix[]
+
+    transform_modified        : Logical
+    view_transform_modified   : Logical
+    object_transform_modified : Logical
+
+
+    #native "GLuint render_target_id;"
+
+  METHODS
+    method init
+
+    method clear_transforms
+      Display.flush
+      object_transforms.clear
+      view_transforms.clear
+      view_transform_modified = true
+      object_transform_modified = true
+      transform_modified = true
+
+    method configure( true_size, viewport_size )
+      clipping_region = null
+      clipping_region_stack.clear
+
+      # Ensure viewport min/max ordering matches true size ordering
+      if ((true_size.x <= true_size.y) xor (viewport_size.x <= viewport_size.y))
+        viewport_size = XY( viewport_size.y, viewport_size.x )
+      endIf
+
+      if (target_display_size.exists)
+        perspective_center = target_display_size.value / 2
+      else
+        perspective_center = true_size / 2
+      endIf
+
+      clear_transforms
+      scale_to_fit( target_display_size )
+      <<ui_hook>>
+
+    method pop_clipping_region
+      if (clipping_region_stack.count)
+        clipping_region = clipping_region_stack.remove_last
+      else
+        clipping_region = null
+      endIf
+
+    method push_clipping_region( box:Box?, &replace )
+      clipping_region_stack.add( clipping_region )
+
+      if (replace and clipping_region.exists and box.exists)
+        clipping_region = clipping_region.value & box.value
+      else
+        clipping_region = box
+      endIf
+
+    method push_object_transform( m:Matrix )
+      if (object_transforms.count)
+        object_transforms.add( object_transforms.first * m )
+      else
+        object_transforms.add( m )
+      endIf
+      @object_transform = object_transforms.last
+      object_transform_modified = true
+      transform_modified = true
+
+    method push_view_transform( m:Matrix )
+      view_transforms.add( m )
+      view_transform_modified = true
+      transform_modified = true
+
+    method pop_object_transform( n=1:Int32 )
+      forEach (1..n.or_smaller(object_transforms.count))
+        object_transforms.remove_last
+      endForEach
+      object_transform_modified = true
+      transform_modified = true
+      if (object_transforms.count) object_transform = object_transforms.last
+      else                         object_transform = Matrix.identity
+
+    method pop_view_transform( n=1:Int32 )
+      forEach (1..n)
+        if (view_transforms.count)
+          view_transforms.remove_last
+          view_transform_modified = true
+          transform_modified = true
+        endIf
+      endForEach
+
+    method scale_to_fit( w:Int32, h:Int32 )
+      scale_to_fit( XY(w,h) )
+
+    method scale_to_fit( @target_display_size )
+      local new_display_scale : Real64
+      local new_size          : XY
+      if (target_display_size.exists)
+        new_display_scale = (target_display_size.value / true_size).max
+        new_size = true_size * new_display_scale
+      else
+        new_display_scale = 1.0
+        new_size = true_size
+      endIf
+      if (new_display_scale != display_scale or new_size != size)
+        Display.flush
+        display_scale = new_display_scale
+        size = new_size
+        projection_mode.update
+      endIf
+
+    method set_clipping_region( new_clipping_region:Box? )
+      contingent
+        # Avoid rendering cached content if the clipping region is unchanged
+        sufficient (new_clipping_region.exists != clipping_region.exists)
+
+        # Existing and new clipping region are both null or both non-null.
+
+        # If the CR was null before and is still null, no need to flush the render buffer
+        necessary (new_clipping_region.exists)
+
+        # Was non-null before and is non-null now; did the value change?
+        necessary (new_clipping_region.value != clipping_region.value)
+
+      satisfied
+        Display.flush
+      endContingent
+
+      @clipping_region = new_clipping_region
+
+      if (clipping_region.exists)
+        local box = (clipping_region.value & Display.bounds)
+        if (box.exists) @clipping_region = box
+        else            @clipping_region = null
+      endIf
+
+      if (clipping_region.exists)
+        local scale = viewport_size / size
+        local box = clipping_region.value
+        local pos = box.position * scale
+        local size = box.size * scale
+
+        local w = size.x->Int32
+        local h = size.y->Int32
+        local x = pos.x->Int32
+        local y = (viewport_size.y - (pos.y + h))->Int32
+
+        native @|glEnable( GL_SCISSOR_TEST );
+                |glScissor( $x, $y, $w, $h );
+      else
+        native @|glDisable( GL_SCISSOR_TEST );
+      endIf
+
+    method set_perspective_center( new_center:XY )
+      if (new_center != perspective_center)
+        @perspective_center = new_center
+        projection_mode.update
+      endIf
+
+    method update_transform->this
+      if (not transform_modified) return this
+
+      if (view_transform_modified or object_transform_modified)
+        object_transform_modified = false
+
+        if (view_transform_modified)
+          view_transform_modified = false
+          if (view_transforms.count)
+            view_transform = view_transforms.last
+            forEach (i in view_transforms.count-2 downTo 0)
+              view_transform = view_transform * view_transforms[i]
+            endForEach
+          endIf
+        endIf
+
+        if (view_transforms.count)
+          if (object_transforms.count)
+            world_transform = view_transform * object_transform
+          else
+            world_transform = view_transform
+          endIf
+        else
+          if (object_transforms.count)
+            world_transform = object_transform
+          else
+            world_transform = Matrix.identity
+          endIf
+        endIf
+      endIf
+
+      transform = projection_transform * world_transform
+      transform_modified = false
+      return this
+
+endClass

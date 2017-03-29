@@ -24,12 +24,12 @@ endClass
 class InitialState : State<<MainView>>
   PROPERTIES
     angle = Degrees(0)
+    #render_target : RenderTarget
 
   METHODS
     method on_start
       # Called when this state becomes the active state
-      println "Hello World"
-      Message( "Testing" ).set( "alpha", true ).set( "beta", "omega" ).send
+      #println "Hello World"
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -45,13 +45,27 @@ class InitialState : State<<MainView>>
 
     method on_draw
       # This happens before the current view's on_draw()
-      Display.clear( Color.BLUE )
-      DefaultFont.anchor = Anchor.CENTER
-      DefaultFont.draw( "Hello World", Display.center )
+      #Display.clear( Color.BLUE )
+      #DefaultFont.anchor = Anchor.CENTER
+      #DefaultFont.draw( "Hello World", Display.center )
 
-      (Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).fill( Color.WHITE )
-      (Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).draw( Color.GREEN )
+      #{
+      if (not render_target)
+        render_target = RenderTarget( 512, 512 )
+        Display.set_render_target( render_target )
+        Display.clear( Color.RED )
+        Box(0.5,511,1,1).fill( Color.YELLOW )
+        SystemFont.anchor = Anchor.TOP_LEFT
+        SystemFont.draw( "Testing", XY(25,25) )
+        Display.clear_render_target
+      endIf
+      }#
+
+      #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).fill( Color.WHITE )
+      #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).draw( Color.GREEN )
       ++angle
+
+      #render_target.draw( Display.center )
 
     method on_resize
       # Called when the Display.size changes
