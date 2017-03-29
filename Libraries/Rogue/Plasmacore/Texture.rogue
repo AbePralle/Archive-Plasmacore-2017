@@ -58,7 +58,10 @@ class Texture
       local hp2 = height.to_power_of_two
       texture_size = XY( wp2, hp2 )
 
-      native @|glGenFramebuffers( 1, &$this->frame_buffer_id );
+      native @|GLint original_framebuffer_id;
+              |glGetIntegerv( GL_FRAMEBUFFER_BINDING, &original_framebuffer_id );
+              |
+              |glGenFramebuffers( 1, &$this->frame_buffer_id );
               |glBindFramebuffer( GL_FRAMEBUFFER, $this->frame_buffer_id );
               |
               |GLuint new_id;
@@ -75,9 +78,8 @@ class Texture
               |  glDeleteFramebuffers( 1, &$this->frame_buffer_id );
               |  $this->frame_buffer_id = 0;
               |}
-
-      # Restore the original render target
-      Display.configure_render_target
+              |
+              |glBindFramebuffer( GL_FRAMEBUFFER, original_framebuffer_id );
 
     method frame_buffer_id->Int32
       return native( "$this->frame_buffer_id" )->Int32

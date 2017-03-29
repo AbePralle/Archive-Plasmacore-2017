@@ -31,8 +31,8 @@ class RenderTarget
     view_transform_modified   : Logical
     object_transform_modified : Logical
 
-
-    #native "GLuint render_target_id;"
+    is_id_configured          : Logical
+    native "GLint gl_id;"
 
   METHODS
     method init
@@ -46,6 +46,14 @@ class RenderTarget
       transform_modified = true
 
     method configure( true_size, viewport_size )
+      if (not is_id_configured)
+        is_id_configured = true
+        native @|glGetIntegerv( GL_FRAMEBUFFER_BINDING, &$this->gl_id );
+                |printf( "Default Framebuffer ID: %d\n", $this->gl_id );
+      endIf
+
+      native @|glBindFramebuffer( GL_FRAMEBUFFER, $this->gl_id );
+
       clipping_region = null
       clipping_region_stack.clear
 

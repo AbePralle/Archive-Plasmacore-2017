@@ -68,8 +68,9 @@ class Display [singleton]
     system_font  : Font
     default_font : Font
 
-    render_target         = RenderTarget()
-    default_render_target : RenderTarget
+    default_render_target = RenderTarget()
+    render_target         = default_render_target : RenderTarget
+
     #render_target          : RenderTarget
     #original_true_size     : XY
     #original_viewport_size : XY
@@ -177,8 +178,6 @@ class Display [singleton]
     method clear_transforms
       render_target.clear_transforms
 
-    method configure_render_target
-      native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
       #{
       if (render_target)
         local frame_buffer_id = render_target.texture.frame_buffer_id
@@ -473,26 +472,6 @@ class Display [singleton]
     method is_portrait->Logical
       return (width <= height)
 
-      #{
-    method image_group( group_name:String )->ImageGroup
-      # Finds existing image group if already loaded
-      local group = image_group_lookup[ group_name ]
-      if (group) return group
-
-      local info = Plasmacore.find_image_group_info( group_name )
-      if (info) group = ImageGroup( info )
-
-      # Return a dummy group on error
-      if (not group)
-        println "Image Group not found: " + group_name
-        group = ImageGroup( @{} )
-      endIf
-
-      image_group_lookup[ group_name ] = group
-      image_group_list.add( group )
-      return group
-      }#
-
     method object_transform->Matrix
       return render_target.update_transform.object_transform
 
@@ -572,8 +551,6 @@ class Display [singleton]
 
     method render_2dx
       if (not vertex_count) return
-
-      configure_render_target
 
       if (not is_configured)
         is_configured = true
