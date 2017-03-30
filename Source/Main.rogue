@@ -24,7 +24,7 @@ endClass
 class InitialState : State<<MainView>>
   PROPERTIES
     angle = Degrees(0)
-    #render_target : RenderTarget
+    canvas = Canvas(33,33)
 
   METHODS
     method on_start
@@ -45,27 +45,26 @@ class InitialState : State<<MainView>>
 
     method on_draw
       # This happens before the current view's on_draw()
-      #Display.clear( Color.BLUE )
+      Display.clear( Color.BLUE )
+      Display.bounds.cropped(32).fill( Color.GREEN )
       #DefaultFont.anchor = Anchor.CENTER
       #DefaultFont.draw( "Hello World", Display.center )
 
-      #{
-      if (not render_target)
-        render_target = RenderTarget( 512, 512 )
-        Display.set_render_target( render_target )
+      if (canvas.is_blank)
+        Display.set_render_target( canvas )
         Display.clear( Color.RED )
-        Box(0.5,511,1,1).fill( Color.YELLOW )
-        SystemFont.anchor = Anchor.TOP_LEFT
-        SystemFont.draw( "Testing", XY(25,25) )
-        Display.clear_render_target
+        Box(0,0,32,32).fill( Color.YELLOW )
+        #Box(0.5,511,1,1).fill( Color.YELLOW )
+        SystemFont.anchor = Anchor.CENTER
+        SystemFont.draw( "Testing", Display.center )
+        Display.remove_render_target
       endIf
-      }#
 
       #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).fill( Color.WHITE )
       #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).draw( Color.GREEN )
       ++angle
 
-      #render_target.draw( Display.center )
+      canvas.draw( Display.center )
 
     method on_resize
       # Called when the Display.size changes

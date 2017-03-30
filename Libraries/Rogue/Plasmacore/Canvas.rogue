@@ -2,16 +2,26 @@ using Plasmacore
 
 class Canvas : Image
   PROPERTIES
-    texture : Texture
+    texture       : Texture
+    render_target : RenderTarget
 
   METHODS
     method init( w:Int32, h:Int32 )
-      texture = Texture( w, h )
-      prior.init( texture )
+      # Placeholder values
+      data = ColorFillImageData
+      original_size = XY(w,h)
+      size = original_size
+
+    method is_blank->Logical
+      return (texture is null)
+
+    method render_target->RenderTarget
+      if (not texture)
+        texture = Texture( this.size )
+        init( texture )
+      endIf
+      if (not @render_target) render_target = RenderTarget( texture.render_target_id )
+      return @render_target
 
 endClass
 
-#{
-      native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-              |glBindFramebuffer( GL_FRAMEBUFFER, $frame_buffer_id );
-}#

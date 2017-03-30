@@ -31,11 +31,17 @@ class RenderTarget
     view_transform_modified   : Logical
     object_transform_modified : Logical
 
+    is_offscreen          : Logical
+
     is_id_configured          : Logical
-    native "GLint gl_id;"
+    render_target_id          : Int32
 
   METHODS
     method init
+
+    method init( render_target_id )
+      is_id_configured = true
+      is_offscreen = true
 
     method clear_transforms
       Display.flush
@@ -45,14 +51,19 @@ class RenderTarget
       object_transform_modified = true
       transform_modified = true
 
+    method configure( true_size )
+      configure( true_size, true_size )
+
     method configure( true_size, viewport_size )
       if (not is_id_configured)
         is_id_configured = true
-        native @|glGetIntegerv( GL_FRAMEBUFFER_BINDING, &$this->gl_id );
-                |printf( "Default Framebuffer ID: %d\n", $this->gl_id );
+        native @|GLint default_id;
+                |glGetIntegerv( GL_FRAMEBUFFER_BINDING, &default_id );
+                |printf( "Default Framebuffer ID: %d\n", default_id );
+                |$this->render_target_id = (RogueInt32) default_id;
       endIf
 
-      native @|glBindFramebuffer( GL_FRAMEBUFFER, $this->gl_id );
+      native @|glBindFramebuffer( GL_FRAMEBUFFER, $this->render_target_id );
 
       clipping_region = null
       clipping_region_stack.clear

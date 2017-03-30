@@ -71,10 +71,6 @@ class Display [singleton]
     default_render_target = RenderTarget()
     render_target         = default_render_target : RenderTarget
 
-    #render_target          : RenderTarget
-    #original_true_size     : XY
-    #original_viewport_size : XY
-
     native "GLuint position_buffer, color_buffer, uv_buffer;"
 
   GLOBAL METHODS
@@ -190,6 +186,9 @@ class Display [singleton]
         native @|glBindFramebuffer( GL_FRAMEBUFFER, 0 );
       endIf
       }#
+
+    method clipping_region->Box?
+      return render_target.clipping_region
 
     method define_texture( gl_id:Int32, bitmap:Bitmap, options:Int32 )->Int32
       if (not gl_id)
@@ -472,6 +471,9 @@ class Display [singleton]
     method is_portrait->Logical
       return (width <= height)
 
+    method is_rendering_offscreen->Logical
+      return (render_target is not default_render_target)
+
     method object_transform->Matrix
       return render_target.update_transform.object_transform
 
@@ -493,28 +495,21 @@ class Display [singleton]
       render_target.pop_view_transform( n )
       return this
 
-      #{
-    method set_render_target( @render_target )
-      if (render_target)
+    method set_render_target( canvas:Canvas )
+      if (canvas)
         flush
-        local sz = render_target.texture.texture_size
-        original_true_size = _true_size
-        original_viewport_size = _viewport_size
-        configure_size( sz, sz )
-        configure_render_target
+        @render_target = canvas.render_target
+        render_target.configure( canvas.texture.image_size )
         clipping_region = clipping_region  # Reset clipping region
       else
-        clear_render_target
+        remove_render_target
       endIf
 
-    method clear_render_target
-      @render_target = null
+    method remove_render_target
       flush
       native "glFlush();"
-      configure_size( original_true_size, original_viewport_size )
-      configure_render_target
+      @render_target = default_render_target
       clipping_region = clipping_region  # Reset clipping region
-      }#
 
     method push_clipping_region( box:Box?, &replace )->this
       render_target.push_clipping_region( box, replace )
@@ -585,11 +580,16 @@ class Display [singleton]
       local vp_size = viewport_size
 
       native @|glUseProgram( $shader->program_id );
-
-      native @|glViewport( 0, 0, (int)$vp_size.x, (int)$vp_size.y );
+              |
+              |glViewport( 0, 0, (int)$vp_size.x, (int)$vp_size.y );
               |glEnable( GL_CULL_FACE );
-              |glFrontFace( GL_CCW );
               |glCullFace( GL_BACK );
+
+      if (Display.is_rendering_offscreen)
+        native @|glFrontFace( GL_CW );
+      else
+        native @|glFrontFace( GL_CCW );
+      endIf
 
       if (render_mode.is_blended)
         local gl_source_blend = 0
