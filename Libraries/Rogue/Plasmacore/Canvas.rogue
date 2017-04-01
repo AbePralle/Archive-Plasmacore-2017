@@ -12,6 +12,9 @@ class Canvas : Image
       original_size = XY(w,h)
       size = original_size
 
+    method init( size )
+      init( size.x, size.y )
+
     method is_blank->Logical
       return (texture is null)
 
