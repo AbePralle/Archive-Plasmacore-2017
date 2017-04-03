@@ -51,6 +51,9 @@ class RenderTarget
       object_transform_modified = true
       transform_modified = true
 
+    method activate
+      native @|glBindFramebuffer( GL_FRAMEBUFFER, $this->render_target_id );
+
     method configure( true_size )
       configure( true_size, true_size )
 
@@ -63,7 +66,7 @@ class RenderTarget
                 |$this->render_target_id = (RogueInt32) default_id;
       endIf
 
-      native @|glBindFramebuffer( GL_FRAMEBUFFER, $this->render_target_id );
+      activate
 
       clipping_region = null
       clipping_region_stack.clear

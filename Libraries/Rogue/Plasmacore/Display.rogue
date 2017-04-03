@@ -509,6 +509,7 @@ class Display [singleton]
       flush
       native "glFlush();"
       @render_target = default_render_target
+      @render_target.activate
       clipping_region = clipping_region  # Reset clipping region
 
     method push_clipping_region( box:Box?, &replace )->this
