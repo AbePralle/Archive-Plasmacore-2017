@@ -156,15 +156,12 @@ class Display [singleton]
       (size/2)
 
     method clear->this
-      native "int gl_flags = 0;"
-      if (background_color.argb)
-        native "gl_flags |= GL_COLOR_BUFFER_BIT;"
-        native @|int c = $background_color.argb;
-                |gl_flags |= GL_COLOR_BUFFER_BIT;
-                |glClearColor( ((c>>16)&255)/255.0f, ((c>>8)&255)/255.0f, (c&255)/255.0f, ((c>>24)&255)/255.0f );
-      endIf
+      native "int gl_flags = GL_COLOR_BUFFER_BIT;"
+      native @|int c = $background_color.argb;
+              |gl_flags |= GL_COLOR_BUFFER_BIT;
+              |glClearColor( ((c>>16)&255)/255.0f, ((c>>8)&255)/255.0f, (c&255)/255.0f, ((c>>24)&255)/255.0f );
 
-      native "if (gl_flags) glClear( gl_flags );"
+      native "glClear( gl_flags );"
 
       return this
 
