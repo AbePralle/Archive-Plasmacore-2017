@@ -1,6 +1,6 @@
 # Plasmacore
 
-          | Current Release
+Info      | Current Release
 ----------|-----------------------
 Version   | v0.7.7
 Date      | March 24, 2017
