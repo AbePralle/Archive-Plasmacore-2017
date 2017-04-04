@@ -30,7 +30,7 @@ class Box( position:XY, size:XY ) [compound]
         return Box( value//x->Real64, value//y->Real64, value//width->Real64, value//height->Real64 )
       endIf
 
-    method from_corners( top_left:XY, bottom_right:XY )->Box
+    method from_quad( top_left:XY, bottom_right:XY )->Box
       return Box( top_left, bottom_right - top_left )
 
   METHODS
@@ -103,16 +103,16 @@ $endIf
 
 $if (not "Console")
     method intersects( circle:Circle )->Logical
-      return this->Corners.intersects( circle )
+      return this->Quad.intersects( circle )
 
-    method intersects( quad:Corners )->Logical
-      return this->Corners.intersects( quad )
+    method intersects( quad:Quad )->Logical
+      return this->Quad.intersects( quad )
 
     method intersects( line:Line )->Logical
-      return this->Corners.intersects( line )
+      return this->Quad.intersects( line )
 
     method intersects( triangle:Triangle )->Logical
-      return this->Corners.intersects( triangle )
+      return this->Quad.intersects( triangle )
 $endIf
 
     method operator==( other:Box )->Logical
@@ -190,19 +190,19 @@ $endIf
       return Box( position - anchor.position * size, size )
 
 $if (not "Console")
-    method rotated( angle:Degrees )->Corners [macro]
+    method rotated( angle:Degrees )->Quad [macro]
       this.rotated( angle->Radians )
 
-    method rotated( angle:Radians )->Corners [macro]
-      this->Corners.rotated( angle )
+    method rotated( angle:Radians )->Quad [macro]
+      this->Quad.rotated( angle )
 $endIf
 
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
 
 $if (not "Console")
-    method transform( m:Matrix )->Corners
-      return Corners(
+    method transform( m:Matrix )->Quad
+      return Quad(
         m * top_left,
         m * top_right,
         m * bottom_left,
@@ -212,8 +212,8 @@ $if (not "Console")
     method transformed( m:Matrix )->Box
       return transform( m )->Box
 
-    method to->Corners
-      return Corners( this )
+    method to->Quad
+      return Quad( this )
 $endIf
 
     method to->String

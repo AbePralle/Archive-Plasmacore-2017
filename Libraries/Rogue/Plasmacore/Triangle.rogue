@@ -42,14 +42,14 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       return this
 
     method intersects( box:Box )->Logical
-      return box->Corners.intersects( this )
+      return box->Quad.intersects( this )
 
     method intersects( circle:Circle )->Logical
       if (Line(a,b).intersects(circle)) return true
       if (Line(b,c).intersects(circle)) return true
       return (Line(a,c).intersects(circle))
 
-    method intersects( quad:Corners )->Logical
+    method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
     method intersects( line:Line )->Logical

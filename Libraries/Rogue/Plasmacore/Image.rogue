@@ -453,13 +453,13 @@ class ColorFillImageData : ImageData [singleton]
 
       local w = size.x
       local h = size.y
-      local corners = Corners<<XYZW>>(
+      local quad = Quad<<XYZW>>(
         transform * XYZ( 0, 0, 0 ),
         transform * XYZ( w, 0, 0 ),
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.fill_solid_quad( corners, image.colors.with_opacity(image.opacity), image.selected_render_mode, image.selected_shader )
+      Display.fill_solid_quad( quad, image.colors.with_opacity(image.opacity), image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
@@ -502,14 +502,14 @@ class TextureImageData : ImageData
 
       local w = size.x
       local h = size.y
-      local corners = Corners<<XYZW>>(
+      local quad = Quad<<XYZW>>(
         transform * XYZ( 0, 0, 0 ),
         transform * XYZ( w, 0, 0 ),
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
-      Display.fill_textured_quad( texture, corners, image.colors.with_opacity(image.opacity),
-        Corners( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
+      Display.fill_textured_quad( texture, quad, image.colors.with_opacity(image.opacity),
+        Quad( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
         image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform

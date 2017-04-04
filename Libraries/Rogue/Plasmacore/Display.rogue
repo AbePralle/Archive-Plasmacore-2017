@@ -301,7 +301,7 @@ class Display [singleton]
       fill( box, Colors(color) )
 
     method fill( box:Box, colors:Colors )
-      fill_solid_quad( transform(Corners(box)), colors,
+      fill_solid_quad( transform(Quad(box)), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
     method fill( triangle:Triangle, color:Color )
@@ -311,37 +311,37 @@ class Display [singleton]
       fill_solid_triangle( transform(triangle), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
-    method fill_solid_quad( corners:Corners<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
+    method fill_solid_quad( quad:Quad<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 6 )
 
-      vertex_positions.add( corners.a.x )
-      vertex_positions.add( corners.a.y )
-      vertex_positions.add( corners.a.z )
-      vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
-      vertex_positions.add( corners.b.x )
-      vertex_positions.add( corners.b.y )
-      vertex_positions.add( corners.b.z )
-      vertex_positions.add( corners.b.w )
+      vertex_positions.add( quad.a.x )
+      vertex_positions.add( quad.a.y )
+      vertex_positions.add( quad.a.z )
+      vertex_positions.add( quad.a.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
+      vertex_positions.add( quad.b.x )
+      vertex_positions.add( quad.b.y )
+      vertex_positions.add( quad.b.z )
+      vertex_positions.add( quad.b.w )
 
-      vertex_positions.add( corners.a.x )
-      vertex_positions.add( corners.a.y )
-      vertex_positions.add( corners.a.z )
-      vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.d.x )
-      vertex_positions.add( corners.d.y )
-      vertex_positions.add( corners.d.z )
-      vertex_positions.add( corners.d.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
+      vertex_positions.add( quad.a.x )
+      vertex_positions.add( quad.a.y )
+      vertex_positions.add( quad.a.z )
+      vertex_positions.add( quad.a.w )
+      vertex_positions.add( quad.d.x )
+      vertex_positions.add( quad.d.y )
+      vertex_positions.add( quad.d.z )
+      vertex_positions.add( quad.d.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
 
       vertex_colors.add( colors.a.argb )
       vertex_colors.add( colors.c.argb )
@@ -374,9 +374,9 @@ class Display [singleton]
       vertex_colors.add( colors.b.argb )
 
     method fill_textured_quad( texture:Texture,
-        corners:Corners<<XYZW>>,
+        quad:Quad<<XYZW>>,
         colors:Colors,
-        uv:Corners,
+        uv:Quad,
         render_mode:RenderMode,
         shader:Shader )
 
@@ -386,31 +386,31 @@ class Display [singleton]
 
       reserve_vertices( 6 )
 
-      vertex_positions.add( corners.a.x )
-      vertex_positions.add( corners.a.y )
-      vertex_positions.add( corners.a.z )
-      vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
-      vertex_positions.add( corners.b.x )
-      vertex_positions.add( corners.b.y )
-      vertex_positions.add( corners.b.z )
-      vertex_positions.add( corners.b.w )
+      vertex_positions.add( quad.a.x )
+      vertex_positions.add( quad.a.y )
+      vertex_positions.add( quad.a.z )
+      vertex_positions.add( quad.a.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
+      vertex_positions.add( quad.b.x )
+      vertex_positions.add( quad.b.y )
+      vertex_positions.add( quad.b.z )
+      vertex_positions.add( quad.b.w )
 
-      vertex_positions.add( corners.a.x )
-      vertex_positions.add( corners.a.y )
-      vertex_positions.add( corners.a.z )
-      vertex_positions.add( corners.a.w )
-      vertex_positions.add( corners.d.x )
-      vertex_positions.add( corners.d.y )
-      vertex_positions.add( corners.d.z )
-      vertex_positions.add( corners.d.w )
-      vertex_positions.add( corners.c.x )
-      vertex_positions.add( corners.c.y )
-      vertex_positions.add( corners.c.z )
-      vertex_positions.add( corners.c.w )
+      vertex_positions.add( quad.a.x )
+      vertex_positions.add( quad.a.y )
+      vertex_positions.add( quad.a.z )
+      vertex_positions.add( quad.a.w )
+      vertex_positions.add( quad.d.x )
+      vertex_positions.add( quad.d.y )
+      vertex_positions.add( quad.d.z )
+      vertex_positions.add( quad.d.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
 
       vertex_uvs.add( uv.a.x );
       vertex_uvs.add( uv.a.y );
@@ -769,14 +769,14 @@ class Display [singleton]
     method transform->Matrix
       return render_target.update_transform.transform
 
-    method transform( corners:Corners )->Corners<<XYZW>>
+    method transform( quad:Quad )->Quad<<XYZW>>
       local t = transform
       local _z = z
-      return Corners<<XYZW>>( t*XYZ(corners.a,_z), t*XYZ(corners.b,_z), t*XYZ(corners.c,_z), t*XYZ(corners.d,_z) )
+      return Quad<<XYZW>>( t*XYZ(quad.a,_z), t*XYZ(quad.b,_z), t*XYZ(quad.c,_z), t*XYZ(quad.d,_z) )
 
-    method transform( corners:Corners<<XYZ>> )->Corners<<XYZW>>
+    method transform( quad:Quad<<XYZ>> )->Quad<<XYZW>>
       local t = transform
-      return Corners<<XYZW>>( t*corners.a, t*corners.b, t*corners.c, t*corners.d )
+      return Quad<<XYZW>>( t*quad.a, t*quad.b, t*quad.c, t*quad.d )
 
     method transform( line:Line )->Line<<XYZW>>
       local t = transform

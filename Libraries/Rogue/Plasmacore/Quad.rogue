@@ -1,9 +1,9 @@
 module Plasmacore
 
-class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
+class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
   GLOBAL METHODS
-    method create( bounds:Box )->Corners
-      return Corners( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
+    method create( bounds:Box )->Quad
+      return Quad( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
 
   METHODS
     method bounds->Box
@@ -33,7 +33,7 @@ class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
       return this
 
     method intersects( line:Line )->Logical
-      # Returns true if this Corners quad and `line` intersect.
+      # Returns true if this Quad quad and `line` intersect.
 
       # See if any lines intersect
       if (line.intersects(Line(a,b))) return true
@@ -45,9 +45,9 @@ class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
       return this.contains(line.a)
 
     method intersects( box:Box )->Logical
-      return intersects( box->Corners )
+      return intersects( box->Quad )
 
-    method intersects( other:Corners )->Logical
+    method intersects( other:Quad )->Logical
       if (not this.bounds.intersects(other.bounds)) return false
 
       # See if any lines intersect
@@ -94,17 +94,17 @@ class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
     method intersects( triangle:Triangle )->Logical
       return (Triangle(a,b,c).intersects(triangle) or Triangle(a,c,d).intersects(triangle))
 
-    method operator+( position:XY )->Corners
-      return Corners( a+position, b+position, c+position, d+position )
+    method operator+( position:XY )->Quad
+      return Quad( a+position, b+position, c+position, d+position )
 
-    method operator-( position:XY )->Corners
-      return Corners( a-position, b-position, c-position, d-position )
+    method operator-( position:XY )->Quad
+      return Quad( a-position, b-position, c-position, d-position )
 
-    method rotated( angle:Degrees )->Corners [macro]
+    method rotated( angle:Degrees )->Quad [macro]
       this.rotated( angle->Radians )
 
-    method rotated( angle:Radians )->Corners
-      return Corners( a.rotated(angle), b.rotated(angle), c.rotated(angle), d.rotated(angle) )
+    method rotated( angle:Radians )->Quad
+      return Quad( a.rotated(angle), b.rotated(angle), c.rotated(angle), d.rotated(angle) )
 
     method to->Box
       local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
@@ -115,7 +115,7 @@ class Corners( a:XY, b:XY, c:XY, d:XY ) [compound]
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 
-class Corners<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
+class Quad<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
   METHODS
     method to->String
       return "[$ $ $ $]" (a,b,c,d)

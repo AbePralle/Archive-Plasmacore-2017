@@ -11,13 +11,13 @@ class Line( a:XY, b:XY ) [compound]
       return this
 
     method intersects( box:Box )->Logical
-      return Corners(box).intersects( this )
+      return Quad(box).intersects( this )
 
     method intersects( circle:Circle )->Logical
       local closest_pt = circle.position.clamped( this )
       return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
 
-    method intersects( quad:Corners )->Logical
+    method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
     method intersects( other:Line )->Logical

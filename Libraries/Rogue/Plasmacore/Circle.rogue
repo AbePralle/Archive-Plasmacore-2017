@@ -89,7 +89,7 @@ class Circle( position:XY, radius:Real64 ) [compound]
       local delta = (position - other.position).magnitude_squared
       return (delta <= (radius + other.radius) ^ 2)
 
-    method intersects( quad:Corners )->Logical
+    method intersects( quad:Quad )->Logical
       return quad.intersects( this )
 
     method intersects( line:Line )->Logical

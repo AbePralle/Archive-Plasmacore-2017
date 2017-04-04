@@ -15,34 +15,34 @@ class Mesh
       #        | 3 --|-2
       #        |/    |/
       #        7---- 6
-      local corners = Vertex[]
-      corners.add( Vertex(-1,-1,-1) )
-      corners.add( Vertex( 1,-1,-1) )
-      corners.add( Vertex( 1, 1,-1) )
-      corners.add( Vertex(-1, 1,-1) )
-      corners.add( Vertex(-1,-1, 1) )
-      corners.add( Vertex( 1,-1, 1) )
-      corners.add( Vertex( 1, 1, 1) )
-      corners.add( Vertex(-1, 1, 1) )
+      local quad = Vertex[]
+      quad.add( Vertex(-1,-1,-1) )
+      quad.add( Vertex( 1,-1,-1) )
+      quad.add( Vertex( 1, 1,-1) )
+      quad.add( Vertex(-1, 1,-1) )
+      quad.add( Vertex(-1,-1, 1) )
+      quad.add( Vertex( 1,-1, 1) )
+      quad.add( Vertex( 1, 1, 1) )
+      quad.add( Vertex(-1, 1, 1) )
 
       @cube = Mesh()
-      @cube.add( corners[0], corners[1], corners[2] )
-      @cube.add( corners[0], corners[2], corners[3] )
+      @cube.add( quad[0], quad[1], quad[2] )
+      @cube.add( quad[0], quad[2], quad[3] )
 
-      @cube.add( corners[4], corners[6], corners[5] )
-      @cube.add( corners[4], corners[7], corners[6] )
+      @cube.add( quad[4], quad[6], quad[5] )
+      @cube.add( quad[4], quad[7], quad[6] )
 
-      @cube.add( corners[5], corners[2], corners[1] )
-      @cube.add( corners[5], corners[6], corners[2] )
+      @cube.add( quad[5], quad[2], quad[1] )
+      @cube.add( quad[5], quad[6], quad[2] )
 
-      @cube.add( corners[0], corners[7], corners[4] )
-      @cube.add( corners[0], corners[3], corners[7] )
+      @cube.add( quad[0], quad[7], quad[4] )
+      @cube.add( quad[0], quad[3], quad[7] )
 
-      @cube.add( corners[0], corners[5], corners[1] )
-      @cube.add( corners[0], corners[4], corners[5] )
+      @cube.add( quad[0], quad[5], quad[1] )
+      @cube.add( quad[0], quad[4], quad[5] )
 
-      @cube.add( corners[7], corners[2], corners[6] )
-      @cube.add( corners[7], corners[3], corners[2] )
+      @cube.add( quad[7], quad[2], quad[6] )
+      @cube.add( quad[7], quad[3], quad[2] )
 
       return @cube
 

@@ -51,11 +51,12 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.0 - April 1, 2017
+###v0.8.0 - April 4, 2017
 - [Canvas] Render-to-texture is now supported through the `Canvas` class.  `Canvas` extends `Image` and is created at an arbitrary pixel size, e.g. `Canvas(64,48)`.  Call `Display.set_render_target(Canvas)` to configure the Display to render to the canvas - `Display.size` will then reflect the canvas dimensions, etc. - and then `Display.remove_render_target()` when finished.
 - [Display,RenderTarget] Split `Display` into `Display` and `RenderTarget`.  The former is still the interface and the latter is used internally to model the main display target as well as canvas/offscreen buffer display targets.
 - [Clipping Region] `Display.push_clipping_region(Box)` has been changed to `Display.push_clipping_region(Box?,&replace)`.  If the existing and new clipping regions are both non-null then the updated clipping region is the intersection of both, unless `&replace` flag is specified, in which case the new region replaces the old.  Pushing `null` will clear the clipping region, but popping will still restore the previous clipping region if it existed.
 - [XY] Added global convenience method `XY.zero()->XY` that returns `XY(0,0)`.
+- [Quad] Renamed class `Corners` to `Quad`.
 - [Rogue] Updated to Rogue v1.1.25 with better line numbers in definition and macro-related error messages.
 
 ###v0.7.8 - March 26, 2017
