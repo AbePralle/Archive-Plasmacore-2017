@@ -23,13 +23,11 @@ endClass
 
 class InitialState : State<<MainView>>
   PROPERTIES
-    angle = Degrees(0)
-    canvas = Canvas(33,33)
 
   METHODS
     method on_start
       # Called when this state becomes the active state
-      #println "Hello World"
+      println "Hello World"
 
     method after_draw
       # This happens after the current view's on_draw()
@@ -46,25 +44,8 @@ class InitialState : State<<MainView>>
     method on_draw
       # This happens before the current view's on_draw()
       Display.clear( Color.BLUE )
-      Display.bounds.cropped(32).fill( Color.GREEN )
-      #DefaultFont.anchor = Anchor.CENTER
-      #DefaultFont.draw( "Hello World", Display.center )
-
-      if (canvas.is_blank)
-        Display.set_render_target( canvas )
-        Display.clear( Color.RED )
-        Box(0,0,32,32).fill( Color.YELLOW )
-        #Box(0.5,511,1,1).fill( Color.YELLOW )
-        SystemFont.anchor = Anchor.CENTER
-        SystemFont.draw( "Testing", Display.center )
-        Display.remove_render_target
-      endIf
-
-      #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).fill( Color.WHITE )
-      #(Box( -32, -16, 64, 32 ).rotated( angle ) + Display.center).draw( Color.GREEN )
-      ++angle
-
-      canvas.draw( Display.center )
+      DefaultFont.anchor = Anchor.CENTER
+      DefaultFont.draw( "Hello World", Display.center )
 
     method on_resize
       # Called when the Display.size changes

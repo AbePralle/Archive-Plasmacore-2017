@@ -51,6 +51,10 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.1 - April 6, 2017
+- [Swift] Tweaked Swift source to remove warnings due to language update.
+- [Main.rogue] Removed vestigial testbed code.
+
 ###v0.8.0 - April 5, 2017
 - [Canvas] Render-to-texture is now supported through the `Canvas` class.  `Canvas` extends `Image` and is created at an arbitrary pixel size, e.g. `Canvas(64,48)`.  Call `Display.set_render_target(Canvas)` to configure the Display to render to the canvas - `Display.size` will then reflect the canvas dimensions, etc. - and then `Display.remove_render_target()` when finished.
 - [Display,RenderTarget] Split `Display` into `Display` and `RenderTarget`.  The former is still the interface and the latter is used internally to model the main display target as well as canvas/offscreen buffer display targets.

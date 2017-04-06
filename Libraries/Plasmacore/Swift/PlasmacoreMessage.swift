@@ -385,7 +385,7 @@ class PlasmacoreMessage
   {
     var n = UInt64( readInt32() ) << 32
     n = n | UInt64( UInt32(readInt32()) )
-    return unsafeBitCast( n, to:Double.self )
+    return Double(bitPattern:n)
   }
 
   fileprivate func readString()->String
@@ -459,7 +459,7 @@ class PlasmacoreMessage
 
   fileprivate func writeReal64( _ value:Double )
   {
-    let bits = unsafeBitCast(value, to: Int64.self)
+    let bits = value.bitPattern
     writeInt32( Int((bits>>32)&0xFFFFffff) )
     writeInt32( Int(bits&0xFFFFffff) )
   }

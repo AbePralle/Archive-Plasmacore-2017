@@ -148,7 +148,7 @@ class Plasmacore
         }
 
         Plasmacore.singleton.resources[ m.getInt32(name:"id") ] = controller
-        NSLog( "Controller window:\(controller.window)" )
+        NSLog( "Controller window:\(String(describing:controller.window))" )
       }
     )
 

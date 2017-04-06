@@ -71,7 +71,7 @@ class PlasmacoreView: NSOpenGLView
 
     if let window = window
     {
-      NSLog( "window controller: \(window.windowController) " )
+      NSLog( "window controller: \(String(describing:window.windowController)) " )
       windowID = Plasmacore.singleton.getResourceID( window.windowController )
       window.acceptsMouseMovedEvents = true
       window.makeFirstResponder( self )
