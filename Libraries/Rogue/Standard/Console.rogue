@@ -1,7 +1,13 @@
-class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
+class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader #include <termios.h>
     nativeHeader #include <unistd.h>
+
+  ENUMERATE
+    UP_ARROW    = 17
+    DOWN_ARROW  = 18
+    RIGHT_ARROW = 19
+    LEFT_ARROW  = 20
 
   GLOBAL METHODS
     method input( prompt=null:String )->String
@@ -19,22 +25,28 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
   PROPERTIES
     error             = ConsoleErrorPrinter()
 
-    output_buffer     = StringBuilder()
-    input_buffer      = StringBuilder()
-    next_input_byte   : Int32?
-    io_handler        : ConsoleIOHandler
+    immediate_mode       = false
+    # Setting to true/false automatically sets is_blocking to false/true
+
+    is_blocking          = true
+
+    decode_bytes         = true
+
+    output_buffer        = StringBuilder()
+    input_buffer         = StringBuilder()
+
+    next_input_character : Int32?
+    input_bytes          = Byte[]
 
     native "termios original_terminal_settings;"
+    native "int     original_stdin_flags;"
 
   METHODS
     method init
       native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |$this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
 
-      on_exit( function with (console=this)
-        native @|tcsetattr( STDIN_FILENO, TCSANOW, &$console->original_terminal_settings );
-      endFunction )
-
-      io_handler = BlockingConsoleIOHandler()
+      on_exit( function with (console=this) => console.reset_input_mode )
 
     method clear
       print( "\e[2J" ).flush
@@ -42,8 +54,88 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
     method clear_to_eol
       print( "\e[K" ).flush
 
+    method fill_input_queue
+      # Internal use
+      local n : Int32
+      native @|char bytes[8];
+              |$n = (RogueInt32) read( STDIN_FILENO, &bytes, 8 );
+      if (n > 0)
+        forEach (i in 0..<n)
+          input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
+        endForEach
+      endIf
+
     method has_another->Logical
-      return io_handler.has_another
+      if (not next_input_character.exists)
+        fill_input_queue
+        if (input_bytes.count)
+          local b1 = input_bytes.remove_first
+          contingent
+            necessary (decode_bytes)
+            necessary (input_bytes.count)  # more available?
+
+            # More available
+            if (b1 == 27)
+              # Escape sequence
+              necessary (input_bytes.count >= 2 and input_bytes.first == 91)
+              input_bytes.remove_first
+              next_input_character = (input_bytes.remove_first - 65) + Console.UP_ARROW
+
+            else
+              necessary (b1 >= 0xC0)
+
+              local result : Int32
+
+              # UTF-8
+              if ((b1 & 0b1110_0000) == 0b1100_0000)
+                necessary (input_bytes.count >= 1)
+                result = b1 & 0b0001_1111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
+                necessary (input_bytes.count >= 2)
+                result = b1 & 0b0000_1111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
+                necessary (input_bytes.count >= 3)
+                result = b1 & 0b0000_0111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_1100) == 0b1111_1000)
+                necessary (input_bytes.count >= 4)
+                result = b1 & 0b0000_0011
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              else
+                necessary (input_bytes.count >= 5)
+                result = b1 & 0b0000_0001
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              endIf
+
+              next_input_character = result
+            endIf
+
+          unsatisfied
+            next_input_character = b1
+
+          endContingent
+
+          if (input_bytes.count > 0 and input_bytes.count < 6)
+            # If there are more bytes left then characters are getting piped or redirected in.
+            # Read enough to make sure we have a full UTF-8 sequence for next time.
+            fill_input_queue
+          endIf
+
+        endIf
+      endIf
+      return next_input_character.exists
 
     method height->Int32
       nativeHeader #include <sys/ioctl.h>
@@ -65,11 +157,15 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       endIf
       Global.flush
 
-    method peek->Byte
-      return io_handler.peek
+    method peek->Character
+      if (has_another) return next_input_character.value
+      else             return 0
 
-    method read->Byte
-      return io_handler.read
+    method read->Character
+      if (not has_another) return 0
+      local result = next_input_character.value
+      next_input_character = null
+      return result
 
     method read_line->String
       input_buffer.clear
@@ -87,14 +183,48 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       write prompt
       return read_line
 
+    method reset_input_mode
+      native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+              |fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+
     method restore_cursor_position
       print( "\e[u" ).flush
+
+    method set_is_blocking( setting:Logical )->this
+      if (@is_blocking != setting)
+        @is_blocking = setting
+        if (@is_blocking)
+          native @|fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
+        else
+          native @|fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+        endIf
+      endIf
+      return this
 
     method save_cursor_position
       print( "\e[s" ).flush
 
     method set_cursor( x:Int32, y:Int32 )
       print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
+
+    method set_immediate_mode( setting:Logical )->this
+      if (@immediate_mode != setting)
+        @immediate_mode = setting
+        if (@immediate_mode)
+          # Turn off blocking and line buffering
+          is_blocking = false
+          native @|termios new_settings;
+                  |tcgetattr( STDIN_FILENO, &new_settings );
+                  |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+                  |new_settings.c_cc[VMIN] = 0;
+                  |new_settings.c_cc[VTIME] = 0;
+                  |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+        else
+          is_blocking = true
+          native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+        endIf
+      endIf
+      return this
 
     method width->Int32
       nativeHeader #include <sys/ioctl.h>
@@ -106,11 +236,13 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
               |return sz.ws_col;
 
     method write( value:String )->this
-      io_handler.write( value )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
+              |fflush( stdout );
       return this
 
     method write( buffer:StringBuilder )->this
-      io_handler.write( buffer.utf8.data, buffer.utf8.count )
+      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
+              |fflush( stdout );
       return this
 
 endClass
@@ -121,119 +253,14 @@ class ConsoleErrorPrinter : PrintWriter<<output_buffer>>
 
   METHODS
     method write( value:String )->this
-      Console.io_handler.write_error( value )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
+              |fflush( stderr );
       return this
 
     method write( buffer:StringBuilder )->this
-      Console.io_handler.write_error( buffer.utf8.data, buffer.utf8.count )
+      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stderr );
+              |fflush( stderr );
       return this
-endClass
 
-class ConsoleIOHandler [abstract]
-  METHODS
-    method has_another->Logical                      [abstract]
-    method peek->Byte                                [abstract]
-    method read->Byte                                [abstract]
-    method write( value:String )                     [abstract]
-    method write( bytes:Array<<Byte>>, count:Int32 ) [abstract]
-    method write_error( value:String )                     [abstract]
-    method write_error( bytes:Array<<Byte>>, count:Int32 ) [abstract]
-endClass
-
-class BlockingConsoleIOHandler : ConsoleIOHandler
-  PROPERTIES
-    next_input_byte   : Int32?
-
-  METHODS
-    method has_another->Logical
-      if (not next_input_byte.exists)
-        next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
-        if (next_input_byte.value == -1)
-          native @|clearerr( stdin );
-          next_input_byte = null
-        endIf
-      endIf
-      return next_input_byte.exists
-
-    method peek->Byte
-      if (has_another) return next_input_byte.value
-      else             return 0
-
-    method read->Byte
-      if (not has_another) return 0
-      local result = next_input_byte.value
-      next_input_byte = null
-      return result
-
-    method write( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-
-    method write( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
-
-    method write_error( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-
-    method write_error( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
-endClass
-
-class ImmediateConsoleIOHandler : ConsoleIOHandler
-  DEPENDENCIES
-    nativeHeader #include <poll.h>
-
-  PROPERTIES
-    next_input_byte   : Int32?
-
-  METHODS
-    method init
-      native @|termios new_settings;
-              |tcgetattr( STDIN_FILENO, &new_settings );
-              |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
-              |new_settings.c_cc[VMIN] = 0;
-              |new_settings.c_cc[VTIME] = 0;
-              |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
-
-    method has_another->Logical
-      if (not next_input_byte.exists)
-        native @|pollfd file_descriptors[1];
-                |file_descriptors[0].fd = STDIN_FILENO;
-                |file_descriptors[0].events = POLLIN;
-                |fflush( stdin );
-        if (native("poll(file_descriptors,1,0)")->Logical)
-          next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
-          if (next_input_byte.value == -1)
-            native @|clearerr( stdin );
-            next_input_byte = null
-          endIf
-        endIf
-      endIf
-      return next_input_byte.exists
-
-    method peek->Byte
-      if (has_another) return next_input_byte.value
-      else             return 0
-
-    method read->Byte
-      if (not has_another) return 0
-      local result = next_input_byte.value
-      next_input_byte = null
-      return result
-
-    method write( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-              |fflush( stdout );
-
-    method write( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
-              |fflush( stdout );
-
-    method write_error( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-              |fflush( stderr );
-
-    method write_error( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
-              |fflush( stderr );
 endClass
 
