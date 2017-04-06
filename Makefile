@@ -1,4 +1,4 @@
-PLASMACORE_VERSION = v0.8.1
+PLASMACORE_VERSION = v0.8.2.0
 
 # Repo and branch to update from - override with e.g. make update BRANCH=develop
 REPO = https://github.com/AbePralle/Plasmacore.git
@@ -28,6 +28,7 @@ else
   endif
 endif
 
+-include Custom.mk
 -include Local.mk
 
 export CC
