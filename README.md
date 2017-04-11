@@ -2,8 +2,8 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.0
-Date      | April 5, 2017
+Version   | v0.8.2
+Date      | April 11, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -51,8 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.2 - April 6, 2017
+###v0.8.2 - April 11, 2017
 - [Makefile] Makefile now includes `Custom.mk` as well as `Local.mk`, allowing custom build targets that can be committed to the repo.
+- [Rogue] Updated to Rogue v1.1.30.
 
 ###v0.8.1 - April 6, 2017
 - [Swift] Tweaked Swift source to remove warnings due to language update.

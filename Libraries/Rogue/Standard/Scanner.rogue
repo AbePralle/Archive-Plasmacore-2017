@@ -1,4 +1,4 @@
-class ParseReader : Reader<<Character>>
+class Scanner : Reader<<Character>>
   PROPERTIES
     data           : Character[]
     position       : Int32
@@ -169,7 +169,7 @@ class ParseReader : Reader<<Character>>
 
       return this
 
-    method set_location( line, column )->ParseReader
+    method set_location( line, column )->Scanner
       return this
 
 endClass
