@@ -99,7 +99,7 @@ class GGList : GGComponent
           if (e.position.distance_to(cur_pos) >= Display.size.magnitude * 0.01)
             is_dragging = true
             drag_deltas.clear
-            adjust_offset( e.position )
+            cur_pos = e.position
           endIf
         else
           # Pass move event to appropriate list item

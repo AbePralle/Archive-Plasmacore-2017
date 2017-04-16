@@ -51,8 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.4 - April 15, 2017
+###v0.8.4 - April 16, 2017
 - [Font] `load` is now automatically called at the beginning of `measure`.
+- [GGList] Smoother start to scrolling; does not jump as the pointer passes the movement threshold.
 
 ###v0.8.3 - April 15, 2017
 - [AssetCompiler] Fixed AssetCompiler compile errors introduced in previous release.
