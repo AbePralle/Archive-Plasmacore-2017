@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.4 - April 15, 2017
+- [Font] `load` is now automatically called at the beginning of `measure`.
+
 ###v0.8.3 - April 15, 2017
 - [AssetCompiler] Fixed AssetCompiler compile errors introduced in previous release.
 - [Rogue] Updated to Rogue v1.1.31.

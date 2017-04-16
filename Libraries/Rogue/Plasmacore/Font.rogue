@@ -75,13 +75,13 @@ class Font
       return this
 
     method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
-      return data.measure( this, text, i1, i2 )
+      return load.data.measure( this, text, i1, i2 )
 
     method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
-      return data.measure( this, text, i1, i2 )
+      return load.data.measure( this, text, i1, i2 )
 
     method measure( ch:Character )->XY
-      local result = data.measure( this, ch ) * scale
+      local result = load.data.measure( this, ch ) * scale
       if (snap) result = result.floor
       return result
 
