@@ -2,8 +2,8 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.2
-Date      | April 11, 2017
+Version   | v0.8.3
+Date      | April 15, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -50,6 +50,10 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.8.3 - April 15, 2017
+- [AssetCompiler] Fixed AssetCompiler compile errors introduced in previous release.
+- [Rogue] Updated to Rogue v1.1.31.
 
 ###v0.8.2 - April 11, 2017
 - [Makefile] Makefile now includes `Custom.mk` as well as `Local.mk`, allowing custom build targets that can be committed to the repo.

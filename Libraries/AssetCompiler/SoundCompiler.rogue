@@ -228,12 +228,12 @@ class SoundCommand
     src_filepath : String
     src_line     : Int32
     content      : String
-    reader       : ParseReader
+    reader       : Scanner
     buffer       = StringBuilder()
 
   METHODS
     method init( scom, src_filepath, src_line, content )
-      reader = ParseReader( content )
+      reader = Scanner( content )
 
     method collect_files( filepath:String )->String[]
       local pattern = filepath
