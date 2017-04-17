@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.6 - April 17, 2017
+- [AssetCompiler] Added `italic` option that can be applied to both `create` (font) and `varfont` to generate a font that is algorithmically italicized.
+
 ###v0.8.5 - April 16, 2017
 - [ImageManifest] Added `varfont` option `spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z"]}'` to tweak before and after spacing for individual characters.
 - [XY] Removed `operator+(Real64)` and `operator-(Real64)` as it was usually called accidentally; there are few scenarios in which developers would want to increase or decrease both `x` and `y` by the same amount.

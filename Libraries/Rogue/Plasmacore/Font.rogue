@@ -70,7 +70,7 @@ class Font
     method set_options( @options )->this
       if (options.contains("anchor")) anchor = Anchor( options//anchor )
       snap = options//snap->Logical
-      spacing = options//spacing->Int32
+      #spacing = options//spacing->Int32
       if (options//snug->Logical) spacing = -1
       if (options.contains("scale")) scale = XY( options//scale )
 
@@ -207,7 +207,6 @@ class FontData
       if (image_info)
         require (image_info.type == ImageInfo.TYPE_FONT)
         if (image_info.snap) snap = true
-        if (image_info.snug) snug = true
         forEach (character_info in image_info.images)
           local ch = FontCharacter( character_info.unicode, Image(character_info) )
           height = height.or_larger( ch.image.size.y )
@@ -220,16 +219,24 @@ class FontData
           character_lookup[ ch.unicode ] = ch
         endForEach
         if (image_info.spacing)
-          local spacing = JSON.parse( image_info.spacing )
+          local spacing = image_info.spacing
           if (spacing//before)
             forEach (pair in spacing//before)
               local spec = pair->String
               local offset = spec.before_first( ':' )->Int32
               spec = spec.after_first( ':' )
-              forEach (ch in spec)
-                local info = this[ ch ]
-                if (info) info.offset += XY(offset,0); info.advance += XY(offset,0)
-              endForEach
+              if (spec.count)
+                # Apply to specified characters
+                forEach (ch in spec)
+                  local info = this[ ch ]
+                  if (info) info.offset += XY(offset,0); info.advance += XY(offset,0)
+                endForEach
+              else
+                # Apply to all characters
+                forEach (info in characters)
+                  if (info) info.offset += XY(offset,0); info.advance += XY(offset,0)
+                endForEach
+              endIf
             endForEach
           endIf
           if (spacing//after)
@@ -237,10 +244,18 @@ class FontData
               local spec = pair->String
               local offset = spec.before_first( ':' )->Int32
               spec = spec.after_first( ':' )
-              forEach (ch in spec)
-                local info = this[ ch ]
-                if (info) info.advance += XY(offset,0)
-              endForEach
+              if (spec.count)
+                # Apply to specified characters
+                forEach (ch in spec)
+                  local info = this[ ch ]
+                  if (info) info.advance += XY(offset,0)
+                endForEach
+              else
+                # Apply to all characters
+                forEach (info in characters)
+                  if (info) info.advance += XY(offset,0)
+                endForEach
+              endIf
             endForEach
           endIf
         endIf

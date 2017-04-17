@@ -24,6 +24,8 @@ routine launch_image_compiler
                       |#   create image:<filepath> font:<font-name> height:<pixels> ...
                       |#     [characters:"ABC..." unicode:[32..126] ...]
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
+                      |#     [italic]              # Uses software rendering to create an italic effect
+                      |#                           # If used, specify 'italic' in the 'varfont' tag as well.
                       |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH]
                       |#
                       |# ATTTRIBUTES
@@ -38,9 +40,11 @@ routine launch_image_compiler
                       |#             unicode:[32..126] ...
                       |#             snap  # Snap pixel coordinates to integers when drawing
                       |#             snug  # Adjust all character spacing -1 pixel
-                      |#             spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z"]}'
-                      |#               # Scoot A,B,C back 1 pixel before drawing
-                      |#               # Scoot cursor back 1 pixel after X,Y and 2 pixels after Z
+                      |#             spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z","-1"]}'
+                      |#               # Before drawing, scoot A,B,C back 1 pixel
+                      |#               # After drawing, scoot cursor back 2 pixels after X,Y,
+                      |#               # 3 pixels after Z, and 1 pixel for all other characters
+                      |#             italic # Put here if 'italic' was used to 'create' the bitmap font
                       |#
                       |[Global]
                       |@ **Font* varfont
@@ -648,6 +652,35 @@ class ImageCommand
       local font_face = FreeTypeFace( this, font_name, height )
       local characters = font_face.render( unicode )
 
+      #{
+      # Needs a better rendering algorithm that blends opacity while retaining white color
+      if (args//bold)
+        forEach (bmp at index in characters)
+          local new_bmp = Bitmap( bmp.width+1, bmp.height )
+          bmp.blit( new_bmp, XY(0,0) )
+          bmp.blit( new_bmp, XY(1,0), &blend )
+          characters[index] = new_bmp
+        endForEach
+      endIf
+      }#
+
+      if (args//italic)
+        forEach (bmp at index in characters)
+          bmp.resize( bmp.size * 2 )
+          local layers = (bmp.height + 4) / 5
+          local new_bmp = Bitmap( bmp.width+(layers-1), bmp.height )
+          local x = 0
+          local y = (bmp.height - 5) + (bmp.height % 5) / 2
+          while (y >= 0)
+            bmp.blit( Box(0,y,bmp.width,5), new_bmp, XY(x,y) )
+            ++x
+            y -= 5
+          endWhile
+          new_bmp.resize( new_bmp.size/2 )
+          characters[index] = new_bmp
+        endForEach
+      endIf
+
       if (is_monospace)
         local max_w = 0
         forEach (ch in characters)
@@ -1051,8 +1084,25 @@ class Asset
 
         case "Font"
           if (attributes//snap) entry//snap = true
-          if (attributes//snug) entry//snug = true
-          if (attributes//spacing) entry//spacing = attributes//spacing
+
+          local spacing : Value
+          if (attributes//spacing) spacing = JSON.parse( attributes//spacing )
+          else                     spacing = @{before:[],after:[]}
+          if (spacing//before and spacing//before.is_string) spacing//before = @[ spacing//before ]
+          if (spacing//after and spacing//after.is_string) spacing//after = @[ spacing//after ]
+          spacing.ensure_list( "before" )
+          spacing.ensure_list( "after" )
+
+          if (attributes//snug)   spacing//after.add( "-1" )
+          if (attributes//italic and placements.count)
+            local extra_pixels = ((placements.first.height + 4) / 5) - 1
+            if (extra_pixels > 0)
+              spacing//after.add( "-" + extra_pixels )
+            endIf
+          endIf
+          if (spacing//before.count or spacing//after.count) entry//spacing = spacing
+trace spacing
+
           local images = entry.ensure_list( "characters" )
           local characters : String
           if (attributes//varfont.is_string)

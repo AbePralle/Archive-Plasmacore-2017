@@ -338,7 +338,7 @@ class ImageInfo
     texture_filename : String
     texture_bounds   : Box
     is_opaque        : Logical
-    snap, snug       : Logical
+    snap             : Logical
     spacing          : Value
 
     images           : ImageInfo[]
@@ -356,7 +356,6 @@ class ImageInfo
       texture_filename = existing.texture_filename
       is_opaque = existing.is_opaque
       snap = existing.snap
-      snug = existing.snug
       spacing = existing.spacing
       if (existing.images) images = existing.images.cloned
 
@@ -395,11 +394,8 @@ class ImageInfo
             images.add( ImageInfo(img) )
           endForEach
           snap = info//snap
-          snug = info//snug
           if (info//spacing)
             spacing = info//spacing
-            if (spacing//before and spacing//before.is_string) spacing//before = @[ spacing//before ]
-            if (spacing//after and spacing//after.is_string) spacing//after = @[ spacing//after ]
           endIf
 
 
