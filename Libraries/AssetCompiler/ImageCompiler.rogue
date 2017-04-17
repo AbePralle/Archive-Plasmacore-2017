@@ -36,6 +36,11 @@ routine launch_image_compiler
                       |#           <Options>
                       |#             characters:"ABC..."
                       |#             unicode:[32..126] ...
+                      |#             snap  # Snap pixel coordinates to integers when drawing
+                      |#             snug  # Adjust all character spacing -1 pixel
+                      |#             spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z"]}'
+                      |#               # Scoot A,B,C back 1 pixel before drawing
+                      |#               # Scoot cursor back 1 pixel after X,Y and 2 pixels after Z
                       |#
                       |[Global]
                       |@ **Font* varfont
@@ -468,7 +473,6 @@ class ImageCommand
       icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
 
       manifest.compressed.save( File(manifest_filepath) )
-
 
     method perform_layout( assets:Asset[] )->ImageSheet[]
       local placements = Placement[]
@@ -1046,6 +1050,9 @@ class Asset
           images.add( (forEach in placements).collect_image_info( @{ type:"TextureImage" } ) )
 
         case "Font"
+          if (attributes//snap) entry//snap = true
+          if (attributes//snug) entry//snug = true
+          if (attributes//spacing) entry//spacing = attributes//spacing
           local images = entry.ensure_list( "characters" )
           local characters : String
           if (attributes//varfont.is_string)

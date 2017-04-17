@@ -20,6 +20,8 @@ class Font
   METHODS
     method init( name, options=@{} )
       data = FontData( name )
+      if (data.snap) snap = true
+      if (data.snug) spacing = -1
 
     method cloned->Font
       local result = Font( name, options )
@@ -187,6 +189,7 @@ class FontData
     height           : Int32
     characters       = FontCharacter[]( 128, null )  # first 128 are in correct slots, additional in any order
     character_lookup = Table<<Character,FontCharacter>>()
+    snap, snug       : Logical
 
   GLOBAL METHODS
     method create( name:String )->FontData
@@ -203,6 +206,8 @@ class FontData
     method init( name, image_info )
       if (image_info)
         require (image_info.type == ImageInfo.TYPE_FONT)
+        if (image_info.snap) snap = true
+        if (image_info.snug) snug = true
         forEach (character_info in image_info.images)
           local ch = FontCharacter( character_info.unicode, Image(character_info) )
           height = height.or_larger( ch.image.size.y )
@@ -214,6 +219,31 @@ class FontData
           endIf
           character_lookup[ ch.unicode ] = ch
         endForEach
+        if (image_info.spacing)
+          local spacing = JSON.parse( image_info.spacing )
+          if (spacing//before)
+            forEach (pair in spacing//before)
+              local spec = pair->String
+              local offset = spec.before_first( ':' )->Int32
+              spec = spec.after_first( ':' )
+              forEach (ch in spec)
+                local info = this[ ch ]
+                if (info) info.offset += XY(offset,0); info.advance += XY(offset,0)
+              endForEach
+            endForEach
+          endIf
+          if (spacing//after)
+            forEach (pair in spacing//after)
+              local spec = pair->String
+              local offset = spec.before_first( ':' )->Int32
+              spec = spec.after_first( ':' )
+              forEach (ch in spec)
+                local info = this[ ch ]
+                if (info) info.advance += XY(offset,0)
+              endForEach
+            endForEach
+          endIf
+        endIf
         exists = true
       endIf
 

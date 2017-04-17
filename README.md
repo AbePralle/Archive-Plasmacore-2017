@@ -2,7 +2,7 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.4
+Version   | v0.8.5
 Date      | April 16, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
@@ -50,6 +50,10 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+###v0.8.5 - April 16, 2017
+- [ImageManifest] Added `varfont` option `spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z"]}'` to tweak before and after spacing for individual characters.
+- [XY] Removed `operator+(Real64)` and `operator-(Real64)` as it was usually called accidentally; there are few scenarios in which developers would want to increase or decrease both `x` and `y` by the same amount.
 
 ###v0.8.4 - April 16, 2017
 - [Font] `load` is now automatically called at the beginning of `measure`.

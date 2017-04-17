@@ -161,17 +161,11 @@ $endIf
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
 
-    method operator+( value:Real64 )->XY
-      return XY( x+value, y+value )
-
     method operator-()->XY
       return XY( -x, -y )
 
     method operator-( other:XY )->XY
       return XY( x-other.x, y-other.y )
-
-    method operator-( value:Real64 )->XY
-      return XY( x-value, y-value )
 
     method operator*( other:XY )->XY
       return XY( x*other.x, y*other.y )
@@ -228,7 +222,7 @@ $endIf
       return XY( magnitude, radians + angle )
 
     method round->XY
-      return (this + 0.5).floor
+      return (this + XY(0.5,0.5)).floor
 
     method to->String
       local n = 0
