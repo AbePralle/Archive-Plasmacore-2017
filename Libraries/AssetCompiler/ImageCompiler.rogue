@@ -1101,7 +1101,6 @@ class Asset
             endIf
           endIf
           if (spacing//before.count or spacing//after.count) entry//spacing = spacing
-trace spacing
 
           local images = entry.ensure_list( "characters" )
           local characters : String

@@ -76,14 +76,16 @@ class Font
 
       return this
 
-    method measure( text:String, i1=null:Int32?, i2=null:Int32? )->XY
-      return load.data.measure( this, text, i1, i2 )
+    method measure( text:String, i1=null:Int32?, i2=null:Int32?, &visual )->XY
+      # &visual  - include all rendered pixels in measurement
+      # &!visual - cursor-relative measurement
+      return load.data.measure( this, text, i1, i2, visual )
 
-    method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
-      return load.data.measure( this, text, i1, i2 )
+    method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32?, &visual )->XY
+      return load.data.measure( this, text, i1, i2, visual )
 
-    method measure( ch:Character )->XY
-      local result = load.data.measure( this, ch ) * scale
+    method measure( ch:Character, &visual )->XY
+      local result = load.data.measure( this, ch, visual ) * scale
       if (snap) result = result.floor
       return result
 
@@ -314,7 +316,7 @@ class FontData
         endIf
       endForEach
 
-    method measure( font:Font, text:String, i1=null:Int32?, i2=null:Int32? )->XY
+    method measure( font:Font, text:String, i1=null:Int32?, i2=null:Int32?, &visual )->XY
       local line_height = font.height
       if (font.snap) line_height = line_height.floor
 
@@ -325,22 +327,31 @@ class FontData
       if (i1) i1 = i1.value.clamped(0,max_i2)
       if (i2) i2 = i2.value.clamped(0,max_i2)
 
+      local prev_advance : Int32
+      local prev_width   : Int32
       forEach (index in select{i1||0}..select{i2||max_i2})
         local ch = text[index]
         if (ch == '\n')
           h += line_height
-          max_w = max_w.or_larger( w )
+          max_w = max_w.or_larger( (w-prev_advance)+prev_width )
           w = 0.0
+          prev_advance = 0
+          prev_width = 0
         else
           local info = this[ ch ]
-          if (info) w += info.advance.x + font.spacing
+          if (info)
+            prev_advance = info.advance.x
+            if (visual) prev_width = info.size.x
+            else        prev_width = prev_advance
+            w += prev_advance + font.spacing
+          endIf
         endIf
       endForEach
 
-      max_w = max_w.or_larger( w )
+      max_w = max_w.or_larger( (w-prev_advance)+prev_width )
       return XY( max_w*font.scale.x, h )
 
-    method measure( font:Font, text:StringBuilder, i1=null:Int32?, i2=null:Int32? )->XY
+    method measure( font:Font, text:StringBuilder, i1=null:Int32?, i2=null:Int32?, &visual )->XY
       local line_height = font.height
       if (font.snap) line_height = line_height.floor
 
@@ -351,26 +362,36 @@ class FontData
       if (i1) i1 = i1.value.clamped(0,max_i2)
       if (i2) i2 = i2.value.clamped(0,max_i2)
 
+      local prev_advance : Int32
+      local prev_width   : Int32
       forEach (index in select{i1||0}..select{i2||max_i2})
         local ch = text[index]
         if (ch == '\n')
           h += line_height
-          max_w = max_w.or_larger( w )
+          max_w = max_w.or_larger( (w-prev_advance)+prev_width )
           w = 0.0
+          prev_advance = 0
+          prev_width = 0
         else
           local info = this[ ch ]
-          if (info) w += info.advance.x + font.spacing
+          if (info)
+            prev_advance = info.advance.x
+            if (visual) prev_width = info.size.x
+            else        prev_width = prev_advance
+            w += prev_advance + font.spacing
+          endIf
         endIf
       endForEach
 
-      max_w = max_w.or_larger( w )
+      max_w = max_w.or_larger( (w-prev_advance)+prev_width )
       return XY( max_w*font.scale.x, h )
 
-    method measure( font:Font, ch:Character )->XY
+    method measure( font:Font, ch:Character, &visual )->XY
       if (ch == '\n') return XY(0,height)
       local info = this[ ch ]
       if (not info) return XY(0,0)
-      return info.advance + XY(font.spacing,0)
+      if (visual) return info.size.xv + XY(font.spacing,0)
+      else        return info.advance + XY(font.spacing,0)
 
     method unload
       if (not is_loaded) return

@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.7 - April 17, 2017
+- [Font] Added optional `&visual` flag to `measure()` methods that will measure pixel width instead of character spacing width.
+
 ###v0.8.6 - April 17, 2017
 - [AssetCompiler] Added `italic` option that can be applied to both `create` (font) and `varfont` to generate a font that is algorithmically italicized.
 
