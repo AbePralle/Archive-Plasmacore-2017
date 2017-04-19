@@ -2,7 +2,7 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.5
+Version   | v0.8.6
 Date      | April 16, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
@@ -51,7 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.7 - April 17, 2017
+###v0.8.7 - April 19, 2017
+- [GGList] Added a collection API to GameGUI `GGList` - `list.count` and `list[0]` now work etc.
+- [GGList] GameGUI `GGList` is now available in a template form.  `GGList<<X>>` returns item type `X` from `get(index:Int32)`.  `GGList` may be used without a template parameter and the item type defaults to `GGComponent`.  The item type of the templated form must extend `GGComponent`.
 - [Font] Added optional `&visual` flag to `measure()` methods that will measure pixel width instead of character spacing width.
 
 ###v0.8.6 - April 17, 2017
