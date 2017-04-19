@@ -54,6 +54,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ###v0.8.7 - April 19, 2017
 - [GGList] Added a collection API to GameGUI `GGList` - `list.count` and `list[0]` now work etc.
 - [GGList] GameGUI `GGList` is now available in a template form.  `GGList<<X>>` returns item type `X` from `get(index:Int32)`.  `GGList` may be used without a template parameter and the item type defaults to `GGComponent`.  The item type of the templated form must extend `GGComponent`.
+- [GGList] Added `has_edge_bounce=true` property; set to false for hard scroll stops at edges.
 - [Font] Added optional `&visual` flag to `measure()` methods that will measure pixel width instead of character spacing width.
 
 ###v0.8.6 - April 17, 2017

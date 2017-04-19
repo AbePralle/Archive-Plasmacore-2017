@@ -11,22 +11,24 @@ class GGList<<$ItemType>> : GGComponent
       return GGList( bounds, false )
 
   PROPERTIES
-    is_horizontal : Logical
-    offset        : XY
-    max_offset    : Real64
-    velocity      : XY
-    acceleration  : Real64
+    is_horizontal   : Logical
+    has_edge_bounce = true     # set to false to disable overscroll bounce effect and use a hard scroll limit
 
-    content_size  : Int32
+    offset          : XY
+    max_offset      : Real64
+    velocity        : XY
+    acceleration    : Real64
 
-    is_pressed    : Logical
-    is_dragging   : Logical
+    content_size    : Int32
 
-    drag_start    : XY
-    drag_delta    : Real64
-    drag_deltas   = Real64[]
-    cur_pos       : XY
-    drag_time     = Stopwatch()
+    is_pressed      : Logical
+    is_dragging     : Logical
+
+    drag_start      : XY
+    drag_delta      : Real64
+    drag_deltas     = Real64[]
+    cur_pos         : XY
+    drag_time       = Stopwatch()
 
   METHODS
     method init( is_horizontal=false )
@@ -41,32 +43,40 @@ class GGList<<$ItemType>> : GGComponent
 
     method adjust_offset( new_pos:XY )
       local delta = new_pos - cur_pos
-      if (is_horizontal)
-        if (offset.x > 0 and delta.x > 0)
-          local resistance = 1.0 - (offset.x / content_size.or_smaller(size.x).or_larger(1))
-          delta *= resistance^4
-        elseIf (offset.x < max_offset and delta.x < 0)
-          local resistance = 1.0 - (max_offset - offset.x) / content_size.or_smaller(size.x).or_larger(1)
-          delta *= resistance^4
+
+      if (has_edge_bounce)
+        if (is_horizontal)
+          if (offset.x > 0 and delta.x > 0)
+            local resistance = 1.0 - (offset.x / content_size.or_smaller(size.x).or_larger(1))
+            delta *= resistance^4
+          elseIf (offset.x < max_offset and delta.x < 0)
+            local resistance = 1.0 - (max_offset - offset.x) / content_size.or_smaller(size.x).or_larger(1)
+            delta *= resistance^4
+          endIf
+        else
+          if (offset.y > 0 and delta.y > 0)
+            local resistance = 1.0 - (offset.y / content_size.or_smaller(size.y).or_larger(1))
+            delta *= resistance^4
+          elseIf (offset.y < max_offset and delta.y < 0)
+            local resistance = 1.0 - (max_offset - offset.y) / content_size.or_smaller(size.y).or_larger(1)
+            delta *= resistance^4
+          endIf
         endIf
-        delta = delta.xv
-        drag_delta = delta.x
-      else
-        if (offset.y > 0 and delta.y > 0)
-          local resistance = 1.0 - (offset.y / content_size.or_smaller(size.y).or_larger(1))
-          delta *= resistance^4
-        elseIf (offset.y < max_offset and delta.y < 0)
-          local resistance = 1.0 - (max_offset - offset.y) / content_size.or_smaller(size.y).or_larger(1)
-          delta *= resistance^4
-        endIf
-        delta = delta.yv
-        drag_delta = delta.y
       endIf
+
+      if (is_horizontal) delta = delta.xv; drag_delta = delta.x
+      else               delta = delta.yv; drag_delta = delta.y
+
       offset += delta
       cur_pos = new_pos
 
+      if (not has_edge_bounce)
+        if (is_horizontal) offset = XY( offset.x.or_larger( max_offset ).or_smaller( 0 ), offset.y )
+        else               offset = XY( offset.x, offset.y.or_larger( max_offset ).or_smaller( 0 ) )
+      endIf
+
     method count->Int32
-      return subcomponents.count
+      return select{ subcomponents:subcomponents.count || 0 }
 
     method dispatch_draw
       if (subcomponents)
@@ -155,6 +165,11 @@ class GGList<<$ItemType>> : GGComponent
         offset += velocity
         velocity *= acceleration
         if (velocity.abs.max < 0.1) velocity = XY(0,0)
+
+        if (not has_edge_bounce)
+          if (is_horizontal) offset = XY( offset.x.or_larger( max_offset ).or_smaller( 0 ), offset.y )
+          else               offset = XY( offset.x, offset.y.or_larger( max_offset ).or_smaller( 0 ) )
+        endIf
       endIf
 
       if (not is_dragging)
