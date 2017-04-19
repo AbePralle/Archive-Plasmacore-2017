@@ -2,8 +2,8 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.6
-Date      | April 16, 2017
+Version   | v0.8.7
+Date      | April 19, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
