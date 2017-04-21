@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.8 - April 20, 2017
+- [GameGUI] GGList and GGButton now `.consume()` relevant pointer events.
+
 ###v0.8.7 - April 19, 2017
 - [GGList] Added a collection API to GameGUI `GGList` - `list.count` and `list[0]` now work etc.
 - [GGList] GameGUI `GGList` is now available in a template form.  `GGList<<X>>` returns item type `X` from `get(index:Int32)`.  `GGList` may be used without a template parameter and the item type defaults to `GGComponent`.  The item type of the templated form must extend `GGComponent`.

@@ -52,6 +52,7 @@ class GGButton : GGComponent
 
       if (e.is_press)
         if (this.contains(e) and GGComponentManager.pointer_focus is not this)
+          e.consume
           GGComponentManager.pointer_focus = this
           is_pressed = true
           press_timer.restart
@@ -61,6 +62,7 @@ class GGButton : GGComponent
 
       elseIf (e.is_release)
         if (@is_pressed)
+          e.consume
           is_pressed = false
           GGComponentManager.pointer_focus = null
           on_release
@@ -86,6 +88,7 @@ class GGButton : GGComponent
       elseIf (e.is_move)
         if (not contains(e))
           if (@is_pressed)
+            e.consume
             is_pressed = false
             GGComponentManager.pointer_focus = null
             on_release
