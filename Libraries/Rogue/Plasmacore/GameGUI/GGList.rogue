@@ -103,7 +103,6 @@ class GGList<<$ItemType>> : GGComponent
       GGComponentManager.pointer_position = e.position
       if (e.is_press)
         if (not is_dragging and contains(e))
-          e.consume
           acceleration = 0.10   # halt any scrolling going on
           is_pressed = true
           drag_time.restart
@@ -112,7 +111,6 @@ class GGList<<$ItemType>> : GGComponent
           GGComponentManager.pointer_focus = this
         endIf
       elseIf (e.is_move)
-        e.consume
         if (is_dragging)
           adjust_offset( e.position )
         elseIf (is_pressed)
@@ -127,7 +125,6 @@ class GGList<<$ItemType>> : GGComponent
           if (component) component.handle( e )
         endIf
       elseIf (e.is_release)
-        e.consume
         is_pressed = false
         GGComponentManager.pointer_focus = null
         if (is_dragging)

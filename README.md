@@ -52,7 +52,6 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ###v0.8.8 - April 20, 2017
-- [GameGUI] GGList and GGButton now `.consume()` relevant pointer events.
 
 ###v0.8.7 - April 19, 2017
 - [GGList] Added a collection API to GameGUI `GGList` - `list.count` and `list[0]` now work etc.
