@@ -79,13 +79,13 @@ class Font
     method measure( text:String, i1=null:Int32?, i2=null:Int32?, &visual )->XY
       # &visual  - include all rendered pixels in measurement
       # &!visual - cursor-relative measurement
-      return load.data.measure( this, text, i1, i2, visual )
+      return data.measure( this, text, i1, i2, visual )
 
     method measure( text:StringBuilder, i1=null:Int32?, i2=null:Int32?, &visual )->XY
-      return load.data.measure( this, text, i1, i2, visual )
+      return data.measure( this, text, i1, i2, visual )
 
     method measure( ch:Character, &visual )->XY
-      local result = load.data.measure( this, ch, visual ) * scale
+      local result = data.measure( this, ch, visual ) * scale
       if (snap) result = result.floor
       return result
 
@@ -417,6 +417,9 @@ class FontCharacter
   METHODS
     method init( unicode, image )
       size    = image.size
+      advance = size.xv
+
+    method init( unicode, size )
       advance = size.xv
 
     method height->Int32 [macro]

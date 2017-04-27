@@ -30,6 +30,8 @@ class GGList<<$ItemType>> : GGComponent
     cur_pos         : XY
     drag_time       = Stopwatch()
 
+    on_select_background_callback : Function(GGList<<$ItemType>>,XY)
+
   METHODS
     method init( is_horizontal=false )
 
@@ -149,6 +151,8 @@ class GGList<<$ItemType>> : GGComponent
             if (component)
               component.handle( PointerEvent(PointerEvent.PRESS,e.position,XY(0,0),e.index) ) # Press
               component.handle( e ) # Release
+            else
+              on_select_background( e.position )
             endIf
           endIf
         endIf
@@ -197,6 +201,12 @@ class GGList<<$ItemType>> : GGComponent
       if (subcomponents)
         (forEach in subcomponents).update
       endIf
+
+    method on_select_background( pos:XY )
+      if (on_select_background_callback) on_select_background_callback( this, pos )
+
+    method on_select_background( on_select_background_callback )->this
+      return this
 
     method update_layout
       content_size = 0

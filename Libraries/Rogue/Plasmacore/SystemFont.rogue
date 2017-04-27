@@ -11,6 +11,14 @@ class SystemFontData : FontData
       name = "SystemFont"
       exists = true
 
+      forEach (i in 0..<95)
+        local unicode = Character( ' ' + i )
+        local ch = FontCharacter( unicode, XY(9,17) )
+        if (unicode < 128) characters[ unicode ] = ch
+        else               characters.add( ch )
+        character_lookup[ unicode ] = ch
+      endForEach
+
     method load
       if (is_loaded) return
       is_loaded = true
@@ -31,11 +39,8 @@ class SystemFontData : FontData
       font_sheet.anchor = Anchor.TOP_LEFT
 
       forEach (i in 0..<95)
-        local unicode = Character( ' ' + i )
-        local ch = FontCharacter( unicode, Image(font_sheet,char_bounds[i]) )
-        if (unicode < 128) characters[ unicode ] = ch
-        else               characters.add( ch )
-        character_lookup[ unicode ] = ch
+        local ch = character_lookup[ Character( ' ' + i ) ]
+        ch.image = Image( font_sheet, char_bounds[i] )
       endForEach
 
   GLOBAL PROPERTIES

@@ -6,23 +6,21 @@ routine DefaultFont->Font
 endRoutine
 
 class DefaultFontData : FontData
+  PROPERTIES
+    sheet_builder = ImageSheetBuilder( 512, 256 )
+    char_bounds   = Box[]( 191 )
+
   METHODS
     method init
       name = "DefaultFont"
       exists = true
       height = 34
 
-    method load
-      if (is_loaded) return
-      is_loaded = true
-
       local bitmap = Bitmap( png_data )
-      local sheet_builder = ImageSheetBuilder( 512, 256 )
 
       local h = bitmap.height-1
       height = h
 
-      local char_bounds = Box[]( 191 )
       local i1 = 0
       forEach (i in 0..<191)
         local color = bitmap.get( i1, 0 )
@@ -35,12 +33,9 @@ class DefaultFontData : FontData
 $if (not "Web")
       sheet_builder.bitmap.convert_gray_to_alpha
 $endIf
-      local font_sheet = Image( sheet_builder->Texture )
-      font_sheet.anchor = Anchor.TOP_LEFT
-
       forEach (i in 0..<95)
         local unicode = Character( ' ' + i )
-        local ch = FontCharacter( unicode, Image(font_sheet,char_bounds[i]) )
+        local ch = FontCharacter( unicode, char_bounds[i].size )
         if (unicode < 128) characters[ unicode ] = ch
         else               characters.add( ch )
         character_lookup[ unicode ] = ch
@@ -48,9 +43,26 @@ $endIf
 
       forEach (i in 160..255)
         local unicode = Character( i )
-        local ch = FontCharacter( unicode, Image(font_sheet,char_bounds[i-65]) )
+        local ch = FontCharacter( unicode, char_bounds[i-65].size )
         characters.add( ch )
         character_lookup[ unicode ] = ch
+      endForEach
+
+    method load
+      if (is_loaded) return
+      is_loaded = true
+
+      local font_sheet = Image( sheet_builder->Texture )
+      font_sheet.anchor = Anchor.TOP_LEFT
+
+      forEach (i in 0..<95)
+        local ch = character_lookup[ Character(' '+i) ]
+        ch.image = Image( font_sheet, char_bounds[i] )
+      endForEach
+
+      forEach (i in 160..255)
+        local ch = character_lookup[ Character(i) ]
+        ch.image = Image( font_sheet, char_bounds[i-65] )
       endForEach
 
   GLOBAL PROPERTIES

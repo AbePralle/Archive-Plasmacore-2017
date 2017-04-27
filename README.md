@@ -2,8 +2,8 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.7
-Date      | April 19, 2017
+Version   | v0.8.8
+Date      | April 27, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -51,7 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.8 - April 20, 2017
+###v0.8.8 - April 27, 2017
+- [Font] `Font.measure()` no longer attempts to `load()` the font because that could result in attempting to load the font image hundreds or thousands of times if `measure()` was called from `on(PointerEvent)` rather than `on_update()` or `on_draw()`.  Updated `SystemFont` and `DefaultFont` to define their measurements without having to load their bitmap data.
+- [Rogue] Updated to Rogue v1.1.34.
 
 ###v0.8.7 - April 19, 2017
 - [GGList] Added a collection API to GameGUI `GGList` - `list.count` and `list[0]` now work etc.
