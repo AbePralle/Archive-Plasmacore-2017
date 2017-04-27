@@ -14,6 +14,7 @@ routine launch_image_compiler
                       |#   [Default] - Used when specific platform isn't defined, e.g.
                       |#               if [iOS] isn't defined then [Default] is used.
                       |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                      |#   [macOS]   - macOS-specific attributes, settings, and groups.
                       |#
                       |#
                       |# COMMANDS

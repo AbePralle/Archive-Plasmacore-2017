@@ -51,6 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
+###v0.8.9 - April 27, 2017
+- [Image Filter] Plasmacore's image filter system which filters available images based on a wildcard path.  New functionality includes `Plasmacore.clear_image_filters` and `Plasmacore.add_image_filter("...")`, which can be used to specify multiple filters.  `Plasmacore.image_filter = "..."` works as before and is equivalent to calling `Plasmacore.clear_filters.add_filter("...")`.
+
 ###v0.8.8 - April 27, 2017
 - [Font] `Font.measure()` no longer attempts to `load()` the font because that could result in attempting to load the font image hundreds or thousands of times if `measure()` was called from `on(PointerEvent)` rather than `on_update()` or `on_draw()`.  Updated `SystemFont` and `DefaultFont` to define their measurements without having to load their bitmap data.
 - [Rogue] Updated to Rogue v1.1.34.

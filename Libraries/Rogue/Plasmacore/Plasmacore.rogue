@@ -78,7 +78,7 @@ class Plasmacore [essential singleton]
     image_info_list         = ImageInfo[]
     image_info_lookup       = Table<<String,ImageInfo>>()
     image_group_info_lookup = Table<<String,ImageGroupInfo>>()
-    image_filter            : String
+    image_filters           = String[]
 
     application_data_folder : String
     cache_folder            : String
@@ -177,6 +177,14 @@ class Plasmacore [essential singleton]
           display.handle( e )
         endFunction )
 
+    method add_image_filter( filter:String )->this
+      if (not (filter.contains('*') or filter.contains('?')))
+        filter = "**$**" (filter)
+      endIf
+      image_filters.add( filter )
+      filter_images
+      return this
+
     method application_data_folder->String
       # iOS: Application data that is not accessible to the user but is still backed up
       # on iCloud.
@@ -205,6 +213,10 @@ class Plasmacore [essential singleton]
       endIf
       return @cache_folder
 
+    method clear_image_filters->this
+      image_filters.clear
+      return this
+
     method create_resource_id->Int32
       ++next_resource_id
       return (next_resource_id - 1)
@@ -219,15 +231,6 @@ class Plasmacore [essential singleton]
       return result
 
     method filter_images
-      if (image_filter is null or image_filter.count == 0)
-        filter_images( (name)=>true )
-      elseIf (image_filter.contains('?') or image_filter.contains('*'))
-        filter_images( (name) with (image_filter) => File.matches_wildcard_pattern(name,image_filter) )
-      else
-        filter_images( (name) with (image_filter) => name.contains(image_filter) )
-      endIf
-
-    method filter_images( keep:Function(String)->(Logical) )
       image_info_lookup.clear
 
       # Full filepath
@@ -241,7 +244,7 @@ class Plasmacore [essential singleton]
       # entry as null rather than creating an arbitrary default
       forEach (image_info in image_info_list)
         local name = image_info.name
-        if (keep(name))
+        if (filter_fn_keep(name))
           while (name.contains('/'))
             name = name.after_first( '/' )
             if (image_info_lookup.contains(name))
@@ -257,6 +260,13 @@ class Plasmacore [essential singleton]
       forEach (key in image_info_lookup.keys)
         if (image_info_lookup[key] is null) image_info_lookup.remove( key )
       endForEach
+
+    method filter_fn_keep( name:String )->Logical
+      if (not image_filters.count) return true
+      forEach (filter in image_filters)
+        if (File.matches_wildcard_pattern(name,filter)) return true
+      endForEach
+      return false
 
     method find_image_info( name:String )->ImageInfo
       local info = image_info_lookup[ name ]
@@ -300,8 +310,8 @@ class Plasmacore [essential singleton]
     method on_global_update( global_update_callback )
       noAction
 
-    method set_image_filter( @image_filter )->this
-      filter_images
+    method set_image_filter( filter:String )->this
+      clear_image_filters.add_image_filter( filter ).filter_images
       return this
 
     method set_show_fps( setting:Logical )->this
