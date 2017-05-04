@@ -217,6 +217,20 @@ class Image
       return true
 
 
+    method reload_image_info
+      # Reloads this image if the current image filters in use cause the name to resolve
+      # to a different specific image.  Does not actually unload previous texture or
+      # load new texture (because we want to let View.reload_images() unload old textures
+      # first).
+      local new_info = Plasmacore.find_image_info( name )
+      if (not new_info) return
+
+      # Filename hasn't changed?
+      if (image_info and image_info.name == new_info.name) return
+
+      data = null
+      init( new_info )
+
     method set( bitmap:Bitmap )
       if (data) data = data.set( bitmap )
       size = bitmap.size

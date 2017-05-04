@@ -84,7 +84,7 @@ class RenderTarget
 
       clear_transforms
       scale_to_fit( target_display_size )
-      <<ui_hook>>
+      <ui_hook>
 
     method pop_clipping_region
       if (clipping_region_stack.count)

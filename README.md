@@ -51,8 +51,9 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 
 ## Change Log
 
-###v0.8.9 - April 27, 2017
+###v0.8.9 - May 4, 2017
 - [Image Filter] Plasmacore's image filter system which filters available images based on a wildcard path.  New functionality includes `Plasmacore.clear_image_filters` and `Plasmacore.add_image_filter("...")`, which can be used to specify multiple filters.  `Plasmacore.image_filter = "..."` works as before and is equivalent to calling `Plasmacore.clear_filters.add_filter("...")`.
+- [View] Added `View.reload_images`.  This finds all properties of the current view that are instanceOf either `Image` or `Image[]` and reloads them, unloading unused textures and loading new textures.  As an example, say `Plasmacore.image_filter = "1024x768"` and you create a `Image("BG.png")` - this might load the texture "1024x768/BG.png".  If you change the image filter to be `2048x1536` and call `reload_images()`, first the texture `1024x768/BG.png` will be unloaded (if it is now unreferenced)` and then the texture `2048x1536/BG.png` will be loaded.  Note that the `ImageInfo` associated with each image is changing as a result of the updated filter and the image reloading, which is "how it knows" what to replace with what.
 
 ###v0.8.8 - April 27, 2017
 - [Font] `Font.measure()` no longer attempts to `load()` the font because that could result in attempting to load the font image hundreds or thousands of times if `measure()` was called from `on(PointerEvent)` rather than `on_update()` or `on_draw()`.  Updated `SystemFont` and `DefaultFont` to define their measurements without having to load their bitmap data.

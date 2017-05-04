@@ -13,11 +13,25 @@ class List<<$DataType>> : GenericList
     method init( initial_capacity:Int32 )
       if (initial_capacity) data = Array<<$DataType>>( initial_capacity )
 
-    method init( initial_capacity:Int32, initial_value:$DataType )
+    method init( initial_capacity:Int32, initial_value:$DataType ) [preferred]
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = initial_value
+      endIf
+
+    method init( initial_capacity:Int32, fn:Function()->($DataType) )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = fn()
+      endIf
+
+    method init( initial_capacity:Int32, fn:Function(Int32)->($DataType) )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = fn( i )
       endIf
 
     method apply( fn:Function($DataType) )->this

@@ -19,13 +19,20 @@ augment Image[]
       endWhich
 
     method collect_texture_names( texture_names:StringTable<<Logical>> )
-      forEach (image in this) image.collect_texture_names( texture_names )
+      forEach (image in this)
+        if (image) image.collect_texture_names( texture_names )
+      endForEach
 
     method load->this
       if (is_loaded) return this
       is_loaded = true
       forEach (image in this) image.load
       return this
+
+    method reload_image_info
+      forEach (image in this)
+        if (image) image.reload_image_info
+      endForEach
 
     method unload->this
       forEach (image in this) image.unload

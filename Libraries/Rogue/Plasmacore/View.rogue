@@ -65,6 +65,27 @@ class View
       this.is_active = false
       display.view = new_view
 
+    method collect_texture_names( texture_names:StringTable<<Logical>>, &include_fonts )
+      local type_Image = <<Plasmacore::Image>>
+      local type_ImageList = <<Plasmacore::Image[]>>
+      local type_Font = <<Plasmacore::Font>>
+      forEach (p in type_info.properties)
+
+        if (p.type.instance_of(type_Image))
+          local image = get_property<<Image>>( p.name )
+          if (image) image.collect_texture_names( texture_names )
+
+        elseIf (p.type.instance_of(type_ImageList))
+          local images = get_property<<Image[]>>( p.name )
+          if (images) images.collect_texture_names( texture_names )
+
+        elseIf (p.type.instance_of(type_Font))
+          local font = get_property<<Font>>( p.name )
+          if (font) font.collect_texture_names( texture_names )
+        endIf
+
+      endForEach
+
     method exit_state
       local new_state : State
       if (state.next_state)
@@ -246,6 +267,51 @@ class View
       local cur = state
       while (cur.next_state) cur = cur.next_state
       cur.next_state = new_state
+
+    method reload_images( &keep_unused_textures )
+      local texture_names = StringTable<<Logical>>()
+
+      # Collect texture names before reloading
+      collect_texture_names( texture_names )
+      texture_names[ forEach in texture_names.keys ] = false
+
+      # Reload each image
+      local type_Image = <<Plasmacore::Image>>
+      local type_ImageList = <<Plasmacore::Image[]>>
+      forEach (p in type_info.properties)
+
+        if (p.type.instance_of(type_Image))
+          local image = get_property<<Image>>( p.name )
+          if (image) image.reload_image_info
+
+        elseIf (p.type.instance_of(type_ImageList))
+          local images = get_property<<Image[]>>( p.name )
+          if (images) images.reload_image_info
+        endIf
+      endForEach
+
+      # Update used textures
+      collect_texture_names( texture_names )
+
+      # Unload unused textures
+      local entry = texture_names.first_entry
+      while (entry)
+        if (not entry.value)
+          local texture = Display.textures_by_name[ entry.key ]
+          if (texture) texture.unload
+        endIf
+        entry = entry.next_entry
+      endWhile
+
+      # Load new textures
+      entry = texture_names.first_entry
+      while (entry)
+        if (entry.value)
+          Texture( entry.key ).load
+        endIf
+        entry = entry.next_entry
+      endWhile
+
 
     method set_state( new_state:State )->this
       change_state( new_state )
