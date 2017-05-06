@@ -44,7 +44,7 @@ class Display [singleton]
     # Disclosed by the native layer - usually 60
 
     updates_per_second  = 60
-    # Arbitrary - usually left at 60.  Determineds how often View/State on_update() is called.
+    # Arbitrary - usually left at 60.  Determines how often View/State on_update() is called.
 
     background_color = Color.BLACK : Color
 

@@ -45,8 +45,12 @@ class Image
       init( Plasmacore.find_image_info( name ) )
 
     method init( image_info )
-      size = image_info.display_size
-      original_size = size
+      if (image_info)
+        size = image_info.display_size
+        original_size = size
+      else
+        init( Bitmap(32,32,Color.WHITE) )
+      endIf
 
     method init( other:Image )
       name            = other.name
