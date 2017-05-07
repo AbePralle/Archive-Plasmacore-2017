@@ -27,7 +27,8 @@ routine launch_image_compiler
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
                       |#     [italic]              # Uses software rendering to create an italic effect
                       |#                           # If used, specify 'italic' in the 'varfont' tag as well.
-                      |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH]
+                      |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH] [resize:WxH]
+                      |#   adjust image:<filepath> [scale:1/2] [resize:WxH]
                       |#
                       |# ATTTRIBUTES
                       |#   @ ... resize:WxH
@@ -86,7 +87,7 @@ routine launch_image_compiler
 endRoutine
 
 
-class Bitmaps : Table<<String,Bitmap>> [singleton]
+class BitmapCache : Table<<String,Bitmap>> [singleton]
   METHODS
     method get( name:String )->Bitmap
       local bitmap = prior.get( name )
@@ -96,6 +97,9 @@ class Bitmaps : Table<<String,Bitmap>> [singleton]
       this[ name ] = bitmap
 
       return bitmap
+
+    method invalidate( name:String )
+      remove( name )
 endClass
 
 class ImageCompileError : Error
@@ -346,7 +350,13 @@ class ImageCommand
           local args = parse_args
           require_arg( args, "from" )
           require_arg( args, "to" )
-          image_copy( args )
+          copy_image( args )
+
+        case "adjust"
+          icom.all_images = null
+          local args = parse_args
+          require_arg( args, "image" )
+          adjust_image( args )
 
         case "set"
           local setting = parse_name_value
@@ -718,7 +728,7 @@ class ImageCommand
       println " [$x$]" (bitmap.width,bitmap.height)
       save_bitmap( bitmap, image_name )
 
-    method image_copy( args:@{} )
+    method copy_image( args:@{} )
       require_arg( args, "from" )
       require_arg( args, "to" )
       local from_filepath = args//from->String
@@ -740,19 +750,15 @@ class ImageCommand
 
           local dest_timestamp = File.timestamp( dest_filepath )
           local src_timestamp = File.timestamp( src_filepath )
-          sufficient (src_timestamp > dest_timestamp)
-
-          #sufficient (icom.file_timestamp > dest_timestamp)
-
-          escapeContingent
+          necessary (src_timestamp > dest_timestamp)
 
         satisfied
-          image_copy( src_filepath, dest_filepath, args )
+          copy_image( src_filepath, dest_filepath, args )
 
         endContingent
       endForEach
 
-    method image_copy( from_filepath:String, to_filepath:String, args:Value )
+    method copy_image( from_filepath:String, to_filepath:String, args:Value )
       local attributes = @{}
       forEach (attr in icom.attributes)
         if (File.matches_wildcard_pattern(from_filepath,attr//pattern))
@@ -768,25 +774,30 @@ class ImageCommand
       local scale = Convert.parse_scale( this, select{ args.contains("scale"):args//scale || args//rescale } )
 
       local resize = false
+      local fixed_resize = false
       local from_size : XY
       local to_size   : XY
       if (args//resize)
         local resize_dims = args//resize->String.split( "->" )
-        if (resize_dims.count == 2)
-          resize = true
-          from_size = Convert.parse_dimensions( this, resize_dims.first )
-          to_size   = Convert.parse_dimensions( this, resize_dims.last )
-          if (not args//scale)
-            # Derive scale from resize args
-            scale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
-          endIf
-        endIf
+        which (resize_dims.count)
+          case 1
+            fixed_resize = true
+            to_size   = Convert.parse_dimensions( this, resize_dims.first )
+          case 2
+            resize = true
+            from_size = Convert.parse_dimensions( this, resize_dims.first )
+            to_size   = Convert.parse_dimensions( this, resize_dims.last )
+            if (not args//scale)
+              # Derive scale from resize args
+              scale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
+            endIf
+        endWhich
       endIf
 
-      if (scale == 1.0)
+      if (scale == 1.0 and not fixed_resize)
         File.copy( from_filepath, to_filepath )
       else
-        local bitmap = Bitmaps[ from_filepath ]
+        local bitmap = BitmapCache[ from_filepath ]
         local w = bitmap.width
         local h = bitmap.height
 
@@ -794,7 +805,11 @@ class ImageCommand
           local characters = Convert.extract_varfont_characters( this, bitmap )
           print "  # character".pluralized( characters.count )
           print " [$x$] -> " (w,h)
-          forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
+          if (fixed_resize)
+            forEach (ch in characters) ch.resize( to_size )
+          else
+            forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
+          endIf
           bitmap = Convert.pack_varfont_characters( this, characters )
           println " [$x$]" (bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
@@ -809,9 +824,18 @@ class ImageCommand
           local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
           print "  $x$ tiles" (tiles_wide,tiles_high)
           print " [$x$] -> " (w,h)
-          forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
+          if (fixed_resize)
+            forEach (tile in tiles) tile.resize( to_size )
+          else
+            forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
+          endIf
           bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
           println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, to_filepath )
+
+        elseIf (fixed_resize)
+          bitmap = bitmap.resized( to_size )
+          println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
           save_bitmap( bitmap, to_filepath )
 
         else
@@ -828,10 +852,138 @@ class ImageCommand
         endIf
       endIf
 
+    method adjust_image( args:@{} )
+      local filepath = args//image->String
+      if (filepath.begins_with("Images/")) filepath = "Assets/" + filepath
+      if (not filepath.begins_with("Assets/Images/")) filepath = "Assets/Images/" + filepath
+      local files = collect_files( filepath )
+      forEach (src_filepath in files)
+        local from_folder = File.before_wildcard_pattern( filepath )
+        local ext = src_filepath.after_last( "." ).to_lowercase
+
+        contingent
+          necessary  (not File.is_folder(src_filepath))
+          necessary  (ext == "png" or ext == "jpeg" or ext == "jpg")
+
+        satisfied
+          adjust_image( src_filepath, args )
+
+        endContingent
+      endForEach
+
+    method adjust_image( filepath:String, args:Value )
+      local attributes = @{}
+      forEach (attr in icom.attributes)
+        if (File.matches_wildcard_pattern(filepath,attr//pattern))
+          forEach (a in attr//attributes)
+            if (a//value) attributes[ a//name ]         = a//value
+            else          attributes[ a//name->String ] = true
+          endForEach
+        endIf
+      endForEach
+
+      local save_message = "Adjust Image $ " (filepath.after_first("Assets/Images/"))
+
+      local scale = Convert.parse_scale( this, select{ args.contains("scale"):args//scale || args//rescale } )
+
+      local resize = false
+      local fixed_resize = false
+      local from_size : XY
+      local to_size   : XY
+      if (args//resize)
+        local resize_dims = args//resize->String.split( "->" )
+        which (resize_dims.count)
+          case 1
+            fixed_resize = true
+            to_size   = Convert.parse_dimensions( this, resize_dims.first )
+          case 2
+            resize = true
+            from_size = Convert.parse_dimensions( this, resize_dims.first )
+            to_size   = Convert.parse_dimensions( this, resize_dims.last )
+            if (not args//scale)
+              # Derive scale from resize args
+              scale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
+            endIf
+        endWhich
+      endIf
+
+      if (scale != 1.0 or fixed_resize)
+        local bitmap = BitmapCache[ filepath ]
+        local w = bitmap.width
+        local h = bitmap.height
+
+        if (attributes//varfont)
+          local characters = Convert.extract_varfont_characters( this, bitmap )
+          if (fixed_resize)
+            contingent
+              forEach (ch in characters) sufficient (ch.size != to_size)
+              return
+            endContingent
+          endIf
+          println save_message
+          print "  # character".pluralized( characters.count )
+          print " [$x$] -> " (w,h)
+          if (fixed_resize)
+            forEach (ch in characters) ch.resize( to_size )
+          else
+            forEach (ch in characters) ch.resize( ch.width*scale, ch.height*scale )
+          endIf
+          bitmap = Convert.pack_varfont_characters( this, characters )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, filepath )
+
+        elseIf (attributes//split)
+          local size = Convert.parse_dimensions( this, attributes//split )
+          local tiles_wide = size//width->Int32
+          local tiles_high = size//height->Int32
+          if (tiles_wide * tiles_high == 0)
+            throw error( ''Illegal 'split' size of $x$ for "$".'' (tiles_wide,tiles_high,filepath) )
+          endIf
+          if (fixed_resize)
+            if (to_size == bitmap.size / XY(tiles_wide,tiles_high)) return
+          endIf
+          local tiles = Convert.bitmap_to_tiles( this, bitmap, tiles_wide, tiles_high )
+          println save_message
+          print "  $x$ tiles" (tiles_wide,tiles_high)
+          print " [$x$] -> " (w,h)
+          if (fixed_resize)
+            forEach (tile in tiles) tile.resize( to_size )
+          else
+            forEach (tile in tiles) tile.resize( tile.width*scale, tile.height*scale )
+          endIf
+          bitmap = Convert.tiles_to_bitmap( this, tiles, tiles_wide, tiles_high )
+          println " [$x$]" (bitmap.width,bitmap.height)
+          save_bitmap( bitmap, filepath )
+
+        elseIf (fixed_resize)
+          if (to_size == bitmap.size) return
+          bitmap = bitmap.resized( to_size )
+          println save_message
+          println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
+          save_bitmap( bitmap, filepath )
+
+        else
+          local new_w = (w * scale)->Int32
+          local new_h = (h * scale)->Int32
+          if (resize)
+            if (w == from_size.min and h == from_size.max)     new_w = to_size.min; new_h = to_size.max
+            elseIf (w == from_size.max and h == from_size.min) new_w = to_size.max; new_h = to_size.min
+          endIf
+          if (bitmap.size == XY(new_w,new_h)) return
+          bitmap = bitmap.resized( new_w, new_h )
+          println save_message
+          println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
+
+          save_bitmap( bitmap, filepath )
+        endIf
+      endIf
+
     method save_bitmap( bitmap:Bitmap, to_filepath:String )
       local is_png = true
       local lc = to_filepath.to_lowercase
       if (lc.ends_with(".jpg") or lc.ends_with(".jpeg")) is_png = false
+
+      BitmapCache.invalidate( to_filepath )
 
       File.create_folder( File.folder(to_filepath) )
       if (is_png)
@@ -1047,7 +1199,7 @@ class Asset
 
   METHODS
     method init( cmd, filepath, attributes )
-      local bitmap = Bitmaps[ filepath ]
+      local bitmap = BitmapCache[ filepath ]
 
       if (attributes//split)
         # Split into tiles
