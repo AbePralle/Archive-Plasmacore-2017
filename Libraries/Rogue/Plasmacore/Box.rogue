@@ -129,8 +129,14 @@ $endIf
       local v = (height * scale - height) / 2
       return expanded( h, v, h, v )
 
+    method operator*( scale:XY )->Box
+      return Box( position*scale, size*scale )
+
     method operator/( scale:Real64 )->Box
       return this * (1/scale)
+
+    method operator/( scale:XY )->Box
+      return Box( position/scale, size/scale )
 
     method operator&( rhs:Box )->Box?
       # Returns the intersection of this box with another box.

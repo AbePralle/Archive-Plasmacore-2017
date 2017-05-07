@@ -367,14 +367,11 @@ $endIf
       local new_width   = other.width
       local new_height  = other.height
 
-      # Each ARGB component needs a separate int
-      resize_row_buffer.ensure_capacity( new_width * 4 )
-      resize_row_buffer.clear
-      forEach (1..new_width*4) resize_row_buffer.add( 0 )
+      # Each ARGB component needs a separate int + divisor
+      resize_row_buffer.clear.expand_to_count( new_width * 5 )
 
       local src_i = 0
       local dest_i = 0
-      local total_area = this_width * this_height
 
       local available = new_height
       forEach (1..new_height)
@@ -382,7 +379,6 @@ $endIf
         while (need >= available)
           resize_add_row( src_i, new_width, available )
           src_i += this_width
-
           need -= available
           available = new_height
         endWhile
@@ -395,7 +391,7 @@ $endIf
             available = new_height
           endIf
         endIf
-        resize_write_row( other, dest_i, new_width, total_area )
+        resize_write_row( other, dest_i, new_width )
         dest_i += new_width
       endForEach
 
@@ -407,16 +403,20 @@ $endIf
       native @|RogueByte* src = (RogueByte*)($pixels->data->as_int32s + $src_i);
 
       forEach (1..new_width)
+        local n = 0
         local b = 0
         local g = 0
         local r = 0
         local a = 0
         local need = this_width
         while (need >= available)
-          b += native("(RogueInt32)src[0]")->Int32 * available
-          g += native("(RogueInt32)src[1]")->Int32 * available
-          r += native("(RogueInt32)src[2]")->Int32 * available
-          a += native("(RogueInt32)src[3]")->Int32 * available
+          if (native("(RogueInt32)src[3]")->Int32)
+            b += native("(RogueInt32)src[0]")->Int32 * available
+            g += native("(RogueInt32)src[1]")->Int32 * available
+            r += native("(RogueInt32)src[2]")->Int32 * available
+            a += native("(RogueInt32)src[3]")->Int32 * available
+            n += available
+          endIf
           native @|src += 4;
 
           need -= available
@@ -424,10 +424,13 @@ $endIf
         endWhile
 
         if (need)
-          b += native("(RogueInt32)src[0]")->Int32 * need
-          g += native("(RogueInt32)src[1]")->Int32 * need
-          r += native("(RogueInt32)src[2]")->Int32 * need
-          a += native("(RogueInt32)src[3]")->Int32 * need
+          if (native("(RogueInt32)src[3]")->Int32)
+            b += native("(RogueInt32)src[0]")->Int32 * need
+            g += native("(RogueInt32)src[1]")->Int32 * need
+            r += native("(RogueInt32)src[2]")->Int32 * need
+            a += native("(RogueInt32)src[3]")->Int32 * need
+            n += need
+          endIf
 
           available -= need
           if (available == 0)
@@ -440,26 +443,39 @@ $endIf
         buffer[buffer_i+1] += g * multiplier
         buffer[buffer_i+2] += r * multiplier
         buffer[buffer_i+3] += a * multiplier
+        buffer[buffer_i+4] += n * multiplier
 
-        buffer_i += 4
+        buffer_i += 5
       endForEach
 
-    method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, divisor:Int32 )
+    method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32 )
       local row_buffer = resize_row_buffer
       native @|RogueByte*  dest = (RogueByte*)($dest_bitmap->pixels->data->as_int32s + $dest_i);
               |RogueInt32* buffer = $row_buffer->data->as_int32s;
+              |RogueInt32  divisor;
 
       forEach (1..new_width)
-        native @|dest[0]   = buffer[0] / $divisor;
+        native @|if ((divisor = buffer[4]))
+                |{
+                |  dest[0] = buffer[0] / divisor;
+                |  dest[1] = buffer[1] / divisor;
+                |  dest[2] = buffer[2] / divisor;
+                |  dest[3] = buffer[3] / divisor;
+                |}
+                |else
+                |{
+                |  dest[0] = 0;
+                |  dest[1] = 0;
+                |  dest[2] = 0;
+                |  dest[3] = 0;
+                |}
                 |buffer[0] = 0;
-                |dest[1]   = buffer[1] / $divisor;
                 |buffer[1] = 0;
-                |dest[2]   = buffer[2] / $divisor;
                 |buffer[2] = 0;
-                |dest[3]   = buffer[3] / $divisor;
                 |buffer[3] = 0;
+                |buffer[4] = 0;
                 |dest   += 4;
-                |buffer += 4;
+                |buffer += 5;
       endForEach
 
     method resized( new_width:Int32, new_height:Int32 )->Bitmap

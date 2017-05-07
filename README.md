@@ -2,8 +2,8 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.9
-Date      | May 6, 2017
+Version   | v0.8.10
+Date      | May 7, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
 
@@ -50,6 +50,11 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+### v0.8.10 - May 7, 2017
+- [Box] Added `Box.operator*(XY)` and `Box.operator/(XY)` that scales both the position and the size of the box by the argument.
+- [Asset Compiler] Eliminated edge-tinting artifacts produced by resizing images in the image compiler (and class Bitmap).  Before, fully transparent e.g. black pixels were being averaged in with neighboring pixels.  Now fully transparent pixels are not averaged in at all.
+- [Rogue] Updated to Rogue v1.1.38 with fixed-size list creation (e.g. `Dim<<Int32>>(3,4)`).
 
 ### v0.8.9 - May 6, 2017
 - [Image Filter] Plasmacore's image filter system which filters available images based on a wildcard path.  New functionality includes `Plasmacore.clear_image_filters` and `Plasmacore.add_image_filter("...")`, which can be used to specify multiple filters.  `Plasmacore.image_filter = "..."` works as before and is equivalent to calling `Plasmacore.clear_filters.add_filter("...")`.
