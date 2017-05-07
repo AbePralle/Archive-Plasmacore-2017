@@ -2,7 +2,7 @@
 
 About     | Current Release
 ----------|-----------------------
-Version   | v0.8.10
+Version   | v0.8.11
 Date      | May 7, 2017
 Platforms | macOS
 Targets   | macOS, iOS, emscripten, linux
@@ -50,6 +50,9 @@ A sample Plasmacore game project is available here: [https://github.com/AbePrall
 Plasmacore is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
 ## Change Log
+
+### v0.8.11 - May 7, 2017
+- [Dim.rogue] Added missing file Dim.rogue to repo.
 
 ### v0.8.10 - May 7, 2017
 - [Box] Added `Box.operator*(XY)` and `Box.operator/(XY)` that scales both the position and the size of the box by the argument.
