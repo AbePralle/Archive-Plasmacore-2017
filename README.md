@@ -52,7 +52,7 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ## Change Log
 
 ### v0.8.12 - May 7, 2017
-- [Image Compiler] Added command `adjust image:<filepath> [scale:1/2] [resize:WxH]`
+- [Image Compiler] Added command `adjust image:<filepath> [scale:1/2] [resize:WxH] [crop:WxH]`
 
 ### v0.8.11 - May 7, 2017
 - [Dim.rogue] Added missing file Dim.rogue to repo.

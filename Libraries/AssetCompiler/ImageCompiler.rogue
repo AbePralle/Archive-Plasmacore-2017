@@ -28,7 +28,7 @@ routine launch_image_compiler
                       |#     [italic]              # Uses software rendering to create an italic effect
                       |#                           # If used, specify 'italic' in the 'varfont' tag as well.
                       |#   copy   from:<folder> to:<folder> [scale:1/2] [resize:WxH->WxH] [resize:WxH]
-                      |#   adjust image:<filepath> [scale:1/2] [resize:WxH]
+                      |#   adjust image:<filepath> [scale:1/2] [resize:WxH] [crop:WxH]
                       |#
                       |# ATTTRIBUTES
                       |#   @ ... resize:WxH
@@ -795,6 +795,7 @@ class ImageCommand
       endIf
 
       if (scale == 1.0 and not fixed_resize)
+        BitmapCache.invalidate( to_filepath )
         File.copy( from_filepath, to_filepath )
       else
         local bitmap = BitmapCache[ from_filepath ]
@@ -884,10 +885,16 @@ class ImageCommand
 
       local save_message = "Adjust Image $ " (filepath.after_first("Assets/Images/"))
 
+      if ((args.contains("scale") or args.contains("resize")) and args.contains("crop"))
+        println save_message
+        throw error( ''Cannot 'crop' and scale/resize in the same command.'' )
+      endIf
+
       local scale = Convert.parse_scale( this, select{ args.contains("scale"):args//scale || args//rescale } )
 
       local resize = false
       local fixed_resize = false
+      local crop = false
       local from_size : XY
       local to_size   : XY
       if (args//resize)
@@ -905,9 +912,13 @@ class ImageCommand
               scale = ((to_size.min / from_size.min) + (to_size.max / from_size.max)) / 2
             endIf
         endWhich
+
+      elseIf (args//crop)
+        crop = true
+        to_size   = Convert.parse_dimensions( this, args//crop->String )
       endIf
 
-      if (scale != 1.0 or fixed_resize)
+      if (scale != 1.0 or fixed_resize or crop)
         local bitmap = BitmapCache[ filepath ]
         local w = bitmap.width
         local h = bitmap.height
@@ -961,6 +972,14 @@ class ImageCommand
           println save_message
           println "  [$x$] -> [$x$]" (w,h,bitmap.width,bitmap.height)
           save_bitmap( bitmap, filepath )
+
+        elseIf (crop)
+          if (bitmap.size == to_size) return
+          local result = Bitmap( to_size )
+          bitmap.blit( result, ((to_size - bitmap.size)/2).floor )
+          println save_message
+          println "  [$x$] -> [$x$]" (w,h,result.width,result.height)
+          save_bitmap( result, filepath )
 
         else
           local new_w = (w * scale)->Int32
