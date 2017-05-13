@@ -167,6 +167,52 @@ class Bitmap
       return this
 
 
+    method crop( delta:Int32 )->this
+      return crop( delta, delta, delta, delta )
+
+    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32 )->this
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
+
+      local result = Bitmap( width-(left+right), height-(top+bottom) )
+      blit( result, XY(-left,-top) )
+
+      this.width = result.width
+      this.height = result.height
+      this.pixels = result.pixels
+      return this
+
+    method crop( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )->this
+      if (width == new_width and height == new_height) return this
+
+      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
+      local reframed = Bitmap( bounds.size )
+      blit( reframed, bounds.position )
+
+      this.width = reframed.width
+      this.height = reframed.height
+      this.pixels = reframed.pixels
+      return this
+
+    method cropped( delta:Int32 )->this
+      return cropped( delta, delta, delta, delta )
+
+    method cropped( left:Int32, top:Int32, right:Int32, bottom:Int32 )->Bitmap
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
+
+      local result = Bitmap( width-(left+right), height-(top+bottom) )
+      blit( result, XY(-left,-top) )
+
+      return result
+
+    method cropped( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )->Bitmap
+      if (width == new_width and height == new_height) return this
+
+      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
+      local reframed = Bitmap( bounds.size )
+      blit( reframed, bounds.position )
+
+      return reframed
+
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
@@ -339,15 +385,7 @@ $endIf
       return this
 
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )
-      if (width == new_width and height == new_height) return
-
-      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
-      local reframed = Bitmap( bounds.size )
-      blit( reframed, bounds.position )
-
-      this.width = reframed.width
-      this.height = reframed.height
-      this.pixels = reframed.pixels
+      crop( new_width, new_height, anchor )
 
     method resize( new_width:Int32, new_height:Int32 )->this
       return resize( XY(new_width,new_height) )

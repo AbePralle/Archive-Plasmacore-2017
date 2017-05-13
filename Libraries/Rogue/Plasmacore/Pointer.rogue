@@ -14,7 +14,7 @@ class Pointer [singleton]
       elseIf (e.is_move)
         which (positions.count)
           case 0
-            noAction
+            position = e.position
           case 1
             position = e.position
             positions[0] = position
@@ -27,7 +27,7 @@ class Pointer [singleton]
       elseIf (e.is_release)
         which (positions.count)
           case 0
-            noAction
+            position = e.position
           case 1
             position = e.position
             positions.remove_last
