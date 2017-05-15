@@ -98,6 +98,27 @@ $endIf
     method height->Real64 [macro]
       this.size.y
 
+    method intersection( rhs:Box )->Box?
+      # Returns the intersection of this box with another box.
+      local a_x1 = position.x
+      local a_y1 = position.y
+      local a_x2 = a_x1 + size.x
+      local a_y2 = a_y1 + size.y
+
+      local b_x1 = rhs.position.x
+      local b_y1 = rhs.position.y
+      local b_x2 = b_x1 + rhs.size.x
+      local b_y2 = b_y1 + rhs.size.y
+
+      if (a_x1 < b_x1) a_x1 = b_x1
+      if (a_y1 < b_y1) a_y1 = b_y1
+      if (a_x2 > b_x2) a_x2 = b_x2
+      if (a_y2 > b_y2) a_y2 = b_y2
+
+      if (a_x1 >= a_x2 or a_y1 >= a_y2) return null
+
+      return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+
     method intersects( other:Box )->Logical
       return (this & other).exists
 
@@ -113,6 +134,7 @@ $if (not "Console")
 
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
+
 $endIf
 
     method operator==( other:Box )->Logical
@@ -139,25 +161,7 @@ $endIf
       return Box( position/scale, size/scale )
 
     method operator&( rhs:Box )->Box?
-      # Returns the intersection of this box with another box.
-      local a_x1 = position.x
-      local a_y1 = position.y
-      local a_x2 = a_x1 + size.x
-      local a_y2 = a_y1 + size.y
-
-      local b_x1 = rhs.position.x
-      local b_y1 = rhs.position.y
-      local b_x2 = b_x1 + rhs.size.x
-      local b_y2 = b_y1 + rhs.size.y
-
-      if (a_x1 < b_x1) a_x1 = b_x1
-      if (a_y1 < b_y1) a_y1 = b_y1
-      if (a_x2 > b_x2) a_x2 = b_x2
-      if (a_y2 > b_y2) a_y2 = b_y2
-
-      if (a_x1 >= a_x2 or a_y1 >= a_y2) return null
-
-      return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+      return intersection( rhs )
 
     method operator|( rhs:Box )->Box
       # Returns the union of this box with another box.

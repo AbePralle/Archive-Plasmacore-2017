@@ -94,6 +94,30 @@ $if (not "Console")
       local t_denom = B.dot(B)
       if (t_numer > t_denom) return P2
       return P1 + (t_numer / t_denom) * B
+
+    method clamped( ray:Ray )->XY
+      # Returns the point along the given ray that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the ray are defined by:
+      #
+      #   Ray(t) = ray.origin + t * ray.direction
+      #
+      # where t is 0 or higher.  We can define t as:
+      #
+      #   A = pt - line.origin
+      #   B = line.direction
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local A = this - ray.origin
+      local B = ray.direction
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return ray.origin
+      local t_denom = B.dot(B)
+      return ray.origin + (t_numer / t_denom) * B
 $endIf
 
     method cross( other:XY )->Real64
@@ -214,6 +238,9 @@ $endIf
 
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
+
+    method reflected( normal:XY )->XY
+      return this - 2 * (this.dot(normal) * normal)
 
     method rotated( angle:Degrees )->XY [macro]
       XY( this.magnitude, angle->Radians )

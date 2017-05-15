@@ -2,6 +2,12 @@ module Plasmacore
 
 class Line( a:XY, b:XY ) [compound]
   METHODS
+    method at( p:Real64 )->XY
+      return a + (b - a) * p
+
+    method direction->XY
+      return (b - a)
+
     method draw( color:Color )->this
       Display.draw( this, Colors(color) )
       return this
@@ -9,6 +15,21 @@ class Line( a:XY, b:XY ) [compound]
     method draw( colors:Colors )->this
       Display.draw( this, colors )
       return this
+
+    method intersection( other:Line )->XY?
+      # Returns the point of intersection between this line and another line.
+      local P1 = this.a
+      local P2 = this.b
+      local P3 = other.a
+      local P4 = other.b
+      local A = P2 - P1
+      local B = P4 - P3
+      local C = P3 - P1
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      local t1 = A.cross(C) / denom
+      if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
+      return P1 + t0 * A
 
     method intersects( box:Box )->Logical
       return Quad(box).intersects( this )
@@ -32,20 +53,16 @@ class Line( a:XY, b:XY ) [compound]
       # if the triangle contains either end point
       return triangle.contains( a )
 
+    method normal->XY
+      local v = (b - a)
+      return XY( -v.y, v.x )
+
     method operator&( other:Line )->XY?
-      # Returns the point of intersection between this line and another line.
-      local P1 = this.a
-      local P2 = this.b
-      local P3 = other.a
-      local P4 = other.b
-      local A = P2 - P1
-      local B = P4 - P3
-      local C = P3 - P1
-      local denom = B.cross(A)
-      local t0 = B.cross(C) / denom
-      local t1 = A.cross(C) / denom
-      if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
-      return P1 + t0 * A
+      return intersection( other )
+
+    method to->Ray
+      return Ray( a, (b-a).normalized )
+
 endClass
 
 class Line<<$DataType>>( a:$DataType, b:$DataType ) [compound]
