@@ -104,6 +104,11 @@ class Ray( position:XY, direction:XY ) [compound]
     method reflected( box:Box )->Ray
       return reflected( box->Quad )
 
+    method reflected( circle:Circle )->Ray
+      local i = intersection( circle )
+      if (not i.exists) return this
+      return Ray( i.value, direction.reflected( Line(circle.position,i.value).direction.normalized ) )
+
     method reflected( quad:Quad )->Ray
       if (this.intersects(Line(quad.a,quad.b))) return this.reflected( Line(quad.a,quad.b) )
       if (this.intersects(Line(quad.b,quad.c))) return this.reflected( Line(quad.b,quad.c) )
