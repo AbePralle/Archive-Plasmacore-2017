@@ -84,7 +84,10 @@ class Line( a:XY, b:XY ) [compound]
 
     method normal->XY
       local v = (b - a)
-      return XY( -v.y, v.x )
+      return XY( -v.y, v.x ).normalized
+
+    method reversed->Line
+      return Line( b, a )
 
     method operator&( other:Line )->XY?
       return intersection( other )

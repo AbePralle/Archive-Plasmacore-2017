@@ -101,6 +101,12 @@ class Ray( position:XY, direction:XY ) [compound]
     method operator-( offset:XY )->Ray
       return Ray( position - offset, direction )
 
+    method reflected( line:Line )->Ray
+      local i = intersection( line )
+      if (not i.exists) return this
+
+      if (position.side(line) < 0) line = line.reversed
+      return Ray( i.value, direction.reflected( line.normal ) )
 
     method to->Line
       # Returns a Line with this ray's position as the first endpoint with

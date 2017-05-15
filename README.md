@@ -54,7 +54,8 @@ Plasmacore is released into the Public Domain under the terms of the [Unlicense]
 ### v0.8.12 - May 14, 2017
 - [Pointer] `Pointer.position` now tracks mouse on macOS when no buttons are pressed.
 - [Bitmap] Added `crop(delta:Int32)->this`, `crop(left:Int32,top:Int32,right:Int32,bottom:Int32)->this`, and `crop(new_width:Int32,new_height:Int32,anchor=Anchor.CENTER:Anchor)->this` as well as `cropped()` versions that return a modified Bitmap instead of changing this Bitmap in place.
-- [Ray] Added new primitive Ray with various intersects() and intersection() methods.
+- [Ray] Added new primitive Ray with various intersects() and intersection() methods as well as `reflected(Line)->Ray`.
+- [Line] Fixed `Line.normal()->XY` to normalize the result.
 - [Line] Added `Line.intersection(Circle)->Line?`
 - [Image Compiler] Added command `adjust image:<filepath> [scale:1/2] [resize:WxH] [crop:WxH]`
 

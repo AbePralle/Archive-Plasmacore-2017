@@ -239,8 +239,8 @@ $endIf
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
 
-    method reflected( normal:XY )->XY
-      return this - 2 * (this.dot(normal) * normal)
+    method reflected( surface_normal:XY )->XY
+      return this - 2 * (this.dot(surface_normal) * surface_normal)
 
     method rotated( angle:Degrees )->XY [macro]
       XY( this.magnitude, angle->Radians )
@@ -250,6 +250,13 @@ $endIf
 
     method round->XY
       return (this + XY(0.5,0.5)).floor
+
+$if (not "Console")
+    method side( line:Line )->Int32
+      # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
+      # and -1 if on the opposite side
+      return line.direction.cross( this - line.a ).sign
+$endIf
 
     method to->String
       local n = 0
