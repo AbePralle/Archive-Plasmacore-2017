@@ -1,12 +1,12 @@
 module Plasmacore
 
-class Ray( origin:XY, direction:XY ) [compound]
+class Ray( position:XY, direction:XY ) [compound]
   GLOBAL METHODS
-    method create( origin:XY, angle:Degrees )->Ray
-      return Ray( origin, XY(1.0,angle) )
+    method create( position:XY, angle:Degrees )->Ray
+      return Ray( position, XY(1.0,angle) )
 
-    method create( origin:XY, angle:Radians )->Ray
-      return Ray( origin, XY(1.0,angle) )
+    method create( position:XY, angle:Radians )->Ray
+      return Ray( position, XY(1.0,angle) )
 
   METHODS
     method draw( color:Color )->this
@@ -22,26 +22,27 @@ class Ray( origin:XY, direction:XY ) [compound]
 
     method intersection( circle:Circle )->XY?
       # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
-      local delta = origin - circle.position
-      local a = direction.dot( direction )
+      if (circle.contains(position)) return position
+      local delta = position - circle.position
+      local A = direction.dot( direction )
       local v = 2 * direction * delta
-      local b = v.x + v.y
-      local c = delta.dot( delta ) - circle.radius^2
-      local discriminant = b*b - 4*a*c
+      local B = v.x + v.y
+      local C = delta.dot( delta ) - circle.radius^2
+      local discriminant = B*B - 4*A*C
       if (discriminant <= 0) return null
-      local t = (2 * c) / (-b + discriminant.sqrt)
+      local t = (2 * C) / (-B + discriminant.sqrt)
       if (t < 0.0) return null
-      return origin + t * direction
+      return position + t * direction
 
     method intersection( line:Line )->XY?
       local A = direction
       local B = line.b - line.a
-      local C = line.a - origin
+      local C = line.a - position
       local denom = B.cross(A)
       local t0 = B.cross(C) / denom
       local t1 = A.cross(C) / denom
       if (t0 < 0.0 or t1 < 0.0 or t1 > 1.0) return null
-      return origin + t0 * A
+      return position + t0 * A
 
     method intersection( quad:Quad )->XY?
       local i = intersection( Line(quad.a,quad.b) )
@@ -58,12 +59,12 @@ class Ray( origin:XY, direction:XY ) [compound]
     method intersection( other:Ray )->XY?
       local A = direction
       local B = other.direction
-      local C = other.origin - origin
+      local C = other.position - position
       local denom = B.cross(A)
       local t0 = B.cross(C) / denom
       local t1 = A.cross(C) / denom
       if (t0 < 0.0 or t1 < 0.0) return null
-      return origin + t0 * A
+      return position + t0 * A
 
     method intersection( triangle:Triangle )->XY?
       local i = intersection( Line(triangle.a,triangle.b) )
@@ -78,7 +79,7 @@ class Ray( origin:XY, direction:XY ) [compound]
       return intersection( box ).exists
 
     method intersects( circle:Circle )->Logical
-      if (circle.contains(origin)) return true
+      if (circle.contains(position)) return true
       local closest_pt = circle.position.clamped( this )
       return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
 
@@ -95,18 +96,18 @@ class Ray( origin:XY, direction:XY ) [compound]
       return intersection( triangle ).exists
 
     method operator+( offset:XY )->Ray
-      return Ray( origin + offset, direction )
+      return Ray( position + offset, direction )
 
     method operator-( offset:XY )->Ray
-      return Ray( origin - offset, direction )
+      return Ray( position - offset, direction )
 
 
     method to->Line
-      # Returns a Line with this ray's origin as the first endpoint with
+      # Returns a Line with this ray's position as the first endpoint with
       # the second endpoint an arbitrary 10,000 units away.
       return this->Line( 10_000 )
 
     method to->Line( length:Real64 )
-      return Line( origin, origin + direction*length )
+      return Line( position, position + direction*length )
 
 endClass

@@ -16,6 +16,35 @@ class Line( a:XY, b:XY ) [compound]
       Display.draw( this, colors )
       return this
 
+    method intersection( circle:Circle )->Line?
+      # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+      if (circle.contains(a))
+        if (circle.contains(b))
+          return this
+        else
+          return Line( a, Line(b,a)->Ray.intersection(circle).value )
+        endIf
+      else
+        if (circle.contains(b))
+          return Line( this->Ray.intersection(circle).value, b )
+        else
+          # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+          local delta = a - circle.position
+          local direction = b - a
+          local A = direction.dot( direction )
+          local v = 2 * direction * delta
+          local B = v.x + v.y
+          local C = delta.dot( delta ) - circle.radius^2
+          local discriminant = B*B - 4*A*C
+          if (discriminant <= 0) return null
+          discriminant = discriminant.sqrt
+          local t1 = (-B + discriminant) / (2 * A )
+          local t2 = (-B - discriminant) / (2 * A )
+          if (t1 < 0.0 or t2 < 0.0) return null
+          return Line( a + t1 * direction, a + t2 * direction )
+        endIf
+      endIf
+
     method intersection( other:Line )->XY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a

@@ -103,21 +103,21 @@ $if (not "Console")
       #
       # Points along the ray are defined by:
       #
-      #   Ray(t) = ray.origin + t * ray.direction
+      #   Ray(t) = ray.position + t * ray.direction
       #
       # where t is 0 or higher.  We can define t as:
       #
-      #   A = pt - line.origin
+      #   A = pt - line.position
       #   B = line.direction
       #   t = dot(A,B) / dot(B,B)
       #
       # as this is the projection of A along and proportional to B.
-      local A = this - ray.origin
+      local A = this - ray.position
       local B = ray.direction
       local t_numer = A.dot(B)
-      if (t_numer < 0) return ray.origin
+      if (t_numer < 0) return ray.position
       local t_denom = B.dot(B)
-      return ray.origin + (t_numer / t_denom) * B
+      return ray.position + (t_numer / t_denom) * B
 $endIf
 
     method cross( other:XY )->Real64
