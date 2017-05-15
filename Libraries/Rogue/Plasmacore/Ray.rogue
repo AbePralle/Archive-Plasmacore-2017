@@ -101,12 +101,26 @@ class Ray( position:XY, direction:XY ) [compound]
     method operator-( offset:XY )->Ray
       return Ray( position - offset, direction )
 
+    method reflected( box:Box )->Ray
+      return reflected( box->Quad )
+
+    method reflected( quad:Quad )->Ray
+      if (this.intersects(Line(quad.a,quad.b))) return this.reflected( Line(quad.a,quad.b) )
+      if (this.intersects(Line(quad.b,quad.c))) return this.reflected( Line(quad.b,quad.c) )
+      if (this.intersects(Line(quad.c,quad.d))) return this.reflected( Line(quad.c,quad.d) )
+      return this.reflected( Line(quad.d,quad.a) )
+
     method reflected( line:Line )->Ray
       local i = intersection( line )
       if (not i.exists) return this
 
       if (position.side(line) < 0) line = line.reversed
       return Ray( i.value, direction.reflected( line.normal ) )
+
+    method reflected( triangle:Triangle )->Ray
+      if (this.intersects(Line(triangle.a,triangle.b))) return this.reflected( Line(triangle.a,triangle.b) )
+      if (this.intersects(Line(triangle.b,triangle.c))) return this.reflected( Line(triangle.b,triangle.c) )
+      return this.reflected( Line(triangle.c,triangle.a) )
 
     method to->Line
       # Returns a Line with this ray's position as the first endpoint with
