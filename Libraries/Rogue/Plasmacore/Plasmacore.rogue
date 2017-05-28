@@ -5,6 +5,7 @@
 $include "Anchor.rogue"
 $include "Bitmap.rogue"
 $include "Box.rogue"
+$include "Box2D.rogue"
 $include "Color.rogue"
 $include "JPEG.rogue"
 $include "PNG.rogue"

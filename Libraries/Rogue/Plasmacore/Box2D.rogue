@@ -1,0 +1,18 @@
+class Box2DWorld
+  DEPENDENCIES
+    nativeHeader #include "Box2D/Box2D.h"
+
+  PROPERTIES
+    native "b2World* world;"
+
+  METHODS
+    method init( gravity:Real64 )
+      native @|$this->world = new b2World( b2Vec2(0,(float)$gravity) );
+
+    method on_cleanup
+      native @|if ($this->world)
+              |{
+              |  delete $this->world;
+              |  $this->world = 0;
+              |}
+endClass

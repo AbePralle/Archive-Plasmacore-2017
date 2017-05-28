@@ -5,8 +5,12 @@ Display( "Main" ).view = MainView()
 #Plasmacore.show_fps = true
 
 class MainView : View
+  PROPERTIES
+    box2d_world : Box2DWorld
+
   METHODS
     method on_start
+      box2d_world = Box2DWorld( 15 )
       change_state( InitialState() )
 
     method on( e:PointerEvent )
