@@ -1,6 +1,9 @@
 module Plasmacore
 
 class XY( x:Real64, y:Real64 ) [compound]
+  DEFINITIONS
+    EPSILON = (1e-6)
+
   GLOBAL METHODS
     method create->XY
       return XY( 0, 0 )
@@ -150,7 +153,7 @@ $endIf
       return x.is_power_of_two and y.is_power_of_two
 
     method is_zero->Logical
-      return x == 0 and y == 0
+      return x.abs <= EPSILON and y.abs <= EPSILON
 
     method magnitude->Real64
       return Math.sqrt( x*x + y*y )
@@ -176,8 +179,11 @@ $endIf
       # Returns the normal of the this vector.
       return XY( -y, x )
 
-    method normalized->XY [macro]
-      XY( 1.0, this.radians )
+    method normalized->XY
+      local msq = x*x + y*y
+      if (msq <= EPSILON) return XY(0,0)
+      local m = msq.sqrt
+      return XY( x/m, y/m )
 
     method operator==( other:XY )->Logical
       return (x == other.x) and (y == other.y)
