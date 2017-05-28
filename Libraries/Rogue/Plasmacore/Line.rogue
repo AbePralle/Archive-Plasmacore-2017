@@ -1,6 +1,10 @@
 module Plasmacore
 
 class Line( a:XY, b:XY ) [compound]
+  GLOBAL METHODS
+    method create( ax:Real64, ay:Real64, bx:Real64, by:Real64 )->Line
+      return Line( XY(ax,ay), XY(bx,by) )
+
   METHODS
     method at( p:Real64 )->XY
       return a + (b - a) * p
