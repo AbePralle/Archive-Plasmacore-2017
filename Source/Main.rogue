@@ -6,22 +6,26 @@ Display( "Main" ).view = MainView()
 
 class MainView : View
   PROPERTIES
-    box2d_world : Box2DWorld
+    world : Box2DWorld
+    body  : Box2DBody
 
   METHODS
     method on_start
-      box2d_world = Box2DWorld( 15 )
+      world = Box2DWorld()
+      body = Box2DBody.dynamic( world, XY(0,0) )
       change_state( InitialState() )
 
     method on( e:PointerEvent )
 
     method on_draw
+      Circle( Display.center+body.position, 16 ).fill( Color.RED )
 
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
+      world.update
 endClass
 
 

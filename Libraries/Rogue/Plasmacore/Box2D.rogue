@@ -1,18 +1,395 @@
+using Plasmacore
+
 class Box2DWorld
   DEPENDENCIES
     nativeHeader #include "Box2D/Box2D.h"
 
   PROPERTIES
-    native "b2World* world;"
+    native "b2World* b2_world;"
+    velocity_iterations = 8
+    position_iterations = 3
+    pending_bodies = Box2DBody[]
 
   METHODS
+    method init
+      init( 9.8 )
+
     method init( gravity:Real64 )
-      native @|$this->world = new b2World( b2Vec2(0,(float)$gravity) );
+      native @|$this->b2_world = new b2World( b2Vec2(0,(float)$gravity) );
 
     method on_cleanup
-      native @|if ($this->world)
+      native @|if ($this->b2_world)
               |{
-              |  delete $this->world;
-              |  $this->world = 0;
+              |  delete $this->b2_world;
+              |  $this->b2_world = 0;
               |}
+
+    method update
+      forEach (body in pending_bodies) body.spawn
+      pending_bodies.clear
+
+      local time_step = Real32(1) / Display.updates_per_second
+      native @|if ($this->b2_world)
+              |{
+              |  $this->b2_world->Step( $time_step, $velocity_iterations, $position_iterations );
+              |}
+
 endClass
+
+enum Box2DBodyType
+  CATEGORIES
+    STATIC
+    DYNAMIC
+    KINEMATIC
+endEnum
+
+class Box2DBody
+  PROPERTIES
+    world      : Box2DWorld
+    is_created : Logical
+    native "b2BodyDef b2_body_def;"
+    native "b2Body*   b2_body;"
+
+  GLOBAL METHODS
+    method dynamic( world:Box2DWorld, position:XY, angle=Radians(0):Radians )->Box2DBody
+      return Box2DBody( world, Box2DBodyType.DYNAMIC, position, angle )
+
+    method static( world:Box2DWorld, position:XY, angle=Radians(0):Radians )->Box2DBody
+      return Box2DBody( world, Box2DBodyType.STATIC, position, angle )
+
+  METHODS
+    method init( world )
+      world.pending_bodies.add( this )
+
+      # Set up body def defaults
+      native @|b2BodyDef defaults;
+              |memcpy( &$this->b2_body_def, &defaults, sizeof(b2BodyDef) );
+
+    method init( world, _type:Box2DBodyType, _position:XY, _angle:Radians )
+      init( world )
+      type = _type
+      position = _position
+      angle = _angle
+
+    method allow_sleep->Logical
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetAllowSleep();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.allowSleep;
+              |}
+
+    method angle->Radians
+      local value : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  $value = $this->b2_body->GetAngle();
+              |}
+              |else
+              |{
+              |  $value = $this->b2_body_def.angle;
+              |}
+      return Radians( value )
+
+    method angular_damping->Real64
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetAngularDamping();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.angularDamping;
+              |}
+
+    method angular_velocity->Radians
+      local value : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  $value = $this->b2_body->GetAngularVelocity();
+              |}
+              |else
+              |{
+              |  $value = $this->b2_body_def.angularVelocity;
+              |}
+      return Radians( value )
+
+    method destroy
+      if (is_created)
+        native @|if ($this->b2_body)
+                |{
+                |  $this->world->b2_world->DestroyBody( $this->b2_body );
+                |  $this->b2_body = 0;
+                |}
+      else
+        # Prevent this body in the world's pending_list from actually being created
+        is_created = true
+      endIf
+
+    method exists->Logical
+      return native( "($this->b2_body != 0)" )->Logical
+
+    method gravity_scale->Real64
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetGravityScale();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.gravityScale;
+              |}
+
+    method is_active->Logical
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetActive();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.active;
+              |}
+
+    method is_awake->Logical
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetAwake();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.awake;
+              |}
+
+    method is_bullet->Logical
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetBullet();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.bullet;
+              |}
+
+    method linear_damping->Real64
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetLinearDamping();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.linearDamping;
+              |}
+
+    method linear_velocity->XY
+      local x, y : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  b2Vec2 v = $this->b2_body->GetLinearVelocity();
+              |  $x = v.x;
+              |  $y = v.y;
+              |}
+              |else
+              |{
+              |  $x = $this->b2_body_def.linearVelocity.x;
+              |  $y = $this->b2_body_def.linearVelocity.y;
+              |}
+      return XY(x,y)
+
+    method position->XY
+      local x, y : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  b2Vec2 v = $this->b2_body->GetPosition();
+              |  $x = v.x;
+              |  $y = v.y;
+              |}
+              |else
+              |{
+              |  $x = $this->b2_body_def.position.x;
+              |  $y = $this->b2_body_def.position.y;
+              |}
+      return XY(x,y)
+
+    method prevent_rotation->Logical
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetFixedRotation();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.fixedRotation;
+              |}
+
+    method set_allow_sleep( new_allow_sleep:Logical )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAllowSleep( $new_allow_sleep );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.allowSleep = $new_allow_sleep;
+              |}
+      return this
+
+    method set_angle( new_angle:Radians )->this
+      native @|if ($this->b2_body)
+              |{
+              |  b2Vec2 pos = $this->b2_body->GetPosition();
+              |  $this->b2_body->SetTransform( pos, (float) $new_angle.value );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angle = (float) $new_angle.value;
+              |}
+      return this
+
+    method set_angular_damping( new_angular_damping:Real64 )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAngularDamping( (float) $new_angular_damping );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angularDamping = (float) $new_angular_damping;
+              |}
+      return this
+
+    method set_angular_velocity( new_angular_velocity:Radians )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAngularVelocity( (float) $new_angular_velocity.value );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angularVelocity = (float) $new_angular_velocity.value;
+              |}
+      return this
+
+    method set_gravity_scale( new_gravity_scale:Real64 )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetGravityScale( (float) $new_gravity_scale );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.gravityScale = (float) $new_gravity_scale;
+              |}
+      return this
+
+    method set_is_active( new_is_active:Logical )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetActive( $new_is_active );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.active = $new_is_active;
+              |}
+      return this
+
+    method set_is_awake( new_is_awake:Logical )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAwake( $new_is_awake );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.awake = $new_is_awake;
+              |}
+      return this
+
+    method set_is_bullet( new_is_bullet:Logical )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetBullet $new_is_bullet );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.bullet = $new_is_bullet;
+              |}
+      return this
+
+    method set_linear_damping( new_linear_damping:Real64 )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetLinearDamping( (float) $new_linear_damping );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.linearDamping = (float) $new_linear_damping;
+              |}
+      return this
+
+    method set_linear_velocity( new_linear_velocity:XY )->this
+      native @|float x = (float) $new_linear_velocity.x;
+              |float y = (float) $new_linear_velocity.y;
+              |if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetLinearVelocity( b2Vec2(x,y) );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.linearVelocity.x = x;
+              |  $this->b2_body_def.linearVelocity.y = y;
+              |}
+      return this
+
+
+    method set_position( new_position:XY )->this
+      native @|float x = (float) $new_position.x;
+              |float y = (float) $new_position.y;
+              |if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetTransform( b2Vec2(x,y), $this->b2_body->GetAngle() );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.position.x = x;
+              |  $this->b2_body_def.position.y = y;
+              |}
+      return this
+
+    method set_prevent_rotation( new_prevent_rotation:Logical )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetFixedRotation( $new_prevent_rotation );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.fixedRotation = $new_prevent_rotation;
+              |}
+      return this
+
+    method set_type( new_type:Box2DBodyType )->this
+      native @|b2BodyType type;
+              |switch ($new_type.value)
+              |{
+              |  case 1:  type = b2_dynamicBody; break;
+              |  case 2:  type = b2_kinematicBody; break;
+              |  default: type = b2_staticBody; break;
+              |}
+              |
+              |if ($this->b2_body) $this->b2_body->SetType( type );
+              |else                $this->b2_body_def.type = type;
+
+      return this
+
+    method spawn
+      if (is_created) return  # has already been destroyed
+      is_created = true
+      native @|$this->b2_body = $this->world->b2_world->CreateBody( &$this->b2_body_def );
+
+    method type->Box2DBodyType
+      local value : Int32
+      native @|b2BodyType type;
+              |if ($this->b2_body) type = $this->b2_body->GetType();
+              |else                type = $this->b2_body_def.type;
+              |switch (type)
+              |{
+              |  case b2_dynamicBody:   $value = 1; break;
+              |  case b2_kinematicBody: $value = 2; break;
+              |  default:               $value = 0; break;
+              |}
+      return Box2DBodyType( value )
+endClass
+
