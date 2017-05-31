@@ -1,6 +1,7 @@
-using Plasmacore
+module Box2D
+using  Plasmacore
 
-class Box2DWorld
+class World
   DEPENDENCIES
     nativeHeader #include "Box2D/Box2D.h"
 
@@ -8,7 +9,7 @@ class Box2DWorld
     native "b2World* b2_world;"
     velocity_iterations = 8
     position_iterations = 3
-    pending_bodies = Box2DBody[]
+    pending_bodies = Body[]
 
   METHODS
     method init
@@ -16,6 +17,29 @@ class Box2DWorld
 
     method init( gravity:Real64 )
       native @|$this->b2_world = new b2World( b2Vec2(0,(float)$gravity) );
+
+    method add( body:Body )->Body
+      body.world = this
+      pending_bodies.add( body )
+      return body
+
+    method add( type:BodyType, circle:Circle, rotation=Radians(0):Radians )->CircleFixture
+      return add( Body(type,circle.position,rotation) ).attach( Circle(XY(0,0),circle.radius) )
+
+    method add( type:BodyType, circle:Circle, rotation:Degrees )->CircleFixture
+      return add( type, circle, rotation->Radians )
+
+    method add( type:BodyType, box:Box, rotation=Radians(0):Radians )->QuadFixture
+      return add( Body(type,box.center,rotation) ).attach( Box(-box.size/2,box.size) )
+
+    method add( type:BodyType, box:Box, rotation:Degrees )->QuadFixture
+      return add( type, box, rotation->Radians )
+
+    method add( type:BodyType, quad:Quad )->QuadFixture
+      return add( Body(type,quad.centroid,Radians(0)) ).attach( quad - quad.centroid )
+
+    method add( type:BodyType, triangle:Triangle )->TriangleFixture
+      return add( Body(type,triangle.centroid,Radians(0)) ).attach( triangle - triangle.centroid )
 
     method on_cleanup
       native @|if ($this->b2_world)
@@ -36,40 +60,71 @@ class Box2DWorld
 
 endClass
 
-enum Box2DBodyType
+enum BodyType
   CATEGORIES
     STATIC
     DYNAMIC
     KINEMATIC
 endEnum
 
-class Box2DBody
+class Body
   PROPERTIES
-    world      : Box2DWorld
+    world      : World
     is_created : Logical
+    fixtures   = Fixture[]
     native "b2BodyDef b2_body_def;"
     native "b2Body*   b2_body;"
 
   GLOBAL METHODS
-    method dynamic( world:Box2DWorld, position:XY, angle=Radians(0):Radians )->Box2DBody
-      return Box2DBody( world, Box2DBodyType.DYNAMIC, position, angle )
+    method dynamic( position:XY, rotation=Radians(0):Radians )->Body
+      return Body( BodyType.DYNAMIC, position, rotation )
 
-    method static( world:Box2DWorld, position:XY, angle=Radians(0):Radians )->Box2DBody
-      return Box2DBody( world, Box2DBodyType.STATIC, position, angle )
+    method dynamic( position:XY, rotation:Degrees )->Body
+      return Body( BodyType.DYNAMIC, position, rotation->Radians )
+
+    method static( position:XY, rotation=Radians(0):Radians )->Body
+      return Body( BodyType.STATIC, position, rotation )
+
+    method static( position:XY, rotation:Degrees )->Body
+      return Body( BodyType.STATIC, position, rotation->Radians )
 
   METHODS
-    method init( world )
-      world.pending_bodies.add( this )
+    method init( _type:BodyType, _position:XY, _rotation:Radians )
 
       # Set up body def defaults
       native @|b2BodyDef defaults;
               |memcpy( &$this->b2_body_def, &defaults, sizeof(b2BodyDef) );
 
-    method init( world, _type:Box2DBodyType, _position:XY, _angle:Radians )
-      init( world )
       type = _type
       position = _position
-      angle = _angle
+      rotation = _rotation
+
+    method init( _type:BodyType, _position:XY, _rotation:Degrees )
+      init( _type, _position, _rotation->Radians )
+
+    method attach( circle:Circle )->CircleFixture
+      local fixture = CircleFixture( this, circle )
+      fixtures.add( fixture )
+      if (native("!!$this->b2_body")->Logical) fixture.spawn
+      return fixture
+
+    method attach( box:Box, rotation=Radians(0):Radians )->QuadFixture
+      local fixture = QuadFixture( this, box, rotation )
+      fixtures.add( fixture )
+      if (native("!!$this->b2_body")->Logical) fixture.spawn
+      return fixture
+
+    method attach( quad:Quad )->QuadFixture
+      local fixture = QuadFixture( this, quad )
+      fixtures.add( fixture )
+      if (native("!!$this->b2_body")->Logical) fixture.spawn
+      return fixture
+
+    method attach( triangle:Triangle )->TriangleFixture
+      local fixture = TriangleFixture( this, triangle )
+      fixtures.add( fixture )
+      if (native("!!$this->b2_body")->Logical) fixture.spawn
+      return fixture
 
     method allow_sleep->Logical
       native @|if ($this->b2_body)
@@ -80,40 +135,6 @@ class Box2DBody
               |{
               |  return $this->b2_body_def.allowSleep;
               |}
-
-    method angle->Radians
-      local value : Real64
-      native @|if ($this->b2_body)
-              |{
-              |  $value = $this->b2_body->GetAngle();
-              |}
-              |else
-              |{
-              |  $value = $this->b2_body_def.angle;
-              |}
-      return Radians( value )
-
-    method angular_damping->Real64
-      native @|if ($this->b2_body)
-              |{
-              |  return $this->b2_body->GetAngularDamping();
-              |}
-              |else
-              |{
-              |  return $this->b2_body_def.angularDamping;
-              |}
-
-    method angular_velocity->Radians
-      local value : Real64
-      native @|if ($this->b2_body)
-              |{
-              |  $value = $this->b2_body->GetAngularVelocity();
-              |}
-              |else
-              |{
-              |  $value = $this->b2_body_def.angularVelocity;
-              |}
-      return Radians( value )
 
     method destroy
       if (is_created)
@@ -220,6 +241,40 @@ class Box2DBody
               |  return $this->b2_body_def.fixedRotation;
               |}
 
+    method rotation->Radians
+      local value : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  $value = $this->b2_body->GetAngle();
+              |}
+              |else
+              |{
+              |  $value = $this->b2_body_def.angle;
+              |}
+      return Radians( value )
+
+    method rotation_damping->Real64
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetAngularDamping();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.angularDamping;
+              |}
+
+    method rotation_velocity->Radians
+      local value : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  $value = $this->b2_body->GetAngularVelocity();
+              |}
+              |else
+              |{
+              |  $value = $this->b2_body_def.angularVelocity;
+              |}
+      return Radians( value )
+
     method set_allow_sleep( new_allow_sleep:Logical )->this
       native @|if ($this->b2_body)
               |{
@@ -228,40 +283,6 @@ class Box2DBody
               |else
               |{
               |  $this->b2_body_def.allowSleep = $new_allow_sleep;
-              |}
-      return this
-
-    method set_angle( new_angle:Radians )->this
-      native @|if ($this->b2_body)
-              |{
-              |  b2Vec2 pos = $this->b2_body->GetPosition();
-              |  $this->b2_body->SetTransform( pos, (float) $new_angle.value );
-              |}
-              |else
-              |{
-              |  $this->b2_body_def.angle = (float) $new_angle.value;
-              |}
-      return this
-
-    method set_angular_damping( new_angular_damping:Real64 )->this
-      native @|if ($this->b2_body)
-              |{
-              |  $this->b2_body->SetAngularDamping( (float) $new_angular_damping );
-              |}
-              |else
-              |{
-              |  $this->b2_body_def.angularDamping = (float) $new_angular_damping;
-              |}
-      return this
-
-    method set_angular_velocity( new_angular_velocity:Radians )->this
-      native @|if ($this->b2_body)
-              |{
-              |  $this->b2_body->SetAngularVelocity( (float) $new_angular_velocity.value );
-              |}
-              |else
-              |{
-              |  $this->b2_body_def.angularVelocity = (float) $new_angular_velocity.value;
               |}
       return this
 
@@ -360,7 +381,41 @@ class Box2DBody
               |}
       return this
 
-    method set_type( new_type:Box2DBodyType )->this
+    method set_rotation( new_rotation:Radians )->this
+      native @|if ($this->b2_body)
+              |{
+              |  b2Vec2 pos = $this->b2_body->GetPosition();
+              |  $this->b2_body->SetTransform( pos, (float) $new_rotation.value );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angle = (float) $new_rotation.value;
+              |}
+      return this
+
+    method set_rotation_damping( new_rotation_damping:Real64 )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAngularDamping( (float) $new_rotation_damping );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angularDamping = (float) $new_rotation_damping;
+              |}
+      return this
+
+    method set_rotation_velocity( new_rotation_velocity:Radians )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetAngularVelocity( (float) $new_rotation_velocity.value );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.angularVelocity = (float) $new_rotation_velocity.value;
+              |}
+      return this
+
+    method set_type( new_type:BodyType )->this
       native @|b2BodyType type;
               |switch ($new_type.value)
               |{
@@ -378,8 +433,9 @@ class Box2DBody
       if (is_created) return  # has already been destroyed
       is_created = true
       native @|$this->b2_body = $this->world->b2_world->CreateBody( &$this->b2_body_def );
+      (forEach in fixtures).spawn
 
-    method type->Box2DBodyType
+    method type->BodyType
       local value : Int32
       native @|b2BodyType type;
               |if ($this->b2_body) type = $this->b2_body->GetType();
@@ -390,6 +446,139 @@ class Box2DBody
               |  case b2_kinematicBody: $value = 2; break;
               |  default:               $value = 0; break;
               |}
-      return Box2DBodyType( value )
+      return BodyType( value )
+endClass
+
+
+class Fixture [abstract]
+  PROPERTIES
+    body : Body
+    native "b2FixtureDef b2_fixture_def;"
+    native "b2Fixture*   b2_fixture;"
+
+  METHODS
+    method init
+      # Copy defaults
+      native @|b2FixtureDef defaults;
+              |memcpy( (void*)&$this->b2_fixture_def, (void*)&defaults, sizeof(b2FixtureDef) );
+
+    method init( body, circle:Circle )
+      init
+      native @|$this->b2_circle_shape.m_p.Set( (float)$circle.position.x, (float)$circle.position.y );
+              |$this->b2_circle_shape.m_radius = (float) $circle.radius;
+              |$this->b2_fixture_def.shape = &$this->b2_circle_shape;
+
+    method spawn
+      native @|if ( !$this->b2_fixture )
+              |{
+              |  $this->b2_fixture = $body->b2_body->CreateFixture( &$this->b2_fixture_def );
+              |}
+
+endClass
+
+
+class CircleFixture : Fixture
+  PROPERTIES
+    native "b2CircleShape b2_shape;"
+    circle : Circle
+
+  METHODS
+    method init( body, circle )
+      prior.init
+      native @|// Copy defaults
+              |b2CircleShape defaults;
+              |memcpy( (void*)&$this->b2_shape, (void*)&defaults, sizeof(b2CircleShape) );
+              |$this->b2_fixture_def.shape = &$this->b2_shape;
+              |$this->b2_shape.m_p.Set( (float)$circle.position.x, (float)$circle.position.y );
+              |$this->b2_shape.m_radius = (float) $circle.radius;
+
+    method circle->Circle
+      return Circle( @circle.position.rotated( body.rotation ) + body.position, @circle.radius )
+
+    method draw( color:Color )
+      circle.draw( color )
+
+    method fill( color:Color )
+      circle.fill( color )
+
+    method to->Circle [macro]
+      this.circle
+
+endClass
+
+
+class QuadFixture : Fixture
+  PROPERTIES
+    native "b2Vec2         b2_vertices[4];"
+    native "b2PolygonShape b2_shape;"
+    quad : Quad
+
+  METHODS
+    method init( body, box:Box, rotation=Radians(0):Radians )
+      init( body, Box(-box.size/2, box.size).rotated(rotation) + box.position + box.size/2 )
+
+    method init( body, quad )
+      prior.init
+      native @|// Copy defaults
+              |b2PolygonShape defaults;
+              |memcpy( (void*)&$this->b2_shape, (void*)&defaults, sizeof(b2PolygonShape) );
+              |$this->b2_vertices[0].x = (float) $quad.a.x;  // place in CC order
+              |$this->b2_vertices[0].y = (float) $quad.a.y;
+              |$this->b2_vertices[1].x = (float) $quad.d.x;
+              |$this->b2_vertices[1].y = (float) $quad.d.y;
+              |$this->b2_vertices[2].x = (float) $quad.c.x;
+              |$this->b2_vertices[2].y = (float) $quad.c.y;
+              |$this->b2_vertices[3].x = (float) $quad.b.x;
+              |$this->b2_vertices[3].y = (float) $quad.b.y;
+              |$this->b2_shape.Set( $this->b2_vertices, 4 );
+              |$this->b2_fixture_def.shape = &$this->b2_shape;
+
+    method draw( color:Color )
+      quad.draw( color )
+
+    method fill( color:Color )
+      quad.fill( color )
+
+    method quad->Quad
+      return (@quad.rotated(body.rotation) + body.position)
+
+    method to->Quad [macro]
+      this.quad
+
+endClass
+
+class TriangleFixture : Fixture
+  PROPERTIES
+    native "b2Vec2         b2_vertices[3];"
+    native "b2PolygonShape b2_shape;"
+    triangle : Triangle
+
+  METHODS
+    method init( body, triangle )
+      prior.init
+      native @|// Copy defaults
+              |b2PolygonShape defaults;
+              |memcpy( (void*)&$this->b2_shape, (void*)&defaults, sizeof(b2PolygonShape) );
+              |$this->b2_vertices[0].x = (float) $triangle.a.x;  // place in CC order
+              |$this->b2_vertices[0].y = (float) $triangle.a.y;
+              |$this->b2_vertices[1].x = (float) $triangle.c.x;
+              |$this->b2_vertices[1].y = (float) $triangle.c.y;
+              |$this->b2_vertices[2].x = (float) $triangle.b.x;
+              |$this->b2_vertices[2].y = (float) $triangle.b.y;
+              |$this->b2_shape.Set( $this->b2_vertices, 3 );
+              |$this->b2_fixture_def.shape = &$this->b2_shape;
+
+    method draw( color:Color )
+      triangle.draw( color )
+
+    method fill( color:Color )
+      triangle.fill( color )
+
+    method triangle->Triangle
+      return (@triangle.rotated(body.rotation) + body.position)
+
+    method to->Triangle [macro]
+      this.triangle
+
 endClass
 

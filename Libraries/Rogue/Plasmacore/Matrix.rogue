@@ -72,6 +72,28 @@ class Matrix( ...
       m.r2c2 =  cos0
       return m
 
+    method transform( delta:XY, k:Real64 )->Matrix
+      return transform( XYZ(delta,1), XYZ(k,k,1) )
+
+    method transform( delta:XYZ, k:Real64 )->Matrix
+      return transform( delta, XYZ(k,k,1) )
+
+    method transform( delta:XY, k:XY )->Matrix
+      return transform( XYZ(delta,1), XYZ(k,1) )
+
+    method transform( delta:XYZ, k:XYZ )->Matrix
+      local m = Matrix()
+      m.r1c1 = k.x
+      m.r2c2 = k.y
+      m.r3c3 = k.z
+      m.r4c4 = 1
+
+      m.r1c4 = delta.x
+      m.r2c4 = delta.y
+      m.r3c4 = delta.z
+
+      return m
+
     method translate( delta:XY )->Matrix
       local m = identity
       m.r1c4 = delta.x

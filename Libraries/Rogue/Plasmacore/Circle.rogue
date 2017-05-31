@@ -98,5 +98,16 @@ class Circle( position:XY, radius:Real64 ) [compound]
     method intersects( triangle:Triangle )->Logical
       return triangle.intersects( this )
 
+    method operator+( delta:XY )->Circle
+      return Circle( position+delta, radius )
+
+    method operator-( delta:XY )->Circle
+      return Circle( position-delta, radius )
+
+    method operator*( scale:Real64 )->Circle
+      return Circle( position*scale, radius*scale )
+
+    method operator/( scale:Real64 )->Circle
+      return Circle( position/scale, radius/scale )
 endClass
 

@@ -9,6 +9,9 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method bounds->Box
       return this->Box
 
+    method centroid->XY
+      return (a + b + c + d) / 4
+
     method contains( point:XY )->Logical
       return (Triangle(a,b,c).contains(point) or Triangle(a,c,d).contains(point))
 
@@ -99,6 +102,18 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
 
     method operator-( position:XY )->Quad
       return Quad( a-position, b-position, c-position, d-position )
+
+    method operator*( scale:Real64 )->Quad
+      return Quad( a*scale, b*scale, c*scale, d*scale )
+
+    method operator/( scale:Real64 )->Quad
+      return Quad( a/scale, b/scale, c/scale, d/scale )
+
+    method operator*( scale:XY )->Quad
+      return Quad( a*scale, b*scale, c*scale, d*scale )
+
+    method operator/( scale:XY )->Quad
+      return Quad( a/scale, b/scale, c/scale, d/scale )
 
     method rotated( angle:Degrees )->Quad [macro]
       this.rotated( angle->Radians )
