@@ -23,6 +23,12 @@ class World
       pending_bodies.add( body )
       return body
 
+    method add( type:BodyType, position:XY, rotation=Radians(0):Radians )->Body
+      return add( Body(type,position,rotation) )
+
+    method add( type:BodyType, position:XY, rotation:Degrees )->Body
+      return add( Body(type,position,rotation->Radians) )
+
     method add( type:BodyType, circle:Circle, rotation=Radians(0):Radians )->CircleFixture
       return add( Body(type,circle.position,rotation) ).attach( Circle(XY(0,0),circle.radius) )
 
@@ -200,31 +206,6 @@ class Body
               |  return $this->b2_body_def.bullet;
               |}
 
-    method linear_damping->Real64
-      native @|if ($this->b2_body)
-              |{
-              |  return $this->b2_body->GetLinearDamping();
-              |}
-              |else
-              |{
-              |  return $this->b2_body_def.linearDamping;
-              |}
-
-    method linear_velocity->XY
-      local x, y : Real64
-      native @|if ($this->b2_body)
-              |{
-              |  b2Vec2 v = $this->b2_body->GetLinearVelocity();
-              |  $x = v.x;
-              |  $y = v.y;
-              |}
-              |else
-              |{
-              |  $x = $this->b2_body_def.linearVelocity.x;
-              |  $y = $this->b2_body_def.linearVelocity.y;
-              |}
-      return XY(x,y)
-
     method position->XY
       local x, y : Real64
       native @|if ($this->b2_body)
@@ -339,32 +320,6 @@ class Body
               |}
       return this
 
-    method set_linear_damping( new_linear_damping:Real64 )->this
-      native @|if ($this->b2_body)
-              |{
-              |  $this->b2_body->SetLinearDamping( (float) $new_linear_damping );
-              |}
-              |else
-              |{
-              |  $this->b2_body_def.linearDamping = (float) $new_linear_damping;
-              |}
-      return this
-
-    method set_linear_velocity( new_linear_velocity:XY )->this
-      native @|float x = (float) $new_linear_velocity.x;
-              |float y = (float) $new_linear_velocity.y;
-              |if ($this->b2_body)
-              |{
-              |  $this->b2_body->SetLinearVelocity( b2Vec2(x,y) );
-              |}
-              |else
-              |{
-              |  $this->b2_body_def.linearVelocity.x = x;
-              |  $this->b2_body_def.linearVelocity.y = y;
-              |}
-      return this
-
-
     method set_position( new_position:XY )->this
       native @|float x = (float) $new_position.x;
               |float y = (float) $new_position.y;
@@ -438,6 +393,58 @@ class Body
 
       return this
 
+    method set_velocity( new_linear_velocity:XY )->this
+      native @|float x = (float) $new_linear_velocity.x;
+              |float y = (float) $new_linear_velocity.y;
+              |if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetLinearVelocity( b2Vec2(x,y) );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.linearVelocity.x = x;
+              |  $this->b2_body_def.linearVelocity.y = y;
+              |}
+      return this
+
+    method set_velocity_damping( new_linear_damping:Real64 )->this
+      native @|if ($this->b2_body)
+              |{
+              |  $this->b2_body->SetLinearDamping( (float) $new_linear_damping );
+              |}
+              |else
+              |{
+              |  $this->b2_body_def.linearDamping = (float) $new_linear_damping;
+              |}
+      return this
+
+
+    method velocity->XY
+      local x, y : Real64
+      native @|if ($this->b2_body)
+              |{
+              |  b2Vec2 v = $this->b2_body->GetLinearVelocity();
+              |  $x = v.x;
+              |  $y = v.y;
+              |}
+              |else
+              |{
+              |  $x = $this->b2_body_def.linearVelocity.x;
+              |  $y = $this->b2_body_def.linearVelocity.y;
+              |}
+      return XY(x,y)
+
+    method velocity_damping->Real64
+      native @|if ($this->b2_body)
+              |{
+              |  return $this->b2_body->GetLinearDamping();
+              |}
+              |else
+              |{
+              |  return $this->b2_body_def.linearDamping;
+              |}
+
+
     method spawn
       if (is_created) return  # has already been destroyed
       is_created = true
@@ -476,6 +483,93 @@ class Fixture [abstract]
       native @|$this->b2_circle_shape.m_p.Set( (float)$circle.position.x, (float)$circle.position.y );
               |$this->b2_circle_shape.m_radius = (float) $circle.radius;
               |$this->b2_fixture_def.shape = &$this->b2_circle_shape;
+
+    method destroy
+      body.destroy
+
+    method bounce->Real64
+      native @|if ($this->b2_fixture)
+              |{
+              |  return $this->b2_fixture->GetRestitution();
+              |}
+              |else
+              |{
+              |  return $this->b2_fixture_def.restitution;
+              |}
+
+    method density->Real64
+      native @|if ($this->b2_fixture)
+              |{
+              |  return $this->b2_fixture->GetDensity();
+              |}
+              |else
+              |{
+              |  return $this->b2_fixture_def.density;
+              |}
+
+    method friction->Real64
+      native @|if ($this->b2_fixture)
+              |{
+              |  return $this->b2_fixture->GetFriction();
+              |}
+              |else
+              |{
+              |  return $this->b2_fixture_def.friction;
+              |}
+
+    method is_sensor->Logical
+      native @|if ($this->b2_fixture)
+              |{
+              |  return $this->b2_fixture->IsSensor();
+              |}
+              |else
+              |{
+              |  return $this->b2_fixture_def.sensor;
+              |}
+
+    method set_bounce( new_bounce:Real64 )->this
+      native @|if ($this->b2_fixture)
+              |{
+              |  $this->b2_fixture->SetRestitution( (float) $new_bounce );
+              |}
+              |else
+              |{
+              |  $this->b2_fixture_def.restitution = (float) $new_bounce;
+              |}
+      return this
+
+    method set_density( new_density:Real64 )->this
+      native @|if ($this->b2_fixture)
+              |{
+              |  $this->b2_fixture->SetDensity( (float) $new_density );
+              |}
+              |else
+              |{
+              |  $this->b2_fixture_def.density = (float) $new_density;
+              |}
+      return this
+
+    method set_friction( new_friction:Real64 )->this
+      native @|if ($this->b2_fixture)
+              |{
+              |  $this->b2_fixture->SetFriction( (float) $new_friction );
+              |}
+              |else
+              |{
+              |  $this->b2_fixture_def.friction = (float) $new_friction;
+              |}
+      return this
+
+    method set_is_sensor( new_setting:Logical )->this
+      native @|if ($this->b2_fixture)
+              |{
+              |  $this->b2_fixture->SetSensor( $new_setting );
+              |}
+              |else
+              |{
+              |  $this->b2_fixture_def.sensor = (float) $new_setting;
+              |}
+      return this
 
     method spawn
       native @|if ( !$this->b2_fixture )

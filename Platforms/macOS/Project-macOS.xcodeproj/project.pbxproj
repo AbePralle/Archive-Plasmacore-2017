@@ -75,6 +75,13 @@
 			remoteGlobalIDString = 779BEEAF92FBAC003F4E12870486C400CABB307B387EA80;
 			remoteInfo = Box2D;
 		};
+		305349A61EDE8E4600400E0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30F184FD1DEB5F3D002FE6D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 30091DEC1EDB3D68006035B8;
+			remoteInfo = Box2D;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -439,6 +446,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				305349A71EDE8E4600400E0D /* PBXTargetDependency */,
 			);
 			name = "Project-macOS";
 			productName = "Project-macOS";
@@ -599,6 +607,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		305349A71EDE8E4600400E0D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 30091DEC1EDB3D68006035B8 /* Box2D */;
+			targetProxy = 305349A61EDE8E4600400E0D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		30F1850C1DEB5F3D002FE6D4 /* MainMenu.xib */ = {

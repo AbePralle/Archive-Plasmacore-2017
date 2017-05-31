@@ -2,6 +2,10 @@ module Plasmacore
 
 class Triangle( a:XY, b:XY, c:XY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
+  GLOBAL METHODS
+    method create( ax:Real64, ay:Real64, bx:Real64, by:Real64, cx:Real64, cy:Real64 )->Triangle
+      return Triangle( XY(ax,ay), XY(bx,by), XY(cx,cy) )
+
   METHODS
     method centroid->XY
       return (a + b + c) / 3
