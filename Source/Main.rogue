@@ -11,6 +11,7 @@ class MainView : View
     c : CircleFixture
     q, q2 : QuadFixture
     t : TriangleFixture
+    l : LineFixture
 
   METHODS
     method on_start
@@ -19,6 +20,7 @@ class MainView : View
       q = world.add( BodyType.STATIC,  Box(-1,4,2,2), Degrees(-20) )
       q2 = world.add( BodyType.STATIC,  Quad(XY(-5,8),XY(3,10),XY(3,11),XY(-4,11)) )
       t = world.add( BodyType.STATIC,  Triangle(XY(5,13),XY(6,15),XY(3,15)) )
+      l = world.add( BodyType.STATIC, Line(XY(4,16),XY(8,16)) )
 
       change_state( InitialState() )
 
@@ -30,6 +32,7 @@ class MainView : View
       q.fill( Color.YELLOW )
       q2.draw( Color.GREEN )
       t.draw( Color.WHITE )
+      l.draw( Color.ORANGE )
       Display.pop_object_transform
 
     method on_resize

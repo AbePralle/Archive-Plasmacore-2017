@@ -35,6 +35,9 @@ class World
     method add( type:BodyType, box:Box, rotation:Degrees )->QuadFixture
       return add( type, box, rotation->Radians )
 
+    method add( type:BodyType, line:Line )->LineFixture
+      return add( Body(type,line.at(0.5),Radians(0)) ).attach( line - line.at(0.5) )
+
     method add( type:BodyType, quad:Quad )->QuadFixture
       return add( Body(type,quad.centroid,Radians(0)) ).attach( quad - quad.centroid )
 
@@ -110,6 +113,12 @@ class Body
 
     method attach( box:Box, rotation=Radians(0):Radians )->QuadFixture
       local fixture = QuadFixture( this, box, rotation )
+      fixtures.add( fixture )
+      if (native("!!$this->b2_body")->Logical) fixture.spawn
+      return fixture
+
+    method attach( line:Line )->LineFixture
+      local fixture = LineFixture( this, line )
       fixtures.add( fixture )
       if (native("!!$this->b2_body")->Logical) fixture.spawn
       return fixture
@@ -474,6 +483,31 @@ class Fixture [abstract]
               |  $this->b2_fixture = $body->b2_body->CreateFixture( &$this->b2_fixture_def );
               |}
 
+endClass
+
+
+class LineFixture : Fixture
+  PROPERTIES
+    native "b2EdgeShape b2_shape;"
+    line : Line
+
+  METHODS
+    method init( body, line )
+      prior.init
+      native @|// Copy defaults
+              |b2EdgeShape defaults;
+              |memcpy( (void*)&$this->b2_shape, (void*)&defaults, sizeof(b2EdgeShape) );
+              |$this->b2_shape.Set( b2Vec2($line.a.x,$line.a.y), b2Vec2($line.b.x,$line.b.y) );
+              |$this->b2_fixture_def.shape = &$this->b2_shape;
+
+    method draw( color:Color )
+      line.draw( color )
+
+    method line->Line
+      return @line.rotated(body.rotation) + body.position
+
+    method to->Line [macro]
+      this.line
 endClass
 
 

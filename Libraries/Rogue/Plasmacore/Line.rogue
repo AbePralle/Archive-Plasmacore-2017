@@ -93,8 +93,32 @@ class Line( a:XY, b:XY ) [compound]
     method reversed->Line
       return Line( b, a )
 
+    method operator+( position:XY )->Line
+      return Line( a+position, b+position )
+
+    method operator-( position:XY )->Line
+      return Line( a-position, b-position )
+
+    method operator*( scale:Real64 )->Line
+      return Line( a*scale, b*scale )
+
+    method operator/( scale:Real64 )->Line
+      return Line( a/scale, b/scale )
+
+    method operator*( scale:XY )->Line
+      return Line( a*scale, b*scale )
+
+    method operator/( scale:XY )->Line
+      return Line( a/scale, b/scale )
+
     method operator&( other:Line )->XY?
       return intersection( other )
+
+    method rotated( angle:Degrees )->Line [macro]
+      this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Line
+      return Line( a.rotated(angle), b.rotated(angle) )
 
     method to->Ray
       return Ray( a, (b-a).normalized )
