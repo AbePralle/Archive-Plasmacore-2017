@@ -11,13 +11,24 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode     : Int32
-    syscode     : Int32
-    is_press    : Logical
-    is_repeat   : Logical
+    keycode            : Int32
+    syscode            : Int32
+    is_press           : Logical
+    is_repeat          : Logical
+    modifier_key_state : Int32
 
   METHODS
     method init( keycode, syscode, is_press=false, is_repeat=false )
+      modifier_key_state = Keyboard.modifier_key_state
+
+    method is_alt_pressed->Logical
+      return (modifier_key_state & Keyboard.ALT_MODIFIER_FLAG)
+
+    method is_control_pressed->Logical
+      return (modifier_key_state & Keyboard.CONTROL_MODIFIER_FLAG)
+
+    method is_os_pressed->Logical
+      return (modifier_key_state & Keyboard.OS_MODIFIER_FLAG)
 
     method is_press( _keycode:Int32 )->Logical
       return keycode == _keycode and is_press
@@ -30,6 +41,9 @@ class KeyEvent : Event
 
     method is_release( _keycode:Int32 )->Logical
       return keycode == _keycode and not is_press
+
+    method is_shift_pressed->Logical
+      return (modifier_key_state & Keyboard.SHIFT_MODIFIER_FLAG)
 
     method to->String
       local buffer = StringBuilder()

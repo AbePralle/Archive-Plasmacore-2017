@@ -1,12 +1,38 @@
 module Plasmacore
 
 class Keyboard [singleton]
+  ENUMERATE
+    SHIFT_MODIFIER_FLAG   = 1
+    CONTROL_MODIFIER_FLAG = 2
+    ALT_MODIFIER_FLAG     = 4
+    OS_MODIFIER_FLAG      = 8
+
   PROPERTIES
     key_pressed = Array<<Logical>>( 256 )
 
   METHODS
+    method modifier_key_state->Int32
+      local state = 0
+      if (is_shift_pressed)   state |= SHIFT_MODIFIER_FLAG
+      if (is_control_pressed) state |= CONTROL_MODIFIER_FLAG
+      if (is_alt_pressed)     state |= ALT_MODIFIER_FLAG
+      if (is_os_pressed)      state |= OS_MODIFIER_FLAG
+      return state
+
     method is_key_pressed( keycode:Int32 )->Logical [macro]
       this.key_pressed[ keycode & 255 ]
+
+    method is_alt_pressed->Logical
+      return is_key_pressed(KeyCode.LEFT_ALT) or is_key_pressed(KeyCode.RIGHT_ALT)
+
+    method is_control_pressed->Logical
+      return is_key_pressed(KeyCode.LEFT_CONTROL) or is_key_pressed(KeyCode.RIGHT_CONTROL)
+
+    method is_os_pressed->Logical
+      return is_key_pressed(KeyCode.LEFT_OS) or is_key_pressed(KeyCode.RIGHT_OS)
+
+    method is_shift_pressed->Logical
+      return is_key_pressed(KeyCode.LEFT_SHIFT) or is_key_pressed(KeyCode.RIGHT_SHIFT)
 endClass
 
 class KeyCode

@@ -10,13 +10,17 @@ class World
     velocity_iterations = 8
     position_iterations = 3
     pending_bodies = Body[]
+    bodies         = Body[]
 
   METHODS
     method init
       init( 9.8 )
 
     method init( gravity:Real64 )
-      native @|$this->b2_world = new b2World( b2Vec2(0,(float)$gravity) );
+      init( XY(0,gravity) )
+
+    method init( gravity:XY )
+      native @|$this->b2_world = new b2World( b2Vec2((float)$gravity.x,(float)$gravity.y) );
 
     method add( body:Body )->Body
       body.world = this
@@ -50,6 +54,13 @@ class World
     method add( type:BodyType, triangle:Triangle )->TriangleFixture
       return add( Body(type,triangle.centroid,Radians(0)) ).attach( triangle - triangle.centroid )
 
+    method gravity->XY
+      local x, y : Real64
+      native @|b2Vec2 g = $this->b2_world->GetGravity();
+              |$x = g.x;
+              |$y = g.y;
+      return XY(x,y)
+
     method on_cleanup
       native @|if ($this->b2_world)
               |{
@@ -57,8 +68,18 @@ class World
               |  $this->b2_world = 0;
               |}
 
+    method set_gravity( g:Real64 )->this
+      return set_gravity( XY(0,g) )
+
+    method set_gravity( g:XY )->this
+      native @|$this->b2_world->SetGravity( b2Vec2((float)$g.x,(float)$g.y) );
+      return this
+
     method update
-      forEach (body in pending_bodies) body.spawn
+      forEach (body in pending_bodies)
+        body.spawn
+        bodies.add( body )
+      endForEach
       pending_bodies.clear
 
       local time_step = Real32(1) / Display.updates_per_second
@@ -66,6 +87,14 @@ class World
               |{
               |  $this->b2_world->Step( $time_step, $velocity_iterations, $position_iterations );
               |}
+
+      (forEach in bodies).update
+
+      local any_destroyed = false
+      forEach (body in bodies)
+        if (body.should_destroy) body._destroy; any_destroyed = true
+      endForEach
+      if (any_destroyed) bodies.discard( $.should_destroy )
 
 endClass
 
@@ -78,8 +107,8 @@ endEnum
 
 class Body
   PROPERTIES
-    world      : World
-    is_created : Logical
+    world          : World
+    should_destroy : Logical
     fixtures   = Fixture[]
     native "b2BodyDef b2_body_def;"
     native "b2Body*   b2_body;"
@@ -152,15 +181,16 @@ class Body
               |}
 
     method destroy
-      if (is_created)
+      should_destroy = true
+
+    method _destroy
+      if (should_destroy)
         native @|if ($this->b2_body)
                 |{
                 |  $this->world->b2_world->DestroyBody( $this->b2_body );
                 |  $this->b2_body = 0;
                 |}
-      else
-        # Prevent this body in the world's pending_list from actually being created
-        is_created = true
+        return
       endIf
 
     method exists->Logical
@@ -446,8 +476,7 @@ class Body
 
 
     method spawn
-      if (is_created) return  # has already been destroyed
-      is_created = true
+      if (should_destroy) return
       native @|$this->b2_body = $this->world->b2_world->CreateBody( &$this->b2_body_def );
       (forEach in fixtures).spawn
 
@@ -463,6 +492,22 @@ class Body
               |  default:               $value = 0; break;
               |}
       return BodyType( value )
+
+    method update
+
+endClass
+
+
+class CollisionFilter( category:Int32, collision_mask:Int32, override_flag=0:Int32 ) [compound]
+  # category should be (1:<<:0) up to (1:<<:15)
+  # collision_mask can be any 16-bit categories
+  DEFINITIONS
+    ALWAYS   = CollisionFilter( 0, 0,  1 )
+    NEVER    = CollisionFilter( 0, 0, -1 )
+
+  METHODS
+    method to->String
+      return "($,$,$)" (category->String(&hex).rightmost(4),collision_mask->String(&hex).rightmost(4),override_flag)
 endClass
 
 
@@ -496,6 +541,22 @@ class Fixture [abstract]
               |{
               |  return $this->b2_fixture_def.restitution;
               |}
+
+    method collision_filter()->CollisionFilter
+      local category, collision_mask, override_flag : Int32
+      native @|b2Filter filter;
+              |if ($this->b2_fixture)
+              |{
+              |  filter = $this->b2_fixture->GetFilterData();
+              |}
+              |else
+              |{
+              |  filter = $this->b2_fixture_def.filter;
+              |}
+              |$category = filter.categoryBits;
+              |$collision_mask = filter.maskBits;
+              |$override_flag = filter.groupIndex;
+      return CollisionFilter( category, collision_mask, override_flag )
 
     method density->Real64
       native @|if ($this->b2_fixture)
@@ -535,6 +596,21 @@ class Fixture [abstract]
               |else
               |{
               |  $this->b2_fixture_def.restitution = (float) $new_bounce;
+              |}
+      return this
+
+    method set_collision_filter( new_filter:CollisionFilter )->this
+      native @|b2Filter filter;
+              |filter.categoryBits = (uint16) $new_filter.category;
+              |filter.maskBits = (uint16) $new_filter.collision_mask;
+              |filter.groupIndex = (int16) $new_filter.override_flag;
+              |if ($this->b2_fixture)
+              |{
+              |  $this->b2_fixture->SetFilterData( filter );
+              |}
+              |else
+              |{
+              |  $this->b2_fixture_def.filter = filter;
               |}
       return this
 
