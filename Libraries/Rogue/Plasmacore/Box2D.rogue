@@ -5,8 +5,59 @@ class World
   DEPENDENCIES
     nativeHeader #include "Box2D/Box2D.h"
 
+    nativeHeader
+      struct RogueClassBox2D__World;
+      struct RogueClassBox2D__Fixture;
+      void RogueBox2D__World__handle_begin_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
+      void RogueBox2D__World__handle_end_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
+
+      class PlasmacoreContactListener : public b2ContactListener
+      {
+        public:
+          RogueClassBox2D__World* world;
+
+          PlasmacoreContactListener( RogueClassBox2D__World* world ) : world(world){}
+
+          void BeginContact( b2Contact *contact )
+          {
+            RogueBox2D__World__handle_begin_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(
+              world,
+              (RogueClassBox2D__Fixture*)contact->GetFixtureA()->GetUserData(),
+              (RogueClassBox2D__Fixture*)contact->GetFixtureB()->GetUserData()
+            );
+          }
+
+          void EndContact( b2Contact *contact )
+          {
+            RogueBox2D__World__handle_end_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(
+              world,
+              (RogueClassBox2D__Fixture*)contact->GetFixtureA()->GetUserData(),
+              (RogueClassBox2D__Fixture*)contact->GetFixtureB()->GetUserData()
+            );
+          }
+
+          void PreSolve( b2Contact *contact, const b2Manifold *oldManifold )
+          {
+          }
+
+          void PostSolve( b2Contact *contact, const b2ContactImpulse *impulse )
+          {
+          }
+      };
+    endNativeHeader
+
+  GLOBAL METHODS
+    method handle_begin_contact( world:World, a:Fixture, b:Fixture ) [essential]
+      a.on_begin_contact( b )
+      b.on_begin_contact( a )
+
+    method handle_end_contact( world:World, a:Fixture, b:Fixture ) [essential]
+      a.on_end_contact( b )
+      b.on_end_contact( a )
+
   PROPERTIES
     native "b2World* b2_world;"
+    native "PlasmacoreContactListener* contact_listener;"
     velocity_iterations = 8
     position_iterations = 3
     pending_bodies = Body[]
@@ -21,6 +72,8 @@ class World
 
     method init( gravity:XY )
       native @|$this->b2_world = new b2World( b2Vec2((float)$gravity.x,(float)$gravity.y) );
+              |$this->contact_listener = new PlasmacoreContactListener( $this );
+              |$this->b2_world->SetContactListener( $this->contact_listener );
 
     method add( body:Body )->Body
       body.world = this
@@ -66,6 +119,8 @@ class World
               |{
               |  delete $this->b2_world;
               |  $this->b2_world = 0;
+              |  delete $this->contact_listener;
+              |  $this->contact_listener = 0;
               |}
 
     method set_gravity( g:Real64 )->this
@@ -132,6 +187,7 @@ class Body
       # Set up body def defaults
       native @|b2BodyDef defaults;
               |memcpy( &$this->b2_body_def, &defaults, sizeof(b2BodyDef) );
+              |$this->b2_body_def.userData = $this;
 
       type = _type
       position = _position
@@ -522,6 +578,7 @@ class Fixture [abstract]
       # Copy defaults
       native @|b2FixtureDef defaults;
               |memcpy( (void*)&$this->b2_fixture_def, (void*)&defaults, sizeof(b2FixtureDef) );
+              |$this->b2_fixture_def.userData = $this;
 
     method init( body, circle:Circle )
       init
@@ -587,6 +644,12 @@ class Fixture [abstract]
               |{
               |  return $this->b2_fixture_def.sensor;
               |}
+
+    method on_begin_contact( other:Fixture )
+      noAction
+
+    method on_end_contact( other:Fixture )
+      noAction
 
     method set_bounce( new_bounce:Real64 )->this
       native @|if ($this->b2_fixture)
