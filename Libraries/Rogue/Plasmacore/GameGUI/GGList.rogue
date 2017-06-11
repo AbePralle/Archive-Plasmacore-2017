@@ -77,6 +77,11 @@ class GGList<<$ItemType>> : GGComponent
         else               offset = XY( offset.x, offset.y.or_larger( max_offset ).or_smaller( 0 ) )
       endIf
 
+    method clear->this
+      prior.clear
+      offset = XY(0,0)
+      return this
+
     method count->Int32
       return select{ subcomponents:subcomponents.count || 0 }
 

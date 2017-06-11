@@ -265,6 +265,7 @@ $if (not "Console")
 $endIf
 
     method to->String
+      #{
       local n = 0
       if (x != Math.floor(x) or y != Math.floor(y))
         ++n
@@ -275,6 +276,8 @@ $endIf
         if (n == 9) n = 0
       endIf
       return StringBuilder().print( "[" ).print( x, n ).print( "," ).print( y, n ).print( "]" )->String
+      }#
+      return StringBuilder().print( "[" ).print( x, 2 ).print( "," ).print( y, 2 ).print( "]" )->String
 
     method to->Value( &integer )
       if (integer)

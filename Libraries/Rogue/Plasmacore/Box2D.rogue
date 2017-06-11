@@ -107,14 +107,7 @@ class World
     method add( type:BodyType, triangle:Triangle )->TriangleFixture
       return add( Body(type,triangle.centroid,Radians(0)) ).attach( triangle - triangle.centroid )
 
-    method gravity->XY
-      local x, y : Real64
-      native @|b2Vec2 g = $this->b2_world->GetGravity();
-              |$x = g.x;
-              |$y = g.y;
-      return XY(x,y)
-
-    method on_cleanup
+    method destroy
       native @|if ($this->b2_world)
               |{
               |  delete $this->b2_world;
@@ -123,11 +116,29 @@ class World
               |  $this->contact_listener = 0;
               |}
 
+    method gravity->XY
+      local x, y : Real64
+      native @|b2Vec2 g = $this->b2_world->GetGravity();
+              |$x = g.x;
+              |$y = g.y;
+      return XY(x,y)
+
+    method on_cleanup
+      destroy
+
     method set_gravity( g:Real64 )->this
       return set_gravity( XY(0,g) )
 
     method set_gravity( g:XY )->this
       native @|$this->b2_world->SetGravity( b2Vec2((float)$g.x,(float)$g.y) );
+      return this
+
+    method shift( offset:XY )->this
+      # Adjusts the origin to shift the entire world.
+      native @|if ($this->b2_world)
+              |{
+              |  $this->b2_world->ShiftOrigin( b2Vec2((float)-$offset.x,(float)-$offset.y) );
+              |}
       return this
 
     method update
@@ -137,6 +148,12 @@ class World
       endForEach
       pending_bodies.clear
 
+      local any_destroyed = false
+      forEach (body in bodies)
+        if (body.should_destroy) body._destroy; any_destroyed = true
+      endForEach
+      if (any_destroyed) bodies.discard( $.should_destroy )
+
       local time_step = Real32(1) / Display.updates_per_second
       native @|if ($this->b2_world)
               |{
@@ -144,12 +161,6 @@ class World
               |}
 
       (forEach in bodies).update
-
-      local any_destroyed = false
-      forEach (body in bodies)
-        if (body.should_destroy) body._destroy; any_destroyed = true
-      endForEach
-      if (any_destroyed) bodies.discard( $.should_destroy )
 
 endClass
 
@@ -164,7 +175,8 @@ class Body
   PROPERTIES
     world          : World
     should_destroy : Logical
-    fixtures   = Fixture[]
+    fixtures       = Fixture[]
+    owner          : Object
     native "b2BodyDef b2_body_def;"
     native "b2Body*   b2_body;"
 
@@ -398,12 +410,15 @@ class Body
     method set_is_bullet( new_is_bullet:Logical )->this
       native @|if ($this->b2_body)
               |{
-              |  $this->b2_body->SetBullet $new_is_bullet );
+              |  $this->b2_body->SetBullet( $new_is_bullet );
               |}
               |else
               |{
               |  $this->b2_body_def.bullet = $new_is_bullet;
               |}
+      return this
+
+    method set_owner( @owner )->this
       return this
 
     method set_position( new_position:XY )->this
@@ -573,6 +588,9 @@ class Fixture [abstract]
     native "b2FixtureDef b2_fixture_def;"
     native "b2Fixture*   b2_fixture;"
 
+    on_begin_contact_handler : Function(Fixture)
+    on_end_contact_handler   : Function(Fixture)
+
   METHODS
     method init
       # Copy defaults
@@ -645,11 +663,21 @@ class Fixture [abstract]
               |  return $this->b2_fixture_def.sensor;
               |}
 
+    method on_begin_contact( on_begin_contact_handler )->this
+      return this
+
     method on_begin_contact( other:Fixture )
-      noAction
+      if (on_begin_contact_handler) on_begin_contact_handler( other )
+
+    method on_end_contact( on_end_contact_handler )->this
+      return this
 
     method on_end_contact( other:Fixture )
-      noAction
+      if (on_end_contact_handler) on_end_contact_handler( other )
+
+    method owner->Object
+      if (not body) return null
+      return body.owner
 
     method set_bounce( new_bounce:Real64 )->this
       native @|if ($this->b2_fixture)
@@ -708,6 +736,10 @@ class Fixture [abstract]
               |{
               |  $this->b2_fixture_def.sensor = (float) $new_setting;
               |}
+      return this
+
+    method set_owner( _owner:Object )->this
+      if (body) body.owner = _owner
       return this
 
     method spawn

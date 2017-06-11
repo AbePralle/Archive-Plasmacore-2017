@@ -49,6 +49,10 @@ class GGComponent
     method contains( e:PointerEvent )->Logical
       return bounds.contains( e.position )
 
+    method clear->this
+      if (subcomponents) subcomponents.clear
+      return this
+
     method dispatch( e:PointerEvent )
       if (subcomponents)
         forEach (component in subcomponents)

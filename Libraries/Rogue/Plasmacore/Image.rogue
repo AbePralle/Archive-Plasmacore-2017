@@ -220,7 +220,6 @@ class Image
 
       return true
 
-
     method reload_image_info
       # Reloads this image if the current image filters in use cause the name to resolve
       # to a different specific image.  Does not actually unload previous texture or
@@ -278,6 +277,14 @@ class Image
       return this
 
     method set_rotation( @rotation )->this
+      return this
+
+    method set_rotation( angle:Degrees )->this
+      @rotation = Angles.z( angle )
+      return this
+
+    method set_rotation( angle:Radians )->this
+      @rotation = Angles.z( angle )
       return this
 
     method set_scale( @scale )->this
