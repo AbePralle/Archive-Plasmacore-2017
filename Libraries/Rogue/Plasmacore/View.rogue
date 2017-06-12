@@ -63,9 +63,12 @@ class View
         if (layer.is_visible) layer.on_finish
       endForEach
       this.is_active = false
+      display.view.mark_images_unused
       display.view = new_view
 
-    method collect_texture_names( texture_names:StringTable<<Logical>>, &include_fonts )
+    method collect_texture_names( texture_names=null:StringTable<<Logical>> )->String[]
+      ensure texture_names
+
       local type_Image = <<Plasmacore::Image>>
       local type_ImageList = <<Plasmacore::Image[]>>
       local type_Font = <<Plasmacore::Font>>
@@ -85,6 +88,16 @@ class View
         endIf
 
       endForEach
+
+      return texture_names.keys
+
+    method collect_textures->Texture[]
+      local textures = Texture[]
+      forEach (name in collect_texture_names)
+        local texture = Display.textures_by_name[ name ]
+        if (texture and not textures.contains(texture)) textures.add( texture )
+      endForEach
+      return textures
 
     method exit_state
       local new_state : State
@@ -234,6 +247,36 @@ class View
         Log.println "Loading assets $/$ ($%)" (loaded_asset_count,total_asset_count,(progress*100).format(0))
       endWhile
 
+    method load_images
+
+      # Image textures that were loaded in the old view have already been marked should_unload.
+      # Unmark the ones we'll be using for this view
+      local texture_names = collect_texture_names
+      forEach (name in texture_names)
+        local texture = Display.textures_by_name[ name ]
+        if (texture) texture.should_unload = false
+      endForEach
+
+      # Unload the old textures that are still marked as should_unload
+      forEach (texture in Display.texture_list.cloned())
+        if (texture.should_unload) texture.unload
+      endForEach
+
+      forEach (name in texture_names) Texture( name )
+
+    method mark_images_unused
+      (forEach in collect_textures).should_unload = true
+
+      local type_Font = <<Plasmacore::Font>>
+      forEach (p in type_info.properties)
+
+        if (p.type.instance_of(type_Font))
+          local font = get_property<<Font>>( p.name )
+          if (font and font.data) font.data.is_loaded = false
+
+        endIf
+      endForEach
+
     method on( e:KeyEvent )
 
     method on( e:PointerEvent )
@@ -269,15 +312,15 @@ class View
       cur.next_state = new_state
 
     method reload_images( &keep_unused_textures )
-      local texture_names = StringTable<<Logical>>()
-
       # Collect texture names before reloading
-      collect_texture_names( texture_names )
-      texture_names[ forEach in texture_names.keys ] = false
+      local texture_name_set = StringTable<<Logical>>()
+      local texture_names = collect_texture_names( texture_name_set )
+      texture_name_set[ forEach in texture_names ] = false
 
       # Reload each image
       local type_Image = <<Plasmacore::Image>>
       local type_ImageList = <<Plasmacore::Image[]>>
+      local type_Font = <<Plasmacore::Font>>
       forEach (p in type_info.properties)
 
         if (p.type.instance_of(type_Image))
@@ -287,30 +330,35 @@ class View
         elseIf (p.type.instance_of(type_ImageList))
           local images = get_property<<Image[]>>( p.name )
           if (images) images.reload_image_info
+
+        elseIf (p.type.instance_of(type_Font))
+          local font = get_property<<Font>>( p.name )
+          if (font) font.reload_image_info
+
         endIf
       endForEach
 
       # Update used textures
-      collect_texture_names( texture_names )
+      texture_names = collect_texture_names( texture_name_set )
 
       # Unload unused textures
-      local entry = texture_names.first_entry
-      while (entry)
-        if (not entry.value)
-          local texture = Display.textures_by_name[ entry.key ]
-          if (texture) texture.unload
-        endIf
-        entry = entry.next_entry
-      endWhile
+      if (not keep_unused_textures)
+        forEach (name in texture_names)
+          local entry = texture_name_set.find( name )
+          if (entry and not entry.value)
+            local texture = Display.textures_by_name[ entry.key ]
+            if (texture)
+              texture.unload
+            endIf
+          endIf
+        endForEach
+      endIf
 
       # Load new textures
-      entry = texture_names.first_entry
-      while (entry)
-        if (entry.value)
-          Texture( entry.key ).load
-        endIf
-        entry = entry.next_entry
-      endWhile
+      forEach (name in texture_names)
+        local entry = texture_name_set.find( name )
+        if (entry and entry.value) Texture( entry.key ).load
+      endForEach
 
 
     method set_state( new_state:State )->this

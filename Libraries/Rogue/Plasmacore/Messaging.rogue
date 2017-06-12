@@ -39,8 +39,10 @@ class MessageManager [essential singleton]
     message_type_lookup = StringTable<<String>>()
     # Maps StringBuilder to String
 
-    incoming_message = Message()
-      # Recycled for incoming messages
+    incoming_message_pool = Message[]
+      # Recycled messages
+
+    incoming_message_queue = Message[]
 
     outgoing_message = Message()
       # Recycled for outgoing messages
@@ -110,6 +112,26 @@ class MessageManager [essential singleton]
       outgoing_message.init( type, message_id.value )
       return outgoing_message
 
+    method dispatch_incoming_messages
+      dispatch_incoming_message( forEach in incoming_message_queue )
+      incoming_message_queue.clear
+
+    method dispatch_incoming_message( m:Message )
+      local _list = listeners[ m.type ]
+      if (_list)
+        forEach (listener in _list step -1) listener( m )
+      endIf
+
+      _list = one_time_listeners[ m.type ]
+      if (_list)
+        local n = _list.count
+        forEach (listener in _list step -1) listener( m )
+        _list.discard( 0, n )
+      endIf
+
+      incoming_message_pool.add( m )  # recycle
+
+
     method send( m:Message )
       message_builder.write_int32( m.data.count )
       message_builder.write( m.data )
@@ -125,28 +147,11 @@ class MessageManager [essential singleton]
       io_reader.reset
 
       while (io_reader.has_another)
+        if (incoming_message_pool.is_empty) incoming_message_pool.add( Message() )
+        local incoming_message = incoming_message_pool.remove_last
         incoming_message.init( io_reader )
-        local handled = false
-
-        local _list = listeners[ incoming_message.type ]
-        if (_list)
-          handled = true
-          forEach (listener in _list step -1) listener( incoming_message )
-        endIf
-
-        _list = one_time_listeners[ incoming_message.type ]
-        if (_list)
-          handled = true
-          local n = _list.count
-          forEach (listener in _list step -1) listener( incoming_message )
-          _list.discard( 0, n )
-        endIf
-
-        #{
-        if (not handled)
-          println "Unhandled message " + incoming_message.type
-        endIf
-        }#
+        incoming_message_queue.add( incoming_message )
+        if (incoming_message.type == "Display.on_render") dispatch_incoming_messages
       endWhile
 
       Plasmacore.global_update
@@ -179,6 +184,8 @@ class Message
   PROPERTIES
     type       : String
     message_id : Int32
+    timestamp  : Real64  # set locally; not transmitted or received
+
     data       = Byte[]
     reader     = BufferedDataReader( data )
     writer     = BufferedDataWriter( data )
@@ -191,8 +198,10 @@ class Message
 
   METHODS
     method init
+      timestamp = System.time
 
     method init( new_type:String, message_id )
+      timestamp = System.time
       if (not sent and type) println "ERROR: unsent outgoing message of type '$'." (type)
       type = MessageManager.consolidated_type_name( new_type )
       sent = false
@@ -202,6 +211,7 @@ class Message
       writer.write_int32x( message_id )
 
     method init( source:DataReader )
+      timestamp = System.time
       keys.clear
       offsets.clear
       local size = source.read_int32

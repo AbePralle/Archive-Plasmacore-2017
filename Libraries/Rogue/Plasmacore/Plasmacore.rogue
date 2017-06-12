@@ -127,6 +127,7 @@ class Plasmacore [essential singleton]
           local is_press  = m.logical( "is_press" )
           if (not is_repeat) Keyboard.key_pressed[ keycode & 255 ] = is_press
           local e = KeyEvent( keycode, syscode, is_press, is_repeat )
+          e.timestamp = m.timestamp
           display.handle( e )
         endFunction )
 
@@ -140,6 +141,7 @@ class Plasmacore [essential singleton]
 
           local pos   = XY( m.int32("x"), m.int32("y") ) * scale
           local e = PointerEvent( type, pos, delta, index )
+          e.timestamp = m.timestamp
           Pointer.on( e )
           display.handle( e )
         endFunction )
@@ -150,7 +152,9 @@ class Plasmacore [essential singleton]
           local scale = display.display_scale
           local delta = XY( m.real64("dx"), m.real64("dy") ) * scale
 
-          display.handle( ScrollEvent(delta) )
+          local e = ScrollEvent( delta )
+          e.timestamp = m.timestamp
+          display.handle( e )
         endFunction )
 
       MessageManager.add_listener( "Input.on_stylus_event",
@@ -163,6 +167,7 @@ class Plasmacore [essential singleton]
           forEach (display in Plasmacore.displays)
             if (display.is_configured)
               local e = PointerEvent( type, pos*Display.size, XY(0,0), index )
+              e.timestamp = m.timestamp
               Pointer.on( e )
               display.handle( e )
             endIf
@@ -176,6 +181,7 @@ class Plasmacore [essential singleton]
           local text       : String
           if (m.contains("text")) text = m.string( "text" )
           local e = TextEvent( character, text )
+          e.timestamp = m.timestamp
           display.handle( e )
         endFunction )
 

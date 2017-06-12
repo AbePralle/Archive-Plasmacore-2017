@@ -8,6 +8,7 @@ class Texture
     texture_size     : XY       # In pixels
     uv_size          : XY       # (1,1) in most cases
     is_opaque        : Logical
+    should_unload    : Logical  # Used in View to manage the loading and unloading of images
 
     render_target_id  : Int32
 
@@ -31,9 +32,9 @@ class Texture
         texture = Display.textures_by_name[ filepath ]
         if (texture) return texture.load
 
-        Log.println "Loading " + filepath
         texture = Texture( File(filepath) )
         Display.textures_by_name[ filepath ] = texture
+        texture.load
       else
         Log.println "Image not found: " + name
         texture = Texture( Bitmap(1,1,Color.WHITE) )
@@ -98,8 +99,10 @@ class Texture
       return id?
 
     method load->this
+      should_unload = false
       if (id) return this
 
+      Log.println "Loading " + filepath
       local bitmap = Bitmap( File(filepath) )
       image_size = bitmap.size
 
@@ -111,6 +114,8 @@ class Texture
       uv_size = image_size / texture_size
 
       id = Display.define_texture( id, bitmap, 32 )
+      if (not id) return this
+
       Display.texture_list.add( this )
 
       return this
@@ -149,6 +154,8 @@ class Texture
       this.texture_size.x
 
     method unload->this
+      should_unload = false
+
       if (id)
         Display.delete_texture( id )
         Display.texture_list.remove( this )

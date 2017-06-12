@@ -7,40 +7,21 @@ Display( "Main" ).view = MainView()
 
 class MainView : View
   PROPERTIES
-    world : World
-    c : CircleFixture
-    q, q2 : QuadFixture
-    t : TriangleFixture
-    l : LineFixture
 
   METHODS
     method on_start
-      world = World()
-      c = world.add( BodyType.DYNAMIC, Circle(XY(0,0),1) )
-      q = world.add( BodyType.STATIC,  Box(-1,4,2,2), Degrees(-20) )
-      q2 = world.add( BodyType.STATIC,  Quad(XY(-5,8),XY(3,10),XY(3,11),XY(-4,11)) )
-      t = world.add( BodyType.STATIC,  Triangle(XY(5,13),XY(6,15),XY(3,15)) )
-      l = world.add( BodyType.STATIC, Line(XY(4,16),XY(8,16)) )
 
       change_state( InitialState() )
 
     method on( e:PointerEvent )
 
     method on_draw
-      Display.push_object_transform( Matrix.transform(Display.center,16) )
-      c.fill( Color.RED )
-      q.fill( Color.YELLOW )
-      q2.draw( Color.GREEN )
-      t.draw( Color.WHITE )
-      l.draw( Color.ORANGE )
-      Display.pop_object_transform
 
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
-      world.update
 endClass
 
 

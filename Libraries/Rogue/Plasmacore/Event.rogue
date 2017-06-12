@@ -3,6 +3,7 @@ module Plasmacore
 class Event
   PROPERTIES
     is_consumed = false
+    timestamp   : Real64
 
   METHODS
     method consume

@@ -105,6 +105,7 @@ class Display [singleton]
         if (not view.is_active)
           view.is_active = true
           view.on_start
+          view.load_images
           nextIteration
         endIf
 
@@ -194,8 +195,10 @@ class Display [singleton]
       if (not gl_id)
         native @|GLuint new_id;
                 |glGenTextures( 1, &new_id );
-                |$gl_id = new_id;
+                |$gl_id = (RogueInt32) new_id;
       endIf
+
+      if (not gl_id) return 0
 
       local w = bitmap.width
       local h = bitmap.height

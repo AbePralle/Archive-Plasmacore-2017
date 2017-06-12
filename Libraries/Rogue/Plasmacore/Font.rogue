@@ -61,6 +61,9 @@ class Font
     method is_loaded->Logical
       return data.is_loaded
 
+    method reload_image_info
+      data = data.reload_image_info
+
     method set_anchor( @anchor )->this
       return this
 
@@ -266,7 +269,7 @@ class FontData
 
     method collect_texture_names( texture_names:StringTable<<Logical>> )
       forEach (ch in characters)
-        if (ch) ch.image.collect_texture_names( texture_names )
+        if (ch and ch.image) ch.image.collect_texture_names( texture_names )
       endForEach
 
     method draw( font:Font, text:String, position:XY  )
@@ -392,6 +395,17 @@ class FontData
       if (not info) return XY(0,0)
       if (visual) return info.size.xv + XY(font.spacing,0)
       else        return info.advance + XY(font.spacing,0)
+
+    method reload_image_info->FontData
+      if (name and image_info)
+        local new_image_info = Plasmacore.find_image_info( name )
+        if (new_image_info is not image_info)
+          Display.font_data_by_name.remove( name )
+          return FontData( name )
+        endIf
+      endIf
+
+      return this
 
     method unload
       if (not is_loaded) return
