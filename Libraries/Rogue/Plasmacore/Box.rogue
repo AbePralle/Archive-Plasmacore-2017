@@ -147,9 +147,7 @@ $endIf
       return Box( position-offset, size )
 
     method operator*( scale:Real64 )->Box
-      local h = (width * scale - width) / 2
-      local v = (height * scale - height) / 2
-      return expanded( h, v, h, v )
+      return Box( position*scale, size*scale )
 
     method operator*( scale:XY )->Box
       return Box( position*scale, size*scale )

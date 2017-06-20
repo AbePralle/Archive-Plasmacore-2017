@@ -6,6 +6,7 @@
 
 #if defined(ROGUE_DEBUG_BUILD)
   #define ROGUE_DEBUG_STATEMENT(_s_) _s_
+  #include <assert>
 #else
   #define ROGUE_DEBUG_STATEMENT(_s_)
 #endif
@@ -42,6 +43,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef ROGUE_EXPORT_C
+#  define ROGUE_EXPORT_C extern "C"
+#endif
+#ifndef ROGUE_EXPORT
+#  define ROGUE_EXPORT extern
+#endif
 
 //-----------------------------------------------------------------------------
 //  Garbage Collection
@@ -68,6 +75,16 @@ extern void Rogue_configure_gc();
 #ifdef ROGUE_GC_UNSAFE_COMPOUNDS
   #undef ROGUE_DEF_COMPOUND_REF_PROP
   #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) _t_ _n_
+#endif
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  #undef ROGUE_GC_MODE_BOEHM
+  #define ROGUE_GC_MODE_BOEHM 1
+  #include "gc_typed.h"
+  void Rogue_init_boehm_type_info();
+  #define ROGUE_GC_ALLOC_TYPE_UNTYPED 0
+  #define ROGUE_GC_ALLOC_TYPE_ATOMIC 1
+  #define ROGUE_GC_ALLOC_TYPE_TYPED 2
 #endif
 
 #if ROGUE_GC_MODE_BOEHM
@@ -119,23 +136,33 @@ extern void Rogue_configure_gc();
 // AKA by-value type; not a reference type
 #define ROGUE_ATTRIBUTE_IS_DIRECT           2
 
-#define ROGUE_ATTRIBUTE_IS_NATIVE           32
-#define ROGUE_ATTRIBUTE_IS_MACRO            64
-#define ROGUE_ATTRIBUTE_IS_INITIALIZER      128
-#define ROGUE_ATTRIBUTE_IS_IMMUTABLE        256
-#define ROGUE_ATTRIBUTE_IS_GLOBAL           512
-#define ROGUE_ATTRIBUTE_IS_SINGLETON        1024
-#define ROGUE_ATTRIBUTE_IS_INCORPORATED     2048
-#define ROGUE_ATTRIBUTE_IS_GENERATED        4096
-#define ROGUE_ATTRIBUTE_IS_REQUISITE        8192
-#define ROGUE_ATTRIBUTE_IS_TASK             16384
-#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION  32768
-#define ROGUE_ATTRIBUTE_IS_AUGMENT          65536
-#define ROGUE_ATTRIBUTE_IS_ABSTRACT         131072
-#define ROGUE_ATTRIBUTE_IS_ROUTINE          262144
-#define ROGUE_ATTRIBUTE_IS_FALLBACK         524288
-#define ROGUE_ATTRIBUTE_IS_SPECIAL          1048576
-#define ROGUE_ATTRIBUTE_IS_PROPAGATED       2097152
+#define ROGUE_ATTRIBUTE_IS_API               (1 << 4)
+#define ROGUE_ATTRIBUTE_IS_NATIVE            (1 << 5)
+#define ROGUE_ATTRIBUTE_IS_MACRO             (1 << 6)
+#define ROGUE_ATTRIBUTE_IS_INITIALIZER       (1 << 7)
+#define ROGUE_ATTRIBUTE_IS_IMMUTABLE         (1 << 8)
+#define ROGUE_ATTRIBUTE_IS_GLOBAL            (1 << 9)
+#define ROGUE_ATTRIBUTE_IS_SINGLETON         (1 << 10)
+#define ROGUE_ATTRIBUTE_IS_INCORPORATED      (1 << 11)
+#define ROGUE_ATTRIBUTE_IS_GENERATED         (1 << 12)
+#define ROGUE_ATTRIBUTE_IS_ESSENTIAL         (1 << 13)
+#define ROGUE_ATTRIBUTE_IS_TASK              (1 << 14)
+#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION   (1 << 15)
+#define ROGUE_ATTRIBUTE_IS_AUGMENT           (1 << 16)
+#define ROGUE_ATTRIBUTE_IS_ABSTRACT          (1 << 17)
+#define ROGUE_ATTRIBUTE_IS_MUTATING          (1 << 18)
+#define ROGUE_ATTRIBUTE_IS_FALLBACK          (1 << 19)
+#define ROGUE_ATTRIBUTE_IS_SPECIAL           (1 << 20)
+#define ROGUE_ATTRIBUTE_IS_PROPAGATED        (1 << 21)
+#define ROGUE_ATTRIBUTE_IS_DYNAMIC           (1 << 22)
+#define ROGUE_ATTRIBUTE_RETURNS_THIS         (1 << 23)
+#define ROGUE_ATTRIBUTE_IS_PREFERRED         (1 << 24)
+#define ROGUE_ATTRIBUTE_IS_NONapi            (1 << 25)
+#define ROGUE_ATTRIBUTE_IS_DEPRECATED        (1 << 26)
+#define ROGUE_ATTRIBUTE_IS_ENUM              (1 << 27)
+#define ROGUE_ATTRIBUTE_IS_THREAD_LOCAL      (1 << 28)
+#define ROGUE_ATTRIBUTE_IS_SYNCHRONIZED      (1 << 29)
+#define ROGUE_ATTRIBUTE_IS_SYNCHRONIZABLE    (1 << 30)
 
 template <class T>
 struct RoguePtr
@@ -406,17 +433,18 @@ struct RogueType
   int          attributes;
 
   int          global_property_count;
-  int*         global_property_name_indices;
-  int*         global_property_type_indices;
-  void**       global_property_pointers;
+  const int*   global_property_name_indices;
+  const int*   global_property_type_indices;
+  const void** global_property_pointers;
 
   int          property_count;
-  int*         property_name_indices;
-  int*         property_type_indices;
-  int*         property_offsets;
+  const int*   property_name_indices;
+  const int*   property_type_indices;
+  const int*   property_offsets;
 
   RogueObject* _singleton;
-  void**       methods;
+  const void** methods; // first function pointer in Rogue_dynamic_method_table
+  int          method_count;
 
   RogueAllocator*   allocator;
 
@@ -425,16 +453,21 @@ struct RogueType
   RogueInitFn       init_fn;
   RogueCleanUpFn    on_cleanup_fn;
   RogueToStringFn   to_string_fn;
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  int          gc_alloc_type;
+  GC_descr     gc_type_descr;
+#endif
 };
 
-RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
-RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
-RogueString* RogueType_name( RogueType* THIS );
-bool         RogueType_name_equals( RogueType* THIS, const char* name );
-void         RogueType_print_name( RogueType* THIS );
-RogueType*   RogueType_retire( RogueType* THIS );
-RogueObject* RogueType_singleton( RogueType* THIS );
+ROGUE_EXPORT_C RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false, int element_type_index=-1 ) ;
+ROGUE_EXPORT_C RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
+ROGUE_EXPORT_C RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
+ROGUE_EXPORT_C RogueString* RogueType_name( RogueType* THIS );
+ROGUE_EXPORT_C bool         RogueType_name_equals( RogueType* THIS, const char* name );
+ROGUE_EXPORT_C void         RogueType_print_name( RogueType* THIS );
+ROGUE_EXPORT_C RogueType*   RogueType_retire( RogueType* THIS );
+ROGUE_EXPORT_C RogueObject* RogueType_singleton( RogueType* THIS );
 
 
 //-----------------------------------------------------------------------------
@@ -467,15 +500,15 @@ ROGUE_CUSTOM_OBJECT_PROPERTY
   // long as it is visible to the memory manager.
 };
 
-RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
-RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
-void*        RogueObject_retain( RogueObject* THIS );
-void*        RogueObject_release( RogueObject* THIS );
-RogueString* RogueObject_to_string( RogueObject* THIS );
+ROGUE_EXPORT_C RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
+ROGUE_EXPORT_C RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
+ROGUE_EXPORT_C void*        RogueObject_retain( RogueObject* THIS );
+ROGUE_EXPORT_C void*        RogueObject_release( RogueObject* THIS );
+ROGUE_EXPORT_C RogueString* RogueObject_to_string( RogueObject* THIS );
 
-void RogueObject_trace( void* obj );
-void RogueString_trace( void* obj );
-void RogueArray_trace( void* obj );
+ROGUE_EXPORT_C void RogueObject_trace( void* obj );
+ROGUE_EXPORT_C void RogueString_trace( void* obj );
+ROGUE_EXPORT_C void RogueArray_trace( void* obj );
 
 
 //-----------------------------------------------------------------------------
@@ -489,12 +522,16 @@ struct RogueString : RogueObject
   RogueInt32 cursor_offset;
   RogueInt32 cursor_index;
   RogueInt32 hash_code;
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  RogueByte  *utf8;
+#else
   RogueByte  utf8[];
+#endif
 };
 
-RogueString* RogueString_create_with_byte_count( int byte_count );
-RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
-RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
+ROGUE_EXPORT_C RogueString* RogueString_create_with_byte_count( int byte_count );
+ROGUE_EXPORT_C RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
+ROGUE_EXPORT_C RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 void         RogueString_print_utf8( RogueByte* utf8, int count );
@@ -513,6 +550,19 @@ struct RogueArray : RogueObject
   int  element_size;
   bool is_reference_array;
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  union
+  {
+    RogueObject**   as_objects;
+    RogueByte*      as_logicals;
+    RogueByte*      as_bytes;
+    RogueCharacter* as_characters;
+    RogueInt32*     as_int32s;
+    RogueInt64*     as_int64s;
+    RogueReal32*    as_real32s;
+    RogueReal64*    as_real64s;
+  };
+#else
   union
   {
     RogueObject*   as_objects[];
@@ -524,6 +574,7 @@ struct RogueArray : RogueObject
     RogueReal32    as_real32s[];
     RogueReal64    as_real64s[];
   };
+#endif
 };
 
 RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count );
@@ -598,7 +649,7 @@ RogueAllocator* RogueAllocator_create();
 RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS );
 
 void*        RogueAllocator_allocate( int size );
-RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size );
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
@@ -607,13 +658,13 @@ extern int                Rogue_allocator_count;
 extern RogueAllocator     Rogue_allocators[];
 extern int                Rogue_type_count;
 extern RogueType          Rogue_types[];
-extern int                Rogue_type_info_table[];
-extern int                Rogue_type_name_index_table[];
-extern int                Rogue_object_size_table[];
-extern void*              Rogue_global_property_pointers[];
-extern int                Rogue_property_offsets[];
-extern int                Rogue_attributes_table[];
-extern void*              Rogue_dynamic_method_table[];
+extern const int          Rogue_type_info_table[];
+extern const int          Rogue_type_name_index_table[];
+extern const int          Rogue_object_size_table[];
+extern const void*        Rogue_global_property_pointers[];
+extern const int          Rogue_property_offsets[];
+extern const int          Rogue_attributes_table[];
+extern const void*        Rogue_dynamic_method_table[];
 //extern int                Rogue_property_info_table[][];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
@@ -636,13 +687,13 @@ extern RogueCallbackInfo  Rogue_on_gc_end;
 struct RogueWeakReference;
 extern RogueWeakReference* Rogue_weak_references;
 
-void Rogue_configure( int argc=0, const char* argv[]=0 );
-bool Rogue_collect_garbage( bool forced=false );
-void Rogue_launch();
-void Rogue_init_thread();
-void Rogue_deinit_thread();
-void Rogue_quit();
-bool Rogue_update_tasks();  // returns true if tasks are still active
+ROGUE_EXPORT_C void Rogue_configure( int argc=0, const char* argv[]=0 );
+ROGUE_EXPORT_C bool Rogue_collect_garbage( bool forced=false );
+ROGUE_EXPORT_C void Rogue_launch();
+ROGUE_EXPORT_C void Rogue_init_thread();
+ROGUE_EXPORT_C void Rogue_deinit_thread();
+ROGUE_EXPORT_C void Rogue_quit();
+ROGUE_EXPORT_C bool Rogue_update_tasks();  // returns true if tasks are still active
 
 
 //-----------------------------------------------------------------------------

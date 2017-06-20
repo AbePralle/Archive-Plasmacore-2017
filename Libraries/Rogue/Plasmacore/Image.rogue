@@ -35,6 +35,8 @@ class Image
     render_mode   : RenderMode  # no need to set explicitly in most cases
     colors        = Colors(Color.WHITE) : Colors
     opacity       = 1.0  # Master opacity; multiplies each color's alpha component
+    hflip         : Logical
+    vflip         : Logical
 
     selected_render_mode : RenderMode
     selected_shader      : Shader
@@ -535,9 +537,12 @@ class TextureImageData : ImageData
         transform * XYZ( w, h, 0 ),
         transform * XYZ( 0, h, 0 ) )
 
+      local _uv = Quad( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) )
+      if (image.hflip) _uv = Quad( _uv.b, _uv.a, _uv.d, _uv.c )
+      if (image.vflip) _uv = Quad( _uv.d, _uv.c, _uv.b, _uv.a )
+
       Display.fill_textured_quad( texture, quad, image.colors.with_opacity(image.opacity),
-        Quad( uv1, XY(uv2.x,uv1.y), uv2, XY(uv1.x,uv2.y) ),
-        image.selected_render_mode, image.selected_shader )
+        _uv, image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform
 

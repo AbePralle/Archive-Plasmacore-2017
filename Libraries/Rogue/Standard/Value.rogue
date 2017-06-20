@@ -4,8 +4,23 @@ class Value
     OMIT_COMMAS = 2
 
   GLOBAL METHODS
+    method create( value:Character )->Value
+      return Value( value->String )
+
     method create( value:Logical )->Value
       return select{ value:LogicalValue.true_value || LogicalValue.false_value }
+
+    method create( value:Byte )->Value
+      return Int32Value( value )
+
+    method create( value:Int32 )->Value
+      return Int32Value( value )
+
+    method create( value:Int64 )->Value
+      return Int64Value( value )
+
+    method create( value:Real32 )->Value
+      return Real64Value( value )
 
     method create( value:Real64 )->Value
       return Real64Value( value )
@@ -32,6 +47,9 @@ class Value
 
   METHODS
     method add( value:Int32 )->this [macro]
+      this.add( Value(value) )
+
+    method add( value:Int64 )->this [macro]
       this.add( Value(value) )
 
     method add( value:Logical )->this [macro]
@@ -135,6 +153,9 @@ class Value
     method insert( value:Int32, before_index=0:Int32 )->this [macro]
       this.insert( Value(value), before_index )
 
+    method insert( value:Int64, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
     method insert( value:Logical, before_index=0:Int32 )->this [macro]
       this.insert( Value(value), before_index )
 
@@ -174,6 +195,9 @@ class Value
       return false
 
     method is_int32->Logical
+      return false
+
+    method is_int64->Logical
       return false
 
     method is_list->Logical
@@ -236,10 +260,10 @@ class Value
     method operator==( other:Character )->Logical
       return this == Value( ""+other )
 
-    method operator==( other:Int64 )->Logical
+    method operator==( other:Int32 )->Logical
       return this == Value( other )
 
-    method operator==( other:Int32 )->Logical
+    method operator==( other:Int64 )->Logical
       return this == Value( other )
 
     method operator==( other:Logical )->Logical
@@ -266,10 +290,10 @@ class Value
     method operator<( other:Character )->Logical
       return this < Value( ""+other )
 
-    method operator<( other:Int64 )->Logical
+    method operator<( other:Int32 )->Logical
       return this < Value( other )
 
-    method operator<( other:Int32 )->Logical
+    method operator<( other:Int64 )->Logical
       return this < Value( other )
 
     method operator<( other:Logical )->Logical
@@ -357,7 +381,7 @@ class Value
       # If this `Value` is not a collection or if it is empty then an empty list is
       # returned.
       if (not result_list) result_list = @[]
-      result_list.reserve( (count-1).clamped(0) )
+      result_list.reserve( (count-1).clamped_low(0) )
 
       forEach (index of this)
         if (index > 0) result_list.add( this[index] )
@@ -369,6 +393,9 @@ class Value
       return file.save( to_json(formatted,omit_commas) )
 
     method set( index:Int32, value:Int32 )->this [macro]
+      this.set( index, Value(value) )
+
+    method set( index:Int32, value:Int64 )->this [macro]
       this.set( index, Value(value) )
 
     method set( index:Int32, value:Logical )->this [macro]
@@ -387,6 +414,9 @@ class Value
       return this
 
     method set( key:String, value:Int32 )->this [macro]
+      this.set( key, Value(value) )
+
+    method set( key:String, value:Int64 )->this [macro]
       this.set( key, Value(value) )
 
     method set( key:String, value:Logical )->this [macro]
@@ -422,10 +452,10 @@ class Value
       return Character(0)
 
     method to->Int64
-      return this->Real64->Int64
+      return 0
 
     method to->Int32
-      return 0
+      return this->Int64->Int32
 
     method to->Logical
       return (this->Int32)
@@ -474,7 +504,7 @@ class Value
         return this
       endIf
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       throw Error("This Value is not indexable")
 $endIf
@@ -494,7 +524,7 @@ class NullValue : Value [singleton]
     method operator<( other:Value )->Logical
       return (other and other.is_non_null)
 
-    method to->Int32
+    method to->Int64
       return 0
 
     method to->String
@@ -522,7 +552,7 @@ class LogicalValue( value:Logical ) : Value
     method is_logical->Logical
       return true
 
-    method to->Int32
+    method to->Int64
       if (value) return 1
       else       return 0
 
@@ -582,7 +612,7 @@ class Real64Value( value:Real64 ) : Value
 
     method operator-( other:Real64 )->Value
       if (not other) return Value(0)
-      return Real64Value( value + other )
+      return Real64Value( value - other )
 
     method operator*( other:Real64 )->Value
       if (not other) return Value(0)
@@ -604,7 +634,7 @@ class Real64Value( value:Real64 ) : Value
       if (not other) return Value(0)
       return StringValue( Int32(value) * other )
 
-    method to->Int32
+    method to->Int64
       return value
 
     method to->Real64
@@ -616,6 +646,156 @@ class Real64Value( value:Real64 ) : Value
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       if (value.fractional_part) buffer.print( value )
       else                       buffer.print( value, 0 )  # omit the ".0"
+      return buffer
+endClass
+
+class Int32Value( value:Int64 ) : Value
+  METHODS
+    method is_number->Logical
+      return true
+
+    method is_int32->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      if (other.is_int32)   return (value == other->Int32)
+      if (other.is_int64)   return (value->Int64 == other->Int64)
+      if (other.is_number)  return (value->Real64 == other->Real64)
+      else                  return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_int32)   return (value < other->Int32)
+      if (other.is_int64)   return (value->Int64 < other->Int64)
+      if (other.is_number)  return (value->Real64 < other->Real64)
+      else                  return object_id < other.object_id
+
+    method operator-()->Value
+      return Int32Value( -value )
+
+    method operator+( other:Value )->Value
+      return Int32Value( value + other->Int32 )
+
+    method operator-( other:Value )->Value
+      return Int32Value( value - other->Int32 )
+
+    method operator*( other:Value )->Value
+      return Int32Value( value * other->Int32 )
+
+    method operator/( other:Value )->Value
+      return Int32Value( value / other->Int32 )
+
+    method operator%( other:Value )->Value
+      return Int32Value( value % other->Int32 )
+
+    method operator+( other:Int32 )->Value
+      return Int32Value( value + other )
+
+    method operator-( other:Int32 )->Value
+      return Int32Value( value - other )
+
+    method operator*( other:Int32 )->Value
+      return Int32Value( value * other )
+
+    method operator/( other:Int32 )->Value
+      return Int32Value( value / other )
+
+    method operator%( other:Int32 )->Value
+      return Int32Value( value % other )
+
+    method operator+( other:String )->Value
+      return StringValue( value + other )
+
+    method operator*( other:String )->Value
+      return StringValue( Int32(value) * other )
+
+    method to->Int32
+      return value
+
+    method to->Int64
+      return value
+
+    method to->Real64
+      return value->Real64
+
+    method to->String
+      return value->String
+
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
+      buffer.print( value )
+      return buffer
+endClass
+
+class Int64Value( value:Int64 ) : Value
+  METHODS
+    method is_number->Logical
+      return true
+
+    method is_int64->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      if (other.is_int64 or other.is_int32) return (value == other->Int64)
+      if (other.is_number)                  return (value->Real64 == other->Real64)
+      else                                  return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_int64 or other.is_int32) return (value < other->Int64)
+      if (other.is_number)                  return (value->Real64 < other->Real64)
+      else                                  return object_id < other.object_id
+
+    method operator-()->Value
+      return Int64Value( -value )
+
+    method operator+( other:Value )->Value
+      return Int64Value( value + other->Int64 )
+
+    method operator-( other:Value )->Value
+      return Int64Value( value - other->Int64 )
+
+    method operator*( other:Value )->Value
+      return Int64Value( value * other->Int64 )
+
+    method operator/( other:Value )->Value
+      return Int64Value( value / other->Int64 )
+
+    method operator%( other:Value )->Value
+      return Int64Value( value % other->Int64 )
+
+    method operator+( other:Int64 )->Value
+      return Int64Value( value + other )
+
+    method operator-( other:Int64 )->Value
+      return Int64Value( value - other )
+
+    method operator*( other:Int64 )->Value
+      return Int64Value( value * other )
+
+    method operator/( other:Int64 )->Value
+      return Int64Value( value / other )
+
+    method operator%( other:Int64 )->Value
+      return Int64Value( value % other )
+
+    method operator+( other:String )->Value
+      return StringValue( value + other )
+
+    method operator*( other:String )->Value
+      return StringValue( Int32(value) * other )
+
+    method to->Int32
+      return value
+
+    method to->Int64
+      return value
+
+    method to->Real64
+      return value->Real64
+
+    method to->String
+      return value->String
+
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
+      buffer.print( value )
       return buffer
 endClass
 
@@ -665,33 +845,32 @@ class StringValue( value:String ) : Value
       else                 return object_id < other.object_id
 
     method operator+( other:Value )->Value
-      if (not other) return Value(0)
       return StringValue( value + other->String )
 
     method operator*( other:Value )->Value
-      if (not other) return Value(0)
       return StringValue( value * other->Int32 )
 
     method operator+( other:Real64 )->Value
-      if (not other) return Value(0)
       return StringValue( value + other )
 
     method operator+( other:String )->Value
-      if (not other) return Value(0)
       return StringValue( value + other )
 
     method to->Character
       if (value.count > 0) return value[0]
       else                 return 0->Character
 
-    method to->Int32
-      return value->Int32
+    method to->Int64
+      return value->Int64
 
     method to->Logical
       return (value == "true" or value == "TRUE" or value == "yes" or value == "YES" or value == "1")
 
     method to->Real64
       return value->Real64
+
+    method to->Object
+      return value
 
     method to->String
       return value
@@ -832,7 +1011,9 @@ class ValueList : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= data.count) return UndefinedValue
-      return select{ data[index] || UndefinedValue }
+      local result = data[ index ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( query:Function(Value)->(Logical) )->Value
       local results : ValueList
@@ -960,7 +1141,7 @@ class ValueList : Value
       buffer.print( ']' )
       return buffer
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
@@ -1072,10 +1253,14 @@ class ValueTable : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      return select{ data[ keys[index] ] || UndefinedValue }
+      local result = data[ keys[index] ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( key:String )->Value
-      return select{ data[ key ] || UndefinedValue }
+      local result = data[ key ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( query:Function(Value)->(Logical) )->Value
       local results : ValueList
@@ -1087,8 +1272,8 @@ class ValueTable : Value
         endIf
       endForEach
 
-      if (results) return results
-      else         return UndefinedValue
+      if (results is null) return UndefinedValue
+      return results
 
     method is_collection->Logical
       return true
@@ -1143,7 +1328,7 @@ class ValueTable : Value
         endIf
       endForEach
 
-      if (not remove_keys) return UndefinedValue
+      if (remove_keys is null) return UndefinedValue
       forEach (key in remove_keys) remove( key )
       return results
 
@@ -1220,7 +1405,7 @@ class ValueTable : Value
 
       return list
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
