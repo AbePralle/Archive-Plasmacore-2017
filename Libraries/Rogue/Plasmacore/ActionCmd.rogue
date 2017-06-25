@@ -5,7 +5,7 @@ class ActionCmd
     method create( fn:Function() )->ActionCmd
       return ActionCmdCall( fn )
 
-    method create( fn:Function(Real64), duration:Real64, progress_fn=ProgressFn.LINEAR:Function(Real64)->(Real64) )->ActionCmd
+    method create( fn:Function(Real64), duration:Real64, progress_fn=ProgressFn.LINEAR:Function(Real64)->Real64 )->ActionCmd
       return ActionCmdCallWithProgress( fn, duration, progress_fn )
 
     method operator+( a:ActionCmd, b:ActionCmd )->ActionCmd
@@ -20,7 +20,7 @@ class ActionCmd
 
   PROPERTIES
     duration        : Real64
-    progress_fn     = ProgressFn.LINEAR : Function(Real64)->(Real64)
+    progress_fn     = ProgressFn.LINEAR : Function(Real64)->Real64
 
     next_node       : ActionCmd
     concurrent_node : ActionCmd

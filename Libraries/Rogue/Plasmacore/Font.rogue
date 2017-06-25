@@ -170,17 +170,17 @@ endClass
 
 class FontLoaders [singleton]
   PROPERTIES
-    loaders = StringTable<<Function(String)->(FontData)>>()
+    loaders = StringTable<<(Function(String)->FontData)>>()
 
   METHODS
     method init
       this[ "SystemFont" ] = (function(name) => SystemFontData())
       this[ "DefaultFont" ] = (function(name) => DefaultFontData())
 
-    method get( name:String )->Function(String)->(FontData)
+    method get( name:String )->(Function(String)->FontData)
       return loaders[ name ]
 
-    method set( name:String, loader:Function(String)->(FontData) )->this
+    method set( name:String, loader:Function(String)->FontData )->this
       loaders[ name ] = loader
       return this
 endClass

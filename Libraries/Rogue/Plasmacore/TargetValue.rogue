@@ -61,8 +61,8 @@ class EasedValue<<$DataType>> : TargetValue<<$DataType>>
     initial_value : $DataType
     start_time    : Real64
     duration      : Real64
-    progress_fn   : Function(Real64)->(Real64)
-    duration_fn   : Function($DataType)->(Real64)
+    progress_fn   : Function(Real64)->Real64
+    duration_fn   : Function($DataType)->Real64
 
   METHODS
     method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
