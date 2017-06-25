@@ -151,7 +151,19 @@ class MessageManager [essential singleton]
         local incoming_message = incoming_message_pool.remove_last
         incoming_message.init( io_reader )
         incoming_message_queue.add( incoming_message )
-        if (incoming_message.type == "Display.on_render") dispatch_incoming_messages
+
+        contingent
+          # Most messages should be queued so that they can be executed at the beginning
+          # of a render, when the graphics context is active and images can be loaded etc.
+          sufficient (incoming_message.type == "Display.on_render")
+          sufficient (incoming_message.type == "Application.on_save")
+          sufficient (incoming_message.type == "Application.on_stop")
+          sufficient (incoming_message.logical("urgent"))
+          escapeContingent
+        satisfied
+          dispatch_incoming_messages
+        endContingent
+
       endWhile
 
       Plasmacore.global_update

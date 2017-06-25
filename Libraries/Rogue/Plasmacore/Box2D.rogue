@@ -8,8 +8,8 @@ class World
     nativeHeader
       struct RogueClassBox2D__World;
       struct RogueClassBox2D__Fixture;
-      void RogueBox2D__World__handle_begin_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
-      void RogueBox2D__World__handle_end_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
+      ROGUE_EXPORT_C void RogueBox2D__World__handle_begin_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
+      ROGUE_EXPORT_C void RogueBox2D__World__handle_end_contact__Box2D__World_Box2D__Fixture_Box2D__Fixture(RogueClassBox2D__World*,RogueClassBox2D__Fixture*,RogueClassBox2D__Fixture*);
 
       class PlasmacoreContactListener : public b2ContactListener
       {
