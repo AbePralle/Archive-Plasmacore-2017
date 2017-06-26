@@ -1,4 +1,5 @@
 using Plasmacore
+using Box2D
 
 Display( "Main" ).view = MainView()
 
@@ -6,198 +7,54 @@ Display( "Main" ).view = MainView()
 
 class MainView : View
   PROPERTIES
-    grid = Dim<<Cell>>(8,8) : Cell[][]
-    tile_size : Int32
 
   METHODS
     method on_start
-      tile_size = Display.size.min / 8
-      change_state( PauseState() )
-      forEach (row at j in grid)
-        forEach (i of row)
-          row[i] = Cell( Box(i*tile_size,j*tile_size,tile_size,tile_size) )
-        endForEach
-      endForEach
 
-    method cell( i:Int32, j:Int32 )->Cell
-      if (i < 0 or j < 0 or i >= 8 or j >= 8) return null
-      return grid[ j ][ i ]
-
-    method drop_gems->Logical
-      local dropped_any = false
-      forEach (row at j in grid step -1)
-        forEach (cell at i in row)
-          if (cell is null)
-            local above = remove_cell( i, j-1 )
-            if (above)
-              row[i] = above
-              above.bounds = Box(i*tile_size,j*tile_size,tile_size,tile_size)
-              dropped_any = true
-            else
-              if (j == 0)
-                row[i] = Cell( Box(i*tile_size,j*tile_size,tile_size,tile_size) )
-                dropped_any = true
-              endIf
-            endIf
-          endIf
-        endForEach
-      endForEach
-      return dropped_any
-
-    method find_matches->Logical
-      local found_any = false
-      forEach (row at j in grid from 2)
-        forEach (cell1 at i in row)
-          if (cell1)
-            local cell2 = cell( i, j-1 )
-            local cell3 = cell( i, j-2 )
-            if (cell2 and cell3 and cell2.type == cell1.type and cell3.type == cell1.type)
-              if (not (cell1.is_matched and cell2.is_matched and cell3.is_matched))
-                cell1.is_matched = true
-                cell2.is_matched = true
-                cell3.is_matched = true
-                found_any = true
-              endIf
-            endIf
-          endIf
-        endForEach
-      endForEach
-
-      forEach (row at j in grid)
-        forEach (cell1 at i in row from 2)
-          if (cell1)
-            local cell2 = cell( i-1, j )
-            local cell3 = cell( i-2, j )
-            if (cell2 and cell3 and cell2.type == cell1.type and cell3.type == cell1.type)
-              if (not (cell1.is_matched and cell2.is_matched and cell3.is_matched))
-                cell1.is_matched = true
-                cell2.is_matched = true
-                cell3.is_matched = true
-                found_any = true
-              endIf
-            endIf
-          endIf
-        endForEach
-      endForEach
-
-      return found_any
-
-    method pop_matches->Logical
-      local popped_any = false
-
-      forEach (row at j in grid)
-        forEach (cell at i in row)
-          if (cell.is_matched)
-            remove_cell( i, j )
-            popped_any = true
-          endIf
-        endForEach
-      endForEach
-
-      return popped_any
+      change_state( InitialState() )
 
     method on( e:PointerEvent )
 
     method on_draw
-      forEach (row in grid)
-        forEach (cell in row)
-          if (cell) cell.draw
-        endForEach
-      endForEach
 
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
-
-    method remove_cell( i:Int32, j:Int32 )->Cell
-      if (i < 0 or j < 0 or i >= 8 or j >= 8) return null
-      local result = grid[ j ][ i ]
-      grid[ j ][ i ] = null
-      return result
 endClass
 
 
-class Cell
-  PROPERTIES
-    type       : Int32
-    is_matched : Logical
-    bounds     : Box
-
-  METHODS
-    method init( bounds )
-      type = Random.int32(7)
-
-    method color->Color
-      if (is_matched) return Color.WHITE
-      which (type)
-        case 0: return Color.RED
-        case 1: return Color.ORANGE
-        case 2: return Color.YELLOW
-        case 3: return Color.GREEN
-        case 4: return Color.CYAN
-        case 5: return Color.BLUE
-        case 6: return Color.PURPLE
-        others: return Color.WHITE
-      endWhich
-
-    method draw
-      bounds.fill( color )
-endClass
-
-
-class GameState : State<<MainView>>
+class InitialState : State<<MainView>>
   PROPERTIES
 
   METHODS
     method on_start
       # Called when this state becomes the active state
+      println "Hello World"
 
     method after_draw
       # This happens after the current view's on_draw()
 
     method on( e:KeyEvent )
+      trace e
 
     method on( e:PointerEvent )
+      if (e.is_press or e.is_release) trace e
 
     method on( e:TextEvent )
+      trace e
 
     method on_draw
       # This happens before the current view's on_draw()
-      Display.clear( Color.BLACK )
+      Display.clear( Color.BLUE )
+      DefaultFont.anchor = Anchor.CENTER
+      DefaultFont.draw( "Hello World", Display.center )
 
     method on_resize
       # Called when the Display.size changes
 
     method on_update
       # Called 60 times a second
-endClass
-
-class PauseState : GameState
-  PROPERTIES
-    timer = Timer(0.25)
-
-  METHODS
-    method on_update
-      if (timer.is_expired)
-        if (view.drop_gems or view.find_matches or view.pop_matches)
-          timer.restart
-        else
-          change_state( InputState() )
-        endIf
-      endIf
-endClass
-
-class InputState : GameState
-  METHODS
-    method on( e:PointerEvent )
-      if (e.is_press)
-        local i = (e.position.x / view.tile_size)->Int32
-        local j = (e.position.y / view.tile_size)->Int32
-        if (view.remove_cell(i,j)) change_state( PauseState() )
-      endIf
-
-    method on_update
 endClass
 
