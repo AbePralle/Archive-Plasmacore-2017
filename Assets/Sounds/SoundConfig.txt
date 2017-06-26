@@ -1,0 +1,28 @@
+# Default sound config file - customize as desired.
+#
+# PLATFORMS
+#   [Global]  - Use this category for attributes and settings
+#               that apply to all platforms.
+#   [Default] - Used when specific platform isn't defined, e.g.
+#               if [iOS] isn't defined then [Default] is used.
+#   [iOS]     - iOS-specific attributes, settings, and groups.
+#
+# COMMANDS
+#   @ <file or pattern> [attributes...]  # Set sound attributes
+#   include <file or pattern>            # Include file in build
+#
+# ATTTRIBUTES
+#   @ ... format:[ima4|mp3|ogg]
+#     - ima4 is good for iOS and Mac sound effects
+#     - mp3 is good for iOS and Mac music
+
+[Default]
+include **
+
+[iOS]
+@ **.wav format:ima4
+include **
+
+[emscripten]
+@ ** format:ogg
+include **
