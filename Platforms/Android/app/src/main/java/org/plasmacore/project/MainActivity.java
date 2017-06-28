@@ -1,4 +1,4 @@
-package plasmacore.org.project;
+package org.plasmacore.project;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -18,8 +18,7 @@ public class MainActivity extends Activity
   {
     super.onCreate(savedInstanceState);
 
-    // Example of a call to a native method
-    System.out.println(stringFromJNI());
+   System.out.println(stringFromJNI());
   }
 
   /**
