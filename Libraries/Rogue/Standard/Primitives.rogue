@@ -69,6 +69,29 @@ class Real64 [primitive]
       local digits = select{ decimal_digits || decimal_digit_count }
       return StringBuilder().print( this, digits )->String
 
+    method format( fmt:String )->String
+      # fmt
+      #   C-style ",0N.D" (everything is optional)
+      #   '0' - pad with 0's instead of spaces
+      #   'N' - Minimum digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      if (fmt.contains(','))
+        # Move comma to beginning
+        fmt = "," + fmt.before_first(',') + fmt.after_first(',')
+      endIf
+
+      local decimal_fmt = fmt.from_first( '.' )
+      local result = Int64(this).format( fmt.before_first('.') )
+      local decimal_st : String
+      if (decimal_fmt.count > 1)
+        decimal_st = this.format( decimal_fmt.from(1)->Int32 )
+      else
+        decimal_st = this->String
+      endIf
+
+      return result + decimal_st.from_first( '.' )
+
     method fractional_part->Real64
       if (this >= 0) return this - whole_part
       else           return whole_part - this
@@ -202,6 +225,9 @@ class Real32 [primitive]
     method format( decimal_digits=null:Int32? )->String
       return Real64(this).format( decimal_digits )
 
+    method format( fmt:String )->String
+      return Real64( this ).format( fmt )
+
     method fractional_part->Real32
       if (this >= 0) return this - whole_part
       else           return whole_part - this
@@ -325,6 +351,83 @@ class Int64 [primitive]
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
 
+    method format( fmt:String, bits=64:Int32 )->String
+      # fmt
+      #   Semi-C-style "$%,0N" - attributes can come in any order
+      #   '$' - make hexadecimal
+      #   '%' - make binary
+      #   ',' - add commas (decimal formatting only)
+      #   '0' - pad with 0's instead of spaces
+      #   'N' - Minimum digits
+      local is_hex = false
+      local is_binary = false
+      local add_commas = false
+      local zero_fill = false
+      local number_start : Int32?
+      forEach (ch at index in fmt)
+        which (ch)
+          case '$': is_hex = true
+          case '%': is_binary = true
+          case ',': add_commas = true
+          case '0': zero_fill = true
+          others:   number_start = index; escapeForEach
+        endWhich
+      endForEach
+
+      local digits = 0
+      if (number_start.exists) digits = fmt.from( number_start.value )->String
+
+      if (is_hex)
+        add_commas = false
+        if (this < 0)
+          digits = bits / 4
+        else
+          local n = 1
+          local value = this :>>>: 4
+          while (value) ++n; value = value :>>>: 4
+          digits = digits.or_larger( n )
+        endIf
+
+      elseIf (is_binary)
+        add_commas = false
+        if (this < 0)
+          digits = bits
+        else
+          local n = 1
+          local value = this :>>>: 1
+          while (value) ++n; value = value :>>>: 1
+          digits = digits.or_larger( n )
+        endIf
+
+      endIf
+
+      if (zero_fill) add_commas = false
+
+      local result : String
+      if (is_hex)        result = this->String( digits, &hex )
+      elseIf (is_binary) result = this->String( digits, &binary )
+      else               result = this->String
+
+      if (zero_fill) result = result.right_justified( digits, '0' )
+
+      if (add_commas)
+        local work = result
+        result = ""
+        while (work.count > 3)
+          if (result.count) result = ',' + result
+          result = work.rightmost( 3 ) + result
+          work = work.leftmost( -3 )
+        endWhile
+        if (work.count)
+          if (result.count) result = work + ',' + result
+          else              result = work
+        endIf
+      endIf
+
+      if (not zero_fill) result = result.right_justified( digits, ' ' )
+
+      return result
+
     method hash_code->Int32
       return this
 
@@ -378,7 +481,7 @@ class Int64 [primitive]
       if (hex)    return to_hex_string( select{digits||16} )
       if (octal)  return to_octal_string( select{digits||22} )
       if (binary) return to_binary_string( select{digits||64} )
-      return this
+      return this->String.right_justified( digits )
 
     method to->Value
       return Value( Real64(this) )
@@ -450,6 +553,9 @@ class Int32 [primitive]
 
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt, 32 )
 
     method hash_code->Int32
       return this
@@ -709,6 +815,9 @@ class Byte [primitive]
 
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt, 8 )
 
     method hash_code->Int32
       return this->Int32

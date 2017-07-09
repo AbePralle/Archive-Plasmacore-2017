@@ -9,8 +9,11 @@ class LineReader : Reader<<String>>
     method init( source )
       next = prepare_next
 
+    method init( reader:Reader<<Byte>> )
+      init( UTF8Reader(reader) )
+
     method init( file:File )
-      init( file.character_reader )
+      init( file.reader )
 
     method init( string:String )
       init( string.reader )
@@ -20,7 +23,8 @@ class LineReader : Reader<<String>>
       return this
 
     method has_another->Logical
-      return next
+      if (next is null) next = prepare_next
+      return next?
 
     method peek->String
       return next
