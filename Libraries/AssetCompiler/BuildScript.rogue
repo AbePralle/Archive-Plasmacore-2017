@@ -89,7 +89,7 @@ routine library_location( library_name:String )->String
 
   if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
-  local reader = File.line_reader( ".build.temp" )
+  local reader = LineReader( File.reader( ".build.temp" ) )
   forEach (line in reader)
     if (line.contains("/include/"))
       reader.close

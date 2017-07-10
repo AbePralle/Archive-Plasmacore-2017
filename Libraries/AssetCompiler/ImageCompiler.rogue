@@ -550,7 +550,7 @@ class ImageCommand
 
     method perform_layout( placements:Placement[], max_width:Int32, max_height:Int32 )->ImageSheet
       InsertionSort<<Placement>>.sort( placements,
-        function(a:Placement,b:Placement)->(Logical)
+        function(a:Placement,b:Placement)->Logical
           # 'a' should come before 'b' when:
           if (a.height > b.height) return true
           if (a.height < b.height) return false
