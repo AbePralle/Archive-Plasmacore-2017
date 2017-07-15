@@ -2,10 +2,12 @@ $include "../Rogue/Plasmacore"
 using Plasmacore
 
 $include "ImageCompiler.rogue"
+$include "DataCompiler.rogue"
 $include "SoundCompiler.rogue"
 
 launch_image_compiler
 launch_sound_compiler
+launch_data_compiler
 
 class CommentStripper
   PROPERTIES

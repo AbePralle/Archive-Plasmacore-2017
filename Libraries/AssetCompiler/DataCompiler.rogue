@@ -1,0 +1,373 @@
+using Plasmacore
+
+routine launch_data_compiler
+  try
+    local config_file = File( "Assets/Data/DataConfig.txt" )
+    if (not config_file.exists)
+      File.create_folder( config_file.path )
+      local writer = PrintWriter(config_file.writer)
+      writer.println @|# Default data config file - customize as desired.
+                      |#
+                      |# PLATFORMS
+                      |#   [Global]  - Use this category for attributes and settings
+                      |#               that apply to all platforms.
+                      |#   [Default] - Used when specific platform isn't defined, e.g.
+                      |#               if [iOS] isn't defined then [Default] is used.
+                      |#   [iOS]     - iOS-specific attributes, settings, and groups.
+                      |#   [Android] - Android-specific attributes, settings, and groups.
+                      |#   [macOS]   - Mac-specific attributes, settings, and groups.
+                      |#   [Web]     - Web-specific attributes, settings, and groups.
+                      |#   [Linux]   - Linux-specific attributes, settings, and groups.
+                      |#
+                      |# COMMANDS
+                      |#   include <file or pattern>            # Include file in build
+                      |#
+                      |
+                      |[Default]
+                      |include **
+      writer.close
+    endIf
+
+    local args = System.command_line_arguments
+    if (args.count)
+      DataCompiler( config_file, (forEach in args) )
+    else
+      DataCompiler( config_file, "Default" )
+    endIf
+
+  catch (err:DataCompileError)
+    if (System.environment["IDE"])
+      Console.error.println "$:$: error:$" (File.absolute_filepath(err.filepath),err.line,err.message)
+    else
+      println err
+    endIf
+    System.exit 1
+
+  catch (err:Error)
+    if (System.environment["IDE"])
+      Console.error.println "DataCompiler:0: error:$" (err.message)
+    else
+      println err
+    endIf
+    System.exit 1
+
+  endTry
+endRoutine
+
+class DataCompileError : Error
+  PROPERTIES
+    cmd      : DataCommand
+    filepath : String
+    line     : Int32
+
+  METHODS
+    method init( cmd, message )
+      filepath = cmd.src_filepath
+      line = cmd.src_line
+
+    method init( message )
+      filepath = "DataCompiler"
+
+    method to->String
+      local builder = StringBuilder()
+
+      local w = Console.width.or_smaller( 79 )
+      local bar = "=" * w
+      builder.println bar
+      if (cmd)
+        builder.println( (''DATA COMPILE ERROR in "$" line $'' (filepath,line)).word_wrapped(w) )
+      else
+        builder.println "DATA COMPILE ERROR"
+      endIf
+      builder.println
+      builder.println message.word_wrapped( w )
+      builder.println bar
+      return builder->String
+endClass
+
+
+class DataCompiler
+  PROPERTIES
+    file             : File
+    platform         : String
+    commands         = Table<<String,DataCommand[]>>()
+    attributes       = @[]
+    settings         = @{}
+    even_odd         = true
+    files_written    : Int32
+    all_data       : String[]
+    included_data  = Set<<String>>()
+
+  METHODS
+    method init( file, platform )
+      println "Compiling data for platform $..." (platform)
+
+      organize_commands
+      execute_global_commands
+      execute_platform_commands
+
+      # Automatically exclude DataConfig.txt
+      included_data.remove( "Assets/Data/DataConfig.txt" )
+
+      local dest_folder = "Build/$/" (platform)
+      forEach (filepath in included_data)
+        local attr = data_attributes( filepath )
+        copy_data( filepath, dest_folder + filepath, attr )
+      endForEach
+
+      if (not files_written)
+        println "Data up to date."
+      endIf
+
+    method copy_data( from_filepath:String, to_filepath:String, attr:Value )
+      if (not File.exists(to_filepath) or File.timestamp(to_filepath) < File.timestamp(from_filepath))
+        File.create_folder( File.folder(to_filepath) )
+
+
+        print   "  Writing "
+        println to_filepath
+        ++files_written
+
+        File.copy( from_filepath, to_filepath )
+      endIf
+
+    method execute_global_commands
+      if (not commands.contains("Global")) return
+      (forEach in commands//Global).execute
+
+    method execute_platform_commands
+      local working_platform = select{ commands.contains(platform):platform || "Default" }
+      if (commands.contains(working_platform))
+        (forEach in commands[working_platform]).execute
+      else
+        if (platform != "Default")
+          println "DATA COMPILER WARNING: No configuration for platforms $ or Default in Assets/Data/DataConfig.txt." (platform)
+        else
+          println "DATA COMPILER WARNING: No configuration for platform Default in Assets/Data/DataConfig.txt."
+        endIf
+      endIf
+
+    method organize_commands
+      local category = "Global"
+
+      forEach (line at index in CommentStripper().process(file.load_as_string))
+        line = line.trimmed
+        if (line.count == 0) nextIteration
+        if (line.begins_with('['))
+          local after = line.after_first(']')
+          if (after.count) throw DataCompileError( DataCommand(this,file.filepath,index+1,line), "Syntax error after ']'." )
+          category = line.after_first( '[' ).before_first( ']' ).trimmed
+        else
+          ensure commands[ category ]
+          commands[ category ].add( DataCommand(this,file.filepath,index+1,line) )
+        endIf
+      endForEach
+
+    method data_attributes( filepath:String )->Value
+      local result = @{}
+
+      forEach (def in attributes)
+        if (File.matches_wildcard_pattern(filepath,def//pattern->String))
+          forEach (attr in def//attributes)
+            result[ attr//name ] = attr//value
+          endForEach
+        endIf
+      endForEach
+
+      return result
+
+endClass
+
+
+class DataCommand
+  PROPERTIES
+    dcom         : DataCompiler
+    src_filepath : String
+    src_line     : Int32
+    content      : String
+    reader       : Scanner
+    buffer       = StringBuilder()
+
+  METHODS
+    method init( dcom, src_filepath, src_line, content )
+      reader = Scanner( content )
+
+    method collect_files( filepath:String )->String[]
+      local pattern = filepath
+      if (File.exists(filepath))
+        pattern = "**"
+      else
+        while (filepath.contains('*') or filepath.contains('?')) filepath = File.folder( filepath )
+        if (not File.exists(filepath)) throw error( ''No such file or folder "$".'' (filepath) )
+      endIf
+
+      local file_list = String[]
+
+      if (File.is_folder(filepath))
+        forEach (f in File.listing(filepath,&ignore_hidden,&recursive))
+          if (File.matches_wildcard_pattern(f,pattern)) file_list.add( f )
+        endForEach
+      else
+        file_list.add( filepath )
+      endIf
+
+      local filtered_list = String[]
+      forEach (f in file_list)
+        if (not File.is_folder(f)) filtered_list.add( f )
+      endForEach
+
+      return filtered_list
+
+    method consume( ch:Character )->Logical
+      return (reader.consume(ch))
+
+    method consume( text:String )->Logical
+      return (reader.consume(text))
+
+    method consume_whitespace->Logical
+      local found_any = false
+
+      while (reader.consume_spaces or reader.consume('\t'))
+        found_any = true
+      endWhile
+
+      return found_any
+
+    method error( message:String )->DataCompileError
+      return DataCompileError( this, message )
+
+    method execute
+      if (consume("@"))
+        local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
+        pattern = "Assets/Data/" + pattern
+        local info = @{ pattern:pattern, attributes:[] }
+        while (has_another)
+          local name = parse_string( "Attribute or [end of line] expected." )
+          consume_whitespace
+          if (consume(':'))
+            local value = parse_string( "Value expected." )
+            local attribute = @{ name:name }
+            attribute//value = value
+            info//attributes.add( attribute )
+          else
+            local attribute = @{ name:name }
+            info//attributes.add( attribute )
+          endIf
+        endWhile
+        dcom.attributes.add( info )
+        return
+      endIf
+
+      local cmd = parse_string( "Command expected." )
+      which (cmd)
+        case "include"
+          include_data
+
+        case "set"
+          local setting = parse_name_value
+          dcom.settings[ setting//name ] = setting//value
+
+        others
+          throw error( ''Syntax error - unknown command "$".'' (cmd) )
+      endWhich
+
+    method include_data
+      if (not dcom.all_data) dcom.all_data = File.listing( "Assets/Data", &recursive, &ignore_hidden )
+
+      local pattern = parse_string( "Folder or file pattern expected." )
+      if (pattern == ".")
+        include_data( "Assets/Data/*" )
+      else
+        include_data( "Assets/Data/" + pattern )
+      endIf
+
+    method include_data( pattern:String )
+      if (pattern.contains('*') or pattern.contains('?'))
+        forEach (filepath in dcom.all_data)
+          if (File.matches_wildcard_pattern(filepath,pattern))
+            dcom.included_data.add( filepath )
+          endIf
+        endForEach
+      else
+        dcom.included_data.add( pattern )
+      endIf
+
+    method has_another->Logical
+      consume_whitespace
+      return (reader.has_another)
+
+    method must_consume( ch:Character )->Logical
+      if (consume(ch)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (ch,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (ch) )
+      endIf
+
+    method must_consume( text:String )->Logical
+      if (consume(text)) return true
+
+      if (reader.has_another)
+        throw error( ''Syntax error - expected "$", found "$".'' (text,reader.peek) )
+      else
+        throw error( ''Syntax error - expected "$", found [end of line].'' (text) )
+      endIf
+
+    method parse_args->@{}
+      local args = @{}
+      while (has_another)
+        local arg = parse_name_value
+        if (arg//value) args[ arg//name ]         = arg//value
+        else            args[ arg//name->String ] = true
+      endWhile
+      return args
+
+    method parse_name_value->Value
+      local name = parse_string( "Identifier or [end of line] expected." )
+      local name_value = @{ name:name }
+      consume_whitespace
+      if (consume(':'))
+        name_value//value = parse_string( "Value expected." )
+      endIf
+      return name_value
+
+    method parse_string( expected:String )->String
+      if (not has_another) throw error( expected )
+      buffer.clear
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        # Quote-delimited
+        local quote_type = reader.read
+        while (reader.has_another)
+          ch = reader.read
+          which (ch)
+            case quote_type: return buffer->String
+            case '\\'
+              if (reader.has_another) buffer.print( reader.read )
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+        throw error( "String is missing closing ($)." (quote_type) )
+      else
+        while (reader.has_another)
+          ch = reader.peek
+          which (ch)
+            case ' ', ':', ','
+              escapeWhile
+            others
+              buffer.print reader.read
+          endWhich
+        endWhile
+        if (buffer.count == 0) throw error( expected )
+      endIf
+      return buffer->String
+
+    method require_arg( args:@{}, name:String  )
+      if (not args.contains(name)) throw error( "Missing required argument '$'." (name) )
+
+    method to->String
+      return content
+endClass
+

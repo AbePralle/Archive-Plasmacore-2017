@@ -229,6 +229,9 @@ class Plasmacore [essential singleton]
       ++next_resource_id
       return (next_resource_id - 1)
 
+    method data_filepath( name:String )->String
+      return asset_file( "Assets/Data/" + name )
+
     method display( name:String )->Display
       local result = displays[ name ]
       if (not result)

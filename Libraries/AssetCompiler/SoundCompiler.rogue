@@ -31,7 +31,7 @@ routine launch_sound_compiler
                       |@ **.wav format:ima4
                       |include **
                       |
-                      |[emscripten]
+                      |[Web]
                       |@ ** format:ogg
                       |include **
       writer.close
