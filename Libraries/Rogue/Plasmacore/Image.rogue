@@ -222,7 +222,7 @@ class Image
 
       return true
 
-    method reload_image_info
+    method reload
       # Reloads this image if the current image filters in use cause the name to resolve
       # to a different specific image.  Does not actually unload previous texture or
       # load new texture (because we want to let View.reload_images() unload old textures

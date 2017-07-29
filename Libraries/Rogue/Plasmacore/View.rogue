@@ -325,15 +325,15 @@ class View
 
         if (p.type.instance_of(type_Image))
           local image = get_property<<Image>>( p.name )
-          if (image) image.reload_image_info
+          if (image) image.reload
 
         elseIf (p.type.instance_of(type_ImageList))
           local images = get_property<<Image[]>>( p.name )
-          if (images) images.reload_image_info
+          if (images) images.reload
 
         elseIf (p.type.instance_of(type_Font))
           local font = get_property<<Font>>( p.name )
-          if (font) font.reload_image_info
+          if (font) font.reload
 
         endIf
       endForEach

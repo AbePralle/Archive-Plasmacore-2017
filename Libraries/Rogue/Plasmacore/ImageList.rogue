@@ -30,9 +30,9 @@ augment Image[]
       forEach (image in this) image.load
       return this
 
-    method reload_image_info
+    method reload
       forEach (image in this)
-        if (image) image.reload_image_info
+        if (image) image.reload
       endForEach
 
     method unload->this

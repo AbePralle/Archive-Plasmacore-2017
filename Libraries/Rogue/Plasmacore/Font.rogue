@@ -61,8 +61,8 @@ class Font
     method is_loaded->Logical
       return data.is_loaded
 
-    method reload_image_info
-      data = data.reload_image_info
+    method reload
+      data = data.reload
 
     method set_anchor( @anchor )->this
       return this
@@ -396,7 +396,7 @@ class FontData
       if (visual) return info.size.xv + XY(font.spacing,0)
       else        return info.advance + XY(font.spacing,0)
 
-    method reload_image_info->FontData
+    method reload->FontData
       if (name and image_info)
         local new_image_info = Plasmacore.find_image_info( name )
         if (new_image_info is not image_info)
