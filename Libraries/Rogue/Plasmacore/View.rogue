@@ -68,22 +68,27 @@ class View
 
     method collect_texture_names( texture_names=null:StringTable<<Logical>> )->String[]
       ensure texture_names
+      collect_texture_names( this, texture_names )
+      collect_texture_names( (forEach in layers), texture_names )
+      return texture_names.keys
 
+    method collect_texture_names( obj:Object, texture_names:StringTable<<Logical>> )->String[]
       local type_Image = <<Plasmacore::Image>>
       local type_ImageList = <<Plasmacore::Image[]>>
       local type_Font = <<Plasmacore::Font>>
-      forEach (p in type_info.properties)
+
+      forEach (p in obj.type_info.properties)
 
         if (p.type.instance_of(type_Image))
-          local image = get_property<<Image>>( p.name )
+          local image = obj.get_property<<Image>>( p.name )
           if (image) image.collect_texture_names( texture_names )
 
         elseIf (p.type.instance_of(type_ImageList))
-          local images = get_property<<Image[]>>( p.name )
+          local images = obj.get_property<<Image[]>>( p.name )
           if (images) images.collect_texture_names( texture_names )
 
         elseIf (p.type.instance_of(type_Font))
-          local font = get_property<<Font>>( p.name )
+          local font = obj.get_property<<Font>>( p.name )
           if (font) font.collect_texture_names( texture_names )
         endIf
 
@@ -266,12 +271,15 @@ class View
 
     method mark_images_unused
       (forEach in collect_textures).should_unload = true
+      mark_fonts_unloaded( this )
+      mark_fonts_unloaded( forEach in layers )
 
+    method mark_fonts_unloaded( obj:Object )
       local type_Font = <<Plasmacore::Font>>
-      forEach (p in type_info.properties)
+      forEach (p in obj.type_info.properties)
 
         if (p.type.instance_of(type_Font))
-          local font = get_property<<Font>>( p.name )
+          local font = obj.get_property<<Font>>( p.name )
           if (font and font.data) font.data.is_loaded = false
 
         endIf
@@ -317,26 +325,8 @@ class View
       local texture_names = collect_texture_names( texture_name_set )
       texture_name_set[ forEach in texture_names ] = false
 
-      # Reload each image
-      local type_Image = <<Plasmacore::Image>>
-      local type_ImageList = <<Plasmacore::Image[]>>
-      local type_Font = <<Plasmacore::Font>>
-      forEach (p in type_info.properties)
-
-        if (p.type.instance_of(type_Image))
-          local image = get_property<<Image>>( p.name )
-          if (image) image.reload
-
-        elseIf (p.type.instance_of(type_ImageList))
-          local images = get_property<<Image[]>>( p.name )
-          if (images) images.reload
-
-        elseIf (p.type.instance_of(type_Font))
-          local font = get_property<<Font>>( p.name )
-          if (font) font.reload
-
-        endIf
-      endForEach
+      reload_images( this )
+      reload_images( (forEach in layers) )
 
       # Update used textures
       texture_names = collect_texture_names( texture_name_set )
@@ -360,6 +350,27 @@ class View
         if (entry and entry.value) Texture( entry.key ).load
       endForEach
 
+    method reload_images( obj:Object )
+      # Reload each image
+      local type_Image = <<Plasmacore::Image>>
+      local type_ImageList = <<Plasmacore::Image[]>>
+      local type_Font = <<Plasmacore::Font>>
+      forEach (p in obj.type_info.properties)
+
+        if (p.type.instance_of(type_Image))
+          local image = obj.get_property<<Image>>( p.name )
+          if (image) image.reload
+
+        elseIf (p.type.instance_of(type_ImageList))
+          local images = obj.get_property<<Image[]>>( p.name )
+          if (images) images.reload
+
+        elseIf (p.type.instance_of(type_Font))
+          local font = obj.get_property<<Font>>( p.name )
+          if (font) font.reload
+
+        endIf
+      endForEach
 
     method set_state( new_state:State )->this
       change_state( new_state )
