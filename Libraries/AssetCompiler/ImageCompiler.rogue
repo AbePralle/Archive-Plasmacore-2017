@@ -22,6 +22,7 @@ routine launch_image_compiler
                       |#   set    image_sheet_size:4096         Set max texture size
                       |#   set    display_scale:1/2             Images drawn half size etc.
                       |#   group  <folder or pattern>           Turn folders into groups
+                      |#   add    <folder or pattern>           Add standalone images (unpacked)
                       |#   create image:<filepath> font:<font-name> height:<pixels> ...
                       |#     [characters:"ABC..." unicode:[32..126] ...]
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
@@ -135,25 +136,27 @@ endClass
 
 class ImageCompiler
   PROPERTIES
-    file             : File
-    file_timestamp   : Real64
-    platform         : String
-    commands         = Table<<String,ImageCommand[]>>()
-    attributes       = @[]
-    settings         = @{}
-    image_sheet_size = 2048
-    group_manifests  = @[]
-    newest_group_manifest_timestamp : Real64
-    even_odd         = true
-    files_written    : Int32
-    all_images       : String[]
+    file              : File
+    file_timestamp    : Real64
+    platform          : String
+    commands          = Table<<String,ImageCommand[]>>()
+    attributes        = @[]
+    settings          = @{}
+    image_sheet_size  = 2048
+    group_manifests   = @[]
+    standalone_images = @[]
+    newest_manifest_timestamp : Real64
+    even_odd          = true
+    files_written     : Int32
+    all_images        : String[]
+    showed_standalone_header : Logical
 
   METHODS
     method init( file, platform )
       println "Compiling images for platform $..." (platform)
       file_timestamp = file.timestamp
       group_manifests = @[]
-      newest_group_manifest_timestamp = 0.0
+      newest_manifest_timestamp = 0.0
 
       organize_commands
       execute_global_commands
@@ -171,11 +174,11 @@ class ImageCompiler
 
       local index_filepath = index_folder + "ImageIndex.json"
 
-      if (not File.exists(index_filepath) or File.timestamp(index_filepath) < newest_group_manifest_timestamp)
+      if (not File.exists(index_filepath) or File.timestamp(index_filepath) < newest_manifest_timestamp)
         ++files_written
         println "  Writing " + index_filepath
 
-        local index = @{ groups:[] }
+        local index = @{ groups:[], standalone:standalone_images }
         forEach (group in group_manifests)
           local g = @{ filepath:"Assets/Images/$.json" (group//name->String.replacing('/','-')) }
           index//groups.add( g )
@@ -340,6 +343,10 @@ class ImageCommand
           if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
           compile_group
 
+        case "add"
+          if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
+          add_standalone
+
         case "create"
           local args = parse_args
           local image_name = require_arg( args, "image" )
@@ -418,7 +425,7 @@ class ImageCommand
         # No changes to group.  Load up cached group manifest so it can be written out
         # with the platform manifest
         icom.group_manifests.add( JSON.load_table( manifest_filepath ).decompressed )
-        icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
+        icom.newest_manifest_timestamp = icom.newest_manifest_timestamp.or_larger( manifest_timestamp )
 
         return  # no changes to group
       endContingent
@@ -485,7 +492,7 @@ class ImageCommand
       # Store group manifest
       icom.group_manifests.add( manifest )
       manifest_timestamp = System.time
-      icom.newest_group_manifest_timestamp = icom.newest_group_manifest_timestamp.or_larger( manifest_timestamp )
+      icom.newest_manifest_timestamp = icom.newest_manifest_timestamp.or_larger( manifest_timestamp )
 
       manifest.compressed.save( File(manifest_filepath) )
 
@@ -596,6 +603,9 @@ class ImageCommand
       return false
 
     method create_asset_object( filepath:String )->Asset
+      return Asset( this, filepath, get_attributes(filepath) )
+
+    method get_attributes( filepath:String )->Value
       local attributes = @{}
       forEach (attr in icom.attributes)
         if (File.matches_wildcard_pattern(filepath,attr//pattern))
@@ -605,8 +615,7 @@ class ImageCommand
           endForEach
         endIf
       endForEach
-
-      return Asset( this, filepath, attributes )
+      return attributes
 
     method has_another->Logical
       consume_whitespace
@@ -727,6 +736,118 @@ class ImageCommand
       print image_name
       println " [$x$]" (bitmap.width,bitmap.height)
       save_bitmap( bitmap, image_name )
+
+    method add_standalone
+      local src_name = parse_string( "Folder or file pattern expected." )
+      if (src_name == ".")
+        add_standalone_images( "Assets/Images" )
+      else
+        src_name = "Assets/Images/" + src_name
+        if (src_name.contains("*") or src_name.contains('?'))
+          forEach (filepath in icom.all_images)
+            if (File.matches_wildcard_pattern(filepath,src_name))
+              add_standalone_images( filepath )
+            endIf
+          endForEach
+        else
+          add_standalone_images( src_name )
+        endIf
+      endIf
+
+    method add_standalone_images( src_name:String )
+      if (File.is_folder(src_name))
+        add_standalone( forEach in File.listing(src_name,&recursive) )
+      else
+        add_standalone( src_name )
+      endIf
+
+
+    method add_standalone( src_name:String )
+      if (not File.exists(src_name)) return
+      local ext = File.extension(src_name).to_lowercase
+      if (not (ext == "png" or ext == "jpeg" or ext == "jpg")) return
+
+      local dest_name = "Build/$/$" (icom.platform,src_name)
+      local info_name = dest_name.leftmost( -ext.count ) + "json"
+
+      contingent
+        sufficient (not File.exists(dest_name))
+        sufficient (File.timestamp(src_name) > File.timestamp(dest_name))
+        sufficient (not File.exists(info_name))
+        sufficient (File.timestamp(src_name) > File.timestamp(info_name))
+
+        # Don't need to process file. Just load info for index.
+        icom.standalone_images.add( JSON.load_table(info_name) )
+        return
+
+      endContingent
+
+      local bitmap = BitmapCache[ src_name ]
+
+      local width = bitmap.width
+      local height = bitmap.height
+      local display_width  = width
+      local display_height = height
+      local attributes = get_attributes( src_name )
+      local size_changed = false
+
+      if (attributes//resize)
+        local tx_size = Convert.parse_dimensions( this, attributes//resize )
+        width  = tx_size//width->Int32
+        height = tx_size//height->Int32
+        bitmap = bitmap.resized( width, height )
+        size_changed = true
+        display_width = width
+        display_height = height
+      endIf
+
+      if (attributes//resample)
+        local tx_size = Convert.parse_dimensions( this, attributes//resample )
+        width  = tx_size//width->Int32
+        height = tx_size//height->Int32
+        bitmap = bitmap.resized( width, height )
+        size_changed = true
+      endIf
+
+      if (attributes//display_size)
+        local tx_size = Convert.parse_dimensions( this, attributes//display_size )
+        display_width  = tx_size//width->Int32
+        display_height = tx_size//height->Int32
+      endIf
+
+      local display_scale = this.icom.settings//display_scale
+      if (display_scale)
+        local scale = Convert.parse_scale( this, display_scale )
+        display_width  = display_width * scale
+        display_height = display_height * scale
+      endIf
+
+      if (not icom.showed_standalone_header)
+        icom.showed_standalone_header = true
+        println "Standalone Images"
+      endIf
+
+      println "  Copying " + dest_name
+      if (size_changed)
+        save_bitmap( bitmap, dest_name )
+      else
+        File.copy( src_name, dest_name )
+      endIf
+
+      local name = src_name.after_first( "Assets/Images/" )
+
+      local info =
+      @{
+        type: "TextureImage",
+        name: name,
+        display_size: [ display_width, display_height ],
+        texture: { filename:name, bounds:[0,0,width,height] }
+      }
+
+      icom.newest_manifest_timestamp = System.time
+      info.save( File(info_name) )
+
+      icom.standalone_images.add( info )
 
     method copy_image( args:@{} )
       require_arg( args, "from" )
