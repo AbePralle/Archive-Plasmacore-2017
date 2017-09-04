@@ -310,13 +310,18 @@ class Plasmacore [essential singleton]
       image_info_list.clear
       image_group_info_lookup.clear
 
-      # Full filepath
+      # Image groups (image sheets / texture atlases)
       forEach (group_info in image_index//groups)
         local group = get_image_group_info( group_info//filepath->String )
         forEach (image in group_info//images)
           local name = image->String
           image_info_list.add( ImageInfo(name, group) )
         endForEach
+      endForEach
+
+      # Standalone images (textures)
+      forEach (image_info in image_index//standalone)
+        image_info_list.add( ImageInfo(image_info) )
       endForEach
 
       filter_images
@@ -384,6 +389,7 @@ class ImageInfo
       if (existing.images) images = existing.images.cloned
 
     method init( info:Value )
+      name = info//name
       load( info )
 
     method cloned->ImageInfo
