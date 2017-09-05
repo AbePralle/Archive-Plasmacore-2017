@@ -111,8 +111,10 @@ class DataCompiler
 
       local dest_folder = "Build/$/" (platform)
       forEach (filepath in included_data)
-        local attr = data_attributes( filepath )
-        copy_data( filepath, dest_folder + filepath, attr )
+        if (not File.is_folder(filepath))
+          local attr = data_attributes( filepath )
+          copy_data( filepath, dest_folder + filepath, attr )
+        endIf
       endForEach
 
       if (not files_written)
@@ -122,7 +124,6 @@ class DataCompiler
     method copy_data( from_filepath:String, to_filepath:String, attr:Value )
       if (not File.exists(to_filepath) or File.timestamp(to_filepath) < File.timestamp(from_filepath))
         File.create_folder( File.folder(to_filepath) )
-
 
         print   "  Writing "
         println to_filepath

@@ -19,10 +19,10 @@ routine launch_image_compiler
                       |#
                       |# COMMANDS
                       |#   @ <file or pattern> [attributes...]  Set image attributes
-                      |#   set    image_sheet_size:4096         Set max texture size
-                      |#   set    display_scale:1/2             Images drawn half size etc.
-                      |#   group  <folder or pattern>           Turn folders into groups
-                      |#   add    <folder or pattern>           Add standalone images (unpacked)
+                      |#   set     image_sheet_size:4096         Set max texture size
+                      |#   set     display_scale:1/2             Images drawn half size etc.
+                      |#   group   <folder or pattern>           Turn folders into groups
+                      |#   include <folder or pattern>           Include standalone images (unpacked)
                       |#   create image:<filepath> font:<font-name> height:<pixels> ...
                       |#     [characters:"ABC..." unicode:[32..126] ...]
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
@@ -343,9 +343,9 @@ class ImageCommand
           if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
           compile_group
 
-        case "add"
+        case "include"
           if (not icom.all_images) icom.all_images = File.listing( "Assets/Images", &recursive, &ignore_hidden )
-          add_standalone
+          include_standalone
 
         case "create"
           local args = parse_args
@@ -737,7 +737,7 @@ class ImageCommand
       println " [$x$]" (bitmap.width,bitmap.height)
       save_bitmap( bitmap, image_name )
 
-    method add_standalone
+    method include_standalone
       local src_name = parse_string( "Folder or file pattern expected." )
       if (src_name == ".")
         add_standalone_images( "Assets/Images" )
@@ -756,13 +756,13 @@ class ImageCommand
 
     method add_standalone_images( src_name:String )
       if (File.is_folder(src_name))
-        add_standalone( forEach in File.listing(src_name,&recursive) )
+        include_standalone( forEach in File.listing(src_name,&recursive) )
       else
-        add_standalone( src_name )
+        include_standalone( src_name )
       endIf
 
 
-    method add_standalone( src_name:String )
+    method include_standalone( src_name:String )
       if (not File.exists(src_name)) return
       local ext = File.extension(src_name).to_lowercase
       if (not (ext == "png" or ext == "jpeg" or ext == "jpg")) return
