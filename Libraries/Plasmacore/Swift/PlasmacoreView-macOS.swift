@@ -254,6 +254,7 @@ class PlasmacoreView: NSOpenGLView
 
   func onRedraw()
   {
+    if ( !Thread.isMainThread ) { return }
     guard let window = window else { return }
 
     if (window.isVisible)
