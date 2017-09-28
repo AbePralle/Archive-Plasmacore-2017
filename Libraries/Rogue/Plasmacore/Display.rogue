@@ -317,6 +317,25 @@ class Display [singleton]
       fill_solid_triangle( transform(triangle), colors,
         select{ colors.is_opaque:RenderMode.OPAQUE_SHAPE || RenderMode.ALPHA_SHAPE }, null )
 
+    method fill( triangle:Triangle, image:Image, uv:Triangle, colors=Colors(Color.WHITE):Colors,
+        render_mode=null:RenderMode?, shader=ImageShader.TEXTURE:Shader )
+      local texture_data = image.data as TextureImageData
+      if (texture_data)
+        fill( triangle, texture_data.texture, uv, colors, render_mode, shader )
+      else
+        fill( triangle, colors )
+      endIf
+
+    method fill( triangle:Triangle, texture:Texture, uv:Triangle, colors=Colors(Color.WHITE):Colors,
+        render_mode=null:RenderMode?, shader=ImageShader.TEXTURE:Shader )
+
+      if (not render_mode.exists)
+        if (texture.is_opaque) render_mode = RenderMode.OPAQUE_IMAGE
+        else                   render_mode = RenderMode.ALPHA_IMAGE
+      endIf
+
+      fill_textured_triangle( texture, transform(triangle), colors, uv, render_mode.value, shader )
+
     method fill_solid_quad( quad:Quad<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       set_primitive_type( 3 )
       set_render_mode( render_mode, shader )
@@ -437,6 +456,43 @@ class Display [singleton]
       vertex_colors.add( colors.a.argb )
       vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
+
+    method fill_textured_triangle( texture:Texture,
+        triangle:Triangle<<XYZW>>,
+        colors:Colors,
+        uv:Triangle,
+        render_mode:RenderMode,
+        shader:Shader )
+
+      set_texture( 0, texture )
+      set_primitive_type( 3 )
+      set_render_mode( render_mode, shader )
+
+      reserve_vertices( 3 )
+
+      vertex_positions.add( triangle.a.x )
+      vertex_positions.add( triangle.a.y )
+      vertex_positions.add( triangle.a.z )
+      vertex_positions.add( triangle.a.w )
+      vertex_positions.add( triangle.c.x )
+      vertex_positions.add( triangle.c.y )
+      vertex_positions.add( triangle.c.z )
+      vertex_positions.add( triangle.c.w )
+      vertex_positions.add( triangle.b.x )
+      vertex_positions.add( triangle.b.y )
+      vertex_positions.add( triangle.b.z )
+      vertex_positions.add( triangle.b.w )
+
+      vertex_uvs.add( uv.a.x );
+      vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.b.x );
+      vertex_uvs.add( uv.b.y );
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.b.argb )
 
     method flush->this
       render_2dx
