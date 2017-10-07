@@ -15,34 +15,21 @@ class Mesh
       #        | 3 --|-2
       #        |/    |/
       #        7---- 6
-      local quad = Vertex[]
-      quad.add( Vertex(-1,-1,-1) )
-      quad.add( Vertex( 1,-1,-1) )
-      quad.add( Vertex( 1, 1,-1) )
-      quad.add( Vertex(-1, 1,-1) )
-      quad.add( Vertex(-1,-1, 1) )
-      quad.add( Vertex( 1,-1, 1) )
-      quad.add( Vertex( 1, 1, 1) )
-      quad.add( Vertex(-1, 1, 1) )
+      local corners = Vertex[]
+      corners.add( Vertex(-1,-1,-1) )
+      corners.add( Vertex( 1,-1,-1) )
+      corners.add( Vertex( 1, 1,-1) )
+      corners.add( Vertex(-1, 1,-1) )
+      corners.add( Vertex(-1,-1, 1) )
+      corners.add( Vertex( 1,-1, 1) )
+      corners.add( Vertex( 1, 1, 1) )
+      corners.add( Vertex(-1, 1, 1) )
 
       @cube = Mesh()
-      @cube.add( quad[0], quad[1], quad[2] )
-      @cube.add( quad[0], quad[2], quad[3] )
 
-      @cube.add( quad[4], quad[6], quad[5] )
-      @cube.add( quad[4], quad[7], quad[6] )
-
-      @cube.add( quad[5], quad[2], quad[1] )
-      @cube.add( quad[5], quad[6], quad[2] )
-
-      @cube.add( quad[0], quad[7], quad[4] )
-      @cube.add( quad[0], quad[3], quad[7] )
-
-      @cube.add( quad[0], quad[5], quad[1] )
-      @cube.add( quad[0], quad[4], quad[5] )
-
-      @cube.add( quad[7], quad[2], quad[6] )
-      @cube.add( quad[7], quad[3], quad[2] )
+      # TODO - is it even possible to use a mesh for this?
+      #@cube.add( corners[4] ).add( corners[5] ).add( corners[6] ).add( corners[1] )
+      #@cube.add( corners[0] ).add( corners[3] ).add( corners[2] ).add( corners[1] )
 
       return @cube
 
@@ -57,8 +44,8 @@ class Mesh
   METHODS
     method init( vertex_capacity=10:Int32 )
       ensure positions( vertex_capacity * 3 )
-      #ensure uvs( vertex_count * 2 )
-      #ensure colors( vertex_count )
+      ensure uvs( vertex_capacity * 2 )
+      ensure colors( vertex_capacity )
 
     method add( v:Vertex )->this
       ++vertex_count

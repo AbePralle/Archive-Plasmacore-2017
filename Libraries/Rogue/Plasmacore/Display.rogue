@@ -23,6 +23,14 @@ class Display [singleton]
   DEFINITIONS
     VERTEX_BUFFER_SIZE = 4096
 
+    POINTS    = 1
+    LINES     = 2
+    TRIANGLES = 3
+    MESH      = 4  # Each vertex after the first three defines a new triangle using the previous two vertices
+
+    COUNTER_CLOCKWISE = 0
+    CLOCKWISE         = 1
+
   GLOBAL PROPERTIES
     default_z                    = -512.0
     default_view_type = <<View>> : TypeInfo
@@ -54,6 +62,7 @@ class Display [singleton]
     active_render_mode     : RenderMode
     active_textures        = Texture[]
     active_primitive_type  = 3
+    active_front_face      = CLOCKWISE : Int32
 
     vertex_count           : Int32
     vertex_positions       = Real32[]
@@ -283,7 +292,7 @@ class Display [singleton]
     method draw( line:Line<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       if (colors.count == 1) colors = Colors( colors.a, colors.a )
 
-      set_primitive_type( 2 )
+      set_primitive_type( LINES )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 2 )
@@ -337,7 +346,7 @@ class Display [singleton]
       fill_textured_triangle( texture, transform(triangle), colors, uv, render_mode.value, shader )
 
     method fill_solid_quad( quad:Quad<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
-      set_primitive_type( 3 )
+      set_primitive_type( TRIANGLES )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 6 )
@@ -376,7 +385,7 @@ class Display [singleton]
       vertex_colors.add( colors.d.argb )
 
     method fill_solid_triangle( triangle:Triangle<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
-      set_primitive_type( 3 )
+      set_primitive_type( TRIANGLES )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 3 )
@@ -398,6 +407,33 @@ class Display [singleton]
       vertex_colors.add( colors.b.argb )
       vertex_colors.add( colors.c.argb )
 
+    method fill_textured_mesh( mesh:MeshBuilder, texture:Texture, render_mode:RenderMode, shader:Shader )
+      set_texture( 0, texture )
+      set_primitive_type( MESH, ?:{mesh.clockwise:CLOCKWISE || COUNTER_CLOCKWISE} )
+      set_render_mode( render_mode, shader )
+
+      reserve_vertices( mesh.positions.count )
+
+      local t = transform
+      local z = this.z
+
+      forEach (xy in mesh.positions)
+        local xyzw = t * XYZ( xy, z )
+        vertex_positions.add( xyzw.x )
+        vertex_positions.add( xyzw.y )
+        vertex_positions.add( xyzw.z )
+        vertex_positions.add( xyzw.w )
+      endForEach
+
+      forEach (uv in mesh.uvs)
+        vertex_uvs.add( uv.x ).add( uv.y )
+      endForEach
+
+      forEach (color in mesh.colors)
+        vertex_colors.add( color.argb )
+      endForEach
+
+
     method fill_textured_quad( texture:Texture,
         quad:Quad<<XYZW>>,
         colors:Colors,
@@ -406,7 +442,7 @@ class Display [singleton]
         shader:Shader )
 
       set_texture( 0, texture )
-      set_primitive_type( 3 )
+      set_primitive_type( TRIANGLES )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 6 )
@@ -465,7 +501,7 @@ class Display [singleton]
         shader:Shader )
 
       set_texture( 0, texture )
-      set_primitive_type( 3 )
+      set_primitive_type( TRIANGLES )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( 3 )
@@ -645,7 +681,7 @@ class Display [singleton]
               |glEnable( GL_CULL_FACE );
               |glCullFace( GL_BACK );
 
-      native @|glFrontFace( GL_CW );
+      native @|glFrontFace( $active_front_face ? GL_CW : GL_CCW );
 
       if (render_mode.is_blended)
         local gl_source_blend = 0
@@ -742,14 +778,18 @@ class Display [singleton]
       endIf
 
       which (active_primitive_type)
-        case 3
-          native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
+        case POINTS
+          native @|glDrawArrays( GL_POINTS, 0, $vertex_count );
 
-        case 2
+        case LINES
           native @|glDrawArrays( GL_LINES, 0, $vertex_count );
 
-        case 1
-          native @|glDrawArrays( GL_POINTS, 0, $vertex_count );
+        case TRIANGLES
+          native @|glDrawArrays( GL_TRIANGLES, 0, $vertex_count );
+
+        case MESH
+          native @|glDrawArrays( GL_TRIANGLE_STRIP, 0, $vertex_count );
+
       endWhich
 
       #Log.println native("glGetError()")->Int32
@@ -775,10 +815,11 @@ class Display [singleton]
       render_target.set_clipping_region( new_clipping_region )
       return this
 
-    method set_primitive_type( primitive_type:Int32 )->this
-      if (primitive_type == active_primitive_type) return this
+    method set_primitive_type( primitive_type:Int32, front_face=Display.CLOCKWISE:Int32 )->this
+      if (primitive_type == active_primitive_type and front_face == active_front_face) return this
       flush
       active_primitive_type = primitive_type
+      active_front_face = front_face
       return this
 
     method set_perspective_center( new_center:XY )->this

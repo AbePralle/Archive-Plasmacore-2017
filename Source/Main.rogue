@@ -7,6 +7,8 @@ Display( "Main" ).view = MainView()
 
 class MainView : View
   PROPERTIES
+    img = Image( "Animations/king.png" )
+    mesh = MeshBuilder()
 
   METHODS
     method on_start
@@ -16,6 +18,12 @@ class MainView : View
     method on( e:PointerEvent )
 
     method on_draw
+      mesh.clear( &cw )
+      mesh.add( Display.at(0,0), XY(0,0) )
+      mesh.add( Display.at(1,0), XY(1,0) )
+      mesh.add( Display.at(0,1), XY(0,1) )
+      mesh.add( Display.at(1,1), XY(1,1) )
+      mesh.fill( img.texture )
 
     method on_resize
       # Called when the Display.size changes

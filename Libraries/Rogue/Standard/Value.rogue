@@ -410,7 +410,7 @@ class Value
     method set( index:Int32, value:String )->this [macro]
       this.set( index, Value(value) )
 
-    method set( index:Int32, value:Value )->this
+    method set( index:Int32, value:Value )->this [preferred]
       return this
 
     method set( key:String, value:Int32 )->this [macro]
@@ -434,7 +434,7 @@ class Value
     method set( key:Value, value:Value )->this [macro]
       this.set( key->String, value )
 
-    method set( key:String, value:Value )->this
+    method set( key:String, value:Value )->this [preferred]
       return this
 
     method sort( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
@@ -1089,10 +1089,12 @@ class ValueList : Value
       data.reserve( additional_elements )
       return this
 
-    method set( index:Int32, new_value:Value )->Value
+    method set( index:Int32, new_value:Value )->Value [preferred]
       if (index < 0) return this
 
-      while (index >= data.count) add( null as Value )
+      while (index >= data.count) add( NullValue )
+
+      if (new_value is null) new_value = NullValue
       data.set( index, new_value )
 
       return this
@@ -1129,8 +1131,8 @@ class ValueList : Value
           if (pretty_print) buffer.println
         endIf
 
-        if (value or value.is_logical) value.to_json( buffer, flags )
-        else                           buffer.print( "null" )
+        if (value is not null and (value or value.is_logical)) value.to_json( buffer, flags )
+        else                                                   buffer.print( "null" )
       endForEach
 
       if (pretty_print)
@@ -1336,10 +1338,11 @@ class ValueTable : Value
       if (index < 0 or index >= count) return UndefinedValue
       return data.remove( data.keys[index] )
 
-    method set( index:Int32, value:Value )->this
+    method set( index:Int32, value:Value )->this [preferred]
       return set( ""+index, value )
 
-    method set( key:String, new_value:Value )->this
+    method set( key:String, new_value:Value )->this [preferred]
+      if (new_value is null) new_value = NullValue
       data.set( key, new_value )
       return this
 
@@ -1383,8 +1386,8 @@ class ValueTable : Value
           if (indent) buffer.indent += 2
         endIf
 
-        if (value or value.is_logical) value.to_json( buffer, flags )
-        else                           buffer.print( "null" )
+        if (value is not null and (value or value.is_logical)) value.to_json( buffer, flags )
+        else                                                   buffer.print( "null" )
 
         if (indent) buffer.indent -= 2
       endForEach

@@ -334,6 +334,10 @@ class Image
     method size->XY
       return @size * @scale
 
+    method texture->Texture
+      load
+      return ?:{ data:data.texture || null }
+
     method unload->this
       if (data)
         data.unload
@@ -413,6 +417,9 @@ class ImageData
 
     method set_uv( subset:Box )
       noAction
+
+    method texture->Texture
+      return null
 
     method unload
       noAction
@@ -502,17 +509,17 @@ class TextureImageData : ImageData
     is_opaque : Logical
 
   METHODS
-    method init( texture, is_opaque=false )
-      uv2 = texture.uv_size
+    method init( @texture, is_opaque=false )
+      uv2 = @texture.uv_size
 
     method cloned->ImageData
-      local result = TextureImageData( texture, is_opaque )
+      local result = TextureImageData( @texture, is_opaque )
       result.uv1 = uv1
       result.uv2 = uv2
       return result
 
     method is_loaded->Logical
-      return texture.is_loaded
+      return @texture.is_loaded
 
     method draw( image:Image )
       local size = image.@size * image.scale
@@ -541,24 +548,27 @@ class TextureImageData : ImageData
       if (image.hflip) _uv = Quad( _uv.b, _uv.a, _uv.d, _uv.c )
       if (image.vflip) _uv = Quad( _uv.d, _uv.c, _uv.b, _uv.a )
 
-      Display.fill_textured_quad( texture, quad, image.colors.with_opacity(image.opacity),
+      Display.fill_textured_quad( @texture, quad, image.colors.with_opacity(image.opacity),
         _uv, image.selected_render_mode, image.selected_shader )
 
       Display.pop_object_transform
 
     method load
-      texture.load
+      @texture.load
 
     method set( bitmap:Bitmap )->this
-      texture.set( bitmap )
+      @texture.set( bitmap )
       return this
 
     method set_uv( subset:Box )
-      uv1 = subset.top_left / texture.texture_size
-      uv2 = subset.bottom_right / texture.texture_size
+      uv1 = subset.top_left / @texture.texture_size
+      uv2 = subset.bottom_right / @texture.texture_size
+
+    method texture->Texture
+      return @texture
 
     method unload
-      texture.unload
+      @texture.unload
 
 endClass
 

@@ -10,7 +10,7 @@ class Texture
     is_opaque        : Logical
     should_unload    : Logical  # Used in View to manage the loading and unloading of images
 
-    render_target_id  : Int32
+    render_target_id : Int32
 
   GLOBAL METHODS
     method create( name:String )->Texture
@@ -88,6 +88,12 @@ class Texture
 
     method on_cleanup
       unload
+
+    method default_render_mode->RenderMode
+      return ?:{ is_opaque:RenderMode.OPAQUE_IMAGE || RenderMode.ALPHA_IMAGE }
+
+    method default_shader->Shader
+      return ImageShader.TEXTURE
 
     method image_height->Int32 [macro]
       this.image_size.y
