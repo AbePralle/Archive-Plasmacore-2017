@@ -346,34 +346,34 @@ class Display [singleton]
       vertex_positions.add( quad.a.y )
       vertex_positions.add( quad.a.z )
       vertex_positions.add( quad.a.w )
-      vertex_positions.add( quad.c.x )
-      vertex_positions.add( quad.c.y )
-      vertex_positions.add( quad.c.z )
-      vertex_positions.add( quad.c.w )
       vertex_positions.add( quad.b.x )
       vertex_positions.add( quad.b.y )
       vertex_positions.add( quad.b.z )
       vertex_positions.add( quad.b.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
 
       vertex_positions.add( quad.a.x )
       vertex_positions.add( quad.a.y )
       vertex_positions.add( quad.a.z )
       vertex_positions.add( quad.a.w )
-      vertex_positions.add( quad.d.x )
-      vertex_positions.add( quad.d.y )
-      vertex_positions.add( quad.d.z )
-      vertex_positions.add( quad.d.w )
       vertex_positions.add( quad.c.x )
       vertex_positions.add( quad.c.y )
       vertex_positions.add( quad.c.z )
       vertex_positions.add( quad.c.w )
+      vertex_positions.add( quad.d.x )
+      vertex_positions.add( quad.d.y )
+      vertex_positions.add( quad.d.z )
+      vertex_positions.add( quad.d.w )
 
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
-      vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.d.argb )
 
     method fill_solid_triangle( triangle:Triangle<<XYZW>>, colors:Colors, render_mode:RenderMode, shader:Shader )
       set_primitive_type( 3 )
@@ -385,18 +385,18 @@ class Display [singleton]
       vertex_positions.add( triangle.a.y )
       vertex_positions.add( triangle.a.z )
       vertex_positions.add( triangle.a.w )
-      vertex_positions.add( triangle.c.x )
-      vertex_positions.add( triangle.c.y )
-      vertex_positions.add( triangle.c.z )
-      vertex_positions.add( triangle.c.w )
       vertex_positions.add( triangle.b.x )
       vertex_positions.add( triangle.b.y )
       vertex_positions.add( triangle.b.z )
       vertex_positions.add( triangle.b.w )
+      vertex_positions.add( triangle.c.x )
+      vertex_positions.add( triangle.c.y )
+      vertex_positions.add( triangle.c.z )
+      vertex_positions.add( triangle.c.w )
 
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
+      vertex_colors.add( colors.c.argb )
 
     method fill_textured_quad( texture:Texture,
         quad:Quad<<XYZW>>,
@@ -415,47 +415,47 @@ class Display [singleton]
       vertex_positions.add( quad.a.y )
       vertex_positions.add( quad.a.z )
       vertex_positions.add( quad.a.w )
-      vertex_positions.add( quad.c.x )
-      vertex_positions.add( quad.c.y )
-      vertex_positions.add( quad.c.z )
-      vertex_positions.add( quad.c.w )
       vertex_positions.add( quad.b.x )
       vertex_positions.add( quad.b.y )
       vertex_positions.add( quad.b.z )
       vertex_positions.add( quad.b.w )
+      vertex_positions.add( quad.c.x )
+      vertex_positions.add( quad.c.y )
+      vertex_positions.add( quad.c.z )
+      vertex_positions.add( quad.c.w )
 
       vertex_positions.add( quad.a.x )
       vertex_positions.add( quad.a.y )
       vertex_positions.add( quad.a.z )
       vertex_positions.add( quad.a.w )
-      vertex_positions.add( quad.d.x )
-      vertex_positions.add( quad.d.y )
-      vertex_positions.add( quad.d.z )
-      vertex_positions.add( quad.d.w )
       vertex_positions.add( quad.c.x )
       vertex_positions.add( quad.c.y )
       vertex_positions.add( quad.c.z )
       vertex_positions.add( quad.c.w )
+      vertex_positions.add( quad.d.x )
+      vertex_positions.add( quad.d.y )
+      vertex_positions.add( quad.d.z )
+      vertex_positions.add( quad.d.w )
 
       vertex_uvs.add( uv.a.x );
       vertex_uvs.add( uv.a.y );
-      vertex_uvs.add( uv.c.x );
-      vertex_uvs.add( uv.c.y );
       vertex_uvs.add( uv.b.x );
       vertex_uvs.add( uv.b.y );
-      vertex_uvs.add( uv.a.x );
-      vertex_uvs.add( uv.a.y );
-      vertex_uvs.add( uv.d.x );
-      vertex_uvs.add( uv.d.y );
       vertex_uvs.add( uv.c.x );
       vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.a.x );
+      vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.d.x );
+      vertex_uvs.add( uv.d.y );
 
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
-      vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.d.argb )
       vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.d.argb )
 
     method fill_textured_triangle( texture:Texture,
         triangle:Triangle<<XYZW>>,
@@ -474,25 +474,25 @@ class Display [singleton]
       vertex_positions.add( triangle.a.y )
       vertex_positions.add( triangle.a.z )
       vertex_positions.add( triangle.a.w )
-      vertex_positions.add( triangle.c.x )
-      vertex_positions.add( triangle.c.y )
-      vertex_positions.add( triangle.c.z )
-      vertex_positions.add( triangle.c.w )
       vertex_positions.add( triangle.b.x )
       vertex_positions.add( triangle.b.y )
       vertex_positions.add( triangle.b.z )
       vertex_positions.add( triangle.b.w )
+      vertex_positions.add( triangle.c.x )
+      vertex_positions.add( triangle.c.y )
+      vertex_positions.add( triangle.c.z )
+      vertex_positions.add( triangle.c.w )
 
       vertex_uvs.add( uv.a.x );
       vertex_uvs.add( uv.a.y );
-      vertex_uvs.add( uv.c.x );
-      vertex_uvs.add( uv.c.y );
       vertex_uvs.add( uv.b.x );
       vertex_uvs.add( uv.b.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
 
       vertex_colors.add( colors.a.argb )
-      vertex_colors.add( colors.c.argb )
       vertex_colors.add( colors.b.argb )
+      vertex_colors.add( colors.c.argb )
 
     method flush->this
       render_2dx
@@ -645,11 +645,7 @@ class Display [singleton]
               |glEnable( GL_CULL_FACE );
               |glCullFace( GL_BACK );
 
-      if (Display.is_rendering_offscreen)
-        native @|glFrontFace( GL_CW );
-      else
-        native @|glFrontFace( GL_CCW );
-      endIf
+      native @|glFrontFace( GL_CW );
 
       if (render_mode.is_blended)
         local gl_source_blend = 0
