@@ -22,6 +22,8 @@ class PlasmacoreView: NSOpenGLView
   var keyModifierFlags:UInt = 0
   var renderer_id:Int32 = 0
 
+  var view_bounds  = NSRect(x:0,y:0,width:1,height:1)
+
   required init?(coder: NSCoder)
   {
     super.init( coder:coder )
@@ -83,6 +85,21 @@ class PlasmacoreView: NSOpenGLView
   override func draw( _ area:NSRect )
   {
     super.draw( area )
+    view_bounds = self.bounds
+
+    guard let window = window else { return }
+    if (window.isVisible)
+    {
+      commonDraw()
+    }
+    else
+    {
+      stopDisplayLink()
+    }
+  }
+
+  func commonDraw()
+  {
     configure()
 
     guard let context = self.openGLContext else { return }
@@ -91,8 +108,8 @@ class PlasmacoreView: NSOpenGLView
     CGLLockContext( context.cglContextObj! )
 
 
-    let display_width  = Int(bounds.width)
-    let display_height = Int(bounds.height)
+    let display_width  = Int( view_bounds.width )
+    let display_height = Int( view_bounds.height )
 
     let m = PlasmacoreMessage( type:"Display.on_render" )
     m.set( name:"window_id", value:windowID )
@@ -254,17 +271,7 @@ class PlasmacoreView: NSOpenGLView
 
   func onRedraw()
   {
-    if ( !Thread.isMainThread ) { return }
-    guard let window = window else { return }
-
-    if (window.isVisible)
-    {
-      draw( self.bounds )
-    }
-    else
-    {
-      stopDisplayLink()
-    }
+    commonDraw()
   }
 
   override func prepareOpenGL()
@@ -275,6 +282,7 @@ class PlasmacoreView: NSOpenGLView
   func startDisplayLink()
   {
     if (displayLink !== nil) { return }
+    NSLog( "start display link" )
 
     // Locally defined callback
     func callback( displayLink:CVDisplayLink, now:UnsafePointer<CVTimeStamp>,
