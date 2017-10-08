@@ -6,12 +6,22 @@ class MeshBuilder
     uvs       : XY[]
     colors    : Color[]
 
+
     clockwise   = true
+    is_linked   : Logical
+
     render_mode : RenderMode?
     shader      : Shader
 
   METHODS
-    method init( vertex_capacity=10:Int32 )
+    method init
+      init( &linked=false )
+
+    method init( linked:Logical )
+      init( 10, linked )
+
+    method init( vertex_capacity:Int32, &linked )
+      is_linked = linked
       ensure positions( vertex_capacity )
       ensure uvs( vertex_capacity )
       ensure colors( vertex_capacity )
