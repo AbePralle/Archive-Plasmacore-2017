@@ -7,8 +7,8 @@ class MeshBuilder
     colors    : Color[]
 
 
-    clockwise   = true
-    is_linked   : Logical
+    is_clockwise = true
+    is_linked    : Logical
 
     render_mode : RenderMode?
     shader      : Shader
@@ -41,22 +41,25 @@ class MeshBuilder
       positions.clear
       uvs.clear
       colors.clear
-      clockwise = (cw or not ccw)
+      is_clockwise = (cw or not ccw)
       return this
 
     method fill( texture:Texture, render_mode=null:RenderMode?, shader=null:Shader )
-      #if (not render_mode.exists) render_mode = this.render_mode
-      #if (not render_mode.exists) render_mode = texture.default_render_mode
       render_mode = ?:{ render_mode || this.render_mode || texture.default_render_mode }
       shader = ?:{ shader || this.shader || texture.default_shader }
       Display.fill_textured_mesh( this, texture, render_mode.value, shader )
 
-    method start_clockwise->this
-      clockwise = true
+    method fill( render_mode=null:RenderMode?, shader=null:Shader )
+      render_mode = ?:{ render_mode || this.render_mode || RenderMode.OPAQUE_SHAPE }
+      shader = ?:{ shader || this.shader || ImageShader.COLOR }
+      Display.fill_solid_mesh( this, render_mode.value, shader )
+
+    method set_clockwise->this
+      is_clockwise = true
       return this
 
-    method start_counter_clockwise->this
-      clockwise = false
+    method set_counter_clockwise->this
+      is_clockwise = false
       return this
 endClass
 

@@ -407,13 +407,16 @@ class Display [singleton]
       vertex_colors.add( colors.b.argb )
       vertex_colors.add( colors.c.argb )
 
+    method fill_solid_mesh( mesh:MeshBuilder, render_mode:RenderMode, shader:Shader )
+      fill_textured_mesh( mesh, null, render_mode, shader )
+
     method fill_textured_mesh( mesh:MeshBuilder, texture:Texture, render_mode:RenderMode, shader:Shader )
       local is_linked = mesh.is_linked
 
       if (is_linked) flush
 
-      set_texture( 0, texture )
-      set_primitive_type( ?:{is_linked:MESH || TRIANGLES}, ?:{mesh.clockwise:CLOCKWISE || COUNTER_CLOCKWISE} )
+      if (texture) set_texture( 0, texture )
+      set_primitive_type( ?:{is_linked:MESH || TRIANGLES}, ?:{mesh.is_clockwise:CLOCKWISE || COUNTER_CLOCKWISE} )
       set_render_mode( render_mode, shader )
 
       reserve_vertices( mesh.positions.count )
