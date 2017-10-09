@@ -539,6 +539,43 @@ class Display [singleton]
       vertex_colors.add( colors.b.argb )
       vertex_colors.add( colors.c.argb )
 
+    method fill_textured_triangle( texture:Texture,
+        triangle:Triangle<<XYZW>>,
+        colors:Colors,
+        uv:Triangle,
+        render_mode:RenderMode,
+        shader:Shader )
+
+      set_texture( 0, texture )
+      set_primitive_type( 3 )
+      set_render_mode( render_mode, shader )
+
+      reserve_vertices( 3 )
+
+      vertex_positions.add( triangle.a.x )
+      vertex_positions.add( triangle.a.y )
+      vertex_positions.add( triangle.a.z )
+      vertex_positions.add( triangle.a.w )
+      vertex_positions.add( triangle.c.x )
+      vertex_positions.add( triangle.c.y )
+      vertex_positions.add( triangle.c.z )
+      vertex_positions.add( triangle.c.w )
+      vertex_positions.add( triangle.b.x )
+      vertex_positions.add( triangle.b.y )
+      vertex_positions.add( triangle.b.z )
+      vertex_positions.add( triangle.b.w )
+
+      vertex_uvs.add( uv.a.x );
+      vertex_uvs.add( uv.a.y );
+      vertex_uvs.add( uv.c.x );
+      vertex_uvs.add( uv.c.y );
+      vertex_uvs.add( uv.b.x );
+      vertex_uvs.add( uv.b.y );
+
+      vertex_colors.add( colors.a.argb )
+      vertex_colors.add( colors.c.argb )
+      vertex_colors.add( colors.b.argb )
+
     method flush->this
       render_2dx
       return this
