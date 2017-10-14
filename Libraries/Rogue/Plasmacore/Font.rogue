@@ -68,6 +68,7 @@ class Font
       return this
 
     method set_color( @color )->this
+      @opacity = @color.alpha
       return this
 
     method set_options( @options )->this
