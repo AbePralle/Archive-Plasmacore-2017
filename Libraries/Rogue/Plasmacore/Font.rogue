@@ -295,7 +295,7 @@ class FontData
         if (font_ch)
           local image = font_ch.image
           image.size = font_ch.size * font.scale
-          image.color = font.color.with_opacity( opacity )
+          image.color = font.color.with_opacity( font.opacity )
           image.shader = font.shader  # if null, default is used
           image.position = cursor + font_ch.offset
           image.opacity = font.opacity
