@@ -290,6 +290,9 @@ $endIf
         return @{ x:x, y:y }
       endIf
 
+    method to_power_of_two->XY
+      return XY( x.to_power_of_two, y.to_power_of_two )
+
 $if (not "Console")
     method transform( m:Matrix )->XY
       return m * this
