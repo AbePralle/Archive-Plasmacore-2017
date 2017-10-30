@@ -63,8 +63,8 @@ compile_assets:
 Build/BuildScript:
 	mkdir -p Build/BuildScript
 
-Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue BuildScriptCore.rogue $(ROGUE_LIBRARIES)
-	$(ROGUEC) $(ROGUE_IDE_FLAG) BuildScript.rogue BuildScriptCore.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
+Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue $(ROGUE_LIBRARIES)
+	$(ROGUEC) $(ROGUE_IDE_FLAG) BuildScript.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
 	$(CXX) -std=c++11 -DROGUEC=$(ROGUEC) -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
@@ -89,7 +89,7 @@ prepare_update:
 	@make -f Makefile continue_update
 
 continue_update:
-	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildScriptCore.rogue .
+	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/BuildScript.rogue .
 	@rsync -a -c --exclude=".*" --exclude="Build/*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/AssetCompiler Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/ImageIO      Libraries
 	@rsync -a -c --exclude=".*" --delete --out-format="Updating %n%L" Build/Update/Plasmacore/Libraries/Plasmacore   Libraries

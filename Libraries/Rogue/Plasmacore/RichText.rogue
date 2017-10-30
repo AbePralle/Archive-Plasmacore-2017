@@ -19,6 +19,7 @@ class RichText : PrintWriter<<print_buffer>>
 
   METHODS
     method init
+      @font = DefaultFont
 
     method init( font, anchor=Anchor.TOP_LEFT )
 
@@ -28,7 +29,20 @@ class RichText : PrintWriter<<print_buffer>>
       lines.last.add( fragment )
       return this
 
-    method draw( pos:XY )
+    method clear->this
+      lines.clear
+      return this
+
+    method draw( pos:XY, max_width=null:Real64? )
+      local original_scale : XY?
+
+      if (max_width.exists)
+        local cur_w = measure.x
+        if (cur_w > max_width.value)
+          original_scale = font.scale
+          font.scale = XY( max_width.value / cur_w, 1 ) * original_scale.value
+        endIf
+      endIf
       flush
 
       line_positions.clear
@@ -67,6 +81,7 @@ class RichText : PrintWriter<<print_buffer>>
       endForEach
 
       font.anchor = prior_anchor
+      if (original_scale.exists) font.scale = original_scale.value
 
     method measure->XY
       flush
@@ -96,12 +111,20 @@ class RichText : PrintWriter<<print_buffer>>
       add( RichTextFragmentStyle(style_fn) )
       return this
 
-    method set( color:Color )->this
+    method set_color( color:Color )->this
       add( RichTextFragmentStyle( (rt) with(color) =>rt.font.color = color ) )
       return this
 
-    method set( new_font:Font )->this
+    method set_font( new_font:Font )->this
       add( RichTextFragmentStyle( (rt) with(new_font) =>rt.font = new_font ) )
+      return this
+
+    method set_scale( k:Real64 )->this
+      add( RichTextFragmentStyle( (rt) with(k) =>rt.font.scale = k ) )
+      return this
+
+    method set_scale( k:XY )->this
+      add( RichTextFragmentStyle( (rt) with(k) =>rt.font.scale = k ) )
       return this
 
     method write( buffer:StringBuilder )->this

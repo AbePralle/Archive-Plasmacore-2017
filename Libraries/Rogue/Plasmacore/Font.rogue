@@ -43,11 +43,23 @@ class Font
       data.load
       return this
 
-    method draw( text:String, position:XY )
+    method draw( text:String, position:XY, max_width=null:Real64? )
+      local original_scale : XY?
+
+      if (max_width.exists)
+        local cur_w = measure( text ).x
+        if (cur_w > max_width.value)
+          original_scale = scale
+          scale = XY( max_width.value / cur_w, 1 ) * original_scale.value
+        endIf
+      endIf
+
       data.draw( this, text, position )
 
-    method draw( text:String, box:Box )
-      draw( text, box.at(anchor) )
+      if (original_scale.exists) scale = original_scale.value
+
+    method draw( text:String, box:Box, max_width=null:Real64? )
+      draw( text, box.at(anchor), max_width )
 
     method exists->Logical
       return data.exists

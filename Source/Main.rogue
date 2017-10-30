@@ -27,6 +27,7 @@ endClass
 
 class InitialState : State<<MainView>>
   PROPERTIES
+    text = RichText()
 
   METHODS
     method on_start
@@ -49,7 +50,14 @@ class InitialState : State<<MainView>>
       # This happens before the current view's on_draw()
       Display.clear( Color.BLUE )
       DefaultFont.anchor = Anchor.CENTER
-      DefaultFont.draw( "Hello World", Display.center )
+      #DefaultFont.draw( "Hello World", Display.center )
+      DefaultFont.draw( "Hello", Display.at(0.5,0.5) )
+      DefaultFont.draw( "Hello", Display.at(0.5,0.55), &max_width=70 )
+      DefaultFont.draw( "Hello W", Display.at(0.5,0.6), &max_width=70 )
+      DefaultFont.draw( "Hello Wo", Display.at(0.5,0.65), &max_width=70 )
+      DefaultFont.draw( "Hello Wor", Display.at(0.5,0.7), &max_width=70 )
+      DefaultFont.draw( "Hello Worl", Display.at(0.5,0.75), &max_width=70 )
+      DefaultFont.draw( "Hello World", Display.at(0.5,0.8), &max_width=70 )
 
     method on_resize
       # Called when the Display.size changes
