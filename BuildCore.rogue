@@ -1,0 +1,50 @@
+$include "Build.rogue"
+
+Build()
+
+class BuildCore
+  PROPERTIES
+    cmd     : String
+    args    = String[]
+    options = (String,String)[]
+
+  METHODS
+    method init
+      process_args
+
+      build
+
+    method build
+      # The following properties are available and configured:
+      #   cmd : String
+      #     The first non-option command line arg.
+      #
+      #   args : String[]
+      #     All non-option command line args after the first one.
+      #
+      #   options : (String,String)[]
+      #     A list of (--option,value) tuples. Examples:
+      #       arg             options[i]._1  options[i]._2
+      #       -r              -r             <null>
+      #       --recurse=yes   --recurse      yes
+      #       --help          --help         <null>
+
+    method process_args
+      forEach (arg in System.command_line_arguments)
+        if (arg.begins_with('-'))
+          if (arg.contains('='))
+            options.add( (arg.before_first('='),arg.after_first('=')) )
+          else
+            options.add( (arg,null as String) )
+          endIf
+
+        elseIf (cmd is null)
+          cmd = arg
+
+        else
+          args.add( arg )
+        endIf
+
+      endForEach
+endClass
+

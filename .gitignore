@@ -7,6 +7,7 @@ Update.mk
 Publish.mk
 **/Local.mk
 **/Build/
+.rogo
 
 # Merge/Patch/etc.
 *.orig

@@ -1,0 +1,22 @@
+class Build : BuildCore
+  METHODS
+    method build
+      # The following properties are available and configured:
+      #   cmd : String
+      #     The first non-option command line arg.
+      #
+      #   args : String[]
+      #     All non-option command line args after the first one.
+      #
+      #   options : (String,String)[]
+      #     A list of (--option,value) tuples. Examples:
+      #       arg             options[i]._1  options[i]._2
+      #       -r              -r             <null>
+      #       --recurse=yes   --recurse      yes
+      #       --help          --help         <null>
+      which (cmd)
+        others
+          prior.build
+      endWhich
+endClass
+
