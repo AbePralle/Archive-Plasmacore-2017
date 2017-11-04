@@ -1,50 +1,66 @@
-$include "Build.rogue"
+$include "Libraries/Rogue/Plasmacore"
 
-Build()
+augment Global
+  METHODS
+    method on_launch
+      <append>
+      Build()
+endAugment
 
-class BuildCore
+class Command [singleton]
   PROPERTIES
-    cmd     : String
-    args    = String[]
-    options = (String,String)[]
+    handlers = StringTable<<Function>>()
+    action   : String
+    options  = StringTable<<String>>()
+    args     = String[]
+endClass
 
+routine on( cmd:String, fn:Function )
+  Command.handlers[ cmd ] = fn
+endRoutine
+
+class Build
   METHODS
     method init
       process_args
 
-      build
-
-    method build
-      # The following properties are available and configured:
-      #   cmd : String
-      #     The first non-option command line arg.
-      #
-      #   args : String[]
-      #     All non-option command line args after the first one.
-      #
-      #   options : (String,String)[]
-      #     A list of (--option,value) tuples. Examples:
-      #       arg             options[i]._1  options[i]._2
-      #       -r              -r             <null>
-      #       --recurse=yes   --recurse      yes
-      #       --help          --help         <null>
+      if (Command.action)
+        local fn = Command.handlers[ Command.action ]
+        if (fn)
+          fn()
+        else
+          println "Build action '$' is undefined." (Command.action)
+        endIf
+      else
+        println "USAGE"
+        println "  rogo $" (forEach in Command.handlers.keys)
+      endIf
 
     method process_args
       forEach (arg in System.command_line_arguments)
         if (arg.begins_with('-'))
           if (arg.contains('='))
-            options.add( (arg.before_first('='),arg.after_first('=')) )
+            Command.options[ arg.before_first('=') ] = arg.after_first('=')
           else
-            options.add( (arg,null as String) )
+            Command.options[ arg ] = null
           endIf
 
-        elseIf (cmd is null)
-          cmd = arg
+        elseIf (Command.action is null)
+          Command.action = arg
 
         else
-          args.add( arg )
+          Command.args.add( arg )
         endIf
 
       endForEach
+
+      #{
+    method pad_font( action:String )
+      if (not File.exists(action))
+        println "No such font strip: " + action
+        System.exit 1 endIf
+        }#
+
+
 endClass
 
