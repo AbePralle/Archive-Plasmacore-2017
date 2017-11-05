@@ -374,7 +374,11 @@ class PlasmacoreMessage
           position = data.count
           return 0
         }
-        return ((b & 15) << 24) | (Int(data[position-3])<<16) | (Int(data[position-2]<<8)) | Int(data[position-1])
+        let b1 = ((b & 15) << 24)
+        let b2 = (Int(data[position-3])<<16)
+        let b3 = (Int(data[position-2]<<8))
+        let b4 = Int(data[position-1])
+        return b1 | b2 | b3 | b4
 
       default:
         return readInt32()

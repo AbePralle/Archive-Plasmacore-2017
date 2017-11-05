@@ -9,6 +9,7 @@ class Texture
     uv_size          : XY       # (1,1) in most cases
     is_opaque        : Logical
     should_unload    : Logical  # Used in View to manage the loading and unloading of images
+    reference_count  : Int32    # Prevents automatic unloading in image reloading system
 
     render_target_id : Int32
 
@@ -152,6 +153,9 @@ class Texture
       uv_size = image_size / texture_size
 
       id = Display.define_texture( id, bitmap, 32 )
+
+    method should_unload->Logical
+      return @should_unload and reference_count == 0
 
     method texture_height->Int32 [macro]
       this.texture_size.y

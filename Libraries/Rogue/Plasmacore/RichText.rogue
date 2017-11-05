@@ -21,7 +21,7 @@ class RichText : PrintWriter<<print_buffer>>
     method init
       @font = DefaultFont
 
-    method init( font, anchor=Anchor.TOP_LEFT )
+    method init( @font, anchor=Anchor.TOP_LEFT )
 
     method add( fragment:RichTextFragment )->this
       flush
