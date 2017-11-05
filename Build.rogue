@@ -1,4 +1,4 @@
 $include "BuildCore.rogue"
 
-on( "hi", () => println "Hello World" )
+on( "help", () => println "Edit Build.rogue to add custom build actions - see BuildCore.rogue for examples." )
 

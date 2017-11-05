@@ -1,66 +1,243 @@
 $include "Libraries/Rogue/Plasmacore"
+using Plasmacore
+
+on( "padfont",  ()=>PadFont() )
+on( "trimfont", ()=>TrimFont() )
 
 augment Global
   METHODS
     method on_launch
       <append>
-      Build()
+      Build.run
 endAugment
 
-class Command [singleton]
+routine on( cmd:String, fn:Function )
+  Build.handlers[ cmd ] = fn
+endRoutine
+
+class Build [singleton]
   PROPERTIES
     handlers = StringTable<<Function>>()
     action   : String
     options  = StringTable<<String>>()
     args     = String[]
-endClass
 
-routine on( cmd:String, fn:Function )
-  Command.handlers[ cmd ] = fn
-endRoutine
-
-class Build
   METHODS
-    method init
+    method run
       process_args
 
-      if (Command.action)
-        local fn = Command.handlers[ Command.action ]
+      if (Build.action)
+        local fn = Build.handlers[ Build.action ]
         if (fn)
           fn()
         else
-          println "Build action '$' is undefined." (Command.action)
+          println "Build action '$' is undefined." (Build.action)
         endIf
       else
         println "USAGE"
-        println "  rogo $" (forEach in Command.handlers.keys)
+        println "  rogo $" (forEach in Build.handlers.keys)
+      endIf
+
+    method convert_args_to_filepaths
+      # Handles wildcards
+      local wildcards = args
+      args = String[]( wildcards.count )
+      forEach (arg in wildcards)
+        if (File.exists(arg))
+          args.add( arg )
+        else
+          local listing = File.listing( arg, &files )
+          if (not listing.is_empty)
+            args.add( listing )
+          endIf
+        endIf
+      endForEach
+
+      if (args.is_empty)
+        println "ERROR: No files match argument pattern."
+        System.exit 1
       endIf
 
     method process_args
       forEach (arg in System.command_line_arguments)
         if (arg.begins_with('-'))
           if (arg.contains('='))
-            Command.options[ arg.before_first('=') ] = arg.after_first('=')
+            Build.options[ arg.before_first('=') ] = arg.after_first('=')
           else
-            Command.options[ arg ] = null
+            Build.options[ arg ] = null
           endIf
 
-        elseIf (Command.action is null)
-          Command.action = arg
+        elseIf (Build.action is null)
+          Build.action = arg
 
         else
-          Command.args.add( arg )
+          Build.args.add( arg )
         endIf
 
       endForEach
 
-      #{
-    method pad_font( action:String )
-      if (not File.exists(action))
-        println "No such font strip: " + action
-        System.exit 1 endIf
-        }#
-
-
 endClass
 
+class PadFont
+  METHODS
+    method init
+      if (Build.args.count == 0)
+        println "USAGE"
+        println "  rogo padfont [--padding=<integer>] <font strip png>"
+      else
+        Build.convert_args_to_filepaths
+        local padding = Build.options[ "--padding" ]
+        if (padding is null or padding->Int32 == 0) Build.options["--padding"] = "16"
+        pad_font( forEach in Build.args )
+      endIf
+
+    method pad_font( filepath:String )
+      local characters = extract_varfont_characters( Bitmap(File(filepath)) )
+
+      local padding = Build.options[ "--padding" ]->Int32
+      (forEach in characters).crop( -padding )
+
+      println "Rewriting $ with $ pixels of padding around each character" (filepath,padding)
+      local bitmap = pack_varfont_characters( characters )
+      File.save( filepath, bitmap.to_png_bytes )
+
+    method extract_varfont_characters( bitmap:Bitmap )->Bitmap[]
+      local characters = Bitmap[]
+      local x1 = 0
+      local w  = bitmap.width
+      local char_height = bitmap.height - 1
+
+      while (x1 < w)
+        local color = bitmap.get( x1, 0 )
+        local x_limit = x1 + 1
+        while (x_limit < w and bitmap.get(x_limit,0) == color) ++x_limit
+        characters.add( Bitmap(bitmap,Box(x1,1,x_limit-x1,char_height)) )
+        x1 = x_limit
+      endWhile
+
+      return characters
+
+    method pack_varfont_characters( characters:Bitmap[] )->Bitmap
+      require characters.count
+      local total_w = 0
+      total_w += (forEach in characters).width
+      local bitmap = Bitmap( total_w, characters.first.height + 1 )
+      local color = Color.RED
+      local x = 0
+      forEach (ch in characters)
+        bitmap.fill( Box(x,0,ch.width,1), color )
+        ch.blit( bitmap, XY(x,1) )
+        if (color == Color.RED) color = Color.GREEN
+        else                    color = Color.RED
+        x += ch.width
+      endForEach
+      return bitmap
+endClass
+
+class TrimFont
+  METHODS
+    method init
+      if (Build.args.count == 0)
+        println "USAGE"
+        println "  rogo trimfont [--padding=<integer>] <font strip png>"
+      else
+        Build.convert_args_to_filepaths
+        local padding = Build.options[ "--padding" ]
+        if (padding is null or padding->Int32 == 0) Build.options["--padding"] = "16"
+        trim_font( forEach in Build.args )
+      endIf
+
+    method trim_font( filepath:String )
+      local characters = extract_varfont_characters( Bitmap(File(filepath)) )
+
+      local padding = Build.options[ "--padding" ]->Int32
+      local crop_top    = padding
+      local crop_bottom = padding
+      forEach (ch in characters)
+
+        forEach (j in 0..<crop_top)
+          if (row_contains_pixels(ch,j))
+            crop_top = j
+            escapeForEach
+          endIf
+        endForEach
+
+        forEach (j in 1..crop_bottom)
+          if (row_contains_pixels(ch,ch.height-j))
+            crop_bottom = j - 1
+            escapeForEach
+          endIf
+        endForEach
+
+      endForEach
+
+      forEach (ch in characters)
+
+        local crop_left = padding
+        forEach (i in 0..<crop_top)
+          if (column_contains_pixels(ch,i))
+            crop_top = i
+            escapeForEach
+          endIf
+        endForEach
+
+        local crop_right = padding
+        forEach (i in 1..crop_bottom)
+          if (column_contains_pixels(ch,ch.height-i))
+            crop_bottom = i - 1
+            escapeForEach
+          endIf
+        endForEach
+
+        ch.crop( crop_left, crop_top, crop_right, crop_bottom )
+
+      endForEach
+
+      println "Rewriting $, removing up to $ pixels of padding around each character" (filepath,padding)
+      local bitmap = pack_varfont_characters( characters )
+      File.save( filepath, bitmap.to_png_bytes )
+
+    method row_contains_pixels( bitmap:Bitmap, j:Int32 )->Logical
+      forEach (i in 0..<bitmap.width)
+        if (bitmap.get(i,j).alpha_byte) return true
+      endForEach
+      return false
+
+    method column_contains_pixels( bitmap:Bitmap, i:Int32 )->Logical
+      forEach (j in 0..<bitmap.height)
+        if (bitmap.get(i,j).alpha_byte) return true
+      endForEach
+      return false
+
+    method extract_varfont_characters( bitmap:Bitmap )->Bitmap[]
+      local characters = Bitmap[]
+      local x1 = 0
+      local w  = bitmap.width
+      local char_height = bitmap.height - 1
+
+      while (x1 < w)
+        local color = bitmap.get( x1, 0 )
+        local x_limit = x1 + 1
+        while (x_limit < w and bitmap.get(x_limit,0) == color) ++x_limit
+        characters.add( Bitmap(bitmap,Box(x1,1,x_limit-x1,char_height)) )
+        x1 = x_limit
+      endWhile
+
+      return characters
+
+    method pack_varfont_characters( characters:Bitmap[] )->Bitmap
+      require characters.count
+      local total_w = 0
+      total_w += (forEach in characters).width
+      local bitmap = Bitmap( total_w, characters.first.height + 1 )
+      local color = Color.RED
+      local x = 0
+      forEach (ch in characters)
+        bitmap.fill( Box(x,0,ch.width,1), color )
+        ch.blit( bitmap, XY(x,1) )
+        if (color == Color.RED) color = Color.GREEN
+        else                    color = Color.RED
+        x += ch.width
+      endForEach
+      return bitmap
+endClass
