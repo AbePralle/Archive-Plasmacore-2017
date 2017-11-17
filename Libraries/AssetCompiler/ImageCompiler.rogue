@@ -709,7 +709,7 @@ class ImageCommand
         forEach (ch at index in characters)
           if (ch.width != max_w)
             local new_ch = Bitmap( max_w, ch.height )
-            ch.blit( new_ch, XY((max_w-ch.width)/2,ch.height).floor )
+            ch.blit( new_ch, XY((max_w-ch.width)/2,0).floor )
             characters[ index ] = new_ch
           endIf
         endForEach
@@ -724,7 +724,7 @@ class ImageCommand
           if (ch.width != max_w)
             if (unicode[index] == ' ' or unicode[index]->Character.is_number)
               local new_ch = Bitmap( max_w, ch.height )
-              ch.blit( new_ch, XY((max_w-ch.width)/2,ch.height).floor )
+              ch.blit( new_ch, XY((max_w-ch.width)/2,0).floor )
               characters[ index ] = new_ch
             endIf
           endIf
