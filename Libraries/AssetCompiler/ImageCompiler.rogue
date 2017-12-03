@@ -25,6 +25,7 @@ routine launch_image_compiler
                       |#   include <folder or pattern>           Include standalone images (unpacked)
                       |#   create image:<filepath> font:<font-name> height:<pixels> ...
                       |#     [characters:"ABC..." unicode:[32..126] ...]
+                      |#     [ascii]               # Same as specifying unicode:[32..126]
                       |#     [monospace[:numbers]] # monospace:numbers includes the space character as well
                       |#     [italic]              # Uses software rendering to create an italic effect
                       |#                           # If used, specify 'italic' in the 'varfont' tag as well.
@@ -41,6 +42,7 @@ routine launch_image_compiler
                       |#           <Options>
                       |#             characters:"ABC..."
                       |#             unicode:[32..126] ...
+                      |#             ascii # same as unicode:[32..126]
                       |#             snap  # Snap pixel coordinates to integers when drawing
                       |#             snug  # Adjust all character spacing -1 pixel
                       |#             spacing:'{before:"-1:ABC",after:["-1:XY","-2:Z","-1"]}'
@@ -283,6 +285,32 @@ class ImageCommand
     method error( message:String )->ImageCompileError
       return ImageCompileError( this, message )
 
+    method to_unicode( st:String )->Character
+      if (not st.begins_with('\'')) return st->Int32->Character
+      st = st.after_first('\'').before_last('\'')
+      if (st.count == 0) return Character(0)
+      if (st.count == 1 or st[0] != '\\') return st[0]
+      return st[2]
+
+    method parse_unicode( value:String )->String
+      buffer.clear
+      if (value.begins_with('['))
+        local ranges = value.after_first('[').before_last(']').replacing(',',' ').replacing("..","-").split(' ')
+        forEach (range in ranges)
+          if (range.contains('-'))
+            local parts = range.split( '-' )
+            forEach (ch in to_unicode(parts.first)..to_unicode(parts.last))
+              buffer.print( ch )
+            endForEach
+          else
+            buffer.print( to_unicode(range) )
+          endIf
+        endForEach
+      else
+        buffer.print( to_unicode(value) )
+      endIf
+      return buffer->String
+
     method execute
       if (consume("@"))
         local pattern = parse_string( "Filename or file pattern expected after \"@\"." )
@@ -303,31 +331,23 @@ class ImageCommand
               ensure characters
               characters.print( value )
             elseIf (name == "unicode")
-              ensure characters
-              if (value.begins_with('['))
-                local ranges = value.after_first('[').before_last(']').replacing(',',' ').replacing("..","-").split(' ')
-                forEach (range in ranges)
-                  if (range.contains('-'))
-                    local parts = range.split( '-' )
-                    characters.print( parts.first->Int32->Character )
-                    characters.print( parts.last->Int32->Character )
-                  else
-                    characters.print( range->Int32->Character )
-                  endIf
-                endForEach
-              else
-                characters.print( value->Int32->Character )
-              endIf
+              (ensure characters).print( parse_unicode(value) )
             else
               local attribute = @{ name:name }
               attribute//value = value
               info//attributes.add( attribute )
             endIf
+
+          elseIf (name == "ascii")
+            ensure characters
+            forEach (ascii_code in 32..126) characters.print( Character(ascii_code) )
+
           else
             local attribute = @{ name:name }
             info//attributes.add( attribute )
           endIf
         endWhile
+
         if (characters)
           forEach (attr in info//attributes)
             if (attr//name == "varfont") attr//value = characters->String
@@ -605,6 +625,12 @@ class ImageCommand
     method create_asset_object( filepath:String )->Asset
       return Asset( this, filepath, get_attributes(filepath) )
 
+    method has_specific_attributes( filepath:String )->Value
+      forEach (attr in icom.attributes)
+        if (attr//filepath == filepath) return true
+      endForEach
+      return false
+
     method get_attributes( filepath:String )->Value
       local attributes = @{}
       forEach (attr in icom.attributes)
@@ -616,6 +642,24 @@ class ImageCommand
         endIf
       endForEach
       return attributes
+
+    method set_attributes( filepath:String, attribute_table:Value )
+      local entry : Value
+      block
+        forEach (attr in icom.attributes)
+          if (attr//filepath == filepath)  # look for exact filepath match
+            entry = attr
+            escapeBlock
+          endIf
+        endForEach
+        entry = @{ pattern:filepath }
+        icom.attributes.add( entry )
+      endBlock
+
+      entry//attributes = @[]
+      forEach (key in attribute_table.keys)
+        entry//attributes.add( @{name:key,value:attribute_table[key]} )
+      endForEach
 
     method has_another->Logical
       consume_whitespace
@@ -630,11 +674,6 @@ class ImageCommand
         File.create_folder( folder_name )
       endIf
 
-      if (File.exists(image_name)) return
-
-      # Clear image filename cache
-      icom.all_images = null
-
       local font_name = require_arg( args, "font" )->String
       local height = require_arg( args, "height" )->Int32
 
@@ -646,12 +685,18 @@ class ImageCommand
         else                            is_monospace = true
       endIf
 
+      if (args.contains("ascii"))
+        buffer.clear
+        forEach (ascii_code in 32..126) buffer.print( Character(ascii_code) )
+        args//characters = buffer->String
+      endIf
+
       local unicode = Int32[]
       if (args.contains("characters"))
         forEach (ch in args//characters->String) unicode.add( Int32(ch) )
       endIf
       if (args.contains("unicode"))
-        forEach (code in args//unicode) unicode.add( code )
+        forEach (code in parse_unicode(args//unicode)) unicode.add( Int32(code) )
       endIf
 
       # Remove duplicates
@@ -666,6 +711,20 @@ class ImageCommand
         forEach (code in 32..126) unicode.add( code )
         forEach (code in 160..255) unicode.add( code )
       endIf
+
+      # Collect existing image attributes based on pattern, add attributes specified
+      # for this new image, and save as attributes for this specific image.
+      local attributes = get_attributes( image_name )
+      buffer.clear
+      buffer.print( Character(forEach in unicode) )
+      attributes//varfont = buffer->String
+      if (args//italic) attributes//italic = true
+      set_attributes( image_name, attributes )
+
+      if (File.exists(image_name)) return
+
+      # Clear image filename cache
+      icom.all_images = null
 
       println "Generating $-character font strip from $, $ pixels high" (unicode.count,font_name,height)
 
@@ -867,6 +926,12 @@ class ImageCommand
         contingent
           necessary  (not File.is_folder(src_filepath))
           necessary  (ext == "png" or ext == "jpeg" or ext == "jpg")
+
+          # Clone image attributes
+          if (not has_specific_attributes(dest_filepath))
+            set_attributes( dest_filepath, get_attributes(src_filepath) )
+          endIf
+
           sufficient (not File.exists(dest_filepath))
 
           local dest_timestamp = File.timestamp( dest_filepath )
@@ -1169,12 +1234,7 @@ class ImageCommand
       local name_value = @{ name:name }
       consume_whitespace
       if (consume(':'))
-        local value = parse_string( "Value expected." )
-        if (value.begins_with('[') and value.ends_with(']'))
-          name_value//value = unicode_range_to_list( value )
-        else
-          name_value//value = value
-        endIf
+        name_value//value = parse_string( "Value expected." )
       endIf
       return name_value
 
