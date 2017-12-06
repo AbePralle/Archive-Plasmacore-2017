@@ -1,4 +1,6 @@
-$include "Libraries/Rogue/Plasmacore"
+#$ ROGUEC    = Programs/macOS/roguec
+#$ LIBRARIES = Libraries/Rogue
+$include "Plasmacore"
 using Plasmacore
 
 on( "padfont",  ()=>PadFont() )
