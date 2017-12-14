@@ -176,17 +176,17 @@ class TrimFont
       forEach (ch in characters)
 
         local crop_left = padding
-        forEach (i in 0..<crop_top)
+        forEach (i in 0..<crop_left)
           if (column_contains_pixels(ch,i))
-            crop_top = i
+            crop_left = i
             escapeForEach
           endIf
         endForEach
 
         local crop_right = padding
-        forEach (i in 1..crop_bottom)
+        forEach (i in 1..crop_right)
           if (column_contains_pixels(ch,ch.height-i))
-            crop_bottom = i - 1
+            crop_right = i - 1
             escapeForEach
           endIf
         endForEach
