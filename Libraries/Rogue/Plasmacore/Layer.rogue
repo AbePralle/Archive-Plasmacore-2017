@@ -1,8 +1,8 @@
 module Plasmacore
 
 class Layer
-  # A View Layer.  When you View.add(Layer), each layer gets a copy of each View event after
-  # the view's 'on' event and before the view's 'after' event.
+  # A Screen Layer.  When you Screen.add(Layer), each layer gets a copy of each Screen event after
+  # the screen's 'on' event and before the screen's 'after' event.
   PROPERTIES
     is_visible = true
     actions : ActionCmd  # Auto-updated even when the layer is hidden

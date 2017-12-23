@@ -139,12 +139,12 @@ class WindowManager [essential singleton]
       current_window = windows_by_id[ window_id ]
       return current_window
 
-    method set_display_view( display_name:String, view:View )
+    method set_display_screen( display_name:String, screen:Screen )
       forEach (window in window_list)
         forEach (key in window.displays.keys)
           local display = window.displays[ key ]
           if (display.name == display_name)
-            display.view = view
+            display.screen = screen
           endIf
         endForEach
       endForEach

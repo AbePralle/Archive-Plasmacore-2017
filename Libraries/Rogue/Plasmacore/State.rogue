@@ -9,7 +9,7 @@ class State
       return a
 
   PROPERTIES
-    view                  : View
+    screen                  : Screen
 
     is_active             : Logical
     needs_first_update    = true
@@ -21,7 +21,7 @@ class State
     actions : ActionCmd
 
   METHODS
-    method init( view=null )
+    method init( screen=null )
 
     method after( e:KeyEvent )
 
@@ -38,19 +38,19 @@ class State
     method after_update
 
     method change_state( new_state:State )
-      view.change_state( new_state )
+      screen.change_state( new_state )
 
-    method change_view( new_view:View )
-      view.change_view( new_view )
+    method change_screen( new_screen:Screen )
+      screen.change_screen( new_screen )
 
     method exit_state
-      view.exit_state
+      screen.exit_state
 
     method handle( e:KeyEvent )
       on( e )
       if (e.is_consumed) return
 
-      view.handle( e )
+      screen.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -59,7 +59,7 @@ class State
       on( e )
       if (e.is_consumed) return
 
-      view.handle( e )
+      screen.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -68,7 +68,7 @@ class State
       on( e )
       if (e.is_consumed) return
 
-      view.handle( e )
+      screen.handle( e )
       if (e.is_consumed) return
 
       after( e )
@@ -77,23 +77,23 @@ class State
       on( e )
       if (e.is_consumed) return
 
-      view.handle( e )
+      screen.handle( e )
       if (e.is_consumed) return
 
       after( e )
 
     method handle_draw
       on_draw
-      view.handle_draw
+      screen.handle_draw
       after_draw
 
     method handle_resize
       on_resize
 
-      local cur_view = view
-      if (not cur_view.previous_display_size.exists or cur_view.previous_display_size.value != Display.size)
-        cur_view.handle_resize
-        cur_view.previous_display_size = Display.size
+      local cur_screen = screen
+      if (not cur_screen.previous_display_size.exists or cur_screen.previous_display_size.value != Display.size)
+        cur_screen.handle_resize
+        cur_screen.previous_display_size = Display.size
       endIf
 
       after_resize
@@ -102,16 +102,16 @@ class State
       if (actions) actions = actions.update
       on_update
 
-      view.needs_first_update = false
-      view.handle_update
+      screen.needs_first_update = false
+      screen.handle_update
 
       after_update
 
     method load_another_asset->Real64
-      return view.load_another_asset
+      return screen.load_another_asset
 
     method load_assets
-      view.load_assets
+      screen.load_assets
 
     method on( e:KeyEvent )
       noAction
@@ -150,26 +150,26 @@ class State
       noAction
 
     method push_state( new_state:State )
-      view.push_state( new_state )
+      screen.push_state( new_state )
 
     method queue_state( new_state:State )
-      if (view)
-        if (not new_state.view) new_state.view = view
-        view.queue_state( new_state )
+      if (screen)
+        if (not new_state.screen) new_state.screen = screen
+        screen.queue_state( new_state )
       else
         local cur = this
         while (cur.next_state) cur = cur.next_state
         cur.next_state = new_state
       endIf
 
-    method set_view( @view )->this
+    method set_screen( @screen )->this
       return this
 
 endClass
 
-class State<<$ViewType>> : State
+class State<<$ScreenType>> : State
   METHODS
-    method view->$ViewType
-      return @view as $ViewType
+    method screen->$ScreenType
+      return @screen as $ScreenType
 endClass
 

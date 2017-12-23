@@ -63,7 +63,7 @@ $include "Texture.rogue"
 $include "Triangle.rogue"
 $include "UpdateTimer.rogue"
 $include "Vertex.rogue"
-$include "View.rogue"
+$include "Screen.rogue"
 $include "Window.rogue"
 $include "XYZ.rogue"
 $include "XYZW.rogue"
@@ -73,7 +73,7 @@ module Plasmacore
 class Plasmacore [essential singleton]
   PROPERTIES
     next_resource_id        = 1
-    display_view_types      = StringTable<<TypeInfo>>()
+    display_screen_types      = StringTable<<TypeInfo>>()
     global_update_callback  : Function()
     global_update_timer     = UpdateTimer()
     displays                = StringTable<<Display>>()

@@ -33,13 +33,13 @@ class Display [singleton]
 
   GLOBAL PROPERTIES
     default_z                    = -512.0
-    default_view_type = <<View>> : TypeInfo
+    default_screen_type = <<Screen>> : TypeInfo
 
   PROPERTIES
     is_configured : Logical
 
     name               : String
-    view               = default_view_type.create_object<<View>> : View
+    screen               = default_screen_type.create_object<<Screen>> : Screen
 
     window             : Window
 
@@ -52,7 +52,7 @@ class Display [singleton]
     # Disclosed by the native layer - usually 60
 
     updates_per_second  = 60
-    # Arbitrary - usually left at 60.  Determines how often View/State on_update() is called.
+    # Arbitrary - usually left at 60.  Determines how often Screen/State on_update() is called.
 
     background_color = Color.BLACK : Color
 
@@ -102,54 +102,54 @@ class Display [singleton]
               |  glDeleteBuffers(1, &$this->uv_buffer);
               |}
 
-    method activate_view_and_state
-      if (not view) view = default_view_type.create_object<<View>>
-      view.display = this
-      view.state.view = view
+    method activate_screen_and_state
+      if (not screen) screen = default_screen_type.create_object<<Screen>>
+      screen.display = this
+      screen.state.screen = screen
 
-      # On any new views and states: call on_start, ensure on_update has been called once
-      # before any later drawing, and repeat the process if the view or state changes during
+      # On any new screens and states: call on_start, ensure on_update has been called once
+      # before any later drawing, and repeat the process if the screen or state changes during
       # the process.
       loop
-        if (not view.is_active)
-          view.is_active = true
-          view.on_start
-          view.load_images
+        if (not screen.is_active)
+          screen.is_active = true
+          screen.on_start
+          screen.load_images
           nextIteration
         endIf
 
-        if (not view.state.is_active)
-          view.state.is_active = true
-          view.state.on_start
+        if (not screen.state.is_active)
+          screen.state.is_active = true
+          screen.state.on_start
           nextIteration
         endIf
 
-        local cur_state = view.state
+        local cur_state = screen.state
         if (not cur_state.previous_display_size.exists or cur_state.previous_display_size.value != Display.size)
-          # Will also call handle_resize on the view
+          # Will also call handle_resize on the screen
           cur_state.handle_resize
           cur_state.previous_display_size = Display.size
           nextIteration
         endIf
 
-        # Corner case: if the state didn't need a resize but the view still does
-        if (not view.previous_display_size.exists or view.previous_display_size.value != Display.size)
-          view.handle_resize
-          view.previous_display_size = Display.size
+        # Corner case: if the state didn't need a resize but the screen still does
+        if (not screen.previous_display_size.exists or screen.previous_display_size.value != Display.size)
+          screen.handle_resize
+          screen.previous_display_size = Display.size
           nextIteration
         endIf
 
-        if (view.state.needs_first_update)
-          # Will also update the view
-          view.state.needs_first_update = false
-          view.state.handle_update
+        if (screen.state.needs_first_update)
+          # Will also update the screen
+          screen.state.needs_first_update = false
+          screen.state.handle_update
           nextIteration
         endIf
 
-        # Corner case: if the state didn't need a first update but the view does
-        if (view.needs_first_update)
-          view.needs_first_update = false
-          view.handle_update
+        # Corner case: if the state didn't need a first update but the screen does
+        if (screen.needs_first_update)
+          screen.needs_first_update = false
+          screen.handle_update
           nextIteration
         endIf
 
@@ -544,8 +544,8 @@ class Display [singleton]
       return this
 
     method handle( e:KeyEvent )
-      activate_view_and_state
-      view.state.handle( e )
+      activate_screen_and_state
+      screen.state.handle( e )
 
     method handle( e:PointerEvent )
       if (pointer_exists)
@@ -555,16 +555,16 @@ class Display [singleton]
         pointer_exists = true
         pointer_position = e.position
       endIf
-      activate_view_and_state
-      view.state.handle( e )
+      activate_screen_and_state
+      screen.state.handle( e )
 
     method handle( e:ScrollEvent )
-      activate_view_and_state
-      view.state.handle( e )
+      activate_screen_and_state
+      screen.state.handle( e )
 
     method handle( e:TextEvent )
-      activate_view_and_state
-      view.state.handle( e )
+      activate_screen_and_state
+      screen.state.handle( e )
 
     method height->Int32 [macro]
       this.size.y->Int32
@@ -631,17 +631,17 @@ class Display [singleton]
     method render( _true_size:XY, _viewport_size:XY, refresh_rate )
       Display = this  # set the singleton reference to be this display
       render_target.configure( _true_size, _viewport_size )
-      activate_view_and_state
+      activate_screen_and_state
 
       update_timer.update
 
       while (update_timer.tick)
-        activate_view_and_state
-        view.state.handle_update
+        activate_screen_and_state
+        screen.state.handle_update
       endWhile
 
-      activate_view_and_state
-      view.state.handle_draw
+      activate_screen_and_state
+      screen.state.handle_draw
 
       OverlayLog.update
       OverlayLog.draw
@@ -859,20 +859,20 @@ class Display [singleton]
       return this
 
     method set_state( new_state:State )->this
-      # Sets the state of this Display's current view.
-      view.@state = new_state
+      # Sets the state of this Display's current screen.
+      screen.@state = new_state
       return this
 
-    method set_view( @view )->this
-      view.display = this
+    method set_screen( @screen )->this
+      screen.display = this
       return this
 
     method size->XY
       return render_target.size
 
     method state->State [macro]
-      # Obtains the state of this Display's current view.
-      this.view.state
+      # Obtains the state of this Display's current screen.
+      this.screen.state
 
     method transform->Matrix
       return render_target.update_transform.transform

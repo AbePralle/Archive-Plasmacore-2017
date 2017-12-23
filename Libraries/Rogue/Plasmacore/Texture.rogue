@@ -8,7 +8,7 @@ class Texture
     texture_size     : XY       # In pixels
     uv_size          : XY       # (1,1) in most cases
     is_opaque        : Logical
-    should_unload    : Logical  # Used in View to manage the loading and unloading of images
+    should_unload    : Logical  # Used in Screen to manage the loading and unloading of images
     reference_count  : Int32    # Prevents automatic unloading in image reloading system
 
     render_target_id : Int32

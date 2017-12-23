@@ -17,7 +17,7 @@ class UpdateTimer
       local cur_time = System.time
       local elapsed_time = (cur_time - previous_update_time).or_smaller( 1.0/10.0 )
       if (first_update)
-        # Ensure we get at least one tick() the first time so that a View or State
+        # Ensure we get at least one tick() the first time so that a Screen or State
         # gets its update() called before its first draw().
         first_update = false
         tick_debt += Display.refresh_rate

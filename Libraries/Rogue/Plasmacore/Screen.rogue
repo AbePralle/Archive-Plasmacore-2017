@@ -1,6 +1,6 @@
 module Plasmacore
 
-class View
+class Screen
   PROPERTIES
     state                 = State(this)
     layers                = Layer[]
@@ -48,23 +48,23 @@ class View
       state.on_finish
       state.is_active = false
       @state = new_state
-      state.view = this
+      state.screen = this
       state.is_active = true
       state.on_start
 
-    method change_view( new_view:View )
-      new_view.display = display
-      new_view.on_prepare
-      forEach (layer in new_view.layers)
+    method change_screen( new_screen:Screen )
+      new_screen.display = display
+      new_screen.on_prepare
+      forEach (layer in new_screen.layers)
         if (layer.is_visible) layer.on_prepare
       endForEach
       this.on_finish
-      forEach (layer in new_view.layers)
+      forEach (layer in new_screen.layers)
         if (layer.is_visible) layer.on_finish
       endForEach
       this.is_active = false
-      display.view.mark_images_unused
-      display.view = new_view
+      display.screen.mark_images_unused
+      display.screen = new_screen
 
     method collect_texture_names( texture_names=null:StringTable<<Logical>> )->String[]
       ensure texture_names
@@ -114,7 +114,7 @@ class View
         new_state = State()
       endIf
 
-      new_state.view = this
+      new_state.screen = this
       new_state.on_prepare
 
       state.on_finish
@@ -254,8 +254,8 @@ class View
 
     method load_images
 
-      # Image textures that were loaded in the old view have already been marked should_unload.
-      # Unmark the ones we'll be using for this view
+      # Image textures that were loaded in the old screen have already been marked should_unload.
+      # Unmark the ones we'll be using for this screen
       local texture_names = collect_texture_names
       forEach (name in texture_names)
         local texture = Display.textures_by_name[ name ]
@@ -310,7 +310,7 @@ class View
       state.is_active = false
       state.on_suspend
       @state = new_state
-      state.view = this
+      state.screen = this
       state.is_active = true
       state.on_start
 
