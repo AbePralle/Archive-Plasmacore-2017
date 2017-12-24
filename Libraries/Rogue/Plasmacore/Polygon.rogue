@@ -1,0 +1,105 @@
+module Plasmacore
+
+class Polygon
+  # The polygon is implicitly closed - the last vertex is always assumed to connect to the first vertex.
+  PROPERTIES
+    vertices    = XY[]
+
+    # 'edges' and 'triangles' are rebuilt on demand if vertices are modified
+    edges                = Line[]
+    triangles            = Triangle[]
+
+  METHODS
+    method add( v:XY )->this
+      vertices.add( v )
+      return mark_modified
+
+    method clear->this
+      vertices.clear
+      return mark_modified
+
+    method draw( color:Color )
+      (forEach in edges).draw( color )
+
+    method draw_triangles( color:Color )
+      (forEach in triangles).draw( color )
+
+    method edges->Line[]
+      if (@edges.is_empty)
+        local n = vertices.count
+        forEach (v at i in vertices)
+          @edges.add( Line(v,vertices[(i+1)%n]) )
+        endForEach
+      endIf
+
+      return @edges
+
+    method fill( color:Color )
+      (forEach in triangles).fill( color )
+
+    method is_defined_clockwise->Logical
+      local sum = 0.0
+      local n = vertices.count
+      forEach (v1 at i in vertices)
+        local v2 = vertices[ (i+1) % n ]
+        sum += (v2.x - v1.x) * (v2.y + v1.y)
+      endForEach
+      return (sum <= 0)
+
+    method mark_modified->this
+      @edges.clear
+      @triangles.clear
+      return this
+
+    method reverse_vertex_order->this
+      vertices.reverse
+      return mark_modified
+
+    method triangles->Triangle[]
+      # Breaks polygon into triangles using the Ear Clipping technique as described here:
+      #   https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf
+      if (@triangles.is_empty)
+        if (vertices.count < 3) return @triangles
+        if (not is_defined_clockwise) reverse_vertex_order
+
+        local vertices = this.vertices.cloned
+
+        while (vertices.count > 3)
+          local n = vertices.count
+          forEach (v1 at i in vertices)
+            contingent
+              local v0 = vertices[ (i-1) % n ]
+              local v2 = vertices[ (i+1) % n ]
+              local a = v0 - v1
+              local b = v2 - v1
+              necessary (b.cross(a) >= 0) # make sure this triangle is inside the shape rather than outside it
+
+              local t = Triangle( v0, v1, v2 )
+
+              # See if any other vertices fall inside this triangle.
+              forEach (vx at j in vertices)
+                if (i == j or (i+1)%n == j or (i-1)%n == j) nextIteration
+                necessary (not t.contains(vx))
+              endForEach
+
+              # We have an ear triangle
+              @triangles.add( t )
+              vertices.remove_at( i )
+              escapeForEach
+
+            endContingent
+          endForEach
+
+          if (n == vertices.count)
+            # No ear found
+            escapeWhile
+          endIf
+
+        endWhile
+
+        @triangles.add( Triangle(vertices[0],vertices[1],vertices[2]) )
+      endIf
+
+      return @triangles
+endClass
+
