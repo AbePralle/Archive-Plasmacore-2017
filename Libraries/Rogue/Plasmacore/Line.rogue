@@ -49,7 +49,7 @@ class Line( a:XY, b:XY ) [compound]
         endIf
       endIf
 
-    method intersection( other:Line )->XY?
+    method intersection( other:Line, &clamp=true )->XY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a
       local P2 = this.b
@@ -61,7 +61,11 @@ class Line( a:XY, b:XY ) [compound]
       local denom = B.cross(A)
       local t0 = B.cross(C) / denom
       local t1 = A.cross(C) / denom
-      if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
+      if (clamp)
+        if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
+      else
+        if (t0 == -infinity or t0 == infinity or t1 == -infinity or t1 == -infinity) return null
+      endIf
       return P1 + t0 * A
 
     method intersects( box:Box )->Logical

@@ -1,11 +1,11 @@
 using Plasmacore
 using Box2D
 
-Display( "Main" ).view = MainView()
+Display( "Main" ).screen = MainScreen
 
 #Plasmacore.show_fps = true
 
-class MainView : View
+class MainScreen : Screen [singleton]
   PROPERTIES
 
   METHODS
@@ -25,7 +25,7 @@ class MainView : View
 endClass
 
 
-class InitialState : State<<MainView>>
+class InitialState : State<<MainScreen>>
   PROPERTIES
     text = RichText()
 
@@ -35,7 +35,7 @@ class InitialState : State<<MainView>>
       println "Hello World"
 
     method after_draw
-      # This happens after the current view's on_draw()
+      # This happens after the current screen's on_draw()
 
     method on( e:KeyEvent )
       trace e
@@ -47,7 +47,7 @@ class InitialState : State<<MainView>>
       trace e
 
     method on_draw
-      # This happens before the current view's on_draw()
+      # This happens before the current screen's on_draw()
       Display.clear( Color.BLUE )
       DefaultFont.anchor = Anchor.CENTER
       #DefaultFont.draw( "Hello World", Display.center )

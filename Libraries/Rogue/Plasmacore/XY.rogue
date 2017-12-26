@@ -180,7 +180,7 @@ $endIf
       return XY( Math.min(x,other.x), Math.min(y,other.y) )
 
     method normal->XY
-      # Returns the normal of the this vector.
+      # Returns the normal of this vector.
       return XY( -y, x )
 
     method normalized->XY
