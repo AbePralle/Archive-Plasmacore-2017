@@ -289,6 +289,128 @@ class Bitmap
       blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
       blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
+    method fill( triangle:Triangle, color:Color )
+      local top    = triangle.a
+      local middle = triangle.b
+      local bottom = triangle.c
+
+      # Sort a, middle, bottom into ascending y-coordinate order
+      if (middle.y < top.y)    swapValues( top, middle )
+      if (bottom.y < top.y)    swapValues( top, bottom )
+      if (bottom.y < middle.y) swapValues( middle, bottom )
+
+      if (bottom.y < 0 or top.y >= height) return
+      if (top.x.or_larger(middle.x).or_larger(bottom.x) < 0 or top.x.or_smaller(middle.x).or_smaller(middle.x) >= width) return
+
+      local width      = this.width
+      local height     = this.height
+      local pixels     = this.pixels
+
+      if (top.y == middle.y)
+        local left_x  = top.x
+        local right_x = middle.x
+        local y       = top.y
+        local left_error = 0
+        local right_error = 0
+        local left_dx    = bottom.x - top.x
+        local right_dx   = bottom.x - middle.x
+        local left_step  = left_dx.sign
+        local right_step = right_dx.sign
+        left_dx = left_dx.abs
+        right_dx = right_dx.abs
+        local dy         = bottom.y - top.y
+        local line_start = y * width
+
+        forEach (1..dy)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+            local x2 = right_x.or_smaller( width - 1 )
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+            ++y
+            left_error  += left_dx
+            right_error += right_dx
+            while (left_error >= dy)  left_x += left_step; left_error -= dy
+            while (right_error >= dy) right_x += right_step; right_error -= dy
+          endIf
+          line_start += width
+        endForEach
+
+      else
+        local left  = middle
+        local right = bottom
+        if (right.x < left.x) swapValues( left, right )
+
+        local left_x  = top.x
+        local right_x = top.x
+        local y       = top.y
+        local left_error  = 0
+        local right_error = 0
+        local left_dx    = left.x - top.x
+        local right_dx   = right.x - top.x
+        local left_step  = left_dx.sign
+        local right_step = right_dx.sign
+        left_dx = left_dx.abs
+        right_dx = right_dx.abs
+        local left_dy    = left.y - top.y
+        local right_dy   = right.y - top.y
+        local lines = left_dy.or_smaller( right_dy )
+        local line_start = y * width
+
+        # Draw the top half of the triangle
+        forEach (1..lines)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+            local x2 = right_x.or_smaller( width - 1 )
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+            ++y
+            left_error  += left_dx
+            right_error += right_dx
+            while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            while (right_error >= right_dy) right_x += right_step; right_error -= right_dy
+          endIf
+          line_start += width
+        endForEach
+
+        # Reset either the left or the right slope and draw the bottom half of the triangle
+        if (left.y < right.y)
+          # Reset left side
+          left_x  = left.x
+          left_error  = 0
+          left_dx    = right.x - left.x
+          left_step  = left_dx.sign
+          left_dx = left_dx.abs
+          left_dy    = right.y - left.y
+          lines = left_dy + 1
+        else
+          # Reset right side
+          right_x  = right.x
+          right_error  = 0
+          right_dx    = left.x - right.x
+          right_step  = right_dx.sign
+          right_dx = right_dx.abs
+          right_dy    = left.y - right.y
+          lines = right_dy + 1
+        endIf
+
+        forEach (1..lines)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+            local x2 = right_x.or_smaller( width - 1 )
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+            ++y
+            left_error  += left_dx
+            right_error += right_dx
+            while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            while (right_error >= right_dy) right_x += right_step; right_error -= right_dy
+          endIf
+          line_start += width
+        endForEach
+
+      endIf
+
     method expand_to_power_of_two->this
       local wp2 = width.to_power_of_two
       local hp2 = height.to_power_of_two

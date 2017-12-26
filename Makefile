@@ -77,7 +77,7 @@ clean:
 clean_asset_compiler:
 	make -C Libraries/AssetCompiler clean
 
-xclean: clean clean_harfbuzz clean_asset_compiler
+xclean: clean clean_asset_compiler
 
 update: prepare_update
 

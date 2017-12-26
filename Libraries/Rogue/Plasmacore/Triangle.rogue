@@ -34,6 +34,8 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       # Check if point is in triangle
       return (u >= 0) and (v >= 0) and (u + v < 1)
 
+
+$if (not "Console")
     method draw( color:Color )->this
       Line( a, b ).draw( color )
       Line( b, c ).draw( color )
@@ -61,21 +63,9 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
         render_mode=RenderMode.ALPHA_IMAGE:RenderMode, shader=ImageShader.TEXTURE:Shader )->this
         Display.fill( this, texture, uv, colors, render_mode, shader )
       return this
-        #{
-      local transform = Display.transform
-      Display.push_object_transform( Matrix.translate(XYZ(0,0,Display.z)) )
+$endIf
 
-      local tri = Triangle<<XYZW>>(
-        transform * XYZ( a, 0 ),
-        transform * XYZ( b, 0 ),
-        transform * XYZ( c, 0 ) )
-
-      Display.fill_textured_triangle( texture, tri, colors, uv, render_mode, shader )
-
-      Display.pop_object_transform
-      return this
-      }#
-
+$if (not "Console")
     method intersects( box:Box )->Logical
       return box->Quad.intersects( this )
 
@@ -94,6 +84,7 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       if (Line(a,b).intersects(other)) return true
       if (Line(b,c).intersects(other)) return true
       return (Line(a,c).intersects(other))
+$endIf
 
     method operator+( position:XY )->Triangle
       return Triangle( a+position, b+position, c+position )
