@@ -118,6 +118,14 @@ class Line( a:XY, b:XY ) [compound]
     method operator&( other:Line )->XY?
       return intersection( other )
 
+    method stroke( color:Color, thickness=1:Real64 )
+      if (thickness == 1)
+        draw( color )
+      else
+        local delta = b - a
+        (Box( 0, -thickness/2, delta.magnitude, thickness ).rotated( delta.radians ) + a).fill( color )
+      endIf
+
     method rotated( angle:Degrees )->Line [macro]
       this.rotated( angle->Radians )
 
