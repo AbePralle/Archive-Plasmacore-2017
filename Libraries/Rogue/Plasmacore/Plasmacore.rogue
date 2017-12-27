@@ -4,6 +4,7 @@
 
 $include "Anchor.rogue"
 $include "Bitmap.rogue"
+$include "BresenhamLineGenerator.rogue"
 $include "Box.rogue"
 $include "Box2D.rogue"
 $include "Color.rogue"
