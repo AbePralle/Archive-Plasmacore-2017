@@ -325,13 +325,16 @@ class Bitmap
           if (y >= 0)
             if (y == height) return
             local x1 = left_x.or_larger( 0 )
-            local x2 = right_x.or_smaller( width - 1 )
+
+            local x2 = right_x
+            right_error += right_dx
+            while (right_error >= dy) x2 = right_x; right_x += right_step; right_error -= dy
+            x2 = x2.or_smaller( width - 1 )
+
             forEach (x in x1..x2) pixels[ line_start + x ] = color
             ++y
             left_error  += left_dx
-            right_error += right_dx
             while (left_error >= dy)  left_x += left_step; left_error -= dy
-            while (right_error >= dy) right_x += right_step; right_error -= dy
           endIf
           line_start += width
         endForEach
@@ -362,13 +365,16 @@ class Bitmap
           if (y >= 0)
             if (y == height) return
             local x1 = left_x.or_larger( 0 )
-            local x2 = right_x.or_smaller( width - 1 )
+
+            local x2 = right_x
+            right_error += right_dx
+            while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            x2 = x2.or_smaller( width - 1 )
+
             forEach (x in x1..x2) pixels[ line_start + x ] = color
             ++y
             left_error  += left_dx
-            right_error += right_dx
             while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
-            while (right_error >= right_dy) right_x += right_step; right_error -= right_dy
           endIf
           line_start += width
         endForEach
@@ -398,13 +404,18 @@ class Bitmap
           if (y >= 0)
             if (y == height) return
             local x1 = left_x.or_larger( 0 )
-            local x2 = right_x.or_smaller( width - 1 )
-            forEach (x in x1..x2) pixels[ line_start + x ] = color
-            ++y
-            left_error  += left_dx
+
+            local x2 = right_x
             right_error += right_dx
+            while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            x2 = x2.or_smaller( width - 1 )
+
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+
+            left_error  += left_dx
             while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
-            while (right_error >= right_dy) right_x += right_step; right_error -= right_dy
+
+            ++y
           endIf
           line_start += width
         endForEach
