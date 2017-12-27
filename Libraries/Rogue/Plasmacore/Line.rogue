@@ -12,12 +12,22 @@ class Line( a:XY, b:XY ) [compound]
     method direction->XY
       return (b - a)
 
-    method draw( color:Color )->this
-      Display.draw( this, Colors(color) )
+    method draw( color:Color, thickness=1:Real64 )->this
+      if (thickness == 1)
+        Display.draw( this, Colors(color) )
+      else
+        local delta = b - a
+        (Box( 0, -thickness/2, delta.magnitude, thickness ).rotated( delta.radians ) + a).fill( color )
+      endIf
       return this
 
-    method draw( colors:Colors )->this
-      Display.draw( this, colors )
+    method draw( colors:Colors, thickness=1:Real64 )->this
+      if (thickness == 1)
+        Display.draw( this, colors )
+      else
+        local delta = b - a
+        (Box( 0, -thickness/2, delta.magnitude, thickness ).rotated( delta.radians ) + a).fill( colors )
+      endIf
       return this
 
     method intersection( circle:Circle )->Line?
@@ -117,14 +127,6 @@ class Line( a:XY, b:XY ) [compound]
 
     method operator&( other:Line )->XY?
       return intersection( other )
-
-    method stroke( color:Color, thickness=1:Real64 )
-      if (thickness == 1)
-        draw( color )
-      else
-        local delta = b - a
-        (Box( 0, -thickness/2, delta.magnitude, thickness ).rotated( delta.radians ) + a).fill( color )
-      endIf
 
     method rotated( angle:Degrees )->Line [macro]
       this.rotated( angle->Radians )
