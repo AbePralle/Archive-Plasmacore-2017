@@ -30,6 +30,20 @@ class Line( a:XY, b:XY ) [compound]
       endIf
       return this
 
+      #{
+    method intersection( box:Box )->Line?
+      local a = this.a
+      local b = this.b
+
+      if (b.x < a.x) swapValues( a, b )
+      if (b.x < box.x1 or a.x >= box.x2) return null
+
+      if (b.y < a.y) swapValues( a, b )
+      if (b.y < box.y1 or a.y >= box.y2) return null
+
+      if (a.y < box.y1) a = Line(a,b).intersection(Line(box.position,XY(box.width,1))).value
+      }#
+
     method intersection( circle:Circle )->Line?
       # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
       if (circle.contains(a))

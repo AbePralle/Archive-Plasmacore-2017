@@ -3,6 +3,7 @@ module Plasmacore
 class Bitmap
   GLOBAL PROPERTIES
     resize_row_buffer = Int32[]
+    line_generator    : BresenhamLineGenerator
 
   GLOBAL METHODS
     method create( width:Int32, height:Int32 )->Bitmap
@@ -14,7 +15,7 @@ class Bitmap
     pixels                 : Color[]
     error                  : Logical
     is_premultiplied_alpha : Logical
-    filepath : String
+    filepath               : String
 
   METHODS
     method init( _size:XY, color=Color(0):Color ) [essential]
@@ -290,9 +291,9 @@ class Bitmap
       blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
     method fill( triangle:Triangle, color:Color )
-      local top    = triangle.a
-      local middle = triangle.b
-      local bottom = triangle.c
+      local top    = triangle.a.floor
+      local middle = triangle.b.floor
+      local bottom = triangle.c.floor
 
       # Sort a, middle, bottom into ascending y-coordinate order
       if (middle.y < top.y)    swapValues( top, middle )
@@ -328,14 +329,18 @@ class Bitmap
 
             local x2 = right_x
             right_error += right_dx
-            while (right_error >= dy) x2 = right_x; right_x += right_step; right_error -= dy
+            if (dy > 0)
+              while (right_error >= dy) x2 = right_x; right_x += right_step; right_error -= dy
+            endIf
             x2 = x2.or_smaller( width - 1 )
 
             forEach (x in x1..x2) pixels[ line_start + x ] = color
-            ++y
             left_error  += left_dx
-            while (left_error >= dy)  left_x += left_step; left_error -= dy
+            if (dy > 0)
+              while (left_error >= dy)  left_x += left_step; left_error -= dy
+            endIf
           endIf
+          ++y
           line_start += width
         endForEach
 
@@ -368,14 +373,18 @@ class Bitmap
 
             local x2 = right_x
             right_error += right_dx
-            while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            if (right_dy > 0)
+              while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            endIf
             x2 = x2.or_smaller( width - 1 )
 
             forEach (x in x1..x2) pixels[ line_start + x ] = color
-            ++y
             left_error  += left_dx
-            while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            if (left_dy > 0)
+              while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            endIf
           endIf
+          ++y
           line_start += width
         endForEach
 
@@ -400,6 +409,7 @@ class Bitmap
           lines = right_dy + 1
         endIf
 
+        line_start = y * width
         forEach (1..lines)
           if (y >= 0)
             if (y == height) return
@@ -407,16 +417,20 @@ class Bitmap
 
             local x2 = right_x
             right_error += right_dx
-            while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            if (right_dy > 0)
+              while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            endIf
             x2 = x2.or_smaller( width - 1 )
 
             forEach (x in x1..x2) pixels[ line_start + x ] = color
 
             left_error  += left_dx
-            while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            if (left_dy > 0)
+              while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            endIf
 
-            ++y
           endIf
+          ++y
           line_start += width
         endForEach
 
@@ -497,6 +511,43 @@ $endIf
 
       fill( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
       fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
+
+    method draw( line:Line, color:Color, thickness=1:Real64 )
+      if (thickness == 1)
+        local a = line.a
+        local b = line.b
+
+        if (b.x < a.x) swapValues( a, b )
+        if (a.x >= width or b.x < 0) return
+
+        if (b.y < a.y) swapValues( a, b )
+        if (a.y >= height or b.y < 0) return
+
+        (ensure line_generator).reset( a, b )
+
+        while (line_generator.y < 0) line_generator.advance
+
+        # All we know is we're going top to bottom. Could optimize further by adding
+        # Line/Box intersection and clip the line ahead of time.
+        loop
+          local x = line_generator.x
+          local y = line_generator.y
+          if (y == height) return
+          if (x >= 0 and y >= 0 and x < width and y < height)
+            pixels[ y * width + x ] = color
+          endIf
+          if (line_generator.is_finished) return
+          line_generator.advance
+        endLoop
+
+      else
+        local delta = line.b - line.a
+        fill( Box(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
+      endIf
+
+    method fill( quad:Quad, color:Color )
+      fill( Triangle(quad.a,quad.b,quad.c), color )
+      fill( Triangle(quad.a,quad.c,quad.d), color )
 
     method premultiply_alpha->this
       # Multiplies the R,G,B components of each color by their current
