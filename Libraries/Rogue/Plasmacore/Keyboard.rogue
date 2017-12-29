@@ -23,19 +23,19 @@ class Keyboard [singleton]
       this.key_pressed[ keycode & 255 ]
 
     method is_alt_pressed->Logical
-      return is_key_pressed(KeyCode.LEFT_ALT) or is_key_pressed(KeyCode.RIGHT_ALT)
+      return is_key_pressed(Keycode.LEFT_ALT) or is_key_pressed(Keycode.RIGHT_ALT)
 
     method is_control_pressed->Logical
-      return is_key_pressed(KeyCode.LEFT_CONTROL) or is_key_pressed(KeyCode.RIGHT_CONTROL)
+      return is_key_pressed(Keycode.LEFT_CONTROL) or is_key_pressed(Keycode.RIGHT_CONTROL)
 
     method is_os_pressed->Logical
-      return is_key_pressed(KeyCode.LEFT_OS) or is_key_pressed(KeyCode.RIGHT_OS)
+      return is_key_pressed(Keycode.LEFT_OS) or is_key_pressed(Keycode.RIGHT_OS)
 
     method is_shift_pressed->Logical
-      return is_key_pressed(KeyCode.LEFT_SHIFT) or is_key_pressed(KeyCode.RIGHT_SHIFT)
+      return is_key_pressed(Keycode.LEFT_SHIFT) or is_key_pressed(Keycode.RIGHT_SHIFT)
 endClass
 
-class KeyCode
+class Keycode
   ENUMERATE
     LEFT_ARROW        1
     UP_ARROW          2
