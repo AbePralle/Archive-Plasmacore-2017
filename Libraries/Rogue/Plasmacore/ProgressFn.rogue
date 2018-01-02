@@ -70,6 +70,8 @@ class ProgressFn [singleton]
                         endIf
                       endFunction
     SINE            = function(p:Real64)->Real64: return 0.5 * (1 + Math.sin( 3.1415926 * (p - 0.5) ) )
+    SMOOTHSTEP      = function(p:Real64)->Real64: return p * p * (3 - 2*p)
+    SMOOTHERSTEP    = function(p:Real64)->Real64: return p * p * p * (p * (p * 6 - 15) + 10)
 
     BACK_IN         = function(p:Real64)->Real64: return p * p * (2.70158 * p - 1.70158)
     BOUNCE_IN       = function(p:Real64)->Real64: return 2 ^ (6 * (p - 1)) * Math.sin( p * pi * 3.5 ).abs
