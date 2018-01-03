@@ -84,11 +84,11 @@ class Line( a:XY, b:XY ) [compound]
       local C = P3 - P1
       local denom = B.cross(A)
       local t0 = B.cross(C) / denom
+      if (t0.is_NaN) return null
       local t1 = A.cross(C) / denom
+      if (t1.is_NaN) return null
       if (clamp)
         if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
-      else
-        if (t0 == -infinity or t0 == infinity or t1 == -infinity or t1 == -infinity) return null
       endIf
       return P1 + t0 * A
 
