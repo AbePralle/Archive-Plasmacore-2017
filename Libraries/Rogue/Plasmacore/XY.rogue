@@ -74,7 +74,6 @@ class XY( x:Real64, y:Real64 ) [compound]
 
       return XY(vx,vy)
 
-$if (not "Console")
     method clamped( line:Line )->XY
       # Returns the point along the given line segment that is closest
       # to this point.
@@ -125,7 +124,6 @@ $if (not "Console")
       if (t_numer < 0) return ray.position
       local t_denom = B.dot(B)
       return ray.position + (t_numer / t_denom) * B
-$endIf
 
     method cross( other:XY )->Real64
       return x * other.y - y * other.x
@@ -261,12 +259,10 @@ $endIf
     method round->XY
       return (this + XY(0.5,0.5)).floor
 
-$if (not "Console")
     method side( line:Line )->Int32
       # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
       # and -1 if on the opposite side
       return line.direction.cross( this - line.a ).sign
-$endIf
 
     method to->String
       #{

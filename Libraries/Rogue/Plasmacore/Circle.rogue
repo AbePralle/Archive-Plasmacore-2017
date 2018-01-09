@@ -19,6 +19,7 @@ class Circle( position:XY, radius:Real64 ) [compound]
     method contains( point:XY )->Logical
       return (point - position).magnitude_squared <= radius^2
 
+$if (not "Console")
     method draw( color:Color, segments=(1.0/4.0):Real64 )->this
       # Draws an outline of the given circle in the given color.
       #
@@ -81,6 +82,7 @@ class Circle( position:XY, radius:Real64 ) [compound]
       Triangle(pt1,first,position).fill( colors )
 
       return this
+$endIf
 
     method intersects( box:Box )->Logical
       return box.intersects( this )

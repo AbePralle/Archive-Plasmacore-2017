@@ -122,7 +122,6 @@ $endIf
     method intersects( other:Box )->Logical
       return (this & other).exists
 
-$if (not "Console")
     method intersects( circle:Circle )->Logical
       return this->Quad.intersects( circle )
 
@@ -134,8 +133,6 @@ $if (not "Console")
 
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
-
-$endIf
 
     method operator==( other:Box )->Logical
       return (position == other.position and size == other.size)
@@ -197,13 +194,11 @@ $endIf
       # [@90,80 20x20]].
       return Box( position - anchor.position * size, size )
 
-$if (not "Console")
     method rotated( angle:Degrees )->Quad [macro]
       this.rotated( angle->Radians )
 
     method rotated( angle:Radians )->Quad [macro]
       this->Quad.rotated( angle )
-$endIf
 
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
@@ -219,10 +214,10 @@ $if (not "Console")
 
     method transformed( m:Matrix )->Box
       return transform( m )->Box
+$endIf
 
     method to->Quad
       return Quad( this )
-$endIf
 
     method to->String
       return "[@$,$ $x$]" (x.format,y.format,width.format,height.format)

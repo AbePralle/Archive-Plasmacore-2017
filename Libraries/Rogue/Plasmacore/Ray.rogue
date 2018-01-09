@@ -9,6 +9,7 @@ class Ray( position:XY, direction:XY ) [compound]
       return Ray( position, XY(1.0,angle) )
 
   METHODS
+$if (not "Console")
     method draw( color:Color )->this
       this->Line.draw( color )
       return this
@@ -16,6 +17,7 @@ class Ray( position:XY, direction:XY ) [compound]
     method draw( colors:Colors )->this
       this->Line.draw( colors )
       return this
+$endIf
 
     method intersection( box:Box )->XY?
       return intersection( box->Quad )

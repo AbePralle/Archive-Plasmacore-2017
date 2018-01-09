@@ -65,7 +65,6 @@ $if (not "Console")
       return this
 $endIf
 
-$if (not "Console")
     method intersects( box:Box )->Logical
       return box->Quad.intersects( this )
 
@@ -84,7 +83,6 @@ $if (not "Console")
       if (Line(a,b).intersects(other)) return true
       if (Line(b,c).intersects(other)) return true
       return (Line(a,c).intersects(other))
-$endIf
 
     method operator+( position:XY )->Triangle
       return Triangle( a+position, b+position, c+position )

@@ -36,18 +36,20 @@ class Assets
 
       # Figure out which properties are unloaded assets.
       local texture_names = StringTable<<Logical>>()
+      local introspector = this.introspector
+
       forEach (p in type_info.properties)
         which (p.type.name)
           case "Plasmacore::Font"
-            local font = get_property<<Font>>( p.name )
+            local font = introspector[ p.name ].to<<Font>>
             if (font) font.collect_texture_names( texture_names )
 
           case "Plasmacore::Image"
-            local image = get_property<<Image>>( p.name )
+            local image = introspector[ p.name ].to<<Image>>
             if (image) image.collect_texture_names( texture_names )
 
           case "Plasmacore::Image[]"
-            local images = get_property<<Image[]>>( p.name )
+            local images = introspector[ p.name ].to<<Image[]>>
             if (images) images.collect_texture_names( texture_names )
         endWhich
       endForEach

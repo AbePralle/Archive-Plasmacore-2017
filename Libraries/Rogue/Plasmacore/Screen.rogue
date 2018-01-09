@@ -77,18 +77,19 @@ class Screen
       local type_ImageList = <<Plasmacore::Image[]>>
       local type_Font = <<Plasmacore::Font>>
 
-      forEach (p in obj.type_info.properties)
+      local introspector = obj.introspector
 
+      forEach (p in obj.type_info.properties)
         if (p.type.instance_of(type_Image))
-          local image = obj.get_property<<Image>>( p.name )
+          local image = introspector[ p.name ].to<<Image>>
           if (image) image.collect_texture_names( texture_names )
 
         elseIf (p.type.instance_of(type_ImageList))
-          local images = obj.get_property<<Image[]>>( p.name )
+          local images = introspector[ p.name ].to<<Image[]>>
           if (images) images.collect_texture_names( texture_names )
 
         elseIf (p.type.instance_of(type_Font))
-          local font = obj.get_property<<Font>>( p.name )
+          local font = introspector[ p.name ].to<<Font>>
           if (font) font.collect_texture_names( texture_names )
         endIf
 
@@ -228,11 +229,13 @@ class Screen
     method load_another_asset->Real64
       if (loaded_asset_count and loaded_asset_count == total_asset_count) return 1.0
 
+      local introspector = this.introspector
+
       loaded_asset_count = 0
       total_asset_count = 0
       forEach (p in type_info.properties)
         if (p.type.is_reference)
-          local assets = get_property<<Assets>>( p.name )
+          local assets = introspector[ p.name ].to<<Assets>>
           if (assets)
             if (not assets.finished_loading) assets.load_another
             loaded_asset_count += assets.loaded_asset_count
@@ -276,10 +279,11 @@ class Screen
 
     method mark_fonts_unloaded( obj:Object )
       local type_Font = <<Plasmacore::Font>>
+      local introspector = obj.introspector
       forEach (p in obj.type_info.properties)
 
         if (p.type.instance_of(type_Font))
-          local font = obj.get_property<<Font>>( p.name )
+          local font = introspector[ p.name ].to<<Font>>
           if (font and font.data) font.data.is_loaded = false
 
         endIf
@@ -355,18 +359,21 @@ class Screen
       local type_Image = <<Plasmacore::Image>>
       local type_ImageList = <<Plasmacore::Image[]>>
       local type_Font = <<Plasmacore::Font>>
+
+      local introspector = obj.introspector
+
       forEach (p in obj.type_info.properties)
 
         if (p.type.instance_of(type_Image))
-          local image = obj.get_property<<Image>>( p.name )
+          local image = introspector[ p.name ].to<<Image>>
           if (image) image.reload
 
         elseIf (p.type.instance_of(type_ImageList))
-          local images = obj.get_property<<Image[]>>( p.name )
+          local images = introspector[ p.name ].to<<Image[]>>
           if (images) images.reload
 
         elseIf (p.type.instance_of(type_Font))
-          local font = obj.get_property<<Font>>( p.name )
+          local font = introspector[ p.name ].to<<Font>>
           if (font) font.reload
 
         endIf

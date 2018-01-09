@@ -15,6 +15,7 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method contains( point:XY )->Logical
       return (Triangle(a,b,c).contains(point) or Triangle(a,c,d).contains(point))
 
+$if (not "Console")
     method draw( color:Color )->this
       Line( a, b ).draw( color )
       Line( b, c ).draw( color )
@@ -34,6 +35,7 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
         Triangle( a, c, d ).fill( Colors(colors.a,colors.c,colors.d) )
       endIf
       return this
+$endIf
 
     method intersects( line:Line )->Logical
       # Returns true if this Quad quad and `line` intersect.

@@ -12,6 +12,7 @@ class Line( a:XY, b:XY ) [compound]
     method direction->XY
       return (b - a)
 
+$if (not "Console")
     method draw( color:Color, thickness=1:Real64 )->this
       if (thickness == 1)
         Display.draw( this, Colors(color) )
@@ -29,7 +30,7 @@ class Line( a:XY, b:XY ) [compound]
         (Box( 0, -thickness/2, delta.magnitude, thickness ).rotated( delta.radians ) + a).fill( colors )
       endIf
       return this
-
+$endIf
       #{
     method intersection( box:Box )->Line?
       local a = this.a
