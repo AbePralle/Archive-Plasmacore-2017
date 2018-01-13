@@ -2,7 +2,6 @@ module Plasmacore
 
 class PNGDecoder
   DEPENDENCIES
-    nativeHeader #define PNG_SKIP_SETJMP_CHECK
     nativeHeader #include <setjmp.h>
     nativeHeader #include "png.h"
 
