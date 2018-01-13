@@ -2,6 +2,7 @@ module Plasmacore
 
 class PNGDecoder
   DEPENDENCIES
+    nativeHeader #define PNG_SKIP_SETJMP_CHECK
     nativeHeader #include <setjmp.h>
     nativeHeader #include "png.h"
 
@@ -18,7 +19,7 @@ class PNGDecoder
       {
         RogueClassPlasmacore__PNGDecoder* decoder = (RogueClassPlasmacore__PNGDecoder*) png_get_io_ptr( png_ptr );
         int limit = decoder->reader->is_limited ? decoder->reader->limit : decoder->reader->list->count;
-        int remaining = (limit - decoder->reader->position);
+        png_size_t remaining = (png_size_t) (limit - decoder->reader->position);
         if (count > remaining)
         {
           count = (png_size_t) remaining;

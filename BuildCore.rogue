@@ -1,4 +1,4 @@
-#$ ROGUEC    = Programs/macOS/roguec
+#$ ROGUEC    = Programs/$OS/roguec
 #$ LIBRARIES = Libraries/Rogue
 $include "Plasmacore"
 using Plasmacore

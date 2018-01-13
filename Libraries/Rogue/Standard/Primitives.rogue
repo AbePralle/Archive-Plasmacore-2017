@@ -23,6 +23,9 @@ class Real64 [primitive]
     method create( value:Logical )->Real64
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Real64
+      return value->Real64
+
   METHODS
     method abs->Real64
       if (this >= 0) return this
@@ -105,7 +108,7 @@ class Real64 [primitive]
       $endIf
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Real64>>( this )
+      return BoxedIntrospector<<Real64>>( this->Object )
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -192,6 +195,9 @@ class Real32 [primitive]
     method create( value:Logical )->Real32
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Real32
+      return value->Real32
+
   METHODS
     method abs->Real32
       if (this >= 0) return this
@@ -238,7 +244,7 @@ class Real32 [primitive]
       $endIf
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Real32>>( this )
+      return BoxedIntrospector<<Real32>>( this->Object )
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -324,6 +330,10 @@ class Int64 [primitive]
 
     method create( value:Logical )->Int64
       return select{ value:1 || 0 }
+
+    method from_value( value:Value )->Int64
+      return value->Int64
+
 
   METHODS
     method abs->Int64
@@ -432,7 +442,7 @@ class Int64 [primitive]
       return this
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Int64>>( this )
+      return BoxedIntrospector<<Int64>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -528,6 +538,9 @@ class Int32 [primitive]
     method create( value:Logical )->Int32
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Int32
+      return value->Int32
+
     method maximum->Int32 [macro]
       2147483647
 
@@ -567,7 +580,7 @@ class Int32 [primitive]
       return this
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Int32>>( this )
+      return BoxedIntrospector<<Int32>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -665,6 +678,9 @@ class Character [primitive]
     method create( value:Logical )->Character
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Character
+      return value->Character
+
   METHODS
     method clamped( low:Character, high:Character )->Character
       if (this < low)  return low
@@ -686,7 +702,7 @@ class Character [primitive]
       return this->Int32
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Character>>( this )
+      return BoxedIntrospector<<Character>>( this->Object )
 
     method is_alphanumeric->Logical
       return (this >= '0' and this <= '9') or
@@ -799,6 +815,9 @@ class Byte [primitive]
     method create( value:Logical )->Byte
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Byte
+      return value->Byte
+
   METHODS
     method clamped( low:Byte, high:Byte )->Byte
       if (this < low)  return low
@@ -823,7 +842,7 @@ class Byte [primitive]
       return this->Int32
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Byte>>( this )
+      return BoxedIntrospector<<Byte>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -901,6 +920,9 @@ class Logical [primitive]
     method create( value:Logical )->Logical
       return value
 
+    method from_value( value:Value )->Logical
+      return value->Logical
+
   METHODS
     method digit_count->Int32
       if (this) return 4  # "true"
@@ -911,7 +933,7 @@ class Logical [primitive]
       else      return 0
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Logical>>( this )
+      return BoxedIntrospector<<Logical>>( this->Object )
 
     method to->Object
       return Boxed<<Logical>>(this)

@@ -49,6 +49,7 @@ class InitialState : State<<MainScreen>>
     method on_draw
       # This happens before the current screen's on_draw()
       Display.clear( Color.BLUE )
+      Image( (DefaultFont.data as DefaultFontData).sheet_builder.texture ).draw( Display.center )
       DefaultFont.anchor = Anchor.CENTER
       #DefaultFont.draw( "Hello World", Display.center )
       DefaultFont.draw( "Hello", Display.at(0.5,0.5) )
