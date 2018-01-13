@@ -43,17 +43,18 @@ project: $(BUILD_FOLDER)/$(OUTPUT_NAME)
 $(BUILD_FOLDER)/$(OUTPUT_NAME): $(BUILD_FOLDER)/Source/RogueProgram.cpp $(SDLCORE_FILES)
 	$(CXX) -I$(BUILD_FOLDER)/Source \
 	       -I$(SDLCORE_FOLDER) \
-	       -ljpeg \
-	       -lpng \
-	       -lSDL2 \
-	       -lSDL2_mixer \
-	       -lGL \
 	       -std=c++11 \
 	       -Wall \
+	       -Wno-invalid-offsetof \
 	       -fno-strict-aliasing \
 	       $(OPT_CFLAGS) \
 	       $(CXXFLAGS) \
 	       $(CFLAGS) \
 	       $(BUILD_FOLDER)/Source/RogueProgram.cpp \
 	       $(SDLCORE_FILES) \
-	       -o $(BUILD_FOLDER)/$(OUTPUT_NAME)
+	       -o $(BUILD_FOLDER)/$(OUTPUT_NAME) \
+	       -ljpeg \
+	       -lpng \
+	       -lSDL2 \
+	       -lSDL2_mixer \
+	       -lGL
