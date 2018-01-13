@@ -65,7 +65,7 @@ Build/BuildScript:
 
 Build/BuildScript/buildscript: Build/BuildScript BuildScript.rogue $(ROGUE_LIBRARIES)
 	$(ROGUEC) $(ROGUE_IDE_FLAG) BuildScript.rogue --libraries=Libraries/Rogue --output=Build/BuildScript/BuildScript --main
-	$(CXX) -std=c++11 -DROGUEC=$(ROGUEC) -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
+	$(CXX) -std=c++11 -DROGUEC=$(ROGUEC) -Wno-invalid-offsetof -fno-strict-aliasing Build/BuildScript/BuildScript.cpp -o Build/BuildScript/buildscript
 
 run:
 	env Build/BuildScript/buildscript $(TARGET) $(ROGUE_IDE_FLAG)
