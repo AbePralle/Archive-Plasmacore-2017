@@ -2,7 +2,7 @@ module Plasmacore
 
 class PNGDecoder
   DEPENDENCIES
-    nativeHeader #include <setjmp.h>
+    $if (not "Linux") nativeHeader #include <setjmp.h>
     nativeHeader #include "png.h"
 
     nativeCode
@@ -141,10 +141,10 @@ endClass
 
 class PNGEncoder
   DEPENDENCIES
+    $if (not "Linux") nativeHeader #include <setjmp.h>
     nativeHeader
-      #include <setjmp.h>
-      #include "png.h"
-    endNativeHeader
+#include "png.h"
+endNativeHeader
 
     nativeCode
       void Rogue_png_encoder_error_callback( png_structp png_ptr, png_const_charp msg )
