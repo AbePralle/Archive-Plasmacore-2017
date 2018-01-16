@@ -2,7 +2,8 @@
 #$ ROGUEC(Linux)    = roguec
 #$ ROGUEC_OPTIONS   = --libraries=Libraries/Rogue
 
-#$ LIBRARIES(macOS) = sox(install:"sox --with-libvorbis") libpng libjpeg(header:jpeglib.h) freetype(include:"$/include/freetype2")
+#$ LIBRARIES(macOS) = sox(install:"sox --with-libvorbis") libpng libjpeg(header:jpeglib.h)
+#$ LIBRARIES(macOS) = freetype(header:"ft2build.h")
 
 #$ LIBRARIES(Linux) = libsdl2-dev libsdl2-mixer-dev
 #$ LIBRARIES(Linux) = libfreetype6-dev( header:ft2build.h library:libfreetype.a )
