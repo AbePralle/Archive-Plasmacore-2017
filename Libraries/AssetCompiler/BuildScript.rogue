@@ -1,9 +1,10 @@
 try
   if (not needs_compile) escapeTry
 
-  if (0 != System.run( ROGUEC + '' --libraries=../../Libraries/Rogue AssetCompiler.rogue --main --output=Build --target=C++,Console'' )) System.exit( 1 )
+  local cmd = ROGUEC + '' --libraries=../../Libraries/Rogue AssetCompiler.rogue --main --output=Build --target=C++,Console,$'' (System.os)
+  if (0 != System.run(cmd)) System.exit( 1 )
 
-  local cmd = ""
+  cmd = ""
 
   if (System.os == "macOS")
     install_brew

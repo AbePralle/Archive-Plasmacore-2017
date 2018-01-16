@@ -1,6 +1,11 @@
 #include "RogueProgram.h"
 #include "RogueInterface.h"
-#include <SDL/SDL_mixer.h>
+
+#ifdef __EMSCRIPTEN__
+  #include <SDL/SDL_mixer.h>
+#else
+  #include <SDL2/SDL_mixer.h>
+#endif
 
 
 #ifndef SOUND_CHANNELS
