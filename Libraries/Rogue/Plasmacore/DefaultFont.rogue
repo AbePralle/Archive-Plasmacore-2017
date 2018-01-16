@@ -30,7 +30,7 @@ class DefaultFontData : FontData
         i1 = i2
       endForEach
 
-$if (not "Web")
+$if (not ("Web" or "Linux"))
       sheet_builder.bitmap.convert_gray_to_alpha
 $endIf
       forEach (i in 0..<95)
