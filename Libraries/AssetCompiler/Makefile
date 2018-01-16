@@ -6,7 +6,9 @@ else
   UNAME_S := $(shell uname -s)
   ifeq ($(UNAME_S),Darwin)
     ROGUEC = ../../Programs/macOS/roguec
+    PLATFORM = C++,Console,macOS
   else
+    PLATFORM = C++,Console,Linux
   endif
 endif
 
@@ -25,7 +27,7 @@ Build/BuildScript/buildscript: Build/BuildScript/BuildScript.cpp
 
 Build/BuildScript/BuildScript.cpp: BuildScript.rogue Makefile
 	@mkdir -p Build/BuildScript
-	$(ROGUEC) --main --libraries=../Rogue BuildScript.rogue --output=Build/BuildScript --define=COMPILER_INVOCATION:"\"$(COMPILE)\"" --define=ROGUEC:"\"$(ROGUEC)\""
+	$(ROGUEC) --main --libraries=../Rogue BuildScript.rogue --output=Build/BuildScript --define=COMPILER_INVOCATION:"\"$(COMPILE)\"" --define=ROGUEC:"\"$(ROGUEC)\"" --target=$(PLATFORM)
 
 run:
 	Build/BuildScript/buildscript

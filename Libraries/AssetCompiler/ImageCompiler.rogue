@@ -1591,7 +1591,9 @@ endClass
 
 class FreeTypeFace
   DEPENDENCIES
+    # Must include png.h before ft2build.h to fix an order-of-include issue with png and setjmp on Linux
     nativeHeader
+      #include <png.h>
       #include <ft2build.h>
       #include FT_FREETYPE_H
     endNativeHeader
