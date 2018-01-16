@@ -201,10 +201,10 @@ endClass
 
 class JPEGErrorHandler [compound]
   PROPERTIES
-$if not ("iOS" or "macOS")
+$if "Linux" or "Console"
     native "struct jpeg_error_mgr jpeg_error_manager;"
     native "jmp_buf               on_error;"
-  $endIf
+$endIf
 endClass
 
 

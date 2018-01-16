@@ -73,6 +73,7 @@ run:
 clean:
 	rm -rf Build
 	rm -rf Libraries/AssetCompiler/Build
+	rm -rf .rogo
 
 clean_asset_compiler:
 	make -C Libraries/AssetCompiler clean
