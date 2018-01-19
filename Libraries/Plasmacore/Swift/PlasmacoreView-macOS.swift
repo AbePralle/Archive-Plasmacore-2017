@@ -16,7 +16,8 @@ class PlasmacoreView: NSOpenGLView
 {
 
   var isConfigured = false
-  var name         = "unnamed"
+  
+  @objc var name = "unnamed"
   var windowID     = 0
   var displayLink  : CVDisplayLink?
   var keyModifierFlags:UInt = 0
@@ -128,21 +129,21 @@ class PlasmacoreView: NSOpenGLView
   {
     let newFlags = event.modifierFlags.rawValue
     let modified = keyModifierFlags ^ newFlags
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue, keycode:Keycode.CAPS_LOCK )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.shift.rawValue, keycode:Keycode.CAPS_LOCK )
 
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue|2, keycode:Keycode.LEFT_SHIFT )
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.shift.rawValue|4, keycode:Keycode.RIGHT_SHIFT )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.shift.rawValue|2, keycode:Keycode.LEFT_SHIFT )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.shift.rawValue|4, keycode:Keycode.RIGHT_SHIFT )
 
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.control.rawValue|1,      keycode:Keycode.LEFT_CONTROL )
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.control.rawValue|0x2000, keycode:Keycode.RIGHT_CONTROL )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.control.rawValue|1,      keycode:Keycode.LEFT_CONTROL )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.control.rawValue|0x2000, keycode:Keycode.RIGHT_CONTROL )
 
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.option.rawValue|0x20, keycode:Keycode.LEFT_ALT )
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.option.rawValue|0x40, keycode:Keycode.RIGHT_ALT )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.option.rawValue|0x20, keycode:Keycode.LEFT_ALT )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.option.rawValue|0x40, keycode:Keycode.RIGHT_ALT )
 
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.command.rawValue|0x08, keycode:Keycode.LEFT_OS )
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.command.rawValue|0x10, keycode:Keycode.RIGHT_OS )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.command.rawValue|0x08, keycode:Keycode.LEFT_OS )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.command.rawValue|0x10, keycode:Keycode.RIGHT_OS )
 
-    handleModifiedKey( modified:modified, mask:NSEventModifierFlags.numericPad.rawValue, keycode:Keycode.NUMPAD_ENTER )
+    handleModifiedKey( modified:modified, mask:NSEvent.ModifierFlags.numericPad.rawValue, keycode:Keycode.NUMPAD_ENTER )
 
     keyModifierFlags = newFlags
   }
@@ -177,18 +178,18 @@ class PlasmacoreView: NSOpenGLView
     m.send()
 
     guard let characters = event.characters else { return }
-    guard characters.characters.count > 0 else { return }
+    if (characters.isEmpty) { return }
     let unicode = Int( characters.unicodeScalars[ characters.unicodeScalars.startIndex ].value )
 
     // Don't send unicode 0..31 or 127 as a TextEvent
-    if (characters.characters.count > 1 || (characters.characters.count == 1 && unicode >= 32 && unicode != 127))
+    if (characters.count > 1 || (characters.count == 1 && unicode >= 32 && unicode != 127))
     {
       m = PlasmacoreMessage( type:"Display.on_text_event" )
       m.set( name:"window_id", value:windowID )
       m.set( name:"display_name", value:name )
       m.set( name:"character", value:unicode )
 
-      if (characters.characters.count > 1)
+      if (characters.count > 1)
       {
         m.set( name:"text", value:characters )
       }
@@ -276,7 +277,7 @@ class PlasmacoreView: NSOpenGLView
 
   override func prepareOpenGL()
   {
-    self.openGLContext?.setValues( [1], for:NSOpenGLCPSwapInterval )
+    self.openGLContext?.setValues( [1], for:NSOpenGLContext.Parameter.swapInterval )
   }
 
   func startDisplayLink()

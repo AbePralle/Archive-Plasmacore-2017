@@ -123,7 +123,7 @@ class Plasmacore
         {
           if let dotIndex = Plasmacore.lastIndexOf( bundleID, lookFor:"." )
           {
-            className = "\(bundleID.substring( from:bundleID.index(bundleID.startIndex,offsetBy:dotIndex+1))).\(name)"
+            className = "\(bundleID[bundleID.index(bundleID.startIndex,offsetBy:dotIndex+1)...]).\(name)"
           }
         }
 
@@ -131,12 +131,12 @@ class Plasmacore
         if let controllerType = NSClassFromString( className ) as? NSWindowController.Type
         {
           NSLog( "Found controller \(className)" )
-          controller = controllerType.init( windowNibName:name )
+          controller = controllerType.init( windowNibName:NSNib.Name(rawValue: name) )
         }
         else if let controllerType = NSClassFromString( name ) as? NSWindowController.Type
         {
           NSLog( "Found controller \(name)" )
-          controller = controllerType.init( windowNibName:name )
+          controller = controllerType.init( windowNibName:NSNib.Name(rawValue: name) )
         }
         else
         {
@@ -144,7 +144,7 @@ class Plasmacore
           NSLog( "ERROR" )
           NSLog( "  No class found named \(name) or \(className)." )
           NSLog( "===============================================================================" )
-          controller = NSWindowController( windowNibName:name )
+          controller = NSWindowController( windowNibName:NSNib.Name(rawValue: name) )
         }
 
         Plasmacore.singleton.resources[ m.getInt32(name:"id") ] = controller
@@ -204,7 +204,7 @@ class Plasmacore
   {
     if let r = st.range( of: lookFor, options:.backwards )
     {
-      return st.characters.distance(from: st.startIndex, to: r.lowerBound)
+      return st.distance(from: st.startIndex, to: r.lowerBound)
     }
 
     return nil
