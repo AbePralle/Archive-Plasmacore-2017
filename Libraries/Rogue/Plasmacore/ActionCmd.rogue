@@ -11,7 +11,7 @@ class ActionCmd
     method operator+( a:ActionCmd, b:ActionCmd )->ActionCmd
       if (not a) return b
       if (not b) return a
-      return a.then( b )
+      return a.and_then( b )
 
     method operator|( a:ActionCmd, b:ActionCmd )->ActionCmd
       if (not a) return b
@@ -51,7 +51,7 @@ class ActionCmd
       t = duration
 
     method insert_next( node:ActionCmd )->this
-      if (node) next_node = node.then( next_node )
+      if (node) next_node = node.and_then( next_node )
       return this
 
     method is_finished->Logical
@@ -89,7 +89,7 @@ class ActionCmd
     method set_progress_fn( @progress_fn )->this
       return this
 
-    method then( node:ActionCmd )->this
+    method and_then( node:ActionCmd )->this
       if (node)
         local cur = this
         while (cur.next_node) cur = cur.next_node
