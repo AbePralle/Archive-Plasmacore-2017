@@ -2,7 +2,7 @@ module Plasmacore
 
 class PNGDecoder
   DEPENDENCIES
-    $if (not "Linux") nativeHeader #include <setjmp.h>
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
     nativeHeader #include "png.h"
 
     nativeCode
@@ -141,7 +141,7 @@ endClass
 
 class PNGEncoder
   DEPENDENCIES
-    $if (not "Linux") nativeHeader #include <setjmp.h>
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
     nativeHeader
 #include "png.h"
 endNativeHeader

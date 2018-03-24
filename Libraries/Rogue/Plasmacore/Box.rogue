@@ -82,7 +82,7 @@ class Box( position:XY, size:XY ) [compound]
     method expanded( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return cropped( -left, -top, -right, -bottom )
 
-$if not "Console"
+$if not target("Console")
     method fill( color:Color )->this
       Display.fill( this, color )
       return this
@@ -179,7 +179,7 @@ $endIf
 
       return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
 
-$if not "Console"
+$if not target("Console")
     method draw( color:Color, thickness=1:Int32 )->this
       Display.draw( this, color, thickness )
       return this
@@ -203,7 +203,7 @@ $endIf
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
 
-$if (not "Console")
+$if (not target("Console"))
     method transform( m:Matrix )->Quad
       return Quad(
         m * top_left,

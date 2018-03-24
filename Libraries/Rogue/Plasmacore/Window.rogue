@@ -70,7 +70,7 @@ class Window
 
 endClass
 
-$if not "Console"
+$if not target("Console")
 class WindowManager [essential singleton]
   PROPERTIES
     windows_by_id = Table<<Int32,Window>>()

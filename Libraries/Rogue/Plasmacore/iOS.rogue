@@ -1,12 +1,12 @@
 module Plasmacore
 
-$if ("iOS") nativeHeader #import <UIKit/UIKit.h>
+$if (target("iOS")) nativeHeader #import <UIKit/UIKit.h>
 
 class iOS
   GLOBAL METHODS
     method status_bar_height->Int32
       # In pixels
-      $if ("iOS")
+      $if (target("iOS"))
         return native( "(RogueInt32)([UIApplication sharedApplication].statusBarFrame.size.height * [UIScreen mainScreen].scale)" )->Int32
       $else
         return 0

@@ -18,9 +18,9 @@ $include "System.rogue"
 $include "Triangle.rogue"
 $include "XY.rogue"
 
-$if not "Console"
+$if not target("Console")
 
-$if ("Web") nativeHeader #include <emscripten.h>
+$if (target("Web")) nativeHeader #include <emscripten.h>
 
 $include "ActionCmd.rogue"
 $include "Angles.rogue"

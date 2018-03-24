@@ -9,7 +9,7 @@ class Ray( position:XY, direction:XY ) [compound]
       return Ray( position, XY(1.0,angle) )
 
   METHODS
-$if (not "Console")
+$if (not target("Console"))
     method draw( color:Color )->this
       this->Line.draw( color )
       return this

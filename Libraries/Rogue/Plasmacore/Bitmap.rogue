@@ -451,7 +451,7 @@ class Bitmap
       return this
 
     method decode( bytes:Byte[] )->Logical
-$if (not ("Console" or "Linux"))
+$if (not (target("Console") or target("Linux")))
       nativeHeader
         struct RogueClassPlasmacore__Bitmap;
         RogueClassPlasmacore__Bitmap* Plasmacore_decode_image( RogueByte* bytes, RogueInt32 count );
@@ -472,7 +472,7 @@ $else
         local decoder = PNGDecoder()
         return decoder.decode( bytes, this )?
 
-$if (not "Web")
+$if (not target("Web"))
       elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
         local decoder = JPEGDecoder()
         return decoder.decode( bytes, this )?
