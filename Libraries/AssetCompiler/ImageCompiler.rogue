@@ -1,3 +1,4 @@
+uses ParseKit
 uses Plasmacore
 
 routine launch_image_compiler
