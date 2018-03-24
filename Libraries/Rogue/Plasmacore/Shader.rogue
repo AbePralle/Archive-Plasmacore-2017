@@ -3,7 +3,7 @@ module Plasmacore
 class Shader
   DEFINITIONS
 
-$if "iOS" or "Android" or "Linux" or "emscripten"
+$if target("iOS") or target("Android") or target("Linux") or target("emscripten")
     GLSL_VERSION = ""
 
     # An empty last line is required on HIGH_PRECISION and MEDIUM_PRECISION.

@@ -35,7 +35,7 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       return (u >= 0) and (v >= 0) and (u + v < 1)
 
 
-$if (not "Console")
+$if (not target("Console"))
     method draw( color:Color )->this
       Line( a, b ).draw( color )
       Line( b, c ).draw( color )

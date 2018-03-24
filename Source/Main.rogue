@@ -1,5 +1,5 @@
-using Plasmacore
-using Box2D
+uses Plasmacore
+uses Box2D
 
 Display( "Main" ).screen = MainScreen
 

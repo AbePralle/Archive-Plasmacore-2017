@@ -12,7 +12,7 @@ class Line( a:XY, b:XY ) [compound]
     method direction->XY
       return (b - a)
 
-$if (not "Console")
+$if (not target("Console"))
     method draw( color:Color, thickness=1:Real64 )->this
       if (thickness == 1)
         Display.draw( this, Colors(color) )

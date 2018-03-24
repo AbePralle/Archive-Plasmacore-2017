@@ -289,7 +289,7 @@ class XY( x:Real64, y:Real64 ) [compound]
     method to_power_of_two->XY
       return XY( x.to_power_of_two, y.to_power_of_two )
 
-$if (not "Console")
+$if (not target("Console"))
     method transform( m:Matrix )->XY
       return m * this
 $endIf

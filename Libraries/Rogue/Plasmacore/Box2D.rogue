@@ -1,5 +1,5 @@
 module Box2D
-using  Plasmacore
+uses  Plasmacore
 
 class World
   DEPENDENCIES

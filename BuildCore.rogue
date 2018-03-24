@@ -11,7 +11,7 @@
 #$ LINK             = -lpng -ljpeg -lfreetype
 
 $include "Plasmacore"
-using Plasmacore
+uses Plasmacore
 
 on( "padfont",  ()=>PadFont() )
 on( "trimfont", ()=>TrimFont() )

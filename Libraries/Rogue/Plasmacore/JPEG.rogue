@@ -2,7 +2,7 @@ module Plasmacore
 
 class JPEGDecoder
   DEPENDENCIES
-    $if (not "Linux") nativeHeader #include <setjmp.h>
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
     nativeHeader #include "jpeglib.h"
 
     nativeCode
@@ -115,7 +115,7 @@ endClass
 
 class JPEGEncoder
   DEPENDENCIES
-    $if (not "Linux") nativeHeader #include <setjmp.h>
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
     nativeHeader #include "jpeglib.h"
 
     nativeCode
@@ -201,10 +201,13 @@ endClass
 
 class JPEGErrorHandler [compound]
   PROPERTIES
-$if "Linux" or "Console"
+$if target("Linux") or target("Console")
     native "struct jpeg_error_mgr jpeg_error_manager;"
     native "jmp_buf               on_error;"
 $endIf
+  METHODS
+    method operator== (other: JPEGErrorHandler)->Logical
+      return false
 endClass
 
 
