@@ -1,6 +1,6 @@
 #$ ROGUEC(macOS)    = Programs/macOS/roguec
 #$ ROGUEC(Linux)    = roguec
-#$ ROGUEC_OPTIONS   = --libraries=Libraries/Rogue
+#$ ROGUEC_ARGS      = --libraries=Libraries/Rogue
 
 #$ LIBRARIES(macOS) = sox(install:"sox --with-libvorbis") libpng libjpeg(header:jpeglib.h)
 #$ LIBRARIES(macOS) = freetype(header:"ft2build.h")
