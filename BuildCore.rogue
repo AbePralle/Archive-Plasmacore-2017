@@ -7,7 +7,7 @@
 
 #$ LIBRARIES(Linux) = libsdl2-dev libsdl2-mixer-dev
 #$ LIBRARIES(Linux) = libfreetype6-dev( header:ft2build.h library:libfreetype.a )
-#$ LIBRARIES(Linux) = libpng12-dev libjpeg-dev
+#$ LIBRARIES(Linux) = libpng-dev libjpeg-dev
 #$ LINK             = -lpng -ljpeg -lfreetype
 
 $include "Plasmacore"
