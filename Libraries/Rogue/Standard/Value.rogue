@@ -85,6 +85,21 @@ class Value
     method cloned->Value
       return this
 
+    method apply( fn:Function(Value)->Value )->Value
+      # Applies the given function to this value and all contained values,
+      # rebuilding the value node hierarchy as it goes.
+      #
+      # Example:
+      #   # Print out all strings in a Value hierarchy
+      #   local fn = function( value:Value )->Value
+      #     if (value.is_string) println value
+      #     return value
+      #   endFunction
+      #   some_value.apply( fn )
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
     method contains( table_key_or_list_value:String )->Logical
       return false
 
@@ -504,7 +519,7 @@ class Value
         return this
       endIf
 
-$if (SCRIPT_HELPERS)
+$if defined(SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       throw Error("This Value is not indexable")
 $endIf
@@ -579,8 +594,9 @@ class Real64Value( value:Real64 ) : Value
       return true
 
     method operator==( other:Value )->Logical
-      if (other.is_number) return (value == other->Real64)
-      else                 return false
+      if (other.is_number)  return (value == other->Real64)
+      if (other.is_logical) return ((value != 0) == other->Logical)
+      else                  return false
 
     method operator<( other:Value )->Logical
       if (other.is_number) return (value < other->Real64)
@@ -652,7 +668,7 @@ class Real64Value( value:Real64 ) : Value
       return buffer
 endClass
 
-class Int32Value( value:Int64 ) : Value
+class Int32Value( value:Int32 ) : Value
   METHODS
     method is_number->Logical
       return true
@@ -664,6 +680,7 @@ class Int32Value( value:Int64 ) : Value
       if (other.is_int32)   return (value == other->Int32)
       if (other.is_int64)   return (value->Int64 == other->Int64)
       if (other.is_number)  return (value->Real64 == other->Real64)
+      if (other.is_logical) return (value? == other->Logical)
       else                  return false
 
     method operator<( other:Value )->Logical
@@ -671,6 +688,24 @@ class Int32Value( value:Int64 ) : Value
       if (other.is_int64)   return (value->Int64 < other->Int64)
       if (other.is_number)  return (value->Real64 < other->Real64)
       else                  return object_id < other.object_id
+
+    method operator==( other:Real64 )->Logical
+      return value == other
+
+    method operator==( other:Int64 )->Logical
+      return value == other
+
+    method operator==( other:Int32 )->Logical
+      return value == other
+
+    method operator<( other:Real64 )->Logical
+      return value < other
+
+    method operator<( other:Int64 )->Logical
+      return value < other
+
+    method operator<( other:Int32 )->Logical
+      return value < other
 
     method operator-()->Value
       return Int32Value( -value )
@@ -704,6 +739,36 @@ class Int32Value( value:Int64 ) : Value
 
     method operator%( other:Int32 )->Value
       return Int32Value( value % other )
+
+    method operator+( other:Int64 )->Value
+      return Int64Value( value + other )
+
+    method operator-( other:Int64 )->Value
+      return Int64Value( value - other )
+
+    method operator*( other:Int64 )->Value
+      return Int64Value( value * other )
+
+    method operator/( other:Int64 )->Value
+      return Int64Value( value / other )
+
+    method operator%( other:Int64 )->Value
+      return Int64Value( value % other )
+
+    method operator+( other:Real64 )->Value
+      return Real64Value( value + other )
+
+    method operator-( other:Real64 )->Value
+      return Real64Value( value - other )
+
+    method operator*( other:Real64 )->Value
+      return Real64Value( value * other )
+
+    method operator/( other:Real64 )->Value
+      return Real64Value( value / other )
+
+    method operator%( other:Real64 )->Value
+      return Real64Value( value % other )
 
     method operator+( other:String )->Value
       return StringValue( value + other )
@@ -739,12 +804,31 @@ class Int64Value( value:Int64 ) : Value
     method operator==( other:Value )->Logical
       if (other.is_int64 or other.is_int32) return (value == other->Int64)
       if (other.is_number)                  return (value->Real64 == other->Real64)
+      if (other.is_logical)                 return (value? == other->Logical)
       else                                  return false
 
     method operator<( other:Value )->Logical
       if (other.is_int64 or other.is_int32) return (value < other->Int64)
       if (other.is_number)                  return (value->Real64 < other->Real64)
       else                                  return object_id < other.object_id
+
+    method operator==( other:Real64 )->Logical
+      return value == other
+
+    method operator==( other:Int64 )->Logical
+      return value == other
+
+    method operator==( other:Int32 )->Logical
+      return value == other
+
+    method operator<( other:Real64 )->Logical
+      return value < other
+
+    method operator<( other:Int64 )->Logical
+      return value < other
+
+    method operator<( other:Int32 )->Logical
+      return value < other
 
     method operator-()->Value
       return Int64Value( -value )
@@ -778,6 +862,36 @@ class Int64Value( value:Int64 ) : Value
 
     method operator%( other:Int64 )->Value
       return Int64Value( value % other )
+
+    method operator+( other:Int32 )->Value
+      return Int64Value( value + other )
+
+    method operator-( other:Int32 )->Value
+      return Int64Value( value - other )
+
+    method operator*( other:Int32 )->Value
+      return Int64Value( value * other )
+
+    method operator/( other:Int32 )->Value
+      return Int64Value( value / other )
+
+    method operator%( other:Int32 )->Value
+      return Int64Value( value % other )
+
+    method operator+( other:Real64 )->Value
+      return Real64Value( value + other )
+
+    method operator-( other:Real64 )->Value
+      return Real64Value( value - other )
+
+    method operator*( other:Real64 )->Value
+      return Real64Value( value * other )
+
+    method operator/( other:Real64 )->Value
+      return Real64Value( value / other )
+
+    method operator%( other:Real64 )->Value
+      return Real64Value( value % other )
 
     method operator+( other:String )->Value
       return StringValue( value + other )
@@ -947,6 +1061,22 @@ class ValueList : Value
 
     method init( data )
 
+    method cloned->ValueList
+      local result = ValueList( count )
+      forEach (value in this)
+        if (value) result.add( value.cloned )
+      endForEach
+      return result
+
+    method apply( fn:Function(Value)->Value )->Value
+      forEach (i of data)
+        data[i] = data[i].apply( fn )
+      endForEach
+
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       local result = ValueList( Value[](count) )
       result.add( (forEach in data).decode_indexed(id_table) )
@@ -955,13 +1085,6 @@ class ValueList : Value
     method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       local result = ValueList( Value[](count) )
       result.add( (forEach in data).encode_indexed(id_table_builder) )
-      return result
-
-    method cloned->ValueList
-      local result = ValueList( count )
-      forEach (value in this)
-        if (value) result.add( value.cloned )
-      endForEach
       return result
 
     method add( value:Value )->this
@@ -1152,7 +1275,7 @@ class ValueList : Value
       buffer.print( ']' )
       return buffer
 
-$if (SCRIPT_HELPERS)
+$if defined(SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
@@ -1179,10 +1302,6 @@ class ValueTable : Value
 
     method init( data )
 
-    method clear->this
-      data.clear
-      return this
-
     method cloned->ValueTable
       local result_data = data.cloned
 
@@ -1193,6 +1312,21 @@ class ValueTable : Value
       endWhile
 
       return ValueTable( result_data )
+
+    method apply( fn:Function(Value)->Value )->Value
+      local cur = data.first_entry
+      while (cur)
+        cur.value = cur.value.apply( fn )
+        cur = cur.next_entry
+      endWhile
+
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
+    method clear->this
+      data.clear
+      return this
 
     method contains( key:String )->Logical
       return data.contains( key )
@@ -1420,7 +1554,7 @@ class ValueTable : Value
 
       return list
 
-$if (SCRIPT_HELPERS)
+$if defined(SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")

@@ -1,0 +1,22 @@
+module ParseKit
+
+class TokenType<<$ParserType>>( name:String, description:String, &is_structural, &is_special )
+  PROPERTIES
+    name          : String
+    value         : Int32
+    description   : String
+    is_structural : Logical
+
+  METHODS
+    method init( name, description=null, value=0, is_structural=false )
+      if (description is null) description = "'$'" (name)
+
+    method to->String
+      return description
+
+    method to->String( t:Token<<$ParserType>> )
+      if (t.text)   return t.text
+      if (t.number) return t.number.value->String
+      return name
+endEnum
+

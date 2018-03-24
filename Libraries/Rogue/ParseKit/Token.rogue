@@ -1,0 +1,60 @@
+module ParseKit
+
+class Token<<$ParserType>>
+  GLOBAL PROPERTIES
+    next_filepath : String
+    next_line     : Int32
+    next_column   : Int32
+
+  PROPERTIES
+    type     : Int32
+    line     : Int32
+    column   : Int32
+    number   : Real64?
+    text     : String
+    filepath : String
+
+  METHODS
+    method init
+      filepath = next_filepath
+      line = next_line
+      column = next_column
+
+    method init( type )
+      init
+
+    method init( type, number )
+
+    method init( type, text )
+
+    method describe->String
+      return Tokenizer<<$ParserType>>.token_types[type].describe
+
+    method error( message:String )->ParseError<<$ParserType>>
+      return ParseError<<$ParserType>>( message )
+
+    method name->String
+      return Tokenizer<<$ParserType>>.token_types[type].name
+
+    method set_position( other:$ThisType )->this
+      filepath = other.filepath
+      line = other.line
+      column = other.column
+      return this
+
+    method to->Int32
+      if (not number.exists) return 0
+      return number.value->Int32
+
+    method to->Int64
+      if (not number.exists) return 0
+      return number.value.integer_bits
+
+    method to->Real64
+      if (not number.exists) return 0.0
+      return number.value
+
+    method to->String
+      return Tokenizer<<$ParserType>>.token_types[type]->String( this )
+endClass
+

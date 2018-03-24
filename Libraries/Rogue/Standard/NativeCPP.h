@@ -35,7 +35,10 @@
 #endif
 
 #if defined(ROGUE_PLATFORM_WINDOWS)
+#  define NOGDI
+#  pragma warning(disable: 4297) /* unexpected throw warnings */
 #  include <windows.h>
+#  include <signal.h>
 #else
 #  include <cstdint>
 #endif
@@ -49,6 +52,44 @@
 #ifndef ROGUE_EXPORT
 #  define ROGUE_EXPORT extern
 #endif
+
+//-----------------------------------------------------------------------------
+//  Multithreading
+//-----------------------------------------------------------------------------
+// When exiting Rogue code for a nontrivial amount of time (e.g., making a
+// blocking call or returning from a native event handler), put a
+// ROGUE_EXIT in your code.  When re-entering (e.g., after the blocking call
+// or on entering a native event handler which is going to call Rogue code),
+// do ROGUE_ENTER.
+// ROGUE_BLOCKING_ENTER/EXIT do the same things but with the meanings reversed
+// in case this makes it easier to think about.  An even easier way to make
+// a blocking call is to simply wrap it in ROGUE_BLOCKING_CALL(foo(...)).
+
+#if ROGUE_GC_MODE_AUTO_MT
+
+#define ROGUE_ENTER Rogue_mtgc_enter()
+#define ROGUE_EXIT  Rogue_mtgc_exit()
+
+inline void Rogue_mtgc_enter (void);
+inline void Rogue_mtgc_exit (void);
+
+template<typename RT> RT Rogue_mtgc_reenter (RT expr);
+
+#define ROGUE_BLOCKING_CALL(__x) (ROGUE_EXIT, Rogue_mtgc_reenter((__x)))
+#define ROGUE_BLOCKING_VOID_CALL(__x) do {ROGUE_EXIT; __x; ROGUE_ENTER;}while(false)
+
+#else
+
+#define ROGUE_ENTER
+#define ROGUE_EXIT
+
+#define ROGUE_BLOCKING_CALL(__x) __x
+#define ROGUE_BLOCKING_VOID_CALL(__x)
+
+#endif
+
+#define ROGUE_BLOCKING_ENTER ROGUE_EXIT
+#define ROGUE_BLOCKING_EXIT  ROGUE_ENTER
 
 //-----------------------------------------------------------------------------
 //  Garbage Collection
@@ -89,6 +130,10 @@ extern void Rogue_configure_gc();
 
 #if ROGUE_GC_MODE_BOEHM
   #define GC_NAME_CONFLICT
+  #if ROGUE_THREAD_MODE
+    // Assume GC built for the right thread mode!
+    #define GC_THREADS 1
+  #endif
   #include "gc.h"
   #include "gc_cpp.h"
   #include "gc_allocator.h"
@@ -116,7 +161,7 @@ extern void Rogue_configure_gc();
   #define ROGUE_XDECREF(_o_) Rogue_Boehm_DecRef(_o_)
 #endif
 
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_ANY
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
   #undef ROGUE_DEF_LOCAL_REF
@@ -272,11 +317,7 @@ T rogue_ptr (T p)
 //  Threading
 //-----------------------------------------------------------------------------
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
-
-#include <pthread.h>
-
-#define ROGUE_THREAD_LOCAL thread_local
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_NONE
 
 #if ROGUE_GC_MODE_BOEHM
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last) GC_add_roots((void*)&(__first), (void*)((&(__last))+1));
@@ -285,6 +326,15 @@ T rogue_ptr (T p)
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last)
   #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
 #endif
+
+#endif
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include <pthread.h>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
 
 static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
 {
@@ -315,6 +365,35 @@ public:
 #define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
 #define ROGUE_SYNC_OBJECT_EXIT
 
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <thread>
+#include <mutex>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
+
+class RogueUnlocker
+{
+  std::recursive_mutex & mutex;
+public:
+  RogueUnlocker(std::recursive_mutex & mutex)
+  : mutex(mutex)
+  {
+    mutex.lock();
+  }
+  ~RogueUnlocker (void)
+  {
+    mutex.unlock();
+  }
+};
+
+#define ROGUE_SYNC_OBJECT_TYPE std::recursive_mutex
+#define ROGUE_SYNC_OBJECT_INIT
+#define ROGUE_SYNC_OBJECT_CLEANUP
+#define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_EXIT
+
 #else
 
 #define ROGUE_SYNC_OBJECT_TYPE
@@ -332,6 +411,15 @@ public:
 //-----------------------------------------------------------------------------
 //  Basics (Primitive types, macros, etc.)
 //-----------------------------------------------------------------------------
+#include <limits>
+#define ROGUE_R32_INFINITY       std::numeric_limits<RogueReal32>::infinity()
+#define ROGUE_R32_NEG_INFINITY (-std::numeric_limits<RogueReal32>::infinity())
+#define ROGUE_R32_NAN            std::numeric_limits<RogueReal32>::quiet_NaN()
+
+#define ROGUE_R64_INFINITY       std::numeric_limits<RogueReal64>::infinity()
+#define ROGUE_R64_NEG_INFINITY (-std::numeric_limits<RogueReal64>::infinity())
+#define ROGUE_R64_NAN            std::numeric_limits<RogueReal64>::quiet_NaN()
+
 #if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal64;
   typedef float            RogueReal32;
@@ -442,7 +530,11 @@ struct RogueType
   const int*   property_type_indices;
   const int*   property_offsets;
 
+#if (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS) || (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP)
+  std::atomic<RogueObject*> _singleton;
+#else
   RogueObject* _singleton;
+#endif
   const void** methods; // first function pointer in Rogue_dynamic_method_table
   int          method_count;
 
@@ -544,6 +636,13 @@ RogueString*   RogueString_validate( RogueString* THIS );
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
+#if defined(__clang__)
+#define ROGUE_EMPTY_ARRAY
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define ROGUE_EMPTY_ARRAY 0
+#elif defined(ROGUE_PLATFORM_WINDOWS)
+#define ROGUE_EMPTY_ARRAY /* Okay for MSVC++ */
+#endif
 struct RogueArray : RogueObject
 {
   int  count;
@@ -565,14 +664,14 @@ struct RogueArray : RogueObject
 #else
   union
   {
-    RogueObject*   as_objects[];
-    RogueByte      as_logicals[];
-    RogueByte      as_bytes[];
-    RogueCharacter as_characters[];
-    RogueInt32     as_int32s[];
-    RogueInt64     as_int64s[];
-    RogueReal32    as_real32s[];
-    RogueReal64    as_real64s[];
+    RogueObject*   as_objects[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_logicals[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_bytes[ROGUE_EMPTY_ARRAY];
+    RogueCharacter as_characters[ROGUE_EMPTY_ARRAY];
+    RogueInt32     as_int32s[ROGUE_EMPTY_ARRAY];
+    RogueInt64     as_int64s[ROGUE_EMPTY_ARRAY];
+    RogueReal32    as_real32s[ROGUE_EMPTY_ARRAY];
+    RogueReal64    as_real64s[ROGUE_EMPTY_ARRAY];
   };
 #endif
 };
@@ -610,6 +709,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 
 // Small allocation limit is 256 bytes - afterwards objects are allocated
 // from the system.
+// Set to -1 to disable the small object allocator.
 #ifndef ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
@@ -652,6 +752,7 @@ void*        RogueAllocator_allocate( int size );
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
+void         RogueAllocator_free_all();
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern int                Rogue_allocator_count;
@@ -676,7 +777,6 @@ extern RogueString*       Rogue_literal_strings[];
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
-extern int                Rogue_allocation_bytes_until_gc;
 extern bool               Rogue_gc_logging;
 extern int                Rogue_gc_threshold;
 extern bool               Rogue_gc_requested;
@@ -729,8 +829,8 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
 #define ROGUE_END_TRY \
   }
 
-#define ROGUE_THROW(_ErrorType,_error_object) \
-  throw (_ErrorType*)_error_object
+#define ROGUE_THROW(_error_object) \
+  throw _error_object
 
 #define ROGUE_CATCH(_ErrorType,local_error_object) \
   } \
@@ -745,5 +845,7 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
 
 extern void Rogue_terminate_handler ();
 
+template <class T>
+void Rogue_ignore_unused(T&) {}
 
 //=============================================================================

@@ -1,0 +1,61 @@
+module ParseKit
+
+class Tokenize<<$ParserType>>
+  PROPERTIES
+    tokenizer : Tokenizer<<$ParserType>>
+    symbol    : String
+    next      : $ThisType
+    value     : Int32
+    fn        : Function(Tokenizer<<$ParserType>>)->Logical
+
+  METHODS
+    method init( tokenizer, symbol, value, fn=null )
+
+    method insert( other:$ThisType )->$ThisType
+      # this.symbol and other.symbol will both start with the same character
+      # Organize things so that the longer symbol 'next' is the shorter symbol
+      # Returns the new head of the list
+      if (other.symbol.count >= symbol.count)
+        other.next = this
+        return other
+      elseIf (this.next)
+        this.next = this.next.insert( other )
+      else
+        this.next = other
+      endIf
+
+    method call->Logical
+      local cur = this
+      while (cur)
+        if (cur.fn)
+          if (cur.fn(tokenizer)) return true
+        else
+          if (cur.tokenize) return true
+        endIf
+        cur = cur.next
+      endWhile
+      return false
+
+    method tokenize->Logical
+      if (not tokenizer.consume(symbol)) return false
+      tokenizer.tokens.add( Token<<$ParserType>>(value) )
+      return true
+
+endClass
+
+
+class TokenizeSingleCharacter<<$ParserType>> : Tokenize<<$ParserType>>
+  PROPERTIES
+    ch : Character
+
+  METHODS
+    method init( tokenizer, symbol, value, fn=null )
+      ch = symbol[0]
+
+    method tokenize->Logical
+      if (not tokenizer.consume(ch)) return false
+      tokenizer.tokens.add( Token<<$ParserType>>(value) )
+      return true
+endClass
+
+

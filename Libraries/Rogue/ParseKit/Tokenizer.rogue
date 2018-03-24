@@ -1,0 +1,251 @@
+module ParseKit
+
+class Tokenizer<<$ParserType>>
+  GLOBAL PROPERTIES
+    token_types  = TokenType<<$ParserType>>[]
+    token_lookup = StringTable<<Int32>>()
+    keywords     = StringTable<<Int32>>()
+    handlers     = Table<<Character,Tokenize<<$ParserType>>>>()
+
+  GLOBAL METHODS
+    #TODO
+    method define_token_type( name:String, description=null, &is_structural )->TokenType<<$ParserType>>
+      local token_type = TokenType( name, description, token_types.count, &=is_structural )
+      token_types.add( token_type )
+      token_lookup[ name ] = token_type
+
+      return token_type
+
+    method keyword( name:String, &is_structural )->Int32
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+      local token_type = define_token_type( name, name, &=is_structural )
+      keywords[ name ] = token_type
+      return token_type.value
+
+    method on( name:String, handler:Function(Scanner<<$ParserType>>,Token<<$ParserType>>[])->Logical )
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+    method symbol( name:String, description=null, &is_structural )
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+      local token_type = define_token_type( name, name, &=is_structural )
+      local handler : Tokenize<<$ParserType>>
+      if (name.count > 1) ensure handler( name, token_type.value )
+      else                handler = TokenizeSingleCharacter<<$ParserType>>( name, token_type.value )
+
+      if (handlers.contains(name))
+        handlers[ name ] = handlers.insert( handler )
+      else
+        handlers[ name ] = handler
+      endIf
+
+      return token_type.value
+
+
+  PROPERTIES
+    filepath       : String
+    scanner        : Scanner
+    tokens         : Token<<$ParserType>>[]
+    spaces_per_tab = 2
+    keep_eols      = true
+    keep_spaces    = false
+
+  METHODS
+    method init_object
+      if (not keywords)
+        configure_token_types
+      endIf
+
+    method init
+
+    method configure_token_types
+      ensure keywords
+      ensure symbols
+
+      forEach (p in TokenType<<$ParserType>>.values)
+        local type = TokenType<<$ParserType>>( p )
+        local name = type.name.to_uppercase
+        if (name.begins_with("KEYWORD_"))
+          keywords[ type.text ] = type
+        elseIf (name.begins_with("SYMBOL_"))
+          local first_ch = type.text[ 0 ]
+          local list = symbols[ first_ch ]
+          if (not list) symbols[ first_ch ] = ensure list
+          if (list.add(type).count > 1) list.sort( (a,b)=>(a.text.count>=b.text.count) )
+        endIf
+      endForEach
+
+    method consume( ch:Character )->Logical [macro]
+      this.scanner.consume( ch )
+
+    method consume( text:String )->Logical [macro]
+      this.scanner.consume( text )
+
+    method consume_eols->Logical
+      local found_any = false
+      while (consume('\n')) found_any = true
+      return found_any
+
+    method consume_spaces->Logical
+      local found_any = false
+      while (consume(' ')) found_any = true
+      return found_any
+
+    method consume_whitespace->Logical
+      local found_any = false
+      while ((not keep_spaces and consume_spaces) or (not keep_eols and consume_eols)) found_any = true
+      return true
+
+    method is_id_start( ch:Character )->Logical
+      return (ch.is_letter or ch == '_')
+
+    method is_id_continuation( ch:Character )->Logical
+      return (ch.is_letter or ch == '_' or ch.is_number)
+
+    method peek->Character [macro]
+      this.scanner.peek
+
+    method read->Character [macro]
+      this.scanner.read
+
+    method tokenize( filepath )->Token<<$ParserType>>[]
+      scanner = Scanner( File(filepath), &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:String )->Token<<$ParserType>>[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:Character[] )->Token<<$ParserType>>[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize->Token<<$ParserType>>[]
+      tokens = Token<<$ParserType>>[]
+      while (tokenize_another) noAction
+      tokens.add( Token<<$ParserType>>(TokenType<<$ParserType>>.EOL) )
+      return tokens
+
+    method tokenize_another->Logical
+      Token<<$ParserType>>.next_filepath = filepath
+      Token<<$ParserType>>.next_line = scanner.line
+      Token<<$ParserType>>.next_column = scanner.column
+
+      consume_whitespace
+      if (not scanner.has_another) return false
+
+      if (consume('\n')) tokens.add( Token<<$ParserType>>(TokenType<<$ParserType>>.EOL) ); return true
+
+      if (tokenize_comment)    return true
+      if (tokenize_number)     return true
+      if (tokenize_symbol)     return true
+      if (tokenize_identifier) return true
+
+      throw ParseError<<$ParserType>>( filepath, scanner.line, "Syntax error: unexpected '$'." (peek) )
+
+    method tokenize_comment->Logical
+      local text = scan_comment
+      if (not text) return false
+
+      if (tokens.count and tokens.last.type == TokenType<<$ParserType>>.EOL)
+        if (not tokens.last.text) tokens.last.text = text
+        else                      tokens.last.text += text
+      endIf
+      return true
+
+    method tokenize_identifier->Logical
+      local text = scan_identifier
+      if (not text) return false
+
+      local entry = keywords.find( text )
+      if (entry)
+        if (entry.value.is_special)
+          tokenize_special_keyword( entry.value )
+        else
+          tokens.add( Token<<$ParserType>>(entry.value) )
+        endIf
+      else
+        tokens.add( Token<<$ParserType>>(TokenType<<$ParserType>>.IDENTIFIER, text) )
+      endIf
+
+      return true
+
+    method tokenize_number->Logical
+      if (not peek.is_number) return false
+
+      local base = 10
+      if (consume("0b"))     base = 2
+      if (consume("0c"))     base = 8
+      elseIf (consume("0x")) base = 16
+
+      local n = scan_int64( base )
+      #if (base == 10)
+      if (n >= Int32.minimum and n <= Int32.maximum)
+        tokens.add( Token<<$ParserType>>(TokenType<<$ParserType>>.LITERAL_INT32,n) )
+      else
+        tokens.add( Token<<$ParserType>>(TokenType<<$ParserType>>.LITERAL_INT64,n.real_bits) )
+      endIf
+
+      return true
+
+    method tokenize_special_keyword( type:TokenType<<$ParserType>> )
+      tokens.add( Token<<$ParserType>>(type) )
+
+    method tokenize_symbol->Logical
+      local candidates = symbols[ peek ]
+      if (not candidates) return false
+
+      # Candidates are ordered from most characters to least - the first one to fully match is the best choice
+      forEach (candidate in candidates)
+        if (scanner.consume(candidate.text))
+          tokens.add( Token<<$ParserType>>(candidate) )
+          return true
+        endIf
+      endForEach
+
+      return false
+
+    method scan_comment->String
+      if (not consume('#')) return null
+
+      use buffer = StringBuilder.pool
+        if (consume('{'))
+          # Multi-line comment
+          while (scanner.has_another and not consume("}#")) buffer.print( read )
+        else
+          # Single-line comment
+          while (scanner.has_another and not peek == '\n')
+            buffer.print( read )
+          endWhile
+        endIf
+        return buffer->String
+      endUse
+
+    method scan_identifier->String
+      local ch = peek
+      if (not is_id_start(ch)) return null
+
+      use builder=StringBuilder.pool
+        builder.print( read )
+        ch = peek
+        while (is_id_continuation(ch))
+          builder.print( read )
+          ch = peek
+        endWhile
+        return builder->String
+      endUse
+
+    method scan_int64( base:Int32 )->Int64
+      local result : Int64
+      while (peek.is_number(base))
+        result = result * base + read.to_number
+      endWhile
+      return result
+
+
+endClass
+

@@ -68,6 +68,7 @@ class Plasmacore
   var listeners_by_id = [Int:PlasmacoreMessageListener]()
   var reply_listeners = [Int:PlasmacoreMessageListener]()
   var resources = [Int:AnyObject]()
+  var next_resource_id = 1
 
   var update_timer : Timer?
 
@@ -174,6 +175,14 @@ class Plasmacore
     return self
   }
 
+  func addResource( resource:AnyObject? )->Int
+  {
+    let result = next_resource_id
+    next_resource_id += 1
+    resources[ result ] = resource
+    return result
+  }
+
   func getResourceID( _ resource:AnyObject? )->Int
   {
     guard let resource = resource else { return 0 }
@@ -183,6 +192,12 @@ class Plasmacore
       if (value === resource) { return key }
     }
     return 0
+  }
+
+  @discardableResult
+  func removeResource( id:Int )->AnyObject?
+  {
+    return resources[ id ]
   }
 
   @discardableResult

@@ -26,7 +26,6 @@
 #  include <sys/stat.h>
 #  include <netdb.h>
 #  include <errno.h>
-#  include <pthread.h>
 #endif
 
 #if defined(ANDROID)
@@ -57,9 +56,10 @@
 //-----------------------------------------------------------------------------
 bool               Rogue_gc_logging   = false;
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
+int                Rogue_gc_count     = 0; // Purely informational
 bool               Rogue_gc_requested = false;
+bool               Rogue_gc_active    = false; // Are we collecting right now?
 RogueLogical       Rogue_configured = 0;
-int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueCallbackInfo  Rogue_on_gc_begin;
@@ -70,6 +70,514 @@ ROGUE_THREAD_LOCAL RogueDebugTrace* Rogue_call_stack = 0;
 
 struct RogueWeakReference;
 RogueWeakReference* Rogue_weak_references = 0;
+
+//-----------------------------------------------------------------------------
+//  Multithreading
+//-----------------------------------------------------------------------------
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#define ROGUE_MUTEX_LOCK(_M) pthread_mutex_lock(&(_M))
+#define ROGUE_MUTEX_UNLOCK(_M) pthread_mutex_unlock(&(_M))
+#define ROGUE_MUTEX_DEF(_N) pthread_mutex_t _N = PTHREAD_MUTEX_INITIALIZER
+
+#define ROGUE_COND_STARTWAIT(_V,_M) ROGUE_MUTEX_LOCK(_M);
+#define ROGUE_COND_DOWAIT(_V,_M,_C) while (_C) pthread_cond_wait(&(_V), &(_M));
+#define ROGUE_COND_ENDWAIT(_V,_M) ROGUE_MUTEX_UNLOCK(_M);
+#define ROGUE_COND_WAIT(_V,_M,_C) \
+  ROGUE_COND_STARTWAIT(_V,_M); \
+  ROGUE_COND_DOWAIT(_V,_M,_C); \
+  ROGUE_COND_ENDWAIT(_V,_M);
+#define ROGUE_COND_DEF(_N) pthread_cond_t _N = PTHREAD_COND_INITIALIZER
+#define ROGUE_COND_NOTIFY_ONE(_V,_M,_C)    \
+  ROGUE_MUTEX_LOCK(_M);                    \
+  _C ;                                     \
+  pthread_cond_signal(&(_V));              \
+  ROGUE_MUTEX_UNLOCK(_M);
+#define ROGUE_COND_NOTIFY_ALL(_V,_M,_C)    \
+  ROGUE_MUTEX_LOCK(_M);                    \
+  _C ;                                     \
+  pthread_cond_broadcast(&(_V));           \
+  ROGUE_MUTEX_UNLOCK(_M);
+
+#define ROGUE_THREAD_DEF(_N) pthread_t _N
+#define ROGUE_THREAD_JOIN(_T) pthread_join(_T, NULL)
+#define ROGUE_THREAD_START(_T, _F) pthread_create(&(_T), NULL, _F, NULL)
+
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <exception>
+#include <condition_variable>
+
+#define ROGUE_MUTEX_LOCK(_M) _M.lock()
+#define ROGUE_MUTEX_UNLOCK(_M) _M.unlock()
+#define ROGUE_MUTEX_DEF(_N) std::mutex _N
+
+#define ROGUE_COND_STARTWAIT(_V,_M) { std::unique_lock<std::mutex> LK(_M);
+#define ROGUE_COND_DOWAIT(_V,_M,_C) while (_C) (_V).wait(LK);
+#define ROGUE_COND_ENDWAIT(_V,_M) }
+#define ROGUE_COND_WAIT(_V,_M,_C) \
+  ROGUE_COND_STARTWAIT(_V,_M); \
+  ROGUE_COND_DOWAIT(_V,_M,_C); \
+  ROGUE_COND_ENDWAIT(_V,_M);
+#define ROGUE_COND_DEF(_N) std::condition_variable _N
+#define ROGUE_COND_NOTIFY_ONE(_V,_M,_C) {  \
+  std::unique_lock<std::mutex> LK2(_M);    \
+  _C ;                                     \
+  (_V).notify_one(); }
+#define ROGUE_COND_NOTIFY_ALL(_V,_M,_C) {  \
+  std::unique_lock<std::mutex> LK2(_M);    \
+  _C ;                                     \
+  (_V).notify_all(); }
+
+#define ROGUE_THREAD_DEF(_N) std::thread _N
+#define ROGUE_THREAD_JOIN(_T) (_T).join()
+#define ROGUE_THREAD_START(_T, _F) (_T = std::thread([] () {_F(NULL);}),0)
+
+#endif
+
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_NONE
+
+// Thread mutex locks around creation and destruction of threads
+static ROGUE_MUTEX_DEF(Rogue_mt_thread_mutex);
+static int Rogue_mt_tc = 0; // Thread count.  Always set under above lock.
+static std::atomic_bool Rogue_mt_terminating(false); // True when terminating.
+
+static void Rogue_thread_register ()
+{
+  ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+  int n = (int)Rogue_mt_tc;
+#endif
+  ++Rogue_mt_tc;
+  ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+  char name[64];
+  sprintf(name, "Thread-%i", n); // Nice names are good for valgrind
+
+#if ROGUE_PLATFORM_MACOS
+  pthread_setname_np(name);
+#elif __linux__
+  pthread_setname_np(pthread_self(), name);
+#endif
+// It should be possible to get thread names working on lots of other
+// platforms too.  The functions just vary a bit.
+#endif
+}
+
+static void Rogue_thread_unregister ()
+{
+  ROGUE_EXIT;
+  ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
+  ROGUE_ENTER;
+  --Rogue_mt_tc;
+  ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+}
+
+
+#define ROGUE_THREADS_WAIT_FOR_ALL Rogue_threads_wait_for_all();
+
+void Rogue_threads_wait_for_all ()
+{
+  Rogue_mt_terminating = true;
+  ROGUE_EXIT;
+  int wait = 2; // Initial Xms
+  int wait_step = 1;
+  while (true)
+  {
+    ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
+    if (Rogue_mt_tc <= 1) // Shouldn't ever really be less than 1
+    {
+      ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+      break;
+    }
+    ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+    usleep(1000 * wait);
+    wait_step++;
+    if (!(wait_step % 15) && (wait < 500)) wait *= 2; // Max backoff ~500ms
+  }
+  ROGUE_ENTER;
+}
+
+#else
+
+#define ROGUE_THREADS_WAIT_FOR_ALL /* no-op if there's only one thread! */
+
+static void Rogue_thread_register ()
+{
+}
+static void Rogue_thread_unregister ()
+{
+}
+
+#endif
+
+// Singleton handling
+#if ROGUE_THREAD_MODE
+#define ROGUE_GET_SINGLETON(_S) (_S)->_singleton.load()
+#define ROGUE_SET_SINGLETON(_S,_V) (_S)->_singleton.store(_V);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+pthread_mutex_t Rogue_thread_singleton_lock;
+#define ROGUE_SINGLETON_LOCK ROGUE_MUTEX_LOCK(Rogue_thread_singleton_lock);
+#define ROGUE_SINGLETON_UNLOCK ROGUE_MUTEX_UNLOCK(Rogue_thread_singleton_lock);
+#else
+std::recursive_mutex Rogue_thread_singleton_lock;
+#define ROGUE_SINGLETON_LOCK Rogue_thread_singleton_lock.lock();
+#define ROGUE_SINGLETON_UNLOCK Rogue_thread_singleton_lock.unlock();
+#endif
+#else
+#define ROGUE_GET_SINGLETON(_S) (_S)->_singleton
+#define ROGUE_SET_SINGLETON(_S,_V) (_S)->_singleton = _V;
+#define ROGUE_SINGLETON_LOCK
+#define ROGUE_SINGLETON_UNLOCK
+#endif
+
+//-----------------------------------------------------------------------------
+//  GC
+//-----------------------------------------------------------------------------
+#if ROGUE_GC_MODE_AUTO_MT
+// See the Rogue MT GC diagram for an explanation of some of this.
+
+#define ROGUE_GC_VAR static volatile int
+// (Curiously, volatile seems to help performance slightly.)
+
+static thread_local bool Rogue_mtgc_is_gc_thread = false;
+
+#define ROGUE_MTGC_BARRIER asm volatile("" : : : "memory");
+
+// Atomic LL insertion
+#define ROGUE_LINKED_LIST_INSERT(__OLD,__NEW,__NEW_NEXT)            \
+  for(;;) {                                                         \
+    auto tmp = __OLD;                                               \
+    __NEW_NEXT = tmp;                                               \
+    if (__sync_bool_compare_and_swap(&(__OLD), tmp, __NEW)) break;  \
+  }
+
+// We assume malloc is safe, but the SOA needs safety if it's being used.
+#if ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT >= 0
+static ROGUE_MUTEX_DEF(Rogue_mtgc_soa_mutex);
+#define ROGUE_GC_SOA_LOCK    ROGUE_MUTEX_LOCK(Rogue_mtgc_soa_mutex);
+#define ROGUE_GC_SOA_UNLOCK  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_soa_mutex);
+#else
+#define ROGUE_GC_SOA_LOCK
+#define ROGUE_GC_SOA_UNLOCK
+#endif
+
+static inline void Rogue_collect_garbage_real ();
+void Rogue_collect_garbage_real_noinline ()
+{
+  Rogue_collect_garbage_real();
+}
+
+#if ROGUE_THREAD_MODE
+#if ROGUE_THREAD_MODE_PTHREADS
+#elif ROGUE_THREAD_MODE_CPP
+#else
+#error Currently, only --threads=pthreads and --threads=cpp are supported with --gc=auto-mt
+#endif
+#endif
+
+// This is how unlikely() works in the Linux kernel
+#define ROGUE_UNLIKELY(_X) __builtin_expect(!!(_X), 0)
+
+#define ROGUE_GC_CHECK if (ROGUE_UNLIKELY(Rogue_mtgc_w) \
+  && !ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread))          \
+  Rogue_mtgc_W2_W3_W4(); // W1
+
+ ROGUE_MUTEX_DEF(Rogue_mtgc_w_mutex);
+static ROGUE_MUTEX_DEF(Rogue_mtgc_s_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_w_cond);
+static ROGUE_COND_DEF(Rogue_mtgc_s_cond);
+
+ROGUE_GC_VAR Rogue_mtgc_w = 0;
+ROGUE_GC_VAR Rogue_mtgc_s = 0;
+
+// Only one worker can be "running" (waiting for) the GC at a time.
+// To run, set r = 1, and wait for GC to set it to 0.  If r is already
+// 1, just wait.
+static ROGUE_MUTEX_DEF(Rogue_mtgc_r_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_r_cond);
+ROGUE_GC_VAR Rogue_mtgc_r = 0;
+
+static ROGUE_MUTEX_DEF(Rogue_mtgc_g_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_g_cond);
+ROGUE_GC_VAR Rogue_mtgc_g = 0; // Should GC
+
+static int Rogue_mtgc_should_quit = 0; // 0:normal 1:should-quit 2:has-quit
+
+static ROGUE_THREAD_DEF(Rogue_mtgc_thread);
+
+static void Rogue_mtgc_W2_W3_W4 (void);
+static inline void Rogue_mtgc_W3_W4 (void);
+
+inline void Rogue_mtgc_B1 ()
+{
+  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
+}
+
+static inline void Rogue_mtgc_B2_etc ()
+{
+  Rogue_mtgc_W3_W4();
+  // We can probably just do GC_CHECK here rather than this more expensive
+  // locking version.
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
+  auto w = Rogue_mtgc_w;
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
+  if (ROGUE_UNLIKELY(w)) Rogue_mtgc_W2_W3_W4(); // W1
+}
+
+static inline void Rogue_mtgc_W3_W4 ()
+{
+  // W3
+  ROGUE_COND_WAIT(Rogue_mtgc_w_cond, Rogue_mtgc_w_mutex, Rogue_mtgc_w != 0);
+
+  // W4
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_s_mutex);
+  --Rogue_mtgc_s;
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_s_mutex);
+}
+
+static void Rogue_mtgc_W2_W3_W4 ()
+{
+  // W2
+  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
+  Rogue_mtgc_W3_W4();
+}
+
+
+static thread_local int Rogue_mtgc_entered = 1;
+
+inline void Rogue_mtgc_enter()
+{
+  if (ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread)) return;
+  if (ROGUE_UNLIKELY(Rogue_mtgc_entered))
+#ifdef ROGUE_MTGC_DEBUG
+  {
+    printf("ALREADY ENTERED\n");
+    exit(1);
+  }
+#else
+  {
+    ++Rogue_mtgc_entered;
+    return;
+  }
+#endif
+
+  Rogue_mtgc_entered = 1;
+  Rogue_mtgc_B2_etc();
+}
+
+inline void Rogue_mtgc_exit()
+{
+  if (ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread)) return;
+  if (ROGUE_UNLIKELY(Rogue_mtgc_entered <= 0))
+  {
+    printf("Unabalanced Rogue enter/exit\n");
+    exit(1);
+  }
+
+  --Rogue_mtgc_entered;
+  Rogue_mtgc_B1();
+}
+
+static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
+{
+  // M1
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
+  Rogue_mtgc_w = 1;
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
+
+  // M2
+#if (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS) && ROGUE_MTGC_DEBUG
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_s_mutex);
+  while (Rogue_mtgc_s != Rogue_mt_tc)
+  {
+    if (Rogue_mtgc_s > Rogue_mt_tc || Rogue_mtgc_s < 0)
+    {
+      printf("INVALID VALUE OF S %i %i\n", Rogue_mtgc_s, Rogue_mt_tc);
+      exit(1);
+    }
+
+    pthread_cond_wait(&Rogue_mtgc_s_cond, &Rogue_mtgc_s_mutex);
+  }
+  // We should actually be okay holding the S lock until the
+  // very end of the function if we want, and this would prevent
+  // threads that were blocking from ever leaving B2.  But
+  // We should be okay anyway, though S may temporarily != TC.
+  //ROGUE_MUTEX_UNLOCK(Rogue_mtgc_s_mutex);
+#else
+  ROGUE_COND_STARTWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex);
+  ROGUE_COND_DOWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, Rogue_mtgc_s != Rogue_mt_tc);
+#endif
+
+#if ROGUE_MTGC_DEBUG
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
+  Rogue_mtgc_w = 2;
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
+#endif
+
+  // GC
+  // Grab the SOA lock for symmetry.  It should actually never
+  // be held by another thread since they're all in GC sleep.
+  ROGUE_GC_SOA_LOCK;
+  Rogue_collect_garbage_real();
+
+  //NOTE: It's possible (Rogue_mtgc_s != Rogue_mt_tc) here, if we gave up the S
+  //      lock, though they should quickly go back to equality.
+
+  if (quit)
+  {
+    // Run a few more times to finish up
+    Rogue_collect_garbage_real_noinline();
+    Rogue_collect_garbage_real_noinline();
+
+    // Free from the SOA
+    RogueAllocator_free_all();
+  }
+  ROGUE_GC_SOA_UNLOCK;
+
+  // M3
+  ROGUE_COND_NOTIFY_ALL(Rogue_mtgc_w_cond, Rogue_mtgc_w_mutex, Rogue_mtgc_w = 0);
+
+  // Could have done this much earlier
+  ROGUE_COND_ENDWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex);
+}
+
+static void * Rogue_mtgc_threadproc (void *)
+{
+  Rogue_mtgc_is_gc_thread = true;
+  int quit = 0;
+  while (quit == 0)
+  {
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    ROGUE_COND_DOWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex, !Rogue_mtgc_g && !Rogue_mtgc_should_quit);
+    Rogue_mtgc_g = 0;
+    quit = Rogue_mtgc_should_quit;
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+
+    ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
+
+    Rogue_mtgc_M1_M2_GC_M3(quit);
+
+    ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+
+    ROGUE_COND_NOTIFY_ALL(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex, Rogue_mtgc_r = 0);
+  }
+
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_g_mutex);
+  Rogue_mtgc_should_quit = 2;
+  Rogue_mtgc_g = 0;
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_g_mutex);
+  return NULL;
+}
+
+// Cause GC to run and wait for a GC to complete.
+void Rogue_mtgc_run_gc_and_wait ()
+{
+  bool again;
+  do
+  {
+    again = false;
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex);
+    if (Rogue_mtgc_r == 0)
+    {
+      Rogue_mtgc_r = 1;
+
+      // Signal GC to run
+      ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex, Rogue_mtgc_g = 1);
+    }
+    else
+    {
+      // If one or more simultaneous requests to run the GC came in, run it
+      // again.
+      again = (Rogue_mtgc_r == 1);
+      ++Rogue_mtgc_r;
+    }
+    ROGUE_EXIT;
+    ROGUE_COND_DOWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex, Rogue_mtgc_r != 0);
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex);
+    ROGUE_ENTER;
+  }
+  while (again);
+}
+
+static void Rogue_mtgc_quit_gc_thread ()
+{
+  //NOTE: This could probably be simplified (and the quit behavior removed
+  //      from Rogue_mtgc_M1_M2_GC_M3) since we now wait for all threads
+  //      to stop before calling this.
+  // This doesn't quite use the normal condition variable pattern, sadly.
+  ROGUE_EXIT;
+  timespec ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 1000000 * 10; // 10ms
+  while (true)
+  {
+    bool done = true;
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    if (Rogue_mtgc_should_quit != 2)
+    {
+      done = false;
+      Rogue_mtgc_g = 1;
+      Rogue_mtgc_should_quit = 1;
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+      pthread_cond_signal(&Rogue_mtgc_g_cond);
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+      Rogue_mtgc_g_cond.notify_one();
+#endif
+    }
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    if (done) break;
+    nanosleep(&ts, NULL);
+  }
+  ROGUE_THREAD_JOIN(Rogue_mtgc_thread);
+  ROGUE_ENTER;
+}
+
+void Rogue_configure_gc()
+{
+  int c = ROGUE_THREAD_START(Rogue_mtgc_thread, Rogue_mtgc_threadproc);
+  if (c != 0)
+  {
+    exit(77); //TODO: Do something better in this (hopefully) rare case.
+  }
+}
+
+// Used as part of the ROGUE_BLOCKING_CALL macro.
+template<typename RT> RT Rogue_mtgc_reenter (RT expr)
+{
+  ROGUE_ENTER;
+  return expr;
+}
+
+#include <atomic>
+
+// We do all relaxed operations on this.  It's possible this will lead to
+// something "bad", but I don't think *too* bad.  Like an extra GC.
+// And I think that'll be rare, since the reset happens when all the
+// threads are synced.  But I could be wrong.  Should probably think
+// about this harder.
+std::atomic_int Rogue_allocation_bytes_until_gc(Rogue_gc_threshold);
+#define ROGUE_GC_COUNT_BYTES(__x) Rogue_allocation_bytes_until_gc.fetch_sub(__x, std::memory_order_relaxed);
+#define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc.load(std::memory_order_relaxed) <= 0)
+#define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc.store(Rogue_gc_threshold, std::memory_order_relaxed);
+
+#else // Anything besides auto-mt
+
+#define ROGUE_GC_CHECK /* Does nothing in non-auto-mt modes */
+
+#define ROGUE_GC_SOA_LOCK
+#define ROGUE_GC_SOA_UNLOCK
+
+int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
+#define ROGUE_GC_COUNT_BYTES(__x) Rogue_allocation_bytes_until_gc -= (__x);
+#define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc <= 0)
+#define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
+
+
+#define ROGUE_MTGC_BARRIER
+#define ROGUE_LINKED_LIST_INSERT(__OLD,__NEW,__NEW_NEXT) do {__NEW_NEXT = __OLD; __OLD = __NEW;} while(false)
+
+#endif
 
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
@@ -115,11 +623,6 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
 
   RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size, element_type_index);
 
-#if ROGUE_GC_MODE_BOEHM
-  // Already zeroed.
-#else
-  memset( array->as_bytes, 0, data_size );
-#endif
   array->count = count;
   array->element_size = element_size;
   array->is_reference_array = is_reference_array;
@@ -201,19 +704,39 @@ RogueType* RogueType_retire( RogueType* THIS )
 RogueObject* RogueType_singleton( RogueType* THIS )
 {
   RogueInitFn fn;
+  RogueObject * r = ROGUE_GET_SINGLETON(THIS);
+  if (r) return r;
 
-  if (THIS->_singleton) return THIS->_singleton;
+  ROGUE_SINGLETON_LOCK;
 
-  // NOTE: _singleton must be assigned before calling init_object()
-  // so we can't just call RogueType_create_object().
-  THIS->_singleton = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
+#if ROGUE_THREAD_MODE // Very minor optimization: don't check twice if unthreaded
+  // We probably need to initialize the singleton, but now that we have the
+  // lock, we double check.
+  r = ROGUE_GET_SINGLETON(THIS);
+  if (r)
+  {
+    // Ah, someone else just initialized it.  We'll use that.
+    ROGUE_SINGLETON_UNLOCK;
+  }
+  else
+#endif
+  {
+    // Yes, we'll be the one doing the initializing.
 
-  if ((fn = THIS->init_object_fn)) THIS->_singleton = fn( THIS->_singleton );
+    // NOTE: _singleton must be assigned before calling init_object()
+    // so we can't just call RogueType_create_object().
+    r = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
 
-  if ((fn = THIS->init_fn)) return fn( THIS->_singleton );
-  else                      return THIS->_singleton;
+    if ((fn = THIS->init_object_fn)) r = fn( r );
 
-  return THIS->_singleton;
+    ROGUE_SET_SINGLETON(THIS, r);
+
+    ROGUE_SINGLETON_UNLOCK;
+
+    if ((fn = THIS->init_fn)) r = fn( THIS->_singleton );
+  }
+
+  return r;
 }
 
 //-----------------------------------------------------------------------------
@@ -707,11 +1230,13 @@ RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page 
   return result;
 }
 
+#if 0 // This is currently done statically.  Code likely to be removed.
 RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS )
 {
   if (THIS) ROGUE_DEL_BYTES( THIS );
   return 0;
 };
+#endif
 
 void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 {
@@ -725,6 +1250,7 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
   void* result = THIS->cursor;
   THIS->cursor += size;
   THIS->remaining -= size;
+  ((RogueObject*)result)->reference_count = 0;
 
   //printf( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
   return result;
@@ -734,6 +1260,7 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
+#if 0 // This is currently done statically.  Code likely to be removed.
 RogueAllocator* RogueAllocator_create()
 {
   RogueAllocator* result = (RogueAllocator*) ROGUE_NEW_BYTES( sizeof(RogueAllocator) );
@@ -753,17 +1280,30 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
   }
   return 0;
 }
+#endif
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_MT
+#if ROGUE_MTGC_DEBUG
+    ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
+    if (Rogue_mtgc_w == 2)
+    {
+      printf("ALLOC DURING GC!\n");
+      exit(1);
+    }
+    ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
+#endif
+#endif
+
+#if ROGUE_GC_MODE_AUTO_ANY
   Rogue_collect_garbage();
 #endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
-    Rogue_allocation_bytes_until_gc -= size;
+    ROGUE_GC_COUNT_BYTES(size);
     void * mem = ROGUE_NEW_BYTES(size);
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_ANY
     if (!mem)
     {
       // Try hard!
@@ -774,9 +1314,11 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
     return mem;
   }
 
+  ROGUE_GC_SOA_LOCK;
+
   size = (size > 0) ? (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK : ROGUEMM_GRANULARITY_SIZE;
 
-  Rogue_allocation_bytes_until_gc -= size;
+  ROGUE_GC_COUNT_BYTES(size);
 
   int slot;
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[(slot=(size>>ROGUEMM_GRANULARITY_BITS))]);
@@ -785,6 +1327,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   {
     //printf( "found free object\n");
     THIS->available_objects[slot] = obj->next_object;
+    ROGUE_GC_SOA_UNLOCK;
     return obj;
   }
 
@@ -794,7 +1337,11 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   if (THIS->pages )
   {
     obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, size );
-    if (obj) return obj;
+    if (obj)
+    {
+      ROGUE_GC_SOA_UNLOCK;
+      return obj;
+    }
 
     // Not enough room on allocation page.  Allocate any smaller blocks
     // we're able to and then move on to a new page.
@@ -817,7 +1364,9 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   // New page; this will work for sure.
   THIS->pages = RogueAllocationPage_create( THIS->pages );
-  return RogueAllocationPage_allocate( THIS->pages, size );
+  void * r = RogueAllocationPage_allocate( THIS->pages, size );
+  ROGUE_GC_SOA_UNLOCK;
+  return r;
 }
 
 #if ROGUE_GC_MODE_BOEHM
@@ -911,27 +1460,29 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 #else
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index )
 {
-  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
+  void * mem = RogueAllocator_allocate( THIS, size );
+  memset( mem, 0, size );
+
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*)mem);
 
   ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
   ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
-  memset( obj, 0, size );
+  obj->type = of_type;
+  obj->object_size = size;
+
+  ROGUE_MTGC_BARRIER; // Probably not necessary
 
   if (of_type->on_cleanup_fn)
   {
-    obj->next_object = THIS->objects_requiring_cleanup;
-    THIS->objects_requiring_cleanup = obj;
+    ROGUE_LINKED_LIST_INSERT(THIS->objects_requiring_cleanup, obj, obj->next_object);
   }
   else
   {
-    obj->next_object = THIS->objects;
-    THIS->objects = obj;
+    ROGUE_LINKED_LIST_INSERT(THIS->objects, obj, obj->next_object);
   }
-  obj->type = of_type;
-  obj->object_size = size;
 
   return obj;
 }
@@ -944,6 +1495,15 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
     ROGUE_GCDEBUG_STATEMENT(memset(data,0,size));
     if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
+      // When debugging GC, it can be very useful to log the object types of
+      // freed objects.  When valgrind points out access to freed memory, you
+      // can then see what it was.
+      #if 0
+      RogueObject* obj = (RogueObject*) data;
+      printf("DEL %i %p ", (int)pthread_self(), data);
+      RogueType_print_name( obj-> type );
+      printf("\n");
+      #endif
       ROGUE_DEL_BYTES( data );
     }
     else
@@ -974,6 +1534,14 @@ void RogueAllocator_free_objects( RogueAllocator* THIS )
   }
 
   THIS->objects = 0;
+}
+
+void RogueAllocator_free_all( )
+{
+  for (int i=0; i<Rogue_allocator_count; ++i)
+  {
+    RogueAllocator_free_objects( &Rogue_allocators[i] );
+  }
 }
 
 void RogueAllocator_collect_garbage( RogueAllocator* THIS )
@@ -1124,6 +1692,11 @@ void Rogue_print_stack_trace ( bool leading_newline )
   printf("\n");
 }
 
+#if defined(ROGUE_PLATFORM_WINDOWS)
+void Rogue_segfault_handler( int signal )
+{
+  printf( "Access violation\n" );
+#else
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
   if (si->si_addr < (void*)4096)
@@ -1142,6 +1715,7 @@ void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
       printf( "Unknown segfault accessing " );
     printf("%p\n", si->si_addr);
   }
+#endif
 
   Rogue_print_stack_trace( true );
 
@@ -1166,9 +1740,17 @@ void Rogue_update_weak_references_during_gc()
 
 void Rogue_configure_types()
 {
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+_rogue_init_mutex(&Rogue_thread_singleton_lock);
+#endif
+
   int i;
   const int* next_type_info = Rogue_type_info_table;
 
+#if defined(ROGUE_PLATFORM_WINDOWS)
+  // Use plain old signal() instead of sigaction()
+  signal( SIGSEGV, Rogue_segfault_handler );
+#else
   // Install seg fault handler
   struct sigaction sa;
 
@@ -1178,6 +1760,7 @@ void Rogue_configure_types()
   sa.sa_flags     = SA_SIGINFO;
 
   sigaction( SIGSEGV, &sa, NULL );
+#endif
 
   // Initialize allocators
   memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );
@@ -1300,6 +1883,8 @@ void Rogue_configure_gc()
   //GC_set_all_interior_pointers(0);
   GC_INIT();
 }
+#elif ROGUE_GC_MODE_AUTO_MT
+// Rogue_configure_gc already defined above.
 #else
 void Rogue_configure_gc()
 {
@@ -1317,30 +1902,46 @@ bool Rogue_collect_garbage( bool forced )
 
   return GC_collect_a_little();
 }
-#else
+#else // Auto or manual
+
+static inline void Rogue_collect_garbage_real(void);
+
 bool Rogue_collect_garbage( bool forced )
 {
-  int i;
+  if (!forced && !Rogue_gc_requested & !ROGUE_GC_AT_THRESHOLD) return false;
 
-  if (Rogue_allocation_bytes_until_gc > 0 && !forced && !Rogue_gc_requested) return false;
+#if ROGUE_GC_MODE_AUTO_MT
+  Rogue_mtgc_run_gc_and_wait();
+#else
+  Rogue_collect_garbage_real();
+#endif
+
+  return true;
+}
+
+static inline void Rogue_collect_garbage_real()
+{
   Rogue_gc_requested = false;
+  if (Rogue_gc_active) return;
+  Rogue_gc_active = true;
+  ++ Rogue_gc_count;
+
+//printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
+  ROGUE_GC_RESET_COUNT;
 
   Rogue_on_gc_begin.call();
 
-//printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
-  Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
-
   Rogue_trace();
 
-  for (i=0; i<Rogue_allocator_count; ++i)
+  for (int i=0; i<Rogue_allocator_count; ++i)
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
 
   Rogue_on_gc_end.call();
-
-  return true;
+  Rogue_gc_active = false;
 }
+
 #endif
 
 void Rogue_quit()
@@ -1352,20 +1953,25 @@ void Rogue_quit()
 
   RogueGlobal__call_exit_functions( (RogueClassGlobal*) ROGUE_SINGLETON(Global) );
 
+  ROGUE_THREADS_WAIT_FOR_ALL;
+
+#if ROGUE_GC_MODE_AUTO_MT
+  Rogue_mtgc_quit_gc_thread();
+#else
   // Give a few GC's to allow objects requiring clean-up to do so.
   Rogue_collect_garbage( true );
   Rogue_collect_garbage( true );
   Rogue_collect_garbage( true );
 
-  for (i=0; i<Rogue_allocator_count; ++i)
-  {
-    RogueAllocator_free_objects( &Rogue_allocators[i] );
-  }
+  RogueAllocator_free_all();
+#endif
 
   for (i=0; i<Rogue_type_count; ++i)
   {
     RogueType_retire( &Rogue_types[i] );
   }
+
+  Rogue_thread_unregister();
 }
 
 #if ROGUE_GC_MODE_BOEHM

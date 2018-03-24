@@ -55,6 +55,7 @@
 		305348CB1EDB3F8200400E0D /* b2Rope.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 305348C91EDB3F8200400E0D /* b2Rope.cpp */; };
 		305348D71EDB482600400E0D /* libBox2D.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30091DED1EDB3D68006035B8 /* libBox2D.a */; };
 		30845F791E00A33700B14D0F /* RogueProgram.mm in Sources */ = {isa = PBXBuildFile; fileRef = 30845F781E00A33700B14D0F /* RogueProgram.mm */; };
+		30E84D442011E584000DE5E8 /* Starscream.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E84D412011C4B5000DE5E8 /* Starscream.framework */; };
 		30F185091DEB5F3D002FE6D4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F185081DEB5F3D002FE6D4 /* AppDelegate.swift */; };
 		30F1850B1DEB5F3D002FE6D4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30F1850A1DEB5F3D002FE6D4 /* Assets.xcassets */; };
 		30F1850E1DEB5F3D002FE6D4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30F1850C1DEB5F3D002FE6D4 /* MainMenu.xib */; };
@@ -227,6 +228,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30E84D442011E584000DE5E8 /* Starscream.framework in Frameworks */,
 				30F185BB1DEBBEE5002FE6D4 /* AVFoundation.framework in Frameworks */,
 				30F185AC1DEB61DB002FE6D4 /* libz.tbd in Frameworks */,
 				305348D71EDB482600400E0D /* libBox2D.a in Frameworks */,

@@ -1,4 +1,4 @@
-$if ("Cython" or "Python")
+$if (target("Cython") or target("Python"))
 $define SCRIPT_HELPERS true
 $endIf
 
@@ -20,6 +20,7 @@ $include "Standard/LineReader.rogue"
 $include "Standard/List.rogue"
 $include "Standard/ListLookupTable.rogue"
 $include "Standard/Math.rogue"
+$include "Standard/NativeData.rogue"
 $include "Standard/Object.rogue"
 $include "Standard/Optional.rogue"
 $include "Standard/Primitives.rogue"
@@ -29,7 +30,6 @@ $include "Standard/Random.rogue"
 $include "Standard/Range.rogue"
 $include "Standard/Reader.rogue"
 $include "Standard/Runtime.rogue"
-$include "Standard/Scanner.rogue"
 $include "Standard/Set.rogue"
 $include "Standard/Sockets.rogue"
 $include "Standard/Sort.rogue"
@@ -39,15 +39,17 @@ $include "Standard/StringBuilder.rogue"
 $include "Standard/System.rogue"
 $include "Standard/Table.rogue"
 $include "Standard/Task.rogue"
+$include "Standard/ThreadWorker.rogue"
 $include "Standard/Timing.rogue"
 $include "Standard/Tuple.rogue"
 $include "Standard/TypeInfo.rogue"
 $include "Standard/UTF8.rogue"
 $include "Standard/Value.rogue"
 $include "Standard/WeakReference.rogue"
+$include "Standard/WebSocket.rogue"
 $include "Standard/Writer.rogue"
 
-$if (THREAD_MODE)
+$if (THREAD_MODE != "NONE")
 $include "Standard/Thread.rogue"
 $endIf
 
