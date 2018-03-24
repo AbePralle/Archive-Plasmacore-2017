@@ -1,4 +1,4 @@
-using Plasmacore
+uses Plasmacore
 
 class Canvas : Image
   PROPERTIES

@@ -1,5 +1,5 @@
 $include "../Rogue/Plasmacore"
-using Plasmacore
+uses Plasmacore
 
 $include "ImageCompiler.rogue"
 $include "DataCompiler.rogue"

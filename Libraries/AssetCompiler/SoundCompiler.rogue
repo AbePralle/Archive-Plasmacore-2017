@@ -1,4 +1,4 @@
-using Plasmacore
+uses Plasmacore
 
 routine launch_sound_compiler
   try
