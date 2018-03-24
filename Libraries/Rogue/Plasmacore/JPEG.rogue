@@ -205,6 +205,9 @@ $if "Linux" or "Console"
     native "struct jpeg_error_mgr jpeg_error_manager;"
     native "jmp_buf               on_error;"
 $endIf
+  METHODS
+    method operator== (other: JPEGErrorHandler)->Logical
+      return false
 endClass
 
 
