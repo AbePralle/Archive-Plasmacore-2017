@@ -1,0 +1,71 @@
+module ParseKit<<$ParserType>>
+
+class ScanRule
+  PROPERTIES
+    symbol     : String
+    next       : ScanRule
+    token_type : Int32
+    fn         : Function(Tokenizer)->Logical
+
+  METHODS
+    method init( symbol, token_type )
+
+    method init( symbol, fn )
+
+    method insert( other:ScanRule )->ScanRule
+      # this.symbol and other.symbol will both start with the same character
+      # Organize things so that the longer symbol 'next' is the shorter symbol
+      # Returns the new head of the list
+      if (symbol == other.symbol)
+        # Replace 'this' scan rule with 'other'
+        other.next = next
+        return other
+      elseIf (other.symbol.count >= symbol.count)
+        # Other comes before this
+        other.next = this
+        return other
+      elseIf (next)
+        next = next.insert( other )
+      else
+        next = other
+      endIf
+      return this
+
+    method call( tokenizer:Tokenizer )->Logical
+      local cur = this
+      while (cur)
+        if (cur.fn)
+          if (cur.fn(tokenizer)) return true
+        else
+          if (cur.tokenize(tokenizer)) return true
+        endIf
+        cur = cur.next
+      endWhile
+      return false
+
+    method tokenize( tokenizer:Tokenizer )->Logical
+      if (not tokenizer.consume(symbol)) return false
+      tokenizer.tokens.add( Token(token_type) )
+      return true
+
+endClass
+
+
+class ScanSingleCharacter : ScanRule
+  PROPERTIES
+    ch : Character
+
+  METHODS
+    method init( symbol, token_type )
+      ch = symbol[0]
+
+    method init( symbol, fn )
+      ch = symbol[0]
+
+    method tokenize( tokenizer:Tokenizer )->Logical
+      if (not tokenizer.consume(ch)) return false
+      tokenizer.tokens.add( Token(token_type) )
+      return true
+endClass
+
+

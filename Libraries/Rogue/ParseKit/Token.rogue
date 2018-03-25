@@ -1,6 +1,6 @@
-module ParseKit
+module ParseKit<<$ParserType>>
 
-class Token<<$ParserType>>
+class Token
   GLOBAL PROPERTIES
     next_filepath : String
     next_line     : Int32
@@ -27,14 +27,14 @@ class Token<<$ParserType>>
 
     method init( type, text )
 
-    method describe->String
-      return Tokenizer<<$ParserType>>.token_types[type].describe
+    method description->String
+      return Tokenizer.description( type )
 
-    method error( message:String )->ParseError<<$ParserType>>
-      return ParseError<<$ParserType>>( message )
+    method error( message:String )->ParseError
+      return ParseError( message )
 
-    method name->String
-      return Tokenizer<<$ParserType>>.token_types[type].name
+    method symbol->String
+      return Tokenizer.symbol( type )
 
     method set_position( other:$ThisType )->this
       filepath = other.filepath
@@ -55,6 +55,6 @@ class Token<<$ParserType>>
       return number.value
 
     method to->String
-      return Tokenizer<<$ParserType>>.token_types[type]->String( this )
+      return Tokenizer.stringify( this )
 endClass
 

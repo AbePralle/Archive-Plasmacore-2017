@@ -1,25 +1,13 @@
 module ParseKit
 
-$macro ParseRuleFn(PARSER_TYPE,BODY)
-  function( rule:ParseRule<<PARSER_TYPE>> )->Cmd<<PARSER_TYPE>>
-    BODY
-  endFunction
-$endMacro
-
-$macro TokenizeFn(PARSER_TYPE,BODY)
-  function( tokenizer:Tokenizer<<PARSER_TYPE>> )->Logical
-    BODY
-  endFunction
-$endMacro
-
-class Parser<<$ParserType>>
+class Parser
   PROPERTIES
-    reader    : TokenReader<<$ParserType>>
-    rules     = StringTable<<ParseRule<<$ParserType>>>>()
-    prev_rule : ParseRule<<$ParserType>>
+    reader    : TokenReader
+    rules     = StringTable<<ParseRule>>()
+    prev_rule : ParseRule
 
   METHODS
-    method add( rule:ParseRule<<$ParserType>> )->ParseRule<<$ParserType>>
+    method add( rule:ParseRule )->ParseRule
       rules[ rule.name ] = rule
       prev_rule = rule
       rule.parser = this as $ParserType
@@ -32,39 +20,39 @@ class Parser<<$ParserType>>
 
       return rule
 
-    method chain( rule:ParseRule<<$ParserType>> )->ParseRule<<$ParserType>>
+    method chain( rule:ParseRule )->ParseRule
       if (prev_rule) prev_rule.next = rule
       return add( rule )
 
-    method consume( token_type:TokenType<<$ParserType>> )->Logical [macro]
+    method consume( token_type:TokenType )->Logical [macro]
       this.reader.consume( token_type )
 
-    method create_rule( name:String )->ParseRule<<$ParserType>>
-      return ParseRule<<$ParserType>>(name)
+    method create_rule( name:String )->ParseRule
+      return ParseRule(name)
 
-    method create_rule( name:String, default_fn:Function(ParseRule<<$ParserType>>)->Cmd<<$ParserType>> )->ParseRule<<$ParserType>>
-      local result = ParseRule<<$ParserType>>(name)
+    method create_rule( name:String, default_fn:Function(ParseRule)->Cmd )->ParseRule
+      local result = ParseRule(name)
       result.on_default( default_fn )
       return result
 
-    method create_binary_rule( name:String )->ParseRule<<$ParserType>>
-      return BinaryParseRule<<$ParserType>>(name)
+    method create_binary_rule( name:String )->ParseRule
+      return BinaryParseRule(name)
 
-    method create_tokenizer->Tokenizer<<$ParserType>>
-      return Tokenizer<<$ParserType>>()
+    method create_tokenizer->Tokenizer
+      return Tokenizer()
 
     method has_another->Logical [macro]
       this.reader.has_another
 
-    method must_consume( token_type:TokenType<<$ParserType>> ) [macro]
+    method must_consume( token_type:TokenType ) [macro]
       this.reader.must_consume( token_type )
 
     method open( file:File )->this
-      reader = TokenReader<<$ParserType>>( create_tokenizer.tokenize(file) )
+      reader = TokenReader( create_tokenizer.tokenize(file) )
       return this
 
     method open( filename:String, source:String )->this
-      reader = TokenReader<<$ParserType>>( create_tokenizer.tokenize(filename,source) )
+      reader = TokenReader( create_tokenizer.tokenize(filename,source) )
       return this
 
     method parse( file:File )
@@ -75,21 +63,21 @@ class Parser<<$ParserType>>
       open( filename, source )
       parse( "program" )
 
-    method parse( rule_name:String )->Cmd<<$ParserType>>
+    method parse( rule_name:String )->Cmd
       local rule = rules[ rule_name ]
       if (rule)
         return rule()
       else
-        throw ParseError<<$ParserType>>( "[INTERNAL] No such parse rule: $." (rule_name) )
+        throw ParseError( "[INTERNAL] No such parse rule: $." (rule_name) )
       endIf
 
-    method peek->Token<<$ParserType>> [macro]
+    method peek->Token [macro]
       this.reader.peek
 
-    method peek( lookahead:Int32 )->Token<<$ParserType>> [macro]
+    method peek( lookahead:Int32 )->Token [macro]
       this.reader.peek( lookahead )
 
-    method read->Token<<$ParserType>> [macro]
+    method read->Token [macro]
       this.reader.read
 
 
