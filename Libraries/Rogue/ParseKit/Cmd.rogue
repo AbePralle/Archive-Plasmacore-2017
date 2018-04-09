@@ -1,17 +1,24 @@
-module ParseKit
+module ParseKit<<$Language>>
+uses $Language
 
-class Cmd<<$ParserType>>( t:Token<<$ParserType>> )
+class Cmd( t:Token )
 endClass
 
-class CmdUnary<<$ParserType>>( t, operand:Cmd ) : Cmd<<$ParserType>> [abstract]
+class CmdStatements : Cmd[]
+endClass
+
+class CmdArgs : Cmd[]
+endClass
+
+class CmdUnary( t, operand:Cmd ) : Cmd [abstract]
   METHODS
     method op->String [abstract]
 
     method to->String
-      return "($$)" (op,left)
+      return "($$)" (op,operand)
 endClass
 
-class CmdBinary<<$ParserType>>( t, left:Cmd<<$ParserType>>, right:Cmd<<$ParserType>> ) : Cmd<<$ParserType>> [abstract]
+class CmdBinary( t, left:Cmd, right:Cmd ) : Cmd [abstract]
   METHODS
     method op->String [abstract]
 

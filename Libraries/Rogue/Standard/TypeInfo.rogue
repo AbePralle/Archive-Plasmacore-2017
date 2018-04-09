@@ -45,6 +45,15 @@ class TypeInfo
     method get ( name : String ) -> TypeInfo
       local result = RuntimeTypeInfoLookup[ name ]
       if (result) return result
+      return _create_type_info( name )
+
+    method get ( name : StringBuilder ) -> TypeInfo
+      local result = RuntimeTypeInfoLookup[ name ]
+      if (result) return result
+      return _create_type_info( name->String )
+
+    method _create_type_info( name:String )->TypeInfo
+      local result : TypeInfo
 
       native @|for (int i=Rogue_type_count; --i>=0; )
               |{
@@ -88,7 +97,7 @@ class TypeInfo
       native @|if (Rogue_method_info_table[$method_index][0] >= 0)
               |{
               |  $success = 1;
-              |  $parameter_count = Rogue_method_info_table[$method_index][1];
+              |  $parameter_count  = Rogue_method_info_table[$method_index][1];
               |  $first_param_name = Rogue_method_info_table[$method_index][2];
               |  $first_param_type = Rogue_method_info_table[$method_index][3];
               |  $return_type      = Rogue_method_info_table[$method_index][4];
@@ -142,7 +151,7 @@ class TypeInfo
       return create_object as $AsType
 
     method global_property( property_name:String )->Value
-      return find_global_property( property_name )
+      return global_property( find_global_property(property_name) )
 
     method global_property( property_info:PropertyInfo )->Value
       if (not property_info) return NullValue
@@ -180,6 +189,22 @@ class TypeInfo
           return Introspector( null, native("(RogueInt64)(intptr_t)(Rogue_types[$index].global_property_pointers[$i])")->Int64,
               property_info.type )->Value
       endWhich
+
+    method global_property<<$PropertyType>>( property_name:String )->$PropertyType
+      return global_property<<$PropertyType>>( find_global_property(property_name) )
+
+    method global_property<<$PropertyType>>( property_info:PropertyInfo )->$PropertyType
+      if (not property_info)
+        local default_value : $PropertyType
+        return default_value
+      endIf
+
+      local i = property_info.index
+      if ($PropertyType isReference)
+        return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
+      else
+        return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
+      endIf
 
     method global_property_count->Int32
       # Convenience method to provide symmetric interface with per-object `property_count` methods.
@@ -368,6 +393,22 @@ class TypeInfo
       endForEach
       return r
 
+    method property<<$PropertyType>>( context:Object, property_name:String )->$PropertyType
+      return property<<$PropertyType>>( context, find_property(property_name) )
+
+    method property<<$PropertyType>>( context:Object, property_info:PropertyInfo )->$PropertyType
+      if (not property_info)
+        local default_value : $PropertyType
+        return default_value
+      endIf
+
+      local type = context.type_info
+      if ($PropertyType isReference)
+        return native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
+      else
+        return native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
+      endIf
+
     method set_global_property( property_name:String, value:Value )->this
       return set_global_property( find_global_property(property_name), value )
 
@@ -420,6 +461,36 @@ class TypeInfo
 
       return this
 
+    method set_global_property<<$PropertyType>>( property_name:String, new_value:$PropertyType )->this
+      return set_global_property<<$PropertyType>>( find_global_property(property_name), new_value )
+
+    method set_global_property<<$PropertyType>>( property_info:PropertyInfo, new_value:$PropertyType )->this
+      if (not property_info) return this
+
+      local i = property_info.index
+      if ($PropertyType isReference)
+        native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
+      else
+        native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
+      endIf
+
+      return this
+
+    method set_property<<$PropertyType>>( context:Object, property_name:String, new_value:$PropertyType )->this
+      return set_property<<$PropertyType>>( context, find_property(property_name), new_value )
+
+    method set_property<<$PropertyType>>( context:Object, property_info:PropertyInfo, new_value:$PropertyType )->this
+      if (not property_info) return this
+
+      local type = context.type_info
+      if ($PropertyType isReference)
+        native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      else
+        native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      endIf
+
+      return this
+
     method set_singleton( new_singleton:Object )->this
       if ((index < 0) or (index >= type_count)) return this
       native @|Rogue_types[$index]._singleton = $new_singleton;
@@ -437,7 +508,7 @@ class TypeInfo
 endClass
 
 
-class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
+class RuntimeTypeInfoLookup : StringTable<<TypeInfo>> [singleton];
 
 
 class PropertyInfo
@@ -528,7 +599,7 @@ class MethodInfo
       if (return_type) return signature + "->" + return_type.name
       return signature
 
-    method call( context:Object, args=null:Value )->Value
+    method call( context:Object, args:Value )->Value
       if (args is not null)
         args.insert( context->Value )
         local result = call( args )
@@ -540,6 +611,65 @@ class MethodInfo
 
     method call( args:Value )->Value
       return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+
+    method call (o:Object)
+      _check_noreturn()
+      _check_count(0)
+      native "((void (*)(RogueObject*))($this->fn_ptr))($o);"
+
+    method call<<$T1>> (o:Object,t1:$T1)
+      _check_noreturn()
+      _check_count(1)
+      native "((void (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2)
+      _check_noreturn()
+      _check_count(2)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3)
+      _check_noreturn()
+      _check_count(3)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_noreturn()
+      _check_count(4)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_noreturn()
+      _check_count(5)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+
+    method returns<<$RT>> () -> MethodCallerReturning<<$RT>>
+      _check_return<<$RT>>()
+      return MethodCallerReturning<<$RT>>(this)
+
+  METHODS  # helper methods
+    method _check_count (c : Int32)
+      if (c != parameter_count) throw Error("$ arguments passed to method taking $ arguments." (c, parameter_count))
+
+    method _check_return<<$RT>> ()
+      if (_return_type == -1)
+        throw Error("Method does not return a value; Do not specify one using '->' or 'returns<<...>>'.")
+      else
+        if ($RT isReference)
+          if (not return_type.is_subclass(<<$RT>>))
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        else
+          if (<<$RT>> is not return_type)
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        endIf
+      endIf
+
+    method _check_noreturn ()
+      if (_return_type != -1)
+        throw Error("Explicit return type required.  Use .call(...)->$." (return_type.name))
+      endIf
+
 
 
   GLOBAL METHODS
@@ -555,6 +685,114 @@ class MethodInfo
       return UndefinedValue
 endClass
 
+class DynamicCallback [aspect]
+  METHODS
+    method update_function_pointer
+      local m = DynamicCallback.find_compatible_method( context.type_info, original_signature, specializing_signature )
+      if (m?)
+        local new_ptr = m.fn_ptr
+        native @|THIS->fn_ptr = (void*) $new_ptr;
+        return
+      endIf
+
+  GLOBAL METHODS
+    method find_compatible_method( context_type:TypeInfo, original_signature:String, specializing_signature:String )->MethodInfo
+      local m = context_type.find_method( specializing_signature )
+      if (m) return m
+
+      local original_i1 = find_opening_paren( specializing_signature )
+      if (not original_i1.exists) return null
+      local specialized_i1 = find_opening_paren( specializing_signature )
+      if (not specialized_i1.exists) return null
+
+      use builder=StringBuilder.pool
+        local original_param_types = TypeInfo[]
+        local specialized_param_types = TypeInfo[]
+
+        DynamicCallback.parse_param_types( original_signature, original_i1.value+1, original_param_types, builder )
+        DynamicCallback.parse_param_types( specializing_signature, specialized_i1.value+1, specialized_param_types, builder )
+
+        if (original_param_types.count != specialized_param_types.count) return null
+
+        local base_name = specializing_signature.leftmost( specialized_i1.value )
+
+        if ((forEach in original_param_types) is null) return null
+        if ((forEach in specialized_param_types) is null) return null
+
+        forEach (original_type at i in original_param_types)
+          local specialized_type = specialized_param_types[i]
+
+          # Step specialized param types down one by one until they match the original type,
+          # checking each new variation.
+          local base_class = specialized_type.base_class
+          while (base_class and base_class.instance_of(original_type))
+            specialized_param_types[i] = base_class
+            builder.clear.print( base_name ).print( '(' )
+            forEach (cur_type at j in specialized_param_types)
+              if (j > 0) builder.print(',')
+              builder.print( cur_type )
+            endForEach
+            builder.print( ')' )
+
+            m = context_type.find_method( builder->String )
+            if (m) return m
+
+            base_class = base_class.base_class
+          endWhile
+        endForEach
+      endUse
+
+      return null
+
+    method find_opening_paren( signature:String )->Int32?
+      # Find the first open paren. Need to skip past method template specializers if present.
+      local depth =  0
+      forEach (ch at i in signature)
+        which (ch)
+          case '('
+            ++depth
+            if (depth == 1) return i
+          case '{', '[', '<'
+            ++depth
+          case ')', '}', ']', '>'
+            --depth
+        endWhich
+      endForEach
+      return null
+
+    method parse_param_types( signature:String, i1:Int32, param_types:TypeInfo[], builder:StringBuilder )
+      builder.clear
+      local depth = 1
+      forEach (ch at i in signature from i1)
+        which (ch)
+          case '(', '{', '[', '<'
+            ++depth
+            builder.print( ch )
+          case '}', ']', '>'
+            --depth
+            builder.print( ch )
+          case ')'
+            --depth
+            if (depth == 0)
+              # end of param types
+              param_types.add( TypeInfo[builder] )
+              escapeForEach
+            else
+              builder.print( ')' )
+            endIf
+          case ','
+            if (depth == 1)
+              param_types.add( TypeInfo[builder] )
+              builder.clear
+            else
+              builder.print( ',' )
+            endIf
+          others
+            builder.print( ch )
+        endWhich
+      endForEach
+endClass
+
 class NoSuchMethodError : Error
   METHODS
     method init( sig:String )
@@ -564,3 +802,48 @@ endClass
 class InstanceError : Error
 endClass
 
+class MethodCallerReturning <<$R>>
+  PROPERTIES
+    fn_ptr : IntPtr
+    parent : MethodInfo
+
+  METHODS
+    method init (parent)
+      fn_ptr = parent.fn_ptr
+
+    method call (o:Object) -> $R
+      parent._check_count(0)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*))($this->fn_ptr))($o);"
+      return r
+
+    method call<<$T1>> (o:Object,t1:$T1) -> $R
+      parent._check_count(1)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+      return r
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2) -> $R
+      parent._check_count(2)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+      return r
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3) -> $R
+      parent._check_count(3)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4) -> $R
+      parent._check_count(4)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5) -> $R
+      parent._check_count(5)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+      return r
+endClass

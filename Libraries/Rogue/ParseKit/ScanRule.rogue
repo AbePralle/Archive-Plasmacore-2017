@@ -1,16 +1,25 @@
-module ParseKit<<$ParserType>>
+module ParseKit<<$Language>>
+uses $Language
+
+$localDefine TokenizerType $join($Language,Tokenizer)
 
 class ScanRule
   PROPERTIES
-    symbol     : String
-    next       : ScanRule
-    token_type : Int32
-    fn         : Function(Tokenizer)->Logical
+    symbol              : String
+    is_single_character : Logical
+    next                : ScanRule
+    token_type          : TokenType
+    fn                  : Function(TokenizerType)
 
   METHODS
     method init( symbol, token_type )
+      configure
 
     method init( symbol, fn )
+      configure
+
+    method configure
+      is_single_character = (symbol.count == 1)
 
     method insert( other:ScanRule )->ScanRule
       # this.symbol and other.symbol will both start with the same character
@@ -31,41 +40,32 @@ class ScanRule
       endIf
       return this
 
-    method call( tokenizer:Tokenizer )->Logical
+    method call( tokenizer:TokenizerType )->Logical
+      # This set of rules is tied to the next character from the scanner so
+      # we already know that the first character matches.
       local cur = this
       while (cur)
-        if (cur.fn)
-          if (cur.fn(tokenizer)) return true
-        else
-          if (cur.tokenize(tokenizer)) return true
-        endIf
+        contingent
+          if (cur.is_single_character)
+            tokenizer.read # will be the right one for sure
+          else
+            necessary (tokenizer.consume(cur.symbol))
+          endIf
+
+        satisfied
+          if (cur.fn)
+            cur.fn( tokenizer )
+          else
+            cur.tokenize( tokenizer )
+          endIf
+          return true
+        endContingent
         cur = cur.next
       endWhile
       return false
 
-    method tokenize( tokenizer:Tokenizer )->Logical
-      if (not tokenizer.consume(symbol)) return false
+    method tokenize( tokenizer:TokenizerType )
       tokenizer.tokens.add( Token(token_type) )
-      return true
 
 endClass
-
-
-class ScanSingleCharacter : ScanRule
-  PROPERTIES
-    ch : Character
-
-  METHODS
-    method init( symbol, token_type )
-      ch = symbol[0]
-
-    method init( symbol, fn )
-      ch = symbol[0]
-
-    method tokenize( tokenizer:Tokenizer )->Logical
-      if (not tokenizer.consume(ch)) return false
-      tokenizer.tokens.add( Token(token_type) )
-      return true
-endClass
-
 

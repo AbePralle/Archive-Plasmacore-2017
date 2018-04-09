@@ -1,8 +1,9 @@
 OPT_CFLAGS += -O3
 OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
 
-# 150 MB by default
-RUNTIME_MEMORY = 150000000
+# 160 MiB by default (asm.js wants a multiple of 16 MiB)
+RUNTIME_MEMORY = 167772160
+RUNTIME_MEMORY = $(shell echo 16777216*4 | bc)
 
 PROJECT_ROOT = ../..
 
@@ -16,6 +17,8 @@ CC = emcc
 SDLCORE_FOLDER = $(PROJECT_ROOT)/Libraries/Plasmacore/SDL
 
 BUILD_FOLDER    := $(PROJECT_ROOT)/Build/$(TARGET)
+
+#CFLAGS += --shell-file $(PROJECT_ROOT)/Source/shell.html
 
 SDLCORE_FILES := \
   Main.cpp \

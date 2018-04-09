@@ -1,4 +1,8 @@
-module ParseKit<<$ParserType>>
+module ParseKit<<$Language>>
+
+uses $Language
+
+$localDefine ErrorType $join($Language,Error)
 
 class Token
   GLOBAL PROPERTIES
@@ -6,35 +10,46 @@ class Token
     next_line     : Int32
     next_column   : Int32
 
+  GLOBAL METHODS
+    method update_next_position( tokenizer:Tokenizer )
+      Token.next_filepath = tokenizer.filepath
+      Token.next_line = tokenizer.scanner.line
+      Token.next_column = tokenizer.scanner.column
+
   PROPERTIES
-    type     : Int32
+    type     : TokenType
     line     : Int32
     column   : Int32
-    number   : Real64?
+    number   : Int64?
     text     : String
     filepath : String
 
   METHODS
-    method init
+    method init_object
       filepath = next_filepath
       line = next_line
       column = next_column
 
     method init( type )
-      init
 
     method init( type, number )
 
+    method init( type, integer:Int64 )
+      number = integer
+
+    method init( type, real_number:Real64 )
+      init( type, real_number.integer_bits )
+
     method init( type, text )
 
+    method init( type, filepath, line, column )
+
     method description->String
-      return Tokenizer.description( type )
+      if (text or number.exists) return "'$'" (this->String)
+      return type.description
 
-    method error( message:String )->ParseError
-      return ParseError( message )
-
-    method symbol->String
-      return Tokenizer.symbol( type )
+    method error( message:String )->ErrorType
+      return ErrorType( this, message )
 
     method set_position( other:$ThisType )->this
       filepath = other.filepath
@@ -48,13 +63,14 @@ class Token
 
     method to->Int64
       if (not number.exists) return 0
-      return number.value.integer_bits
+      return number.value
 
     method to->Real64
       if (not number.exists) return 0.0
-      return number.value
+      return number.value.real_bits
 
     method to->String
-      return Tokenizer.stringify( this )
+      if (text) return text
+      return type.symbol
 endClass
 

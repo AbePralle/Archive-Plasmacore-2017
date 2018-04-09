@@ -137,7 +137,9 @@ class SoundCompiler
         format = attr//format->String
         which (format)
           case "ima4": new_ext = "caf"
-          case "ogg": new_ext = "ogg"
+          case "ogg":  new_ext = "ogg"
+          case "mp3":  new_ext = "mp3"
+          case "wav":  new_ext = "wav"
         endWhich
       endIf
 

@@ -25,11 +25,12 @@ static int gargc;
 static char ** gargv;
 
 
-static int iterations;
 static volatile bool plasmacore_launched = false;
 
 
 #ifdef __EMSCRIPTEN__
+static int iterations;
+
 static void do_async_call ( void (*cb)(void *), int millis )
 {
   emscripten_async_call(cb, 0, millis);
@@ -347,11 +348,46 @@ void Plasmacore::real_update (bool reschedule)
 
 static bool should_quit = false;
 
+static int current_fps = 0;
+static int new_fps = 60;
+static unsigned int start_time = 0;
+
+#include <sys/time.h>
+
+static unsigned int get_ticks (void)
+{
+  struct timeval nowts;
+  gettimeofday(&nowts, NULL);
+  unsigned int now = nowts.tv_sec * 1000000 + nowts.tv_usec;
+  return now;
+}
 
 static void do_iteration (void)
 {
-  ++iterations;
   if ( !plasmacore_launched ) return;
+
+#ifdef __EMSCRIPTEN__
+  if (current_fps != new_fps)
+  {
+    printf("Changing FPS from %i to %i\n", current_fps, new_fps);
+    current_fps = new_fps;
+    start_time = get_ticks();
+    iterations = 0;
+  }
+
+  unsigned int now = get_ticks();
+  unsigned int delta = now - start_time;
+  int should = (int)(delta / 1000000.0 * current_fps);
+  if (should > 0x0fffffff)
+  {
+    start_time = now;
+    iterations = 0;
+  }
+  //printf("%i should; %i have\n", should, iterations);
+  if (should <= iterations) return;
+  ++iterations;
+  //if (iterations % 5 != 0) return;
+#endif
 
   plasmacore_redraw_all_windows();
   SDL_Event e;
@@ -466,6 +502,19 @@ extern "C" void launch_plasmacore()
 
   plasmacore_launched = true;
 }
+
+
+extern "C" void Rogue_set_framerate (int fps)
+{
+  new_fps = fps;
+  if (fps > current_fps) do_iteration();
+}
+
+extern "C" int Rogue_get_framerate (void)
+{
+  return current_fps;
+}
+
 
 //=============================================================================
 //  PlasmacoreLauncher
