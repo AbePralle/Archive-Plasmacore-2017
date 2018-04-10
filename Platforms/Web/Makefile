@@ -1,5 +1,5 @@
 OPT_CFLAGS += -O3
-OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 1
+OPT_CFLAGS += -s ASSERTIONS=0 -s PRECISE_I64_MATH=0 --closure 0
 
 # 160 MiB by default (asm.js wants a multiple of 16 MiB)
 RUNTIME_MEMORY = 167772160
@@ -20,14 +20,18 @@ BUILD_FOLDER    := $(PROJECT_ROOT)/Build/$(TARGET)
 
 #CFLAGS += --shell-file $(PROJECT_ROOT)/Source/shell.html
 
+CFLAGS += --emrun
+
 SDLCORE_FILES := \
   Main.cpp \
   $(SDLCORE_FOLDER)/Plasmacore.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreMessage.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreView.cpp \
-  $(SDLCORE_FOLDER)/PlasmacoreSoundSDLMixer.cpp \
+  $(SDLCORE_FOLDER)/PlasmacoreSoundDummy.cpp \
   $(SDLCORE_FOLDER)/PlasmacoreUtility.cpp \
   $(SDLCORE_FOLDER)/RogueInterface.cpp
+
+#  $(SDLCORE_FOLDER)/PlasmacoreSoundSDLMixer.cpp
 
 -include Settings.mk
 

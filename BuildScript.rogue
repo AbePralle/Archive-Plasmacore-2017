@@ -24,9 +24,14 @@ routine get_platform->String
         noAction
 
       case "Web"
-        if (System.os == "macOS")
-          install_emscripten
-        endIf
+        println @|Ensure you have the latest emscripten installed and configured:
+                 |
+                 |  (Install emsdk && cd emsdk/)
+                 |  git pull   # or "./emsdk update" in some cases
+                 |  ./emsdk install  latest
+                 |  ./emsdk activate latest
+                 |  (Add emsdk paths to ~/.bash_profile)
+                 |
 
       others
         println @|USAGE
@@ -139,8 +144,8 @@ routine need_compile( target:String, output_folder:String )->Logical
 endRoutine
 
 routine install_emscripten
-  install_brew
-  install_library( "emscripten" )
+  #install_brew
+  #install_library( "emscripten" )
 endRoutine
 
 routine require_command_line

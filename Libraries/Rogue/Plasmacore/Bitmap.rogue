@@ -451,7 +451,7 @@ class Bitmap
       return this
 
     method decode( bytes:Byte[] )->Logical
-$if (not (target("Console") or target("Linux")))
+$if (not (target("Console") or target("Linux") or target("Web")))
       nativeHeader
         struct RogueClassPlasmacore__Bitmap;
         RogueClassPlasmacore__Bitmap* Plasmacore_decode_image( RogueByte* bytes, RogueInt32 count );
