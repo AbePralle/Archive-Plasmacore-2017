@@ -1,3 +1,5 @@
+BuildLocal.rogue
+
 # Vim
 *.swp
 *.local
@@ -8,7 +10,6 @@ Publish.mk
 **/Local.mk
 **/Build/
 .rogo
-Programs/Linux
 
 # Merge/Patch/etc.
 *.orig

@@ -1,4 +1,4 @@
-#$ ROGUEC(macOS)    = Programs/macOS/roguec
+#$ ROGUEC(macOS)    = Programs/RogueC-macOS
 #$ ROGUEC(Linux)    = roguec
 #$ ROGUEC_ARGS      = --libraries=Libraries/Rogue
 
@@ -12,6 +12,74 @@
 
 $include "Plasmacore"
 uses Plasmacore
+
+routine rogo_default
+  rogo_help
+endRoutine
+
+routine rogo_install_rogue
+  Build.install_rogue
+endRoutine
+
+routine rogo_padfont_help_syntax->String
+  return "rogo padfont [--padding=<integer>] <font strip png wildcards>"
+endRoutine
+
+routine rogo_padfont_help_description->String
+  return "Repacks a font strip with additional transparent pixels around the border."
+endRoutine
+
+routine rogo_padfont
+  trace "TODO"
+endRoutine
+
+class Build [singleton]
+  METHODS
+    method install_rogue
+      print select{ File.exists("Libraries/Rogue/Standard"):"Updating" || "Installing" }
+      println " embedded copy of Rogue compiler."
+
+      local roguec_folder = ""
+      local roguec_exe    : String
+      which (System.os)
+        case "Windows"
+          roguec_exe = "roguec.exe"
+          roguec_folder = File.folder( Process.run( "where roguec.exe", &inherit_environment ).output_string.trimmed )
+
+        others
+          roguec_exe = "RogueC-" + System.os
+          local launcher_filepath = Process.run( "which roguec", &inherit_environment ).output_string.trimmed
+          if (File.exists(launcher_filepath))
+            local file_scanner = Scanner( File(launcher_filepath) )
+            while (file_scanner.has_another)
+              local line = file_scanner.read_line.trimmed
+              if (line.begins_with("exec"))
+                local line_scanner = Scanner( line )
+                line_scanner.scan_identifier  # exec
+                line_scanner.consume_spaces
+                if (line_scanner.next_is_string)
+                  roguec_folder = File.folder( line_scanner.scan_string )
+                endIf
+                escapeWhile
+              endIf
+            endWhile
+          endIf
+      endWhich
+
+      roguec_exe = File.join( roguec_folder, roguec_exe )
+
+      if (not File.exists(roguec_folder)) throw Error( "Can not find RogueC folder." )
+      if (not File.exists(roguec_exe))    throw Error( "Can not find $." (roguec_exe) )
+
+      File.sync_from( Files(roguec_folder,"*"), "Programs/RogueC", &verbose, &keep_unused )
+      File.sync_from( Files(roguec_folder+"/Libraries/Standard","*"), "Libraries/Rogue/Standard", &verbose )
+      File.sync_from( Files(roguec_folder+"/Libraries/ParseKit","*"), "Libraries/Rogue/ParseKit", &verbose )
+endClass
+
+
+
+#{
+routine rogo_padfont
 
 on( "padfont",  ()=>PadFont() )
 on( "trimfont", ()=>TrimFont() )
@@ -253,3 +321,113 @@ class TrimFont
       endForEach
       return bitmap
 endClass
+
+}#
+
+#------------------------------------------------------------------------------
+# Introspection-based Launcher Framework
+#------------------------------------------------------------------------------
+global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+
+local cmd = System.command_line_arguments.cloned
+try
+  if (cmd.count)
+    local args = String[]
+    while (cmd.count)
+      if (dispatch(cmd,args)) System.exit
+      args.insert( cmd.remove_last )
+    endWhile
+    println "ERROR: No such command '$'." (args.first)
+    println
+    rogo_help
+  else
+    rogo_default
+  endIf
+catch (err:Error)
+  Console.error.println err
+  System.exit 1
+endTry
+
+routine dispatch( cmd:String[], string_args:String[] )->Logical
+  local m = <<Global>>.find_method( method_prefix + cmd.join("_") )
+  if (not m) return false
+
+  local args = @[]
+  forEach (arg in string_args)
+    which (arg)
+      case "true":  args.add( true )
+      case "false": args.add( false )
+      case "null":  args.add( NullValue )
+      others:       args.add( arg )
+    endWhich
+  endForEach
+  if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
+  m.call( Global, args )
+  return true
+endRoutine
+
+routine rogo_help( command="":String )
+  if (command.count)
+    local syntax = get_syntax( "rogo_" + command )
+    local success = false
+    if (syntax)
+      println "SYNTAX"
+      println "  " + syntax
+      println
+      success = true
+    endIf
+    local description = get_description( "rogo_" + command )
+    if (description)
+      println "DESCRIPTION"
+      forEach (line in LineReader(description.word_wrapped(76)))
+        print( "  " ).println( line )
+      endForEach
+      println
+      success = true
+    endIf
+    if (success)
+      return
+    else
+      println "ERROR: No such command '$'." (command)
+      println
+    endIf
+  endIf
+
+  println "USAGE"
+  local lines = String[]
+  forEach (m in <<Global>>.methods)
+    if (m.name.begins_with(method_prefix))
+      if (not m.name.ends_with("_help_syntax") and not m.name.ends_with("_help_description"))
+        lines.add( "  " + get_syntax(m.name) )
+      endIf
+    endIf
+  endForEach
+  lines.sort( (a,b)=>(a<b) )
+  println (forEach in lines)
+  println
+endRoutine
+
+routine get_syntax( m_name:String )->String
+  local m = <<Global>>.find_method( m_name )
+  if (not m) return null
+
+  local m_syntax = <<Global>>.find_method( m_name + "_help_syntax" )
+  if (m_syntax)
+    return m_syntax( @[Global] )
+  else
+    local line = "rogo $" (m.name.after_first(method_prefix))
+    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+    return line
+  endIf
+endRoutine
+
+routine get_description( m_name:String )->String
+  local m = <<Global>>.find_method( m_name )
+  local m_description = <<Global>>.find_method( m_name + "_help_description" )
+  if (m_description)
+    return m_description( @[Global] )
+  else
+    return null
+  endIf
+endRoutine
+
