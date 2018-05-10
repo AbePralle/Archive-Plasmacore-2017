@@ -21,6 +21,10 @@ routine rogo_install_rogue
   Build.install_rogue
 endRoutine
 
+routine rogo_uninstall_rogue
+  Build.uninstall_rogue
+endRoutine
+
 routine rogo_padfont_help_syntax->String
   return "rogo padfont [--padding=<integer>] <font strip png wildcards>"
 endRoutine
@@ -74,6 +78,12 @@ class Build [singleton]
       File.sync_from( Files(roguec_folder,"*"), "Programs/RogueC", &verbose, &keep_unused )
       File.sync_from( Files(roguec_folder+"/Libraries/Standard","*"), "Libraries/Rogue/Standard", &verbose )
       File.sync_from( Files(roguec_folder+"/Libraries/ParseKit","*"), "Libraries/Rogue/ParseKit", &verbose )
+
+    method uninstall_rogue
+      println "Deleting embedded copy of Rogue language."
+      File.delete( "Programs/RogueC" )
+      File.delete( "Libraries/Rogue/Standard" )
+      File.delete( "Libraries/Rogue/ParseKit" )
 endClass
 
 
