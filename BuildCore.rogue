@@ -29,16 +29,59 @@ routine rogo_uninstall_rogue
 endRoutine
 
 help( "padfont",
-    &syntax="padfont [--padding=<integer>] <font strip png wildcards>",
+    &syntax     ="padfont [--padding=<integer>] <font_strip.png>",
     &description="Repacks a font strip with additional transparent pixels around the border."
   )
-
 routine rogo_padfont
-  trace "TODO"
+  PadFont()
+endRoutine
+
+help( "trimfont",
+    &syntax     ="trimfont [--padding=<integer>] <font_strip.png>",
+    &description="Repacks a font strip after removing UP TO 'padding' number of pixels around each character."
+  )
+routine rogo_trimfont
+  TrimFont()
 endRoutine
 
 class Build [singleton]
   METHODS
+    method convert_args_to_filepaths( args:String[] )
+      # Example: Assets/**/*.png -> [files that match]
+      local wildcards = args
+      args = String[]( wildcards.count )
+      forEach (wildcard in wildcards)
+        if (File.exists(wildcard))
+          args.add( wildcard )
+        else
+          local listing = File.listing( wildcard, &files )
+          if (not listing.is_empty)
+            args.add( listing )
+          else
+            throw Error( "No files match argument pattern: " + wildcard )
+          endIf
+        endIf
+      endForEach
+
+      if (args.is_empty) throw Error( "No files match argument pattern." )
+
+      wildcards.clear.add( args )
+
+    method extract_options( args:String[] )->StringTable<<String>>
+      local options = StringTable<<String>>()
+      forEach (arg at index in args step -1)
+        if (arg.begins_with("--"))
+          args.remove_at( index )
+          local option = arg.from(2)
+          if (option.contains('='))
+            options[ option.before_first('=') ] = option.after_first( '=' )
+          else
+            options[ option ] = ""
+          endIf
+        endIf
+      endForEach
+      return options
+
     method install_rogue
       print select{ File.exists("Libraries/Rogue/Standard"):"Updating" || "Installing" }
       println " embedded copy of Rogue compiler."
@@ -87,104 +130,26 @@ class Build [singleton]
 endClass
 
 
-
-#{
-routine rogo_padfont
-
-on( "padfont",  ()=>PadFont() )
-on( "trimfont", ()=>TrimFont() )
-
-augment Global
-  METHODS
-    method on_launch
-      <append>
-      Build.run
-endAugment
-
-routine on( cmd:String, fn:Function )
-  Build.handlers[ cmd ] = fn
-endRoutine
-
-class Build [singleton]
-  PROPERTIES
-    handlers = StringTable<<Function>>()
-    action   : String
-    options  = StringTable<<String>>()
-    args     = String[]
-
-  METHODS
-    method run
-      process_args
-
-      if (Build.action)
-        local fn = Build.handlers[ Build.action ]
-        if (fn)
-          fn()
-        else
-          println "Build action '$' is undefined." (Build.action)
-        endIf
-      else
-        println "USAGE"
-        println "  rogo $" (forEach in Build.handlers.keys)
-      endIf
-
-    method convert_args_to_filepaths
-      # Handles wildcards
-      local wildcards = args
-      args = String[]( wildcards.count )
-      forEach (arg in wildcards)
-        if (File.exists(arg))
-          args.add( arg )
-        else
-          local listing = File.listing( arg, &files )
-          if (not listing.is_empty)
-            args.add( listing )
-          endIf
-        endIf
-      endForEach
-
-      if (args.is_empty)
-        println "ERROR: No files match argument pattern."
-        System.exit 1
-      endIf
-
-    method process_args
-      forEach (arg in System.command_line_arguments)
-        if (arg.begins_with('-'))
-          if (arg.contains('='))
-            Build.options[ arg.before_first('=') ] = arg.after_first('=')
-          else
-            Build.options[ arg ] = null
-          endIf
-
-        elseIf (Build.action is null)
-          Build.action = arg
-
-        else
-          Build.args.add( arg )
-        endIf
-
-      endForEach
-
-endClass
-
 class PadFont
   METHODS
     method init
-      if (Build.args.count == 0)
-        println "USAGE"
-        println "  rogo padfont [--padding=<integer>] <font strip png>"
+      local args = System.command_line_arguments.cloned
+      args.remove_first  # 'padfont'
+      local options = Build.extract_options( args )
+      if (options//padding is null or options//padding->Int32 == 0) options//padding = "16"
+
+      if (args.count == 0)
+        println "No files specified.\n"
+        rogo_help( "padfont" )
       else
-        Build.convert_args_to_filepaths
-        local padding = Build.options[ "--padding" ]
-        if (padding is null or padding->Int32 == 0) Build.options["--padding"] = "16"
-        pad_font( forEach in Build.args )
+        Build.convert_args_to_filepaths( args )
+        pad_font( forEach in args, options )
       endIf
 
-    method pad_font( filepath:String )
+    method pad_font( filepath:String, options:StringTable<<String>> )
       local characters = extract_varfont_characters( Bitmap(File(filepath)) )
 
-      local padding = Build.options[ "--padding" ]->Int32
+      local padding = options//padding->Int32
       (forEach in characters).crop( -padding )
 
       println "Rewriting $ with $ pixels of padding around each character" (filepath,padding)
@@ -227,20 +192,23 @@ endClass
 class TrimFont
   METHODS
     method init
-      if (Build.args.count == 0)
-        println "USAGE"
-        println "  rogo trimfont [--padding=<integer>] <font strip png>"
+      local args = System.command_line_arguments.cloned
+      args.remove_first  # 'trimfont'
+      local options = Build.extract_options( args )
+      if (options//padding is null or options//padding->Int32 == 0) options//padding = "16"
+
+      if (args.count == 0)
+        println "No files specified.\n"
+        rogo_help( "trimfont" )
       else
-        Build.convert_args_to_filepaths
-        local padding = Build.options[ "--padding" ]
-        if (padding is null or padding->Int32 == 0) Build.options["--padding"] = "16"
-        trim_font( forEach in Build.args )
+        Build.convert_args_to_filepaths( args )
+        trim_font( forEach in args, options )
       endIf
 
-    method trim_font( filepath:String )
+    method trim_font( filepath:String, options:StringTable<<String>> )
       local characters = extract_varfont_characters( Bitmap(File(filepath)) )
 
-      local padding = Build.options[ "--padding" ]->Int32
+      local padding = options//padding->Int32
       local crop_top    = padding
       local crop_bottom = padding
       forEach (ch in characters)
@@ -273,7 +241,7 @@ class TrimFont
 
         local crop_right = padding
         forEach (i in 1..crop_right)
-          if (column_contains_pixels(ch,ch.height-i))
+          if (column_contains_pixels(ch,ch.width-i))
             crop_right = i - 1
             escapeForEach
           endIf
@@ -332,7 +300,6 @@ class TrimFont
       return bitmap
 endClass
 
-}#
 
 #------------------------------------------------------------------------------
 # Introspection-based Launcher Framework
