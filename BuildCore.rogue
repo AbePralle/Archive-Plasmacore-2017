@@ -18,10 +18,12 @@ routine rogo_default
   rogo_help
 endRoutine
 
+help( "install_rogue", "Embeds Rogue locally to remove the dependency and freeze its version." )
 routine rogo_install_rogue
   Build.install_rogue
 endRoutine
 
+help( "install_rogue", "Deletes the locally embedded copy of Rogue." )
 routine rogo_uninstall_rogue
   Build.uninstall_rogue
 endRoutine
@@ -391,6 +393,9 @@ routine dispatch( cmd:String[], string_args:String[] )->Logical
 endRoutine
 
 routine rogo_help( command="":String )
+  local args = System.command_line_arguments.cloned
+  if (args.count) args.remove_first
+  command = args.join( "_" )
   if (command.count)
     local syntax = get_syntax( command )
     local success = false
@@ -435,7 +440,7 @@ routine get_syntax( m_name:String )->String
   else
     local m = <<Global>>.find_method( prefix + m_name )
     if (not m) return null
-    local line = "rogo $" (m_name)
+    local line = "rogo $" (m_name.replacing('_',' '))
     line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
     return line
   endIf
