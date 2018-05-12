@@ -1,3 +1,5 @@
+$define PLASMACORE_VERSION v0.9.0
+
 #$ ROGUEC(macOS)    = Programs/RogueC-macOS
 #$ ROGUEC(Linux)    = roguec
 #$ ROGUEC_ARGS      = --libraries=Libraries/Rogue
@@ -44,8 +46,60 @@ routine rogo_trimfont
   TrimFont()
 endRoutine
 
-class Build [singleton]
+class Build [essential singleton]
+  PROPERTIES
+    REPO   = "https://github.com/AbePralle/Plasmacore.git"
+    BRANCH = "master"
+    ROGUE_IDE_FLAG = ""
+    ENV_IDE_FLAG   = ""
+    ROGUEC         = ""
+    CXX            = ""
+    ROGUEC_EXE     = ""
+
   METHODS
+    method init
+      if (System.environment.contains("IDE"))
+        ROGUE_IDE_FLAG = "--ide"
+        ENV_IDE_FLAG   = "IDE=true"
+      endIf
+
+      which (System.os)
+        case "macOS", "Linux"
+          ROGUEC_EXE = "Programs/RogueC/RogueC-" + System.os
+          forEach (line in LineReader(Process.run("make -p -f/dev/null")))
+            if (line.begins_with("CXX ="))
+              CXX = line.split("=").last.trimmed
+              escapeForEach
+            endIf
+          endForEach
+
+        case "Windows"
+          ROGUEC_EXE = "Programs\\RogueC\\roguec.exe"
+          CXX = "cl"
+      endWhich
+
+      if (not File.exists(ROGUEC_EXE)) ROGUEC_EXE = "roguec"
+
+      # Read override values from Local.mk
+      if (File.exists("Local.mk"))
+        local printed_header = false
+        forEach (line in LineReader(File("Local.mk")))
+          if (line.contains("="))
+            local name  = line.before_first('=').trimmed
+            local value = line.after_first('=').trimmed
+            local p = type_info.find_property( name )
+            if (p)
+              if (not printed_header)
+                printed_header = true
+                println "Local.mk overrides:"
+              endIf
+              println "$ = $" (name,value)
+              type_info.set_property( this, p, Value(value) )
+            endIf
+          endIf
+        endForEach
+      endIf
+
     method convert_args_to_filepaths( args:String[] )
       # Example: Assets/**/*.png -> [files that match]
       local wildcards = args
