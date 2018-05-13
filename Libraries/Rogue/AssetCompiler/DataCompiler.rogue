@@ -1,7 +1,6 @@
-uses ParseKit
 uses Plasmacore
 
-routine launch_data_compiler
+routine launch_data_compiler( platform:String )
   try
     local config_file = File( "Assets/Data/DataConfig.txt" )
     if (not config_file.exists)
@@ -29,12 +28,7 @@ routine launch_data_compiler
       writer.close
     endIf
 
-    local args = System.command_line_arguments
-    if (args.count)
-      DataCompiler( config_file, (forEach in args) )
-    else
-      DataCompiler( config_file, "Default" )
-    endIf
+    DataCompiler( config_file, platform )
 
   catch (err:DataCompileError)
     if (System.environment["IDE"])

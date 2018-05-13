@@ -1,13 +1,12 @@
-$include "../Rogue/Plasmacore"
-uses Plasmacore
+$include "AssetCompiler/ImageCompiler.rogue"
+$include "AssetCompiler/DataCompiler.rogue"
+$include "AssetCompiler/SoundCompiler.rogue"
 
-$include "ImageCompiler.rogue"
-$include "DataCompiler.rogue"
-$include "SoundCompiler.rogue"
-
-launch_image_compiler
-launch_sound_compiler
-launch_data_compiler
+routine launch_asset_compiler( platform:String ) [essential]
+  launch_image_compiler( platform )
+  launch_sound_compiler( platform )
+  launch_data_compiler( platform )
+endRoutine
 
 class CommentStripper
   PROPERTIES

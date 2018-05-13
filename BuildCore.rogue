@@ -12,12 +12,32 @@ $define PLASMACORE_VERSION v0.9.0
 #$ LIBRARIES(Linux) = libpng-dev libjpeg-dev
 #$ LINK             = -lpng -ljpeg -lfreetype
 
-$include "Plasmacore"
+$include "Plasmacore" [optional]
 uses Plasmacore
+
+$include "AssetCompiler" [optional]
 
 help( "default", &syntax="", "Prints list of commands." )
 routine rogo_default
   rogo_help
+endRoutine
+
+routine rogo_ios
+  Build.build( "iOS" )
+endRoutine
+
+routine rogo_macos
+  Build.build( "macOS" )
+endRoutine
+
+routine rogo_linux
+  Build.build( "Linux" )
+  run @|make -C Platforms/Linux
+endRoutine
+
+routine rogo_web
+  Build.build( "Web" )
+  run @|make -C Platforms/Web
 endRoutine
 
 help( "install_rogue", "Embeds Rogue locally to remove the dependency and freeze its version." )
@@ -46,26 +66,37 @@ routine rogo_trimfont
   TrimFont()
 endRoutine
 
+routine run( cmd:String, &silent )
+  forEach (line in LineReader(cmd))
+    if (not silent) print( "> " ).println( line )
+    if (0 != System.run(line)) throw Error( "Build error." )
+  endForEach
+endRoutine
+
+
 class Build [essential singleton]
   PROPERTIES
     REPO   = "https://github.com/AbePralle/Plasmacore.git"
     BRANCH = "master"
-    ROGUE_IDE_FLAG = ""
-    ENV_IDE_FLAG   = ""
-    ROGUEC         = ""
-    CXX            = ""
-    ROGUEC_EXE     = ""
+    ROGUE_IDE_FLAG  = ""
+    ENV_IDE_FLAG    = ""
+    CXX             = "c++"
+    ROGUEC          = "roguec"
+    ROGUE_STD_LIBS  = "Libraries/Rogue"
+
+    ide_mode = false
 
   METHODS
     method init
       if (System.environment.contains("IDE"))
+        ide_mode = true
         ROGUE_IDE_FLAG = "--ide"
         ENV_IDE_FLAG   = "IDE=true"
       endIf
 
       which (System.os)
         case "macOS", "Linux"
-          ROGUEC_EXE = "Programs/RogueC/RogueC-" + System.os
+          ROGUEC = "Programs/RogueC/RogueC-" + System.os
           forEach (line in LineReader(Process.run("make -p -f/dev/null")))
             if (line.begins_with("CXX ="))
               CXX = line.split("=").last.trimmed
@@ -73,12 +104,34 @@ class Build [essential singleton]
             endIf
           endForEach
 
+          if (not File.exists(ROGUE_STD_LIBS + "/Standard"))
+            local launcher_filepath = Process.run( "which roguec", &inherit_environment ).output_string.trimmed
+            if (File.exists(launcher_filepath))
+              local file_scanner = Scanner( File(launcher_filepath) )
+              while (file_scanner.has_another)
+                local line = file_scanner.read_line.trimmed
+                if (line.begins_with("exec"))
+                  local line_scanner = Scanner( line )
+                  line_scanner.scan_identifier  # exec
+                  line_scanner.consume_spaces
+                  if (line_scanner.next_is_string)
+                    ROGUE_STD_LIBS= File.folder( line_scanner.scan_string )
+                  endIf
+                  escapeWhile
+                endIf
+              endWhile
+            endIf
+          endIf
+
         case "Windows"
-          ROGUEC_EXE = "Programs\\RogueC\\roguec.exe"
+          ROGUEC = "Programs\\RogueC\\roguec.exe"
           CXX = "cl"
+          if (not File.exists(ROGUE_STD_LIBS + "/Standard"))
+            ROGUE_STD_LIBS= File.folder( Process.run("where roguec.exe", &inherit_environment).output_string.trimmed )
+          endIf
       endWhich
 
-      if (not File.exists(ROGUEC_EXE)) ROGUEC_EXE = "roguec"
+      if (not File.exists(ROGUEC)) ROGUEC = "roguec"
 
       # Read override values from Local.mk
       if (File.exists("Local.mk"))
@@ -99,6 +152,50 @@ class Build [essential singleton]
           endIf
         endForEach
       endIf
+
+    method build( platform:String )
+      println "Build " + platform
+
+      which (platform)
+        case "Web"
+          println @|Ensure you have the latest emscripten installed and configured:
+                   |
+                   |  (Install emsdk && cd emsdk/)
+                   |  git pull   # or "./emsdk update" in some cases
+                   |  ./emsdk install  latest
+                   |  ./emsdk activate latest
+                   |  (Add emsdk paths to ~/.bash_profile)
+                   |
+      endWhich
+
+      local output_folder = File.fix_slashes( "Build/$/Source" (platform) )
+      create_folder( output_folder )
+
+      if (not needs_compile(platform,output_folder)) return
+
+      local target = platform + ",C++"
+      which (target)
+        case "macOS", "iOS": target += ",ObjC"
+        case "Linux":        target += ",SDL"
+        case "Web":          target += ",SDL,emscripten"
+      endWhich
+
+      which (target)
+        case "iOS", "Android": target += ",Mobile"
+        others:                target += ",Desktop"
+      endWhich
+
+      local cmd = ''$ --target=$ --gc=manual Source/Main.rogue Plasmacore --libraries=Libraries/Rogue --output=$/RogueProgram''...
+        (ROGUEC,target,output_folder)
+      if (Build.ide_mode) cmd += " --ide"
+      run( cmd )
+
+      launch_asset_compiler( platform )
+
+    method create_folder( folder:String )
+      if (File.exists(folder)) return
+      println "Creating folder " + folder
+      File.create_folder( folder )
 
     method convert_args_to_filepaths( args:String[] )
       # Example: Assets/**/*.png -> [files that match]
@@ -135,6 +232,14 @@ class Build [essential singleton]
         endIf
       endForEach
       return options
+
+    method git_pull
+      if (not File.exists("Build/Update/Plasmacore"))
+        println File.fix_slashes( "Cloning Plasmacore -> Build/Update/Plasmacore" )
+        File.create_folder( "Build/Update" )
+        run File.fix_slashes( "git clone $ Build/Update/Plasmacore"(REPO) )
+      endIf
+      run "cd Build/Update/Plasmacore && git checkout $ && git pull" (BRANCH)
 
     method install_rogue
       print select{ File.exists("Libraries/Rogue/Standard"):"Updating" || "Installing" }
@@ -175,6 +280,33 @@ class Build [essential singleton]
       File.sync_from( Files(roguec_folder,"*"), "Programs/RogueC", &verbose, &keep_unused )
       File.sync_from( Files(roguec_folder+"/Libraries/Standard","*"), "Libraries/Rogue/Standard", &verbose )
       File.sync_from( Files(roguec_folder+"/Libraries/ParseKit","*"), "Libraries/Rogue/ParseKit", &verbose )
+
+    method needs_compile( platform:String, output_folder:String )->Logical
+      local extension = "cpp"
+      if (platform == "macOS" or platform == "iOS") extension = "mm"
+
+      local output_h   = "$/RogueProgram.h" (output_folder)
+      local output_cpp = "$/RogueProgram.$" (output_folder,extension)
+
+      if (not File.exists(output_h))   return true
+      if (not File.exists(output_cpp)) return true
+
+      local dependencies = String[]
+      dependencies.add( File.listing(ROGUE_STD_LIBS,&recursive,&absolute) )
+      if (ROGUE_STD_LIBS != "Libraries/Rogue")
+        dependencies.add( File.listing("Libraries/Rogue",&recursive,&absolute) )
+      endIf
+      dependencies.add( File.listing("Source", &recursive, &absolute) )
+      dependencies.add( "Build.rogue" )
+      dependencies.add( "BuildCore.rogue" )
+      dependencies.add( "BuildLocal.rogue" )
+
+      local timestamp = File.timestamp(output_h).or_smaller( File.timestamp(output_cpp) )
+      forEach (dependency in dependencies)
+        if (File.timestamp(dependency) > timestamp) return true
+      endForEach
+
+      return false
 
     method uninstall_rogue
       println "Deleting embedded copy of Rogue language."

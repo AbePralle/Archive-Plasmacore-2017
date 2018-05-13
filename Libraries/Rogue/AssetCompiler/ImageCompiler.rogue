@@ -1,7 +1,6 @@
-uses ParseKit
 uses Plasmacore
 
-routine launch_image_compiler
+routine launch_image_compiler( platform:String )
   try
     local config_file = File( "Assets/Images/ImageConfig.txt" )
     if (not config_file.exists)
@@ -62,14 +61,7 @@ routine launch_image_compiler
       writer.close
     endIf
 
-
-
-    local args = System.command_line_arguments
-    if (args.count)
-      ImageCompiler( config_file, (forEach in args) )
-    else
-      ImageCompiler( config_file, "Default" )
-    endIf
+    ImageCompiler( config_file, platform )
 
   catch (err:ImageCompileError)
     if (System.environment["IDE"])

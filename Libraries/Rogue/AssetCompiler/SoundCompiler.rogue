@@ -1,7 +1,6 @@
-uses ParseKit
 uses Plasmacore
 
-routine launch_sound_compiler
+routine launch_sound_compiler( platform:String )
   try
     local config_file = File( "Assets/Sounds/SoundConfig.txt" )
     if (not config_file.exists)
@@ -38,12 +37,7 @@ routine launch_sound_compiler
       writer.close
     endIf
 
-    local args = System.command_line_arguments
-    if (args.count)
-      SoundCompiler( config_file, (forEach in args) )
-    else
-      SoundCompiler( config_file, "Default" )
-    endIf
+    SoundCompiler( config_file, platform )
 
   catch (err:SoundCompileError)
     if (System.environment["IDE"])
