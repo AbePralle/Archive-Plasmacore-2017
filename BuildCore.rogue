@@ -1,4 +1,4 @@
-$define PLASMACORE_VERSION v0.9.0
+$define PLASMACORE_VERSION "0.9.0"
 
 #$ ROGUEC(macOS)    = Programs/RogueC-macOS
 #$ ROGUEC(Linux)    = roguec
@@ -34,6 +34,11 @@ routine rogo_linux
   Build.build( "Linux" )
   run @|make -C Platforms/Linux
 endRoutine
+
+routine rogo_version( text="Updated to":String )
+  print( text ).print( " Plasmacore v" ).println( version )
+endRoutine
+
 
 routine rogo_web
   Build.build( "Web" )

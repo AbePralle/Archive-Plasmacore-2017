@@ -33,7 +33,10 @@ class Bootstrap
 
     method run
       # Don't overwrite existing installation
-      if (File.exists("Source") or File.exists("Platforms")) return
+      if (File.exists("Source") or File.exists("Platforms"))
+        println "Plasmacore is already installed. Use 'rogo update' to update it."
+        return
+      endIf
 
       if (not File.exists("Build/Update/Plasmacore"))
         println File.fix_slashes( "Cloning Plasmacore -> Build/Update/Plasmacore" )
@@ -42,6 +45,11 @@ class Bootstrap
       endIf
       run "cd Build/Update/Plasmacore && git checkout $ && git pull" (BRANCH)
 
+      local files = Files( "Build/Update/Plasmacore", "**" )
+      if (File.exists("README.md")) files.remove( "Build/Update/Plasmacore/README.md" )
+      File.sync_from( files, ".", &keep_unused, &verbose )
+
+      System.run @|rogo version Installed
 endClass
 
 routine run( cmd:String, &silent )
